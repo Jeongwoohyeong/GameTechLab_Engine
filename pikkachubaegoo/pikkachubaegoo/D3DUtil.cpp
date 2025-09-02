@@ -51,3 +51,13 @@ void D3DUtil::CreatePS(LPCWSTR& fileName, ID3D11PixelShader** ps)
 	}
 }
 
+void D3DUtil::CreateConstantBuffer(ID3D11Buffer** cBuffer, UINT size)
+{
+	D3D11_BUFFER_DESC constantbufferdesc = {};
+	constantbufferdesc.ByteWidth = size + 0xf & 0xfffffff0; //16byte 단위로 끊기위한 작업 ((size + 15) / 16)
+	constantbufferdesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	UApp::Ins->GetDevice()->CreateBuffer(&constantbufferdesc, nullptr, cBuffer);
+}
