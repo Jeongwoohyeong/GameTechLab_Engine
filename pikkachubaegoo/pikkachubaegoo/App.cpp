@@ -130,11 +130,10 @@ void UApp::Loading()
 {
 	TestSpriteMesh = new UMesh(FMeshData::SpriteMeshData);
 }
-UPlayer* Player1;
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
-	Player1 = static_cast<UPlayer*>(UObjectFactory::GetInstance()->CreatePlayer(FVector3()));
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3());
 }
 void UApp::Update()
 {
