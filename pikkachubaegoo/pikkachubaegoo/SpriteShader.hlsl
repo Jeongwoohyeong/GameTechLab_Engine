@@ -24,5 +24,5 @@ PSInput mainVS(VSInput input)
 
 float4 mainPS(PSInput input) : SV_TARGET
 {
-	return float4(1,0,0,1);
+	return float4(input.uv.x,input.uv.y, 1, 1);
 }

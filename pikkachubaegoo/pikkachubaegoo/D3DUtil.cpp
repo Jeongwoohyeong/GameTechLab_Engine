@@ -1,16 +1,16 @@
 #include "D3DUtil.h"
-#include "UApp.h"
+#include "App.h"
 
-void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader* vs, ID3D11InputLayout* inputLayout)
+void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader** vs, ID3D11InputLayout** inputLayout)
 {
 	ID3DBlob* vsCSO;
-	HRESULT hResult = D3DCompileFromFile(L"SpriteShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &vsCSO, nullptr);
+	HRESULT hResult = D3DCompileFromFile(fileName, nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &vsCSO, nullptr);
 	if (FAILED(hResult))
 	{
 		wcout << "VS Compile Failed. FileName : " << fileName << endl;
 		return;
 	}
-	hResult = UApp::Ins->GetDevice()->CreateVertexShader(vsCSO->GetBufferPointer(), vsCSO->GetBufferSize(), nullptr, &vs);
+	hResult = UApp::Ins->GetDevice()->CreateVertexShader(vsCSO->GetBufferPointer(), vsCSO->GetBufferSize(), nullptr, vs);
 
 	if (FAILED(hResult))
 	{
@@ -24,7 +24,7 @@ void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader* vs, 
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	
-	hResult = UApp::Ins->GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), vsCSO->GetBufferPointer(), vsCSO->GetBufferSize(), &inputLayout);
+	hResult = UApp::Ins->GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), vsCSO->GetBufferPointer(), vsCSO->GetBufferSize(), inputLayout);
 
 	if (FAILED(hResult))
 	{
@@ -33,7 +33,7 @@ void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader* vs, 
 	}
 }
 
-void D3DUtil::CreatePS(LPCWSTR& fileName, ID3D11PixelShader* ps)
+void D3DUtil::CreatePS(LPCWSTR& fileName, ID3D11PixelShader** ps)
 {
 	ID3DBlob* vsCSO;
 	HRESULT hResult = D3DCompileFromFile(fileName, nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &vsCSO, nullptr);
@@ -42,7 +42,7 @@ void D3DUtil::CreatePS(LPCWSTR& fileName, ID3D11PixelShader* ps)
 		wcout << "PS Compile Failed. FileName : " << fileName << endl;
 		return;
 	}
-	hResult = UApp::Ins->GetDevice()->CreatePixelShader(vsCSO->GetBufferPointer(), vsCSO->GetBufferSize(), nullptr, &ps);
+	hResult = UApp::Ins->GetDevice()->CreatePixelShader(vsCSO->GetBufferPointer(), vsCSO->GetBufferSize(), nullptr, ps);
 
 	if (FAILED(hResult))
 	{

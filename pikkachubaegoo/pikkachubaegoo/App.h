@@ -9,6 +9,9 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
+#include <unordered_map>
+
+#include "Mesh.h"
 using namespace std;
 
 class UApp
@@ -33,7 +36,8 @@ private:
 	ID3D11InputLayout* SpriteInputLayout;
 	ID3D11VertexShader* SpriteVS;
 	ID3D11PixelShader* SpritePS;
-	unsigned int Stride;
+
+	UMesh* TestSpriteMesh;
 public:
 	void Init(HINSTANCE hInstance);
 	void MainLoop();
