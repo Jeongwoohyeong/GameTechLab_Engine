@@ -1,9 +1,2 @@
-﻿  PhysicsComponent.cpp
-C:\Users\Jungle\Documents\GitHub\pikkachubaegoo\pikkachubaegoo\pikkachubaegoo\Primitive.h(19,22): error C2061: 구문 오류: 식별자 'URenderer'
-  (소스 파일 'PhysicsComponent.cpp'을(를) 컴파일하는 중)
-  
-  Primitive.cpp
-C:\Users\Jungle\Documents\GitHub\pikkachubaegoo\pikkachubaegoo\pikkachubaegoo\Primitive.h(19,22): error C2061: 구문 오류: 식별자 'URenderer'
-  (소스 파일 'Primitive.cpp'을(를) 컴파일하는 중)
-  
-  코드를 생성하고 있습니다...
+﻿  UApp.cpp
+  pikkachubaegoo.vcxproj -> C:\Users\Jungle\Desktop\git\pikkachubaegoo\pikkachubaegoo\x64\Debug\pikkachubaegoo.exe
