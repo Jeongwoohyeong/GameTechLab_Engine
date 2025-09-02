@@ -37,10 +37,12 @@ bool  UInput::IsPrevKeyDown(int key)
 }
 bool  UInput::IsKeyPressed(int key)
 {
+	// 현재 눌려있고 이전에 눌린 적이 없다 = 처음 눌림
 	return IsKeyDown(key) && !IsPrevKeyDown(key);
 }
 
 bool  UInput::IsKeyReleased(int key)
 {
+	// 이전에 눌려있고 현재 눌려있지 않다 = 키 떼어짐
 	return IsPrevKeyDown(key) && !IsKeyDown(key);
 }
