@@ -1,5 +1,6 @@
-#include "UApp.h"
+
 #include "Time.h"
+#include "App.h"
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
 UApp* UApp::Ins = nullptr;
@@ -28,6 +29,9 @@ void UApp::Init(HINSTANCE hInstance)
 	InitWindow(hInstance);
 	InitDirect();
 	InitImGui();
+
+	Loading();
+	Start();
 }
 void UApp::MainLoop()
 {
@@ -105,12 +109,12 @@ void UApp::InitDirect()
 	//Create RasterizerState
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizerDesc.CullMode = D3D11_CULL_NONE; //2D¿¡ YÃàÈ¸Àü ¾ø±â¿¡ ÇÊ¿ä¾øÀ½
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 
 	Device->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
 
-	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, SpriteVS, SpriteInputLayout);
-	D3DUtil::CreatePS(SpriteShaderFileName, SpritePS);
+	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
+	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
 
 
 }
@@ -123,7 +127,10 @@ void UApp::InitImGui()
 	ImGui_ImplDX11_Init(Device, DeviceContext);
 
 }
-void UApp::Loading(){}
+void UApp::Loading()
+{
+	TestSpriteMesh = new UMesh(FMeshData::SpriteMeshData);
+}
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
@@ -146,7 +153,10 @@ void UApp::RenderUI()
 }
 void UApp::Render()
 {
-	//ÇÑ¹ø¸¸ ¼³Á¤
+
+	//ë§¤í”„ë ˆìž„ ì„¤ì •
+	DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
+
 	DeviceContext->RSSetViewports(1, &ViewportInfo);
 	DeviceContext->RSSetState(RasterizerState);
 	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -156,16 +166,22 @@ void UApp::Render()
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
 
-	//¸ÅÇÁ·¹ÀÓ ¼³Á¤
-	DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
+	UINT offset = 0;
+	DeviceContext->IASetVertexBuffers(0, 1, &TestSpriteMesh->VertexBuffer, &TestSpriteMesh->Stride, &offset);
+	DeviceContext->IASetIndexBuffer(TestSpriteMesh->IndexBuffer, DXGI_FORMAT_R32_UINT, offset);
+	DeviceContext->DrawIndexed(TestSpriteMesh->IndexCount, 0, 0);
 
 
-	RenderUI();
+	//RenderUI();
 	SwapChain->Present(1, 0);
 
 }
 
 void UApp::Release()
 {
+
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 
 }

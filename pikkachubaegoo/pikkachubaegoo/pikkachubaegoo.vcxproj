@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="App.cpp" />
     <ClCompile Include="D3DUtil.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
@@ -140,10 +141,10 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="Time.cpp" />
-    <ClCompile Include="UApp.cpp" />
     <ClCompile Include="UPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="App.h" />
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
@@ -158,7 +159,6 @@
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Time.h" />
-    <ClInclude Include="UApp.h" />
     <ClInclude Include="UPlayer.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
