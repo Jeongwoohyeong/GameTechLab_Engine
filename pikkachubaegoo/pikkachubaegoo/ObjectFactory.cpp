@@ -42,13 +42,13 @@ void UObjectFactory::Update(float deltaTime)
 	}
 }
 
-void UObjectFactory::Render()
+void UObjectFactory::Render(URenderContext* RenderContext)
 {
 	for (UINT i = 0; i < ObjectListSize; ++i)
 	{
 		if (ObjectList[i])
 		{
-			// Render
+			ObjectList[i]->Draw(RenderContext);
 		}
 	}
 }

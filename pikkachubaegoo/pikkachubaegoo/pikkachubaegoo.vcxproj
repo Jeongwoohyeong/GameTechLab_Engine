@@ -143,6 +143,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
+    <ClCompile Include="RenderContext.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="UMeshRenderer.cpp" />
     <ClCompile Include="UMeshRenderer.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="RenderContext.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="UPlayer.h" />
     <ClInclude Include="Vector.h" />

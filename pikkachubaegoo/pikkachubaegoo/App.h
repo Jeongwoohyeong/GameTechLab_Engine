@@ -8,6 +8,7 @@
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
+#include "RenderContext.h"
 
 #include <unordered_map>
 
@@ -33,6 +34,7 @@ private:
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_VIEWPORT ViewportInfo;
 	float ClearColor[4] = { 0, 1, 0, 1 };
+	URenderContext* RenderContext;
 
 	ID3D11InputLayout* SpriteInputLayout;
 	ID3D11VertexShader* SpriteVS;

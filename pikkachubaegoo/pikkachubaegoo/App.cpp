@@ -116,6 +116,8 @@ void UApp::InitDirect()
 
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
+
+	RenderContext = new URenderContext(DeviceContext);
 }
 void UApp::InitImGui()
 {
@@ -166,11 +168,7 @@ void UApp::Render()
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
 	DeviceContext->VSSetConstantBuffers(0, 1, &TestCBuffer);
 
-	UINT offset = 0;
-	DeviceContext->IASetVertexBuffers(0, 1, &TestSpriteMesh->VertexBuffer, &TestSpriteMesh->Stride, &offset);
-	DeviceContext->IASetIndexBuffer(TestSpriteMesh->IndexBuffer, DXGI_FORMAT_R32_UINT, offset);
-	DeviceContext->DrawIndexed(TestSpriteMesh->IndexCount, 0, 0);
-
+	UObjectFactory::GetInstance()->Render(RenderContext);
 
 	RenderUI();
 	SwapChain->Present(1, 0);

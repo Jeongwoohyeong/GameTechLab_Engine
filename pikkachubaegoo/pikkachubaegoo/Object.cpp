@@ -10,10 +10,10 @@ UObject::~UObject()
 	}
 }
 
-void UObject::Draw()
+void UObject::Draw(URenderContext* RenderContext)
 {
 	if (renderer)
 	{
-		renderer->DrawMesh();
+		renderer->DrawMesh(RenderContext);
 	}
 }
