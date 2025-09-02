@@ -57,9 +57,6 @@
     <ClCompile Include="ImGui\imgui_tables.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="UApp.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="D3DUtil.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -74,9 +71,18 @@
     </ClCompile>
     <ClCompile Include="inputclass.cpp">
       <Filter>소스 파일</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="Time.cpp">
       <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshData.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,9 +110,6 @@
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="UApp.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="D3DUtil.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -127,9 +130,18 @@
     </ClInclude>
     <ClInclude Include="inputclass.h">
       <Filter>헤더 파일</Filter>
-	</ClInclude>
+    </ClInclude>
     <ClInclude Include="Time.h">
       <Filter>헤더 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
