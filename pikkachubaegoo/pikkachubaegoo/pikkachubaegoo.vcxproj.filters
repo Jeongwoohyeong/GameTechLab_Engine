@@ -19,6 +19,15 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{b229dfa4-c0d1-44d9-b711-298e1e5212ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Object">
+      <UniqueIdentifier>{17b7cb00-4b8d-49ad-ba0d-2df5cb0e5049}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Object">
+      <UniqueIdentifier>{7b23f4f3-b15c-4faf-8da5-3614ed83eba1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Core">
+      <UniqueIdentifier>{b5e212fa-ad61-44a8-8d1b-f56f95e57fa4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -51,6 +60,12 @@
     <ClCompile Include="D3DUtil.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsComponent.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -82,6 +97,18 @@
     </ClInclude>
     <ClInclude Include="D3DUtil.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Rect.h">
+      <Filter>헤더 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>헤더 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsComponent.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

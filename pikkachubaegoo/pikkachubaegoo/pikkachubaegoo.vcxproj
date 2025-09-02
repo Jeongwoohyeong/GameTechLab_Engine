@@ -136,6 +136,8 @@
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="UApp.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -148,7 +150,11 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="PhysicsComponent.h" />
+    <ClInclude Include="Rect.h" />
     <ClInclude Include="UApp.h" />
+    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SpriteShader.hlsl">
