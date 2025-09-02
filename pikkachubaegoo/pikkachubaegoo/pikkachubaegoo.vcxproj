@@ -143,6 +143,8 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="Time.cpp" />
+    <ClCompile Include="UMeshRenderer.cpp" />
+    <ClCompile Include="UMeshRenderer.h" />
     <ClCompile Include="UPlayer.cpp" />
   </ItemGroup>
   <ItemGroup>

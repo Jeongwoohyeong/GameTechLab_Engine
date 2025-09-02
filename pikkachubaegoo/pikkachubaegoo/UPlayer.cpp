@@ -3,13 +3,23 @@
 
 // --- UObject overrides ---
 
-UPlayer::UPlayer()
+
+UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	size = 1.0f;
 	location = FVector3(0, GROUND_LEVEL, 0);
 	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
 	FRect boundary(FVector3(-100.0f, -100.0f, 0), FVector3(200.0f, 200.0f, 0)); // 경계 설정
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY, true);
+}
+
+UPlayer::~UPlayer()
+{
+	if (physicsComponent)
+	{
+		delete physicsComponent;
+		physicsComponent = nullptr;
+	}
 }
 
 FObjectType UPlayer::GetType()

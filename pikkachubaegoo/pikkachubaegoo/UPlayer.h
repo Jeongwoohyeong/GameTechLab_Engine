@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Object.h"
-#include "ImGui/imgui_impl_dx11.h"
 #include "PhysicsComponent.h"
 
 class UPlayer : public UObject
@@ -48,10 +47,8 @@ private:
 	bool isAction = false;
 
 public:
-	/*ID3D11Buffer* VertexBuffer;
-	UINT NumVertices;*/
-
-	UPlayer();
+	UPlayer(UMeshRenderer* InRenderer);
+	~UPlayer();
 
 	// UObject 오버라이드
 	FObjectType GetType() override;

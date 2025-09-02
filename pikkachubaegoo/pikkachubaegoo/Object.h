@@ -1,6 +1,8 @@
 #pragma once
 #include "Vector.h"
 
+class UMeshRenderer;
+
 enum FObjectType
 {
 	Player,
@@ -10,8 +12,11 @@ enum FObjectType
 
 class UObject
 {
+private:
+	UMeshRenderer* renderer = nullptr;
 public:
-	virtual ~UObject() = default;
+	UObject(UMeshRenderer* InRenderer) : renderer(InRenderer) {}
+	virtual ~UObject();
 
 	virtual FObjectType GetType() = 0;
 

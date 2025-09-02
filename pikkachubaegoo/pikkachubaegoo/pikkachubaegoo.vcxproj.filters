@@ -84,6 +84,12 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="UMeshRenderer.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="UMeshRenderer.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
