@@ -24,5 +24,5 @@ public:
 	virtual float GetRadius() = 0;
 	virtual float GetMass() = 0;
 
-	virtual void Update() = 0;
+	virtual void Update(float deltaTime) = 0;
 };
