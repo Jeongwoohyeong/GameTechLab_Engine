@@ -9,8 +9,8 @@ public:
 	UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary,
         bool inIsGravity = false, float inGravityScale = 0.f, bool inCanReflectWithWall = false);
 
-    FVector GetVelocity() const { return velocity; }
-    void SetVelocity(const FVector& inVelocity) { velocity = inVelocity; }
+    FVector3 GetVelocity() const { return velocity; }
+    void SetVelocity(const FVector3& inVelocity) { velocity = inVelocity; }
 
 	void Update(float deltaTime);
 	bool CheckCollision(const UPhysicsComponent* other);
@@ -25,7 +25,7 @@ private:
     void CheckBoundaryCollision();
 
     UObject* owner;
-    FVector velocity;
+    FVector3 velocity;
     FRect collider;
     FRect boundary;
 

@@ -26,7 +26,7 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		UObject* ball = GetOwner();
 		UObject* player = other->GetOwner();
 
-		FVector newBallVelocity = GetVelocity();
+		FVector3 newBallVelocity = GetVelocity();
 
 		// X Velocity
 		float relativeX = ball->GetLocation().x - player->GetLocation().x;
@@ -63,7 +63,7 @@ void UPhysicsComponent::ApplyGravity(float deltaTime)
 
 void UPhysicsComponent::UpdatePosition(float deltaTime)
 {
-	FVector newLocation = owner->GetLocation();
+	FVector3 newLocation = owner->GetLocation();
 	newLocation.x += velocity.x * deltaTime;
 	newLocation.y += velocity.y * deltaTime;
 
@@ -72,8 +72,8 @@ void UPhysicsComponent::UpdatePosition(float deltaTime)
 
 void UPhysicsComponent::CheckBoundaryCollision()
 {
-	FVector colliderMin = collider.min;
-	FVector colliderMax = collider.max;
+	FVector3 colliderMin = collider.min;
+	FVector3 colliderMax = collider.max;
 
 	if (colliderMin.x < boundary.min.x)
 	{
