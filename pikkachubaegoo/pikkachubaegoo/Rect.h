@@ -2,9 +2,9 @@
 #include "Vector.h"
 
 struct FRect {
-    FRect() : min(FVector(0, 0)), max(FVector(0, 0)) {}
-    FRect(const FVector& inMin, const FVector& inMax) : min(inMin), max(inMax) {}
-    FRect(const FVector& center, float width, float height) 
+    FRect() : min(FVector3(0, 0)), max(FVector3(0, 0)) {}
+    FRect(const FVector3& inMin, const FVector3& inMax) : min(inMin), max(inMax) {}
+    FRect(const FVector3& center, float width, float height) 
     {
         min.x = center.x - width / 2.0f;
         min.y = center.y - height / 2.0f;
@@ -12,13 +12,13 @@ struct FRect {
         max.y = center.y + height / 2.0f;
     }
 
-    FVector min; // Bottom-Left
-    FVector max; // Top-Right
+    FVector3 min; // Bottom-Left
+    FVector3 max; // Top-Right
 
     float GetWidth() const { return max.x - min.x; }
     float GetHeight() const { return max.y - min.y; }
 
-    void SetCenter(const FVector& newCenter)
+    void SetCenter(const FVector3& newCenter)
     {
         float halfWidth = GetWidth() / 2.0f;
         float halfHeight = GetHeight() / 2.0f;
