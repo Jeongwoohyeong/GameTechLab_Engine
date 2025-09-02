@@ -38,6 +38,7 @@ public:
         { gravityScale = inGravityScale; }
     void SetCanReflectWithWall(bool inCanReflectWithWall) 
         { bCanReflectWithWall = inCanReflectWithWall; }
+    bool IsGrounded(float groundEpsilon = 0.01f) const;
 
 private:
     bool bIsGravity;

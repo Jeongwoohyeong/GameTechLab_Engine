@@ -100,3 +100,10 @@ void UPhysicsComponent::CheckBoundaryCollision()
 
 	collider.SetCenter(owner->GetLocation());
 }
+
+bool UPhysicsComponent::IsGrounded(float groundEpsilon) const
+{
+	if (!bIsGravity) return false;
+
+	return (fabs(collider.min.y - boundary.min.y) < groundEpsilon);
+}
