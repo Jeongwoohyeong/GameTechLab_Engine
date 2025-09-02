@@ -139,6 +139,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
+    <ClCompile Include="Time.cpp" />
     <ClCompile Include="UApp.cpp" />
     <ClCompile Include="UPlayer.cpp" />
   </ItemGroup>
@@ -156,6 +157,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="Time.h" />
     <ClInclude Include="UApp.h" />
     <ClInclude Include="UPlayer.h" />
     <ClInclude Include="Vector.h" />

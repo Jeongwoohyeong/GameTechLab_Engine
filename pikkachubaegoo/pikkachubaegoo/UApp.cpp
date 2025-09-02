@@ -1,4 +1,5 @@
 #include "UApp.h"
+#include "Time.h"
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
 UApp* UApp::Ins = nullptr;
@@ -123,8 +124,15 @@ void UApp::InitImGui()
 
 }
 void UApp::Loading(){}
-void UApp::Start(){}
-void UApp::Update(){}
+void UApp::Start()
+{
+	UTime::GetInstance()->Init();
+}
+void UApp::Update()
+{
+	UTime::GetInstance()->Update();
+	// Game Logic
+}
 void UApp::RenderUI()
 {
 	ImGui_ImplDX11_NewFrame();

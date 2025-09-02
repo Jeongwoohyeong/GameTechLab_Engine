@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="소스 파일">
@@ -27,6 +27,9 @@
     </Filter>
     <Filter Include="헤더 파일\Core">
       <UniqueIdentifier>{b5e212fa-ad61-44a8-8d1b-f56f95e57fa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Core">
+      <UniqueIdentifier>{17e66c12-3d80-4be8-a138-859c393558bc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -71,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="inputclass.cpp">
       <Filter>소스 파일</Filter>
+	</ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>소스 파일\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="inputclass.h">
       <Filter>헤더 파일</Filter>
+	</ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>헤더 파일\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
