@@ -3,7 +3,11 @@
 
 UMeshRenderer::~UMeshRenderer()
 {
-	// 필요 시 Mesh 메모리 해제 로직 추가
+	if (Mesh)
+	{
+		delete Mesh;
+		Mesh = nullptr;
+	}
 }
 
 void UMeshRenderer::DrawMesh()

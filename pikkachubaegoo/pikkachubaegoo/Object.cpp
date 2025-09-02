@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "UMeshRenderer.h"
 
 UObject::~UObject()
 {
@@ -6,5 +7,13 @@ UObject::~UObject()
 	{
 		delete renderer;
 		renderer = nullptr;
+	}
+}
+
+void UObject::Draw()
+{
+	if (renderer)
+	{
+		renderer->DrawMesh();
 	}
 }
