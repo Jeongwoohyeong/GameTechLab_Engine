@@ -3,169 +3,159 @@
 
 // --- UObject overrides ---
 
+UPlayer::UPlayer()
+{
+	size = 1.0f;
+	location = FVector3(0, GROUND_LEVEL, 0);
+	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
+	FRect boundary(FVector3(-100.0f, -100.0f, 0), FVector3(200.0f, 200.0f, 0)); // 경계 설정
+	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY, true);
+}
+
 FObjectType UPlayer::GetType()
 {
-    return FObjectType::Player;
+	return FObjectType::Player;
 }
 
 FVector3 UPlayer::GetLocation()
 {
-    return location;
+	return location;
 }
 
 void UPlayer::SetLocation(const FVector3& newLocation)
 {
-    location = newLocation;
+	location = newLocation;
 }
 
 FVector3 UPlayer::GetVelocity()
 {
-    return velocity;
+	return physicsComponent->GetVelocity();
 }
 
 void UPlayer::SetVelocity(const FVector3& newVelocity)
 {
-    velocity = newVelocity;
+	physicsComponent->SetVelocity(newVelocity);
 }
 
 float UPlayer::GetRadius()
 {
-    return 0.0f;
+	return 0.0f;
 }
 
 float UPlayer::GetMass()
 {
-    return 0.0f;
+	return 0.0f;
 }
 
-// --- 입력 설정 함수 (선택적) ---
+// --- 입력 설정 함수 (임시) ---
 void UPlayer::SetInput(bool left, bool right, bool jump, bool action)
 {
-    isLeft = left;
-    isRight = right;
-    isJump = jump;
-    isAction = action;
+	isLeft = left;
+	isRight = right;
+	isJump = jump;
+	isAction = action;
 }
 
 // --- Update 로직 ---
 void UPlayer::Update(float deltaTime)
 {
-    float horizontalInput = 0.0f;
-    if (isLeft) horizontalInput = -1.0f;
-    else if (isRight) horizontalInput = 1.0f;
+	FVector3 velocity = physicsComponent->GetVelocity();
+	float horizontalInput = 0.0f;
+	if (isLeft) horizontalInput = -1.0f;
+	else if (isRight) horizontalInput = 1.0f;
 
-    bool jumpPressed = isJump;
-    bool slidePressed = isAction;
+	bool jumpPressed = isJump;
+	bool slidePressed = isAction;
 
-    switch (currentState)
-    {
-    case PlayerState::Idle:
-        if (jumpPressed)
-        {
-            velocity.y = JUMP_STRENGTH;
-            currentState = PlayerState::Jumping;
-        }
-        else if (horizontalInput != 0)
-        {
-            currentState = PlayerState::Walking;
-        }
-        break;
+	switch (currentState)
+	{
+	case PlayerState::Idle:
+		if (jumpPressed)
+		{
+			velocity.y = JUMP_STRENGTH;
+			currentState = PlayerState::Jumping;
+		}
+		else if (horizontalInput != 0)
+		{
+			currentState = PlayerState::Walking;
+		}
+		break;
 
-    case PlayerState::Walking:
-        if (jumpPressed)
-        {
-            velocity.y = JUMP_STRENGTH;
-            currentState = PlayerState::Jumping;
-        }
-        else if (horizontalInput == 0)
-        {
-            currentState = PlayerState::Idle;
-        }
-        else if (slidePressed)
-        {
-            currentState = PlayerState::Sliding;
-            slideTimer = SLIDE_DURATION;
-        }
-        break;
+	case PlayerState::Walking:
+		if (jumpPressed)
+		{
+			velocity.y = JUMP_STRENGTH;
+			currentState = PlayerState::Jumping;
+		}
+		else if (horizontalInput == 0)
+		{
+			currentState = PlayerState::Idle;
+		}
+		else if (slidePressed)
+		{
+			currentState = PlayerState::Sliding;
+			slideTimer = SLIDE_DURATION;
+		}
+		break;
 
-    case PlayerState::Jumping:
-        if (isGrounded)
-        {
-            currentState = PlayerState::Idle;
-        }
-        else if (slidePressed)
-        {
-            currentState = PlayerState::Spiking;
-            spikeTimer = SPIKE_DURATION;
-            isSpiking = true;
-        }
-        break;
+	case PlayerState::Jumping:
+		if (physicsComponent->IsGrounded())
+		{
+			currentState = PlayerState::Idle;
+		}
+		else if (slidePressed)
+		{
+			currentState = PlayerState::Spiking;
+			spikeTimer = SPIKE_DURATION;
+			isSpiking = true;
+		}
+		break;
 
-    case PlayerState::Spiking:
-        spikeTimer -= deltaTime;
-        if (spikeTimer <= 0)
-        {
-            isSpiking = false;
-            currentState = PlayerState::Jumping;
-        }
-        break;
+	case PlayerState::Spiking:
+		spikeTimer -= deltaTime;
+		if (spikeTimer <= 0)
+		{
+			isSpiking = false;
+			currentState = PlayerState::Jumping;
+		}
+		break;
 
-    case PlayerState::Sliding:
-        slideTimer -= deltaTime;
-        if (slideTimer <= 0)
-        {
-            currentState = PlayerState::Stunned;
-            stunTimer = STUN_DURATION;
-        }
-        break;
+	case PlayerState::Sliding:
+		slideTimer -= deltaTime;
+		if (slideTimer <= 0)
+		{
+			currentState = PlayerState::Stunned;
+			stunTimer = STUN_DURATION;
+		}
+		break;
 
-    case PlayerState::Stunned:
-        stunTimer -= deltaTime;
-        if (stunTimer <= 0)
-        {
-            currentState = PlayerState::Idle;
-        }
-        break;
-    }
+	case PlayerState::Stunned:
+		stunTimer -= deltaTime;
+		if (stunTimer <= 0)
+		{
+			currentState = PlayerState::Idle;
+		}
+		break;
+	}
 
-    // --- 수평 속도 설정 ---
-    switch (currentState)
-    {
-    case PlayerState::Idle:
-    case PlayerState::Stunned:
-        velocity.x = 0;
-        break;
-    case PlayerState::Walking:
-    case PlayerState::Jumping:
-    case PlayerState::Spiking:
-        velocity.x = horizontalInput * MOVE_SPEED;
-        break;
-    case PlayerState::Sliding:
-        velocity.x = (velocity.x > 0) ? SLIDE_SPEED : -SLIDE_SPEED;
-        break;
-    }
+	// --- 수평 속도 설정 ---
+	switch (currentState)
+	{
+	case PlayerState::Idle:
+	case PlayerState::Stunned:
+		velocity.x = 0;
+		break;
+	case PlayerState::Walking:
+	case PlayerState::Jumping:
+	case PlayerState::Spiking:
+		velocity.x = horizontalInput * MOVE_SPEED;
+		break;
+	case PlayerState::Sliding:
+		velocity.x = (velocity.x > 0) ? SLIDE_SPEED : -SLIDE_SPEED;
+		break;
+	}
 
-    // --- 중력 ---
-    if (!isGrounded)
-    {
-        velocity.y -= GRAVITY * deltaTime;
-    }
-
-    // --- 위치 업데이트 ---
-    location = location + (velocity * deltaTime);
-
-    // --- 지면 충돌 처리 ---
-    if (location.y <= GROUND_LEVEL)
-    {
-        location.y = GROUND_LEVEL;
-        if (velocity.y < 0)
-        {
-            velocity.y = 0;
-        }
-        isGrounded = true;
-    }
-    else
-    {
-        isGrounded = false;
-    }
+	physicsComponent->SetVelocity(velocity);
+	// 위치 업데이트
+	physicsComponent->Update(deltaTime);
 }
