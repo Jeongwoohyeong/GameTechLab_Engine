@@ -1,6 +1,7 @@
 
 #include "Time.h"
 #include "App.h"
+#include "ObjectFactory.h"
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
 UApp* UApp::Ins = nullptr;
@@ -35,7 +36,6 @@ void UApp::Init(HINSTANCE hInstance)
 }
 void UApp::MainLoop()
 {
-	UInput::GetInstance()->Update();
 	Update();
 	Render();
 }
@@ -130,24 +130,17 @@ void UApp::Loading()
 {
 	TestSpriteMesh = new UMesh(FMeshData::SpriteMeshData);
 }
+UPlayer* Player1;
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
+	Player1 = static_cast<UPlayer*>(UObjectFactory::GetInstance()->CreatePlayer(FVector3()));
 }
 void UApp::Update()
 {
 	UTime::GetInstance()->Update();
-
-	if (UInput::GetInstance()->IsKeyDown(VK_RIGHT))
-	{
-		TestMovePos.x += 0.001f;
-	}
-	if (UInput::GetInstance()->IsKeyPressed(VK_UP))
-	{
-		TestMovePos.y += 0.01f;
-	}
-
-	// Game Logic
+	UInput::GetInstance()->Update();
+	UObjectFactory::GetInstance()->Update(UTime::GetInstance()->GetDeltaTime());
 }
 void UApp::RenderUI()
 {

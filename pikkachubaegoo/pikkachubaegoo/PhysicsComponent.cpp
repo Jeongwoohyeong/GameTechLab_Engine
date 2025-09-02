@@ -72,29 +72,29 @@ void UPhysicsComponent::UpdatePosition(float deltaTime)
 
 void UPhysicsComponent::CheckBoundaryCollision()
 {
-	FVector3 colliderMin = collider.min;
-	FVector3 colliderMax = collider.max;
+	FVector3 colliderMin = collider._min;
+	FVector3 colliderMax = collider._max;
 
-	if (colliderMin.x < boundary.min.x)
+	if (colliderMin.x < boundary._min.x)
 	{
-		owner->SetLocation({ boundary.min.x + collider.GetWidth() / 2.0f, owner->GetLocation().y });
+		owner->SetLocation({ boundary._min.x + collider.GetWidth() / 2.0f, owner->GetLocation().y });
 		if (bCanReflectWithWall) velocity.x *= -1;
 	}
-	else if (colliderMax.x > boundary.max.x)
+	else if (colliderMax.x > boundary._max.x)
 	{
-		owner->SetLocation({ boundary.max.x - collider.GetWidth() / 2.0f, owner->GetLocation().y });
+		owner->SetLocation({ boundary._max.x - collider.GetWidth() / 2.0f, owner->GetLocation().y });
 		if (bCanReflectWithWall) velocity.x *= -1;
 	}
 
-	if (colliderMin.y < boundary.min.y)
+	if (colliderMin.y < boundary._min.y)
 	{
-		owner->SetLocation({ owner->GetLocation().x, boundary.min.y + collider.GetHeight() / 2.0f });
+		owner->SetLocation({ owner->GetLocation().x, boundary._min.y + collider.GetHeight() / 2.0f });
 		if (bCanReflectWithWall) velocity.y *= -1;
 		else if (bIsGravity) velocity.y = 0;
 	}
-	else if (colliderMax.y > boundary.max.y)
+	else if (colliderMax.y > boundary._max.y)
 	{
-		owner->SetLocation({ owner->GetLocation().x, boundary.max.y - collider.GetHeight() / 2.0f });
+		owner->SetLocation({ owner->GetLocation().x, boundary._max.y - collider.GetHeight() / 2.0f });
 		if (bCanReflectWithWall) velocity.y *= -1;
 	}
 
@@ -105,5 +105,5 @@ bool UPhysicsComponent::IsGrounded(float groundEpsilon) const
 {
 	if (!bIsGravity) return false;
 
-	return (fabs(collider.min.y - boundary.min.y) < groundEpsilon);
+	return (fabs(collider._min.y - boundary._min.y) < groundEpsilon);
 }

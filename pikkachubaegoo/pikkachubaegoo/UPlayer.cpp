@@ -1,10 +1,14 @@
 #include "UPlayer.h"
+#include "inputclass.h"
+#include "Windows.h"
 #include <iostream>
 
-// --- UObject overrides ---
+unsigned int UPlayer::playerCount = 0;
 
+// --- UObject overrides ---
 UPlayer::UPlayer()
 {
+	playerIndex = playerCount++;
 	size = 1.0f;
 	location = FVector3(0, GROUND_LEVEL, 0);
 	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
@@ -48,22 +52,33 @@ float UPlayer::GetMass()
 }
 
 // --- 입력 설정 함수 (임시) ---
-void UPlayer::SetInput(bool left, bool right, bool jump, bool action)
+void UPlayer::SetInput()
 {
-	isLeft = left;
-	isRight = right;
-	isJump = jump;
-	isAction = action;
+	if (playerIndex == 0)
+	{
+		isLeft = UInput::GetInstance()->IsKeyDown(VK_LEFT);
+		isRight = UInput::GetInstance()->IsKeyDown(VK_RIGHT);
+		isJump = UInput::GetInstance()->IsKeyPressed(VK_UP);
+		isAction = UInput::GetInstance()->IsKeyPressed(VK_DOWN);
+	}
+	else if (playerIndex == 1)
+	{
+		isLeft = UInput::GetInstance()->IsKeyDown('A');
+		isRight = UInput::GetInstance()->IsKeyDown('D');
+		isJump = UInput::GetInstance()->IsKeyPressed('W');
+		isAction = UInput::GetInstance()->IsKeyPressed('S');
+	}
 }
 
 // --- Update 로직 ---
 void UPlayer::Update(float deltaTime)
 {
+	SetInput();
+
 	FVector3 velocity = physicsComponent->GetVelocity();
 	float horizontalInput = 0.0f;
 	if (isLeft) horizontalInput = -1.0f;
 	else if (isRight) horizontalInput = 1.0f;
-
 	bool jumpPressed = isJump;
 	bool slidePressed = isAction;
 

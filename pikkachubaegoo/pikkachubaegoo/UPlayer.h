@@ -18,6 +18,8 @@ public:
 	};
 
 private:
+	static unsigned int playerCount;
+	unsigned int playerIndex;
 	// 상수값
 	const float GRAVITY = 0.000098f;
 	const float GROUND_LEVEL = 0;
@@ -64,6 +66,6 @@ public:
 
 	void Update(float deltaTime) override;
 
-	// 입력 제어 함수?
-	void SetInput(bool left, bool right, bool jump, bool action);
+private:
+	void SetInput();
 };
