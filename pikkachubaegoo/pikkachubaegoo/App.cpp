@@ -153,6 +153,7 @@ void UApp::RenderUI()
 }
 void UApp::Render()
 {
+
 	//매프레임 설정
 	DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
 
@@ -171,7 +172,7 @@ void UApp::Render()
 	DeviceContext->DrawIndexed(TestSpriteMesh->IndexCount, 0, 0);
 
 
-	RenderUI();
+	//RenderUI();
 	SwapChain->Present(1, 0);
 
 }
