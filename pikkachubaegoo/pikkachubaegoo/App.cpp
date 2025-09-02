@@ -35,6 +35,7 @@ void UApp::Init(HINSTANCE hInstance)
 }
 void UApp::MainLoop()
 {
+	UInput::GetInstance()->Update();
 	Update();
 	Render();
 }
@@ -116,6 +117,13 @@ void UApp::InitDirect()
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
 
+	D3D11_BUFFER_DESC constantbufferdesc = {};
+	constantbufferdesc.ByteWidth = sizeof(FVector3) + 0xf & 0xfffffff0; //16byte 단위로 끊기위한 작업 ((size + 15) / 16)
+	constantbufferdesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	Device->CreateBuffer(&constantbufferdesc, nullptr, &TestCBuffer);
 
 }
 void UApp::InitImGui()
@@ -138,6 +146,16 @@ void UApp::Start()
 void UApp::Update()
 {
 	UTime::GetInstance()->Update();
+
+	if (UInput::GetInstance()->IsKeyDown(VK_RIGHT))
+	{
+		TestMovePos.x += 0.001f;
+	}
+	if (UInput::GetInstance()->IsKeyPressed(VK_UP))
+	{
+		TestMovePos.y += 0.01f;
+	}
+
 	// Game Logic
 }
 void UApp::RenderUI()
@@ -153,6 +171,17 @@ void UApp::RenderUI()
 }
 void UApp::Render()
 {
+	D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
+	DeviceContext->Map(TestCBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+	FVector3* constants = (FVector3*)constantbufferMSR.pData;
+	{
+		constants->x = TestMovePos.x;
+		constants->y = TestMovePos.y;
+		constants->z = TestMovePos.z;
+	}
+	DeviceContext->Unmap(TestCBuffer, 0);
+
+
 
 	//매프레임 설정
 	DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
@@ -165,6 +194,7 @@ void UApp::Render()
 	DeviceContext->IASetInputLayout(SpriteInputLayout);
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
+	DeviceContext->VSSetConstantBuffers(0, 1, &TestCBuffer);
 
 	UINT offset = 0;
 	DeviceContext->IASetVertexBuffers(0, 1, &TestSpriteMesh->VertexBuffer, &TestSpriteMesh->Stride, &offset);

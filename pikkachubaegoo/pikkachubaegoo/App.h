@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "Mesh.h"
+#include "inputclass.h"
 using namespace std;
 
 class UApp
@@ -38,6 +39,8 @@ private:
 	ID3D11PixelShader* SpritePS;
 
 	UMesh* TestSpriteMesh;
+	ID3D11Buffer* TestCBuffer;
+	FVector3 TestMovePos;
 public:
 	void Init(HINSTANCE hInstance);
 	void MainLoop();

@@ -50,3 +50,4 @@ void D3DUtil::CreatePS(LPCWSTR& fileName, ID3D11PixelShader** ps)
 		return;
 	}
 }
+
