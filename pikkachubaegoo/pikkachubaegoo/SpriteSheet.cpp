@@ -1,5 +1,6 @@
 #include "SpriteSheet.h"
 #include "SpriteSheet.h"
+#include "SpriteSheet.h"
 #include <fstream>
 #include <iostream>
 #include <Windows.h>
@@ -113,6 +114,24 @@ const FSpriteFrame* USpriteSheet::GetFrame(const std::string& spriteName) const
     }
 
     return &it->second;
+}
+
+FVector4 USpriteSheet::GetSourceRect(const std::string& spriteName)
+{
+    FVector4 rect;
+
+    FSpriteFrame* frame = this->GetFrame(spriteName);
+    if (frame)
+    {
+        float x, y, w, h;
+        x = frame->position.x;
+        y = frame->position.y;
+        w = frame->size.x;
+        h = frame->size.y;
+        rect = { x, y, w, h };
+    }
+
+    return rect;
 }
 
 std::wstring USpriteSheet::ConvertStringToWstring(std::string& source)
