@@ -44,4 +44,9 @@ void UBall::SetVelocity(const FVector3& newVelocity)
 void UBall::Update(float deltaTime)
 {
 	physicsComponent->Update(deltaTime);
+	if (physicsComponent->IsGrounded())
+	{
+		// Score Process
+		OutputDebugString(L"Grounded\n");
+	}
 }
