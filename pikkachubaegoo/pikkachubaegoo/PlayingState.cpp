@@ -25,6 +25,11 @@ void PlayingState::ResetRound()
 
 void PlayingState::Enter()
 {
+	//배경 생성
+	//bgSky = UObjectFactory::GetInstance()->CreateBG(UBackground::BGSkySpriteAtlasKey, UMeshRenderer::BGSkyOrder);
+	//bgMountain = UObjectFactory::GetInstance()->CreateBG(UBackground::BGMountainSpriteAtlasKey, UMeshRenderer::BGMountainOrder);
+	//bgGround = UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder);
+
 	// 게임 플레이에 필요한 오브젝트들 생성
 	player1 = UObjectFactory::GetInstance()->CreatePlayer(PLAYER1_INDEX, FVector3(-PLAYER_BASE_POSITION_X, PLAYER_BASE_POSITION_Y), FVector3(0.1f, 0.1f)); // Player 1, 왼쪽
 	player2 = UObjectFactory::GetInstance()->CreatePlayer(PLAYER2_INDEX, FVector3(PLAYER_BASE_POSITION_X, PLAYER_BASE_POSITION_Y), FVector3(0.1f, 0.1f)); // Player 2, 오른쪽

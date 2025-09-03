@@ -5,6 +5,9 @@ const UINT UMeshRenderer::BallOrder = 110;
 const UINT UMeshRenderer::BallTrailOrder = 109;
 const UINT UMeshRenderer::NetOrder = 99;
 const UINT UMeshRenderer::PunchOrder = 98;
+const UINT UMeshRenderer::BGSkyOrder = 0;
+const UINT UMeshRenderer::BGGroundOrder = 2;
+const UINT UMeshRenderer::BGMountainOrder = 1;
 
 void UMeshRenderer::Init()
 {

@@ -21,6 +21,10 @@ public:
 	const static UINT BallTrailOrder;
 	const static UINT NetOrder;
 	const static UINT PunchOrder;
+	const static UINT BGSkyOrder;
+	const static UINT BGGroundOrder;
+	const static UINT BGMountainOrder;
+
 public:
 	// 생성자에서 UMesh를 받아 초기화하거나, 별도의 SetMesh 함수를 둘 수 있습니다.
 	UMeshRenderer(UMesh* InMesh) : Mesh(InMesh)

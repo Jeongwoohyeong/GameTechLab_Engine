@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Windows.h>
 #include <iostream>
 
@@ -49,6 +49,8 @@ private:
 	ID3D11ShaderResourceView* TestTextureSRV;
 	USpriteSheet SpriteSheet;
 
+	FVector4 BackgroundSkyAtlasInfo;
+	
 	// --- 상태 관리 변수 ---
 	IGameState* currentState = nullptr;
 	IGameState* nextState = nullptr;
