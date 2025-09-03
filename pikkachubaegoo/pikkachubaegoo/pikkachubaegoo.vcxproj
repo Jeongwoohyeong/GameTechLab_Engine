@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Ball.cpp" />
+    <ClCompile Include="BallTrail.cpp" />
     <ClCompile Include="D3DUtil.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
@@ -164,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Ball.h" />
+    <ClInclude Include="BallTrail.h" />
     <ClInclude Include="CustomVector.h" />
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="Define.h" />

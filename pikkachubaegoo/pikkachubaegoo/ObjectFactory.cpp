@@ -4,6 +4,7 @@
 #include "Ball.h"
 #include "Wall.h"
 #include "Punch.h"
+#include "BallTrail.h"
 
 UObjectFactory* UObjectFactory::instance = nullptr;
 UObjectFactory* UObjectFactory::GetInstance()
@@ -138,6 +139,15 @@ UObject* UObjectFactory::CreateWall(FVector3 location, FVector3 scale)
 UObject* UObjectFactory::CreatePunch(FVector3 location, FVector3 scale)
 {
 	UPunch* newObject = new UPunch(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder));
+	newObject->GetTransform()->SetLocation(location);
+	newObject->GetTransform()->SetScale(scale);
+	AddObject(newObject);
+	return newObject;
+}
+
+UObject* UObjectFactory::CreateBallTrail(FVector3 location, FVector3 scale)
+{
+	UBallTrail* newObject = new UBallTrail(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::BallTrailOrder));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);

@@ -18,6 +18,7 @@ private:
 public:
 	const static UINT PikkachuOrder;
 	const static UINT BallOrder;
+	const static UINT BallTrailOrder;
 	const static UINT NetOrder;
 	const static UINT PunchOrder;
 public:

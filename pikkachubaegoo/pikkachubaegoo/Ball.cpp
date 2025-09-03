@@ -3,6 +3,8 @@
 #include "PhysicsComponent.h"
 #include "Define.h"
 #include "App.h"
+#include "ObjectFactory.h"
+#include "BallTrail.h"
 const string UBall::BallSpriteAtlasKey = "ball/ball_0.png";
 
 UBall::UBall(UMeshRenderer* InRenderer) : UObject(InRenderer)
@@ -49,4 +51,18 @@ void UBall::Update(float deltaTime)
 {
 	physicsComponent->Update(deltaTime);
 	GetTransform()->AddRotationZ(GetVelocity().x * BALL_ROTATE_RATIO * deltaTime);
+
+	static float timeAccumulator = 0.0f;
+	const float executionInterval = 0.03f;
+	timeAccumulator += deltaTime;
+	if (timeAccumulator >= executionInterval)
+	{
+		if (physicsComponent->IsSpiking())
+		{
+			if(!(prevLocation.x == 0 && prevLocation.y == 0))
+				UObjectFactory::GetInstance()->CreateBallTrail(prevLocation, FVector3(size, size));
+		}
+		prevLocation = GetTransform()->GetLocation();
+		timeAccumulator -= executionInterval;
+	}
 }

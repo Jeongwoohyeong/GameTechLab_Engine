@@ -32,6 +32,7 @@ public:
 	UObject* CreateBall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateWall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreatePunch(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
+	UObject* CreateBallTrail(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 
 private:
 	void AddObject(UObject* newObject);
