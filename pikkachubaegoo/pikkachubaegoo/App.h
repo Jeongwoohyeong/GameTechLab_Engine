@@ -46,10 +46,15 @@ private:
 
 	ID3D11Texture2D* TestTexture;
 	ID3D11ShaderResourceView* TestTextureSRV;
+<<<<<<< Updated upstream
 
 	// --- 상태 관리 변수 ---
 	IGameState* currentState = nullptr;
 	IGameState* nextState = nullptr;
+=======
+	
+
+>>>>>>> Stashed changes
 public:
 	void Init(HINSTANCE hInstance);
 	void MainLoop();
