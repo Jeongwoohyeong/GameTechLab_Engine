@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "IGameState.h"
 
 class MainMenuState : public IGameState

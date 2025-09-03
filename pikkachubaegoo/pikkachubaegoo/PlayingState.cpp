@@ -1,4 +1,4 @@
-#include "PlayingState.h"
+﻿#include "PlayingState.h"
 #include "App.h"
 #include "ResultState.h"
 #include "ObjectFactory.h"

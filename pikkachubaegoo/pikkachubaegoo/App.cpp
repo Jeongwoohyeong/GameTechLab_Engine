@@ -1,4 +1,4 @@
-#include "Time.h"
+﻿#include "Time.h"
 #include "App.h"
 #include "ObjectFactory.h"
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함

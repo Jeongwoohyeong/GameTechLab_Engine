@@ -1,4 +1,4 @@
-#include "Time.h"
+﻿#include "Time.h"
 #include <windows.h>
 
 UTime* UTime::instance = nullptr;

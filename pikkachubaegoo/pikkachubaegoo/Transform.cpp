@@ -1,4 +1,4 @@
-#include <cmath>
+﻿#include <cmath>
 #include "Transform.h"
 
 Transform::Transform()

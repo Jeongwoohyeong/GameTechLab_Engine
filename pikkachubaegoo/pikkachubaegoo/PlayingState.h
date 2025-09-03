@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "IGameState.h"
 #include <vector>
 #include "Object.h" // UObject 클래스
