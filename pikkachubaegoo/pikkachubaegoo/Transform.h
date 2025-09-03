@@ -33,7 +33,7 @@ public:
 	FVector3 GetRotationDegree() const;
 	const FVector3& GetLocation() const { return location; }
 
-	const FMatrix4x4& GetTransform();
+	const FMatrix4x4& GetTransformMatrix();
 private:
 	float DegreeToRadians(float degree) const;
 	float RadiansToDegree(float radians) const;

@@ -119,7 +119,7 @@ void UApp::InitDirect()
 
 	// Create Constant Buffer
 	D3D11_BUFFER_DESC constantbufferdesc = {};
-	constantbufferdesc.ByteWidth = sizeof(FVector3) + 0xf & 0xfffffff0;
+	constantbufferdesc.ByteWidth = sizeof(FMatrix4x4);
 	constantbufferdesc.Usage = D3D11_USAGE_DYNAMIC;
 	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -147,7 +147,7 @@ void UApp::Start()
 	UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
 	UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
 	UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
-	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f)); // Wall
+	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f), FVector3(1.0f, 3.0f)); // Wall
 }
 void UApp::Update()
 {

@@ -27,9 +27,9 @@ public:
 
 // Factory
 public:
-	UObject* CreatePlayer(FVector3 location);
-	UObject* CreateBall(FVector3 location);
-	UObject* CreateWall(FVector3 location);
+	UObject* CreatePlayer(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
+	UObject* CreateBall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
+	UObject* CreateWall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 
 private:
 	void AddObject(UObject* newObject);
