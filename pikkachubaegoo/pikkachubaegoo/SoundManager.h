@@ -5,6 +5,10 @@
 #include <string>
 
 #define SOUND_KEY_BGM L"bgm"
+#define SOUND_KEY_CHU L"chu"
+#define SOUND_KEY_PIKA L"pika"
+#define SOUND_KEY_SPIKE L"spike"
+#define SOUND_KEY_BALL_LAND L"ballLand"
 
 struct SoundData
 {

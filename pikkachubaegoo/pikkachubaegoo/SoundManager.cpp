@@ -79,10 +79,11 @@ void USoundManager::Init()
     XAudio2Create(&XAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
     XAudio2->CreateMasteringVoice(&MasterVoice);
 
-    if (LoadBGM(SOUND_KEY_BGM, L".\\Resource\\Sound\\bgm.wav"))
-    {
-        LogDebug(L"Load!!");
-    }
+    LoadBGM(SOUND_KEY_BGM, L".\\Resource\\Sound\\bgm.wav");
+    LoadSFX(SOUND_KEY_CHU, L".\\Resource\\Sound\\Chu.wav");
+    LoadSFX(SOUND_KEY_PIKA, L".\\Resource\\Sound\\Pika.wav");
+    LoadSFX(SOUND_KEY_SPIKE, L".\\Resource\\Sound\\Spike.wav");
+    LoadSFX(SOUND_KEY_BALL_LAND, L".\\Resource\\Sound\\BallLand.wav");
 }
 
 void USoundManager::Release()
@@ -147,49 +148,37 @@ void USoundManager::PlaySFX(const std::wstring& key)
     if (dataIt == sfxDataMap.end()) return;
     SoundData& data = dataIt->second;
 
+    IXAudio2SourceVoice* pVoiceToPlay = nullptr;
+
+    // 무조건 새로운 보이스 생성 (동시 재생 보장)
+    HRESULT hr = XAudio2->CreateSourceVoice(&pVoiceToPlay, &data.wfx);
+    if (FAILED(hr))
+    {
+        return; // 생성 실패 시 종료
+    }
+
+    // SFX 풀 맵에 새로운 보이스 추가
     auto poolIt = sfxPoolMap.find(key);
     if (poolIt == sfxPoolMap.end()) {
         sfxPoolMap[key] = std::vector<IXAudio2SourceVoice*>();
         poolIt = sfxPoolMap.find(key);
     }
-    std::vector<IXAudio2SourceVoice*>& voicePool = poolIt->second;
+    poolIt->second.push_back(pVoiceToPlay);
 
-    IXAudio2SourceVoice* pVoiceToPlay = nullptr;
-
-    for (IXAudio2SourceVoice* pVoice : voicePool)
-    {
-        XAUDIO2_VOICE_STATE state;
-        pVoice->GetState(&state);
-        if (state.BuffersQueued == 0)
-        {
-            pVoiceToPlay = pVoice;
-            break;
-        }
-    }
-
-    if (pVoiceToPlay == nullptr)
-    {
-        HRESULT hr = XAudio2->CreateSourceVoice(&pVoiceToPlay, &data.wfx);
-        if (SUCCEEDED(hr))
-        {
-            voicePool.push_back(pVoiceToPlay);
-        }
-        else
-        {
-            return;
-        }
-    }
-
+    // 버퍼 제출 및 재생
     XAUDIO2_BUFFER buffer = { 0 };
     buffer.AudioBytes = (UINT32)data.audioBytes.size();
     buffer.pAudioData = data.audioBytes.data();
     buffer.Flags = XAUDIO2_END_OF_STREAM;
 
-    HRESULT hr = pVoiceToPlay->SubmitSourceBuffer(&buffer);
+    pVoiceToPlay->FlushSourceBuffers();
+    hr = pVoiceToPlay->SubmitSourceBuffer(&buffer);
+
     if (SUCCEEDED(hr))
     {
         pVoiceToPlay->Start();
     }
+
 }
 
 void USoundManager::StopBGM()

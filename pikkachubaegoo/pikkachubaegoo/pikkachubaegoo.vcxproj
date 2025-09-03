@@ -234,14 +234,11 @@
     <Image Include="Resource\sprite_sheet.png" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="Resource\Sound\BallLand.wav" />
     <Media Include="Resource\Sound\bgm.wav" />
-    <Media Include="Resource\Sound\WAVE140_1.wav" />
-    <Media Include="Resource\Sound\WAVE141_1.wav" />
-    <Media Include="Resource\Sound\WAVE142_1.wav" />
-    <Media Include="Resource\Sound\WAVE143_1.wav" />
-    <Media Include="Resource\Sound\WAVE144_1.wav" />
-    <Media Include="Resource\Sound\WAVE145_1.wav" />
-    <Media Include="Resource\Sound\WAVE146_1.wav" />
+    <Media Include="Resource\Sound\Chu.wav" />
+    <Media Include="Resource\Sound\Pika.wav" />
+    <Media Include="Resource\Sound\Spike.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
