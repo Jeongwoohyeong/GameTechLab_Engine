@@ -11,11 +11,11 @@ UMeshRenderer::~UMeshRenderer()
 	}
 }
 
-void UMeshRenderer::DrawMesh(URenderContext* RenderContext)
+void UMeshRenderer::DrawMesh(URenderContext* RenderContext, const FVector3& Location)
 {
 	// 실제 메시를 그리는 로직 구현
 	if (Mesh)
 	{
-		RenderContext->Draw(Mesh);
+		RenderContext->Draw(Mesh, Location);
 	}
 }

@@ -11,5 +11,5 @@ public:
 	UMeshRenderer(UMesh* InMesh) : Mesh(InMesh) {}
 	~UMeshRenderer();
 
-	void DrawMesh(class URenderContext* RenderContext);
+	void DrawMesh(class URenderContext* RenderContext, const FVector3& Location);
 };
