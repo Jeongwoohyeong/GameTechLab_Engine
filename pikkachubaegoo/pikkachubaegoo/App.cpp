@@ -2,6 +2,7 @@
 #include "App.h"
 #include "ObjectFactory.h"
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
+#include "SoundManager.h"
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
 string SpriteAtlasJsonPath = "..\\pikkachubaegoo\\Resource\\sprite_sheet.json";
@@ -158,11 +159,12 @@ void UApp::Loading()
 	wstring atlasSpritePath = SpriteSheet.GetImagePath();
 	LPCWSTR atlasSpritePathLPCWSTR = atlasSpritePath.c_str();
 	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTexture, &TestTextureSRV);
-
+	USoundManager::GetInstance()->Init();
 }
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
+	USoundManager::GetInstance()->PlayBGM(SOUND_KEY_BGM);
 }
 void UApp::Update()
 {
