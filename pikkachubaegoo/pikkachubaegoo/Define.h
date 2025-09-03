@@ -1,4 +1,16 @@
 #pragma once
+#include <windows.h>
+
+inline void LogDebug(const wchar_t* format, ...)
+{
+    wchar_t buffer[1024];
+    va_list args;
+    va_start(args, format);
+    vswprintf_s(buffer, 1024, format, args);
+    va_end(args);
+
+    OutputDebugString(buffer);
+}
 
 constexpr float GROUND_LEVEL = -0.9f;
 constexpr int MAX_SCORE = 2;
@@ -20,6 +32,6 @@ constexpr float PLAYER_BASE_POSITION_X = 0.7f;
 
 // WALL
 constexpr float WALL_BASE_POSITION_X = 0.0f;
-constexpr float WALL_BASE_POSITION_Y = -0.9f;
-constexpr float WALL_SCALE_X = 1.0f;
-constexpr float WALL_SCALE_Y = 3.0f;
+constexpr float WALL_BASE_POSITION_Y = -0.6f;
+constexpr float WALL_SCALE_X = 0.1f;
+constexpr float WALL_SCALE_Y = 0.3f;

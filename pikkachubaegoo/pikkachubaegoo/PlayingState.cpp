@@ -13,6 +13,8 @@ void PlayingState::ResetRound()
 	player1->GetTransform()->SetLocation(FVector3(-PLAYER_BASE_POSITION_X)); // Player 1 위치 초기화
 	player2->GetTransform()->SetLocation(FVector3(PLAYER_BASE_POSITION_X)); // Player 2 위치 초기화
 	ball->GetTransform()->SetLocation(FVector3(BALL_BASE_POSITION_X, BALL_BASE_POSITION_Y)); // Ball 위치 초기화
+	player1->SetVelocity(FVector3()); // Player1 속도 초기화
+	player2->SetVelocity(FVector3()); // Player2 속도 초기화
 	ball->SetVelocity(FVector3()); // Ball 속도 초기화
 
 	// 상태를 'Ready'로 설정하고 타이머 초기화
@@ -23,8 +25,8 @@ void PlayingState::ResetRound()
 void PlayingState::Enter()
 {
 	// 게임 플레이에 필요한 오브젝트들 생성
-	player1 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(-PLAYER_BASE_POSITION_X)); // Player 1
-	player2 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(PLAYER_BASE_POSITION_X)); // Player 2
+	player1 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(-PLAYER_BASE_POSITION_X), FVector3(0.1f, 0.1f)); // Player 1
+	player2 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(PLAYER_BASE_POSITION_X), FVector3(0.1f, 0.1f)); // Player 2
 	ball = UObjectFactory::GetInstance()->CreateBall(FVector3(BALL_BASE_POSITION_X, BALL_BASE_POSITION_Y)); // Ball
 	UObjectFactory::GetInstance()->CreateWall(FVector3(WALL_BASE_POSITION_X, WALL_BASE_POSITION_Y), FVector3(WALL_SCALE_X, WALL_SCALE_Y)); // Wall
 
