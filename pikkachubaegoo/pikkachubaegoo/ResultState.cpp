@@ -1,4 +1,4 @@
-#include "ResultState.h"
+﻿#include "ResultState.h"
 #include "App.h"
 #include "PlayingState.h"   // '재시작'을 위해 포함
 #include "MainMenuState.h"  // '메인 메뉴로'를 위해 포함
@@ -80,6 +80,13 @@ void ResultState::Render()
 	{
 		UApp::Ins->ChangeState(new MainMenuState());
 	}
+
+	// 5. 크레딧 (추가된 부분)
+	const char* creditsText = u8"개발자 - 국동희, 김진철, 김호민, 정우형";
+	textSize = ImGui::CalcTextSize(creditsText);
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - textSize.x) * 0.5f);
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.9f); // 화면 하단에 배치
+	ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), creditsText); // 밝은 회색으로 표시
 
 	ImGui::End();
 }

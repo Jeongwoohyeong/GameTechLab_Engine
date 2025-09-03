@@ -144,10 +144,13 @@ void UApp::InitImGui()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+
 	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromFileTTF("Resource/NanumGothic-Bold.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
+
+	// ImGui 백엔드 초기화
 	ImGui_ImplWin32_Init((void*)HWnd);
 	ImGui_ImplDX11_Init(Device, DeviceContext);
-
 }
 void UApp::Loading()
 {
