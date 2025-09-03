@@ -1,7 +1,7 @@
-
 #include "Time.h"
 #include "App.h"
 #include "ObjectFactory.h"
+#include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
 UApp* UApp::Ins = nullptr;
@@ -33,6 +33,9 @@ void UApp::Init(HINSTANCE hInstance)
 
 	Loading();
 	Start();
+
+	// 게임 시작 시 초기 상태를 MainMenuState로 설정
+	ChangeState(new MainMenuState());
 }
 void UApp::MainLoop()
 {
@@ -40,6 +43,14 @@ void UApp::MainLoop()
 	Render();
 }
 
+void UApp::ChangeState(IGameState* newState)
+{
+	// 다음 프레임에 상태가 변경되도록 예약합니다.
+	if (newState)
+	{
+		nextState = newState;
+	}
+}
 
 void UApp::InitWindow(HINSTANCE hInstance)
 {
@@ -77,7 +88,7 @@ void UApp::InitDirect()
 	HRESULT hResult = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG,
 		featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &swapchainDesc, &SwapChain, &Device, nullptr, &DeviceContext);
 
-	if(FAILED(hResult))
+	if (FAILED(hResult))
 	{
 		cout << "CreateDeviceSwapChain Failed" << endl;
 		return;
@@ -144,27 +155,35 @@ void UApp::Loading()
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
-	UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
-	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f), FVector3(1.0f, 3.0f)); // Wall
 }
 void UApp::Update()
 {
 	UTime::GetInstance()->Update();
 	UInput::GetInstance()->Update();
-	UObjectFactory::GetInstance()->Update(UTime::GetInstance()->GetDeltaTime());
+
+	float deltaTime = UTime::GetInstance()->GetDeltaTime();
+
+	// 상태 전환 로직
+	if (nextState != nullptr)
+	{
+		if (currentState != nullptr)
+		{
+			currentState->Exit();
+			delete currentState;
+		}
+		currentState = nextState;
+		currentState->Enter();
+		nextState = nullptr;
+	}
+
+	// 현재 상태의 업데이트 로직 실행
+	if (currentState)
+	{
+		currentState->Update(deltaTime);
+	}
 }
 void UApp::RenderUI()
 {
-	ImGui_ImplDX11_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-	ImGui::Begin("UI");
-
-	ImGui::End();
-	ImGui::Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 void UApp::Render()
 {
@@ -180,14 +199,32 @@ void UApp::Render()
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
 	UApp::Ins->GetContext()->VSSetConstantBuffers(0, 1, &TransformCBuffer);
 
-	UObjectFactory::GetInstance()->Render();
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 
-	RenderUI();
+	// 현재 상태의 렌더링 로직 실행
+	if (currentState)
+	{
+		currentState->Render();
+	}
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 	SwapChain->Present(1, 0);
 }
 
 void UApp::Release()
 {
+	// 현재 상태 정리
+	if (currentState != nullptr)
+	{
+		currentState->Exit();
+		delete currentState;
+		currentState = nullptr;
+	}
+
 	//Release 추가 필요
 	QuadMesh->Release();
 

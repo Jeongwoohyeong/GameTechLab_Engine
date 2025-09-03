@@ -139,12 +139,14 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="inputclass.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshData.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
+    <ClCompile Include="PlayingState.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UMeshRenderer.cpp" />
@@ -158,6 +160,7 @@
     <ClInclude Include="CustomVector.h" />
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="Define.h" />
+    <ClInclude Include="IGameState.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
     <ClInclude Include="ImGui\imgui_impl_dx11.h" />
@@ -167,12 +170,14 @@
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="inputclass.h" />
+    <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshData.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="PhysicsComponent.h" />
+    <ClInclude Include="PlayingState.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Time.h" />

@@ -31,6 +31,12 @@
     <Filter Include="소스 파일\Core">
       <UniqueIdentifier>{17e66c12-3d80-4be8-a138-859c393558bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\State">
+      <UniqueIdentifier>{463607cb-855b-4921-8ed1-a4ad5ba04af6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\State">
+      <UniqueIdentifier>{1f399a8c-3d0f-4a3b-aa48-55aa77d718f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -113,6 +119,12 @@
     </ClCompile>
     <ClCompile Include="Ball.cpp">
       <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="MainMenuState.cpp">
+      <Filter>소스 파일\State</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayingState.cpp">
+      <Filter>소스 파일\State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -199,6 +211,18 @@
     </ClInclude>
     <ClInclude Include="Define.h">
       <Filter>헤더 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomVector.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="IGameState.h">
+      <Filter>헤더 파일\State</Filter>
+    </ClInclude>
+    <ClInclude Include="MainMenuState.h">
+      <Filter>헤더 파일\State</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayingState.h">
+      <Filter>헤더 파일\State</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

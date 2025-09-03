@@ -13,14 +13,15 @@
 
 #include "Mesh.h"
 #include "inputclass.h"
+#include "IGameState.h"
 using namespace std;
 
 class UApp
 {
 public:
 	static UApp* Ins;
-private:
 	HWND HWnd;
+private:
 
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
@@ -41,9 +42,16 @@ private:
 	UMesh* QuadMesh;
 	UMesh* CircleMesh;
 	ID3D11Buffer* TransformCBuffer;
+
+	// --- 상태 관리 변수 ---
+	IGameState* currentState = nullptr;
+	IGameState* nextState = nullptr;
 public:
 	void Init(HINSTANCE hInstance);
 	void MainLoop();
+
+	// 상태 변경을 요청하는 공용 함수
+	void ChangeState(IGameState* newState);
 
 	ID3D11Device* GetDevice() const
 	{
@@ -77,5 +85,5 @@ private:
 	void Render();
 
 	void Release();
-	
+
 };
