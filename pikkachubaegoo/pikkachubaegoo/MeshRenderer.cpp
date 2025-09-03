@@ -3,6 +3,14 @@
 const UINT UMeshRenderer::PikkachuOrder = 100;
 const UINT UMeshRenderer::BallOrder = 110;
 const UINT UMeshRenderer::NetOrder = 99;
+
+void UMeshRenderer::Init()
+{
+	D3DUtil::CreateConstantBuffer(&AtlasInfoCBuffer, sizeof(FVector4));
+	ChangeAtlasInfo(FVector4(200, 266, 64, 64));
+}
+
+
 UMeshRenderer::~UMeshRenderer()
 {
 	if (Mesh)
@@ -11,6 +19,11 @@ UMeshRenderer::~UMeshRenderer()
 		Mesh = nullptr;
 	}
 }
+void UMeshRenderer::ChangeAtlasInfo(const FVector4& atlasInfo)
+{
+	AtlasInfo = atlasInfo;
+	D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), AtlasInfoCBuffer, AtlasInfo);
+}
 
 void UMeshRenderer::DrawMesh(const FMatrix4x4& Transform)
 {
@@ -18,6 +31,7 @@ void UMeshRenderer::DrawMesh(const FMatrix4x4& Transform)
 	if (Mesh)
 	{
 		D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), UApp::Ins->GetTransformCBuffer(), Transform);
+		UApp::Ins->GetContext()->VSSetConstantBuffers(1, 1, &AtlasInfoCBuffer);
 		Mesh->Draw();
 	}
 }

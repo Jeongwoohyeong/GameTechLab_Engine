@@ -4,7 +4,7 @@
 void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader** vs, ID3D11InputLayout** inputLayout)
 {
 	ID3DBlob* vsCSO;
-	HRESULT hResult = D3DCompileFromFile(fileName, nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &vsCSO, nullptr);
+	HRESULT hResult = D3DCompileFromFile(fileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "mainVS", "vs_5_0", 0, 0, &vsCSO, nullptr);
 	if (FAILED(hResult))
 	{
 		wcout << "VS Compile Failed. FileName : " << fileName << endl;
@@ -36,7 +36,7 @@ void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader** vs,
 void D3DUtil::CreatePS(LPCWSTR& fileName, ID3D11PixelShader** ps)
 {
 	ID3DBlob* vsCSO;
-	HRESULT hResult = D3DCompileFromFile(fileName, nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &vsCSO, nullptr);
+	HRESULT hResult = D3DCompileFromFile(fileName, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "mainPS", "ps_5_0", 0, 0, &vsCSO, nullptr);
 	if (FAILED(hResult))
 	{
 		wcout << "PS Compile Failed. FileName : " << fileName << endl;

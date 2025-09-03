@@ -1,4 +1,10 @@
 #pragma once
+
+#define ATLASSPRITE_WIDTH 476
+#define ATLASSPRITE_HEIGHT 885
+
+//c++에서만 컴파일
+#ifdef __cplusplus
 #include <windows.h>
 
 inline void LogDebug(const wchar_t* format, ...)
@@ -11,7 +17,6 @@ inline void LogDebug(const wchar_t* format, ...)
 
     OutputDebugString(buffer);
 }
-
 constexpr float GROUND_LEVEL = -0.9f;
 constexpr int MAX_SCORE = 2;
 
@@ -37,3 +42,5 @@ constexpr float WALL_BASE_POSITION_X = 0.0f;
 constexpr float WALL_BASE_POSITION_Y = -0.6f;
 constexpr float WALL_SCALE_X = 0.1f;
 constexpr float WALL_SCALE_Y = 0.3f;
+
+#endif
