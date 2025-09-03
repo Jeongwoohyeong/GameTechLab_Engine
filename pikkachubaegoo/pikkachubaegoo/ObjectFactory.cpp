@@ -21,29 +21,22 @@ UObjectFactory::~UObjectFactory()
 
 void UObjectFactory::ReleaseAll()
 {
-	for (UINT i = 0; i < ObjectListSize; ++i)
+	int objListCount = ObjectList.Size();
+	for (UINT i = 0; i < objListCount; ++i)
 	{
-		if (ObjectList[i])
-		{
-			delete ObjectList[i];
-			ObjectList[i] = nullptr;
-		}
+		delete ObjectList[i];
 	}
-	if (ObjectList)
-	{
-		delete[] ObjectList;
-		ObjectList = nullptr;
-	}
-	ObjectListSize = 0;
+	ObjectList.Clear();
 }
 
 void UObjectFactory::Update(float deltaTime)
 {
-	for (UINT i = 0; i < ObjectListSize; ++i)
+	UINT objListCount = ObjectList.Size();
+	for (UINT i = 0; i < objListCount; ++i)
 	{
 		ObjectList[i]->Update(deltaTime);
 
-		for (UINT j = i + 1; j < ObjectListSize; ++j)
+		for (UINT j = i + 1; j < objListCount; ++j)
 		{
 			UObject* objA = ObjectList[i];
 			UObject* objB = ObjectList[j];
@@ -66,7 +59,9 @@ void UObjectFactory::Update(float deltaTime)
 void UObjectFactory::Render()
 {
 	//������ ���� �׸��� ���� �ʿ�
-	for (UINT i = 0; i < ObjectListSize; ++i)
+	UINT objListCount = ObjectList.Size();
+
+	for (UINT i = 0; i < objListCount; ++i)
 	{
 		if (ObjectList[i])
 		{
@@ -102,18 +97,5 @@ UObject* UObjectFactory::CreateWall(FVector3 location)
 void UObjectFactory::AddObject(UObject* newObject)
 {
 	if (!newObject) return;
-	UObject** newPrimitiveList = new UObject * [ObjectListSize + 1];
-
-	for (UINT i = 0; i < ObjectListSize; ++i)
-	{
-		newPrimitiveList[i] = ObjectList[i];
-
-	}
-	newPrimitiveList[ObjectListSize] = newObject;
-	if (ObjectList)
-	{
-		delete[] ObjectList;
-	}
-	ObjectList = newPrimitiveList;
-	ObjectListSize++;
+	ObjectList.PushBack(newObject);
 }
