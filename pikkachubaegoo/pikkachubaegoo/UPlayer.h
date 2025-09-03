@@ -20,14 +20,14 @@ private:
 	static unsigned int playerCount;
 	unsigned int playerIndex;
 	// 상수값
-	const float GRAVITY = 0.000098f;
-	const float GROUND_LEVEL = 0;
+	const float GRAVITY = 0.98f;
+	const float GROUND_LEVEL = -1;
 	const float WALK_SPEED = 1;
-	const float MOVE_SPEED = 0.001f;
-	const float SLIDE_SPEED = 5.0f;
-	const float SLIDE_DURATION = 1.0f;
-	const float STUN_DURATION = 0.5f;
-	const float JUMP_STRENGTH = 0.01f;
+	const float MOVE_SPEED = 0.1f;
+	const float SLIDE_SPEED = 1.0f;
+	const float SLIDE_DURATION = 0.5f;
+	const float STUN_DURATION = 0.2f;
+	const float JUMP_STRENGTH = 1.0f;
 	const float SPIKE_DURATION = 0.5f;
 
 	// 상태 변수
