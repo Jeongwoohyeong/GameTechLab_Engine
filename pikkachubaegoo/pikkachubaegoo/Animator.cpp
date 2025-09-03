@@ -65,7 +65,7 @@ void UAnimator::SetState(PlayerState newState)
 	switch (newState)
 	{
 		case PlayerState::Idle:
-			animName = "pikachu/pikachu_0";
+			animName = "pikachu/pikachu_4";
 			break;
 		case PlayerState::Walking:
 			animName = "pikachu/pikachu_0";

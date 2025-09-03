@@ -1,9 +1,16 @@
-#include "Animation.h"
+﻿#include "Animation.h"
 #include <vector>
 
 UAnimation::UAnimation()
     : clipName({
     {
+        {
+            "pikachu/pikachu_4",
+            {
+                "pikachu/pikachu_0_0.png"
+            }
+        },
+        {
             "pikachu/pikachu_0",
             {
                 "pikachu/pikachu_0_0.png",
@@ -53,12 +60,9 @@ UAnimation::UAnimation()
         {
             "pikachu/pikachu_6",
             {
-                "pikachu/pikachu_6_0.png",
-                "pikachu/pikachu_6_1.png",
-                "pikachu/pikachu_6_2.png",
-                "pikachu/pikachu_6_3.png",
-                "pikachu/pikachu_6_4.png"
+                "pikachu/pikachu_3_1.png"
             }
+        }
         }
         })
 { }
