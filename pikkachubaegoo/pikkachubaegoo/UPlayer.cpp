@@ -9,7 +9,7 @@ unsigned int UPlayer::playerCount = 0;
 UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	playerIndex = playerCount++;
-	size = 1.0f;
+	size = 0.1f;
 	location = FVector3(0, GROUND_LEVEL, 0);
 	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
 	FRect boundary(FVector3(-100.0f, GROUND_LEVEL, 0), FVector3(200.0f, 200.0f, 0)); // 경계 설정
@@ -40,6 +40,11 @@ void UPlayer::SetLocation(const FVector3& newLocation)
 	location = newLocation;
 }
 
+UPhysicsComponent* UPlayer::GetPhysicsComponent() const
+{
+	return physicsComponent;
+}
+
 FVector3 UPlayer::GetVelocity()
 {
 	return physicsComponent->GetVelocity();
@@ -48,16 +53,6 @@ FVector3 UPlayer::GetVelocity()
 void UPlayer::SetVelocity(const FVector3& newVelocity)
 {
 	physicsComponent->SetVelocity(newVelocity);
-}
-
-float UPlayer::GetRadius()
-{
-	return 0.0f;
-}
-
-float UPlayer::GetMass()
-{
-	return 0.0f;
 }
 
 // --- 입력 설정 함수 (임시) ---

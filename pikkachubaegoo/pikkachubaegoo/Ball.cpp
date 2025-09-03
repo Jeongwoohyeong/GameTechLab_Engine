@@ -1,0 +1,57 @@
+#include "Ball.h"
+#include "Rect.h"
+#include "PhysicsComponent.h"
+
+UBall::UBall(UMeshRenderer* InRenderer) : UObject(InRenderer)
+{
+	size = 0.1f;
+	location = FVector3(0, GROUND_LEVEL, 0);
+	FRect collider(FVector3(-size, -size, 1), FVector3(size, size, 1));
+	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0));
+	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY, true);
+}
+
+UBall::~UBall()
+{
+	if (physicsComponent)
+	{
+		delete physicsComponent;
+		physicsComponent = nullptr;
+	}
+}
+
+FObjectType UBall::GetType()
+{
+	return FObjectType::Ball;
+}
+
+FVector3 UBall::GetLocation()
+{
+	return location;
+}
+
+void UBall::SetLocation(const FVector3& newLocation)
+{
+	location = newLocation;
+}
+
+UPhysicsComponent* UBall::GetPhysicsComponent() const
+{
+	return physicsComponent;
+}
+
+FVector3 UBall::GetVelocity()
+{
+	if(physicsComponent) return physicsComponent->GetVelocity();
+	return FVector3();
+}
+
+void UBall::SetVelocity(const FVector3& newVelocity)
+{
+	return physicsComponent->SetVelocity(newVelocity);
+}
+
+void UBall::Update(float deltaTime)
+{
+	physicsComponent->Update(deltaTime);
+}

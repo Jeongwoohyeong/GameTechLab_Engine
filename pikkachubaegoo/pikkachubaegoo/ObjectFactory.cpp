@@ -1,6 +1,7 @@
 #include "ObjectFactory.h"
 #include "UMeshRenderer.h"
 #include "App.h"
+#include "Ball.h"
 
 UObjectFactory* UObjectFactory::instance = nullptr;
 UObjectFactory* UObjectFactory::GetInstance()
@@ -40,12 +41,30 @@ void UObjectFactory::Update(float deltaTime)
 	for (UINT i = 0; i < ObjectListSize; ++i)
 	{
 		ObjectList[i]->Update(deltaTime);
+
+		for (UINT j = i + 1; j < ObjectListSize; ++j)
+		{
+			UObject* objA = ObjectList[i];
+			UObject* objB = ObjectList[j];
+
+			UPhysicsComponent* physicsA = objA->GetPhysicsComponent();
+			UPhysicsComponent* physicsB = objB->GetPhysicsComponent();
+
+			if (physicsA && physicsB)
+			{
+				if (physicsA->CheckCollision(physicsB))
+				{
+					physicsA->OnCollision(physicsB);
+					physicsB->OnCollision(physicsA);
+				}
+			}
+		}
 	}
 }
 
 void UObjectFactory::Render()
 {
-	//순서에 따른 그리기 정렬 필요
+	//������ ���� �׸��� ���� �ʿ�
 	for (UINT i = 0; i < ObjectListSize; ++i)
 	{
 		if (ObjectList[i])
@@ -58,6 +77,14 @@ void UObjectFactory::Render()
 UObject* UObjectFactory::CreatePlayer(FVector3 location)
 {
 	UPlayer* newObject = new UPlayer(new UMeshRenderer(UApp::Ins->GetQuadMesh()));
+	newObject->SetLocation(location);
+	AddObject(newObject);
+	return newObject;
+}
+
+UObject* UObjectFactory::CreateBall(FVector3 location)
+{
+	UBall* newObject = new UBall(new UMeshRenderer(new UMesh(FMeshData::CircleMeshData)));
 	newObject->SetLocation(location);
 	AddObject(newObject);
 	return newObject;

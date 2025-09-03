@@ -145,6 +145,7 @@ void UApp::Start()
 	UTime::GetInstance()->Init();
 	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 1
 	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 2
+	UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
 }
 void UApp::Update()
 {
@@ -180,7 +181,6 @@ void UApp::Render()
 
 	RenderUI();
 	SwapChain->Present(1, 0);
-
 }
 
 void UApp::Release()
