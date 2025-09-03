@@ -1,6 +1,7 @@
 #include "Ball.h"
 #include "Rect.h"
 #include "PhysicsComponent.h"
+#include "Define.h"
 
 UBall::UBall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
@@ -44,9 +45,5 @@ void UBall::SetVelocity(const FVector3& newVelocity)
 void UBall::Update(float deltaTime)
 {
 	physicsComponent->Update(deltaTime);
-	if (physicsComponent->IsGrounded())
-	{
-		// Score Process
-		OutputDebugString(L"Grounded\n");
-	}
+	GetTransform()->AddRotationZ(GetVelocity().x * BALL_ROTATE_RATIO * deltaTime);
 }
