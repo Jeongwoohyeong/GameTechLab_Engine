@@ -28,7 +28,7 @@ public:
 
 	// Factory
 public:
-	//UObject* CreateBG(const string& atlasinfoKey, const UINT order);
+	UObject* CreateBG(const string& atlasinfoKey, const UINT order);
 	UObject* CreatePlayer(int newPlyaerIndex, FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateBall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateWall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
