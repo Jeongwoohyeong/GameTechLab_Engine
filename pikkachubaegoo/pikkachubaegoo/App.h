@@ -80,6 +80,13 @@ public:
 	{
 		return CircleMesh;
 	}
+	const FVector4 GetAtlasInfo(const string& atlasInfoKey) const
+	{
+		const FSpriteFrame* frame = SpriteSheet.GetFrame(atlasInfoKey);
+		FVector2 pos = frame->position;
+		FVector2 size = frame->size;
+		return FVector4(pos.x, pos.y, size.x, size.y);
+	}
 private:
 	void InitWindow(HINSTANCE hInstance);
 	void InitDirect();

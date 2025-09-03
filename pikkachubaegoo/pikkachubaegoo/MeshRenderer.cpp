@@ -7,7 +7,6 @@ const UINT UMeshRenderer::NetOrder = 99;
 void UMeshRenderer::Init()
 {
 	D3DUtil::CreateConstantBuffer(&AtlasInfoCBuffer, sizeof(FVector4));
-	ChangeAtlasInfo(FVector4(200, 266, 64, 64));
 }
 
 

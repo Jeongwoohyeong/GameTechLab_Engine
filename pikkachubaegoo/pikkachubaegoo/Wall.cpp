@@ -1,10 +1,13 @@
 #include "Wall.h"
 #include "PhysicsComponent.h"
 #include "Define.h"
+#include "App.h"
 const string UWall::WallSpriteAtlasKey = "objects/net_pillar.png";
 
 UWall::UWall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
+	InRenderer->ChangeAtlasInfo(UApp::Ins->GetAtlasInfo(WallSpriteAtlasKey));
+
 	FRect collider(colliderExtent * -1, colliderExtent);
 	FRect boundary(FVector2(-1.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f));
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, false);

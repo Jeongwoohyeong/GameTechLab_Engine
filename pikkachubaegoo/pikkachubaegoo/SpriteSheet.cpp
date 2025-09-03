@@ -116,7 +116,7 @@ const FSpriteFrame* USpriteSheet::GetFrame(const std::string& spriteName) const
     return &it->second;
 }
 
-FVector4 USpriteSheet::GetSourceRect(const std::string& spriteName)
+const FVector4 USpriteSheet::GetSourceRect(const std::string& spriteName) const
 {
     FVector4 rect;
 

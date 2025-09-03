@@ -9,6 +9,9 @@ unsigned int UPlayer::playerCount = 0;
 
 UPlayer::UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
+
+	InRenderer->ChangeAtlasInfo(FVector4(200, 266, 64, 64));
+
 	playerIndex = newPlyaerIndex;
 
 	float size = 0.1f;

@@ -11,7 +11,7 @@ public:
 	const FSpriteFrame* GetFrame(const std::string& spriteName) const;
 	const FSpriteMeta* GetMetaData() const { return &metaData; }
 	const std::wstring GetImagePath() const { return spriteImagePath; }
-	FVector4 GetSourceRect(const std::string& spriteName);
+	const FVector4 GetSourceRect(const std::string& spriteName) const;
 
 private:
 	std::wstring ConvertStringToWstring(std::string&);

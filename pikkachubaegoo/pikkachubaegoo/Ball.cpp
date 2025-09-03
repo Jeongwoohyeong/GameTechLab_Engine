@@ -2,10 +2,12 @@
 #include "Rect.h"
 #include "PhysicsComponent.h"
 #include "Define.h"
+#include "App.h"
 const string UBall::BallSpriteAtlasKey = "ball/ball_0.png";
 
 UBall::UBall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
+	InRenderer->ChangeAtlasInfo(UApp::Ins->GetAtlasInfo(BallSpriteAtlasKey));
 	size = 0.1f;
 	location = FVector3(0, GROUND_LEVEL, 0);
 	FRect collider(FVector3(-size, -size, 1), FVector3(size, size, 1));

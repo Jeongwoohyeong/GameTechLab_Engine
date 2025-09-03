@@ -157,7 +157,6 @@ void UApp::Loading()
 	SpriteSheet.Load(SpriteAtlasJsonPath);
 	wstring atlasSpritePath = SpriteSheet.GetImagePath();
 	LPCWSTR atlasSpritePathLPCWSTR = atlasSpritePath.c_str();
-	MessageBox(HWnd, atlasSpritePathLPCWSTR, L"asdsa", MB_OK);
 	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTexture, &TestTextureSRV);
 
 }
