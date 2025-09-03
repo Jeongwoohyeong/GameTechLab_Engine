@@ -1,6 +1,8 @@
 #include "UMeshRenderer.h"
 #include "App.h"
-
+const UINT UMeshRenderer::PikkachuOrder = 100;
+const UINT UMeshRenderer::BallOrder = 110;
+const UINT UMeshRenderer::NetOrder = 99;
 UMeshRenderer::~UMeshRenderer()
 {
 	if (Mesh)
