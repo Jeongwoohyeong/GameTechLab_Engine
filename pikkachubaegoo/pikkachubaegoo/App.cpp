@@ -4,8 +4,8 @@
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 #include "SoundManager.h"
 
-LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
-string SpriteAtlasJsonPath = "..\\pikkachubaegoo\\Resource\\sprite_sheet.json";
+LPCWSTR SpriteShaderFileName = L".\\SpriteShader.hlsl";
+string SpriteAtlasJsonPath = ".\\Resource\\sprite_sheet.json";
 
 UApp* UApp::Ins = nullptr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -130,6 +130,15 @@ void UApp::InitDirect()
 
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
+
+	if (SpriteVS == nullptr)
+	{
+		ClearColor[2] = 1;
+	}
+	else
+	{
+		ClearColor[2] = 0;
+	}
 
 	// Create Constant Buffer
 	D3D11_BUFFER_DESC constantbufferdesc = {};
