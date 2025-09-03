@@ -46,5 +46,7 @@ private:
     bool bIsGravity;
     float gravityScale;
     bool bCanReflectWithWall;
+    bool bIsPassingThroughPlayer = false;
+    UPhysicsComponent* OverlappingPlayer = nullptr;
 };
 

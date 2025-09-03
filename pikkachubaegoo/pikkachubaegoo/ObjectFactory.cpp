@@ -35,7 +35,9 @@ void UObjectFactory::Update(float deltaTime)
 	for (UINT i = 0; i < objListCount; ++i)
 	{
 		ObjectList[i]->Update(deltaTime);
-
+	}
+	for (UINT i = 0; i < objListCount; ++i)
+	{
 		for (UINT j = i + 1; j < objListCount; ++j)
 		{
 			UObject* objA = ObjectList[i];

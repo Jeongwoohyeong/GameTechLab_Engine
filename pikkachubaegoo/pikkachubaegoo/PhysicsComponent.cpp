@@ -12,6 +12,18 @@ UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, 
 
 void UPhysicsComponent::Update(float deltaTime)
 {
+	if (bIsPassingThroughPlayer && OverlappingPlayer)
+	{
+		const FRect& otherCollider = OverlappingPlayer->GetColliderBounds();
+		FVector2 overlap = CalculateOverlap(collider, otherCollider, GetOwner()->GetTransform()->GetLocation(), OverlappingPlayer->GetOwner()->GetTransform()->GetLocation());
+
+		if (overlap.x == 0 && overlap.y == 0)
+		{
+			bIsPassingThroughPlayer = false;
+			OverlappingPlayer = nullptr;
+		}
+	}
+
 	if (bIsGravity) ApplyGravity(deltaTime);
 	UpdatePosition(deltaTime);
 	CheckBoundaryCollision();
@@ -24,7 +36,7 @@ bool UPhysicsComponent::CheckCollision(const UPhysicsComponent* other)
 
 void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 {
-	if (owner->GetType() != FObjectType::Ball)
+	if (owner->GetType() != FObjectType::Ball || bIsPassingThroughPlayer)
 	{
 		return;
 	}
@@ -37,9 +49,24 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 	FVector3 newBallLocation = ball->GetTransform()->GetLocation();
 	FVector3 newBallVelocity = GetVelocity();
 
+	if (fabs(overlap.x) < fabs(overlap.y))
+	{
+		newBallLocation.x -= overlap.x;
+	}
+	else
+	{
+		newBallLocation.y -= overlap.y;
+	}
+
 	if (otherObject->GetType() == FObjectType::Player)
 	{
-		newBallLocation.y += fabs(overlap.y);
+		if (GetVelocity().y > 0 && overlap.y > 0)
+		{
+			bIsPassingThroughPlayer = true;
+			OverlappingPlayer = other;
+			return;
+		}
+
 		UPlayer* player = static_cast<UPlayer*>(otherObject);
 		if (player->IsSpiking())
 		{
@@ -50,10 +77,9 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		{
 			float relativeX = ball->GetTransform()->GetLocation().x - otherObject->GetTransform()->GetLocation().x;
 			newBallVelocity.x = relativeX * 8.0f;
-
 			if (newBallVelocity.x == 0)
 			{
-				int randomDirection = (rand() % 3) - 1;
+				int randomDirection = (rand() % 2) * 2 - 1;
 				newBallVelocity.x = randomDirection * BALL_MIN_VELOCITY_X;
 			}
 
@@ -77,17 +103,15 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		if (fabs(overlap.x) < fabs(overlap.y))
 		{
 			newBallVelocity.x *= -1.0f;
-			newBallLocation.x -= overlap.x;
 		}
 		else
 		{
 			newBallVelocity.y *= -1.0f;
-			newBallLocation.y -= overlap.y;
 		}
 
 		if (newBallVelocity.x == 0)
 		{
-			int randomDirection = (rand() % 3) - 1;
+			int randomDirection = (rand() % 2) * 2 - 1;
 			newBallVelocity.x = randomDirection * BALL_MIN_VELOCITY_X;
 		}
 
