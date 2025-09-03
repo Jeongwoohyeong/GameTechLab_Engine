@@ -8,7 +8,6 @@
 #include "ImGui/imgui_internal.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
-#include "RenderContext.h"
 
 #include <unordered_map>
 
@@ -34,15 +33,13 @@ private:
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_VIEWPORT ViewportInfo;
 	float ClearColor[4] = { 0, 1, 0, 1 };
-	URenderContext* RenderContext;
 
 	ID3D11InputLayout* SpriteInputLayout;
 	ID3D11VertexShader* SpriteVS;
 	ID3D11PixelShader* SpritePS;
 
-	UMesh* TestSpriteMesh;
-	ID3D11Buffer* CBuffer;
-	FVector3 TestMovePos;
+	UMesh* QuadMesh;
+	ID3D11Buffer* TransformCBuffer;
 public:
 	void Init(HINSTANCE hInstance);
 	void MainLoop();
@@ -54,6 +51,14 @@ public:
 	ID3D11DeviceContext* GetContext() const
 	{
 		return DeviceContext;
+	}
+	ID3D11Buffer* GetTransformCBuffer() const
+	{
+		return TransformCBuffer;
+	}
+	UMesh* GetQuadMesh() const
+	{
+		return QuadMesh;
 	}
 private:
 	void InitWindow(HINSTANCE hInstance);

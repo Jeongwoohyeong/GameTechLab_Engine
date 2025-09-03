@@ -124,9 +124,8 @@ void UApp::InitDirect()
 	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	Device->CreateBuffer(&constantbufferdesc, nullptr, &CBuffer);
+	Device->CreateBuffer(&constantbufferdesc, nullptr, &TransformCBuffer);
 
-	RenderContext = new URenderContext(DeviceContext, CBuffer);
 }
 void UApp::InitImGui()
 {
@@ -139,7 +138,7 @@ void UApp::InitImGui()
 }
 void UApp::Loading()
 {
-	TestSpriteMesh = new UMesh(FMeshData::SpriteMeshData);
+	QuadMesh = new UMesh(FMeshData::QuadMeshData);
 }
 void UApp::Start()
 {
@@ -176,9 +175,8 @@ void UApp::Render()
 	DeviceContext->IASetInputLayout(SpriteInputLayout);
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
-	DeviceContext->VSSetConstantBuffers(0, 1, &CBuffer);
 
-	UObjectFactory::GetInstance()->Render(RenderContext);
+	UObjectFactory::GetInstance()->Render();
 
 	RenderUI();
 	SwapChain->Present(1, 0);
@@ -188,9 +186,9 @@ void UApp::Render()
 void UApp::Release()
 {
 	//Release 추가 필요
-	TestSpriteMesh->Release();
+	QuadMesh->Release();
 
-	CBuffer->Release();
+	TransformCBuffer->Release();
 	SpritePS->Release();
 	SpriteVS->Release();
 	SpriteInputLayout->Release();

@@ -7,7 +7,7 @@ using namespace std;
 struct FMeshData
 {
 public:
-	static FMeshData SpriteMeshData;
+	static FMeshData QuadMeshData;
 	vector<FVertex> Vertices;
 	vector<uint32_t> Indices;
 private:

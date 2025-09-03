@@ -93,9 +93,6 @@
     <ClCompile Include="ObjectFactory.cpp">
       <Filter>소스 파일\Object</Filter>
     </ClCompile>
-    <ClCompile Include="RenderContext.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -157,9 +154,6 @@
     </ClInclude>
     <ClInclude Include="ObjectFactory.h">
       <Filter>헤더 파일\Object</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderContext.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

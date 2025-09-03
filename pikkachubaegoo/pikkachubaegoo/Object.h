@@ -1,8 +1,6 @@
 #pragma once
 #include "Vector.h"
-
-class UMeshRenderer;
-
+#include "UMeshRenderer.h"
 enum FObjectType
 {
 	Player,
@@ -30,5 +28,5 @@ public:
 	virtual float GetMass() = 0;
 
 	virtual void Update(float deltaTime) = 0;
-	void Draw(class URenderContext* RenderContext);
+	void Draw();
 };

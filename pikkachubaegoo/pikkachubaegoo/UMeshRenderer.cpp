@@ -1,6 +1,6 @@
 #include "UMeshRenderer.h"
 #include "Mesh.h" // cpp 파일에서 실제 UMesh의 정의를 포함
-#include "RenderContext.h"
+#include "App.h"
 
 UMeshRenderer::~UMeshRenderer()
 {
@@ -11,11 +11,12 @@ UMeshRenderer::~UMeshRenderer()
 	}
 }
 
-void UMeshRenderer::DrawMesh(URenderContext* RenderContext, const FVector3& Location)
+void UMeshRenderer::DrawMesh(const FVector3& Location)
 {
 	// 실제 메시를 그리는 로직 구현
 	if (Mesh)
 	{
-		RenderContext->Draw(Mesh, Location);
+		D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), UApp::Ins->GetTransformCBuffer(), Location);
+		Mesh->Draw();
 	}
 }

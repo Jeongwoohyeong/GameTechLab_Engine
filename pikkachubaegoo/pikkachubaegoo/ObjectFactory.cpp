@@ -1,5 +1,6 @@
 #include "ObjectFactory.h"
 #include "UMeshRenderer.h"
+#include "App.h"
 
 UObjectFactory* UObjectFactory::instance = nullptr;
 UObjectFactory* UObjectFactory::GetInstance()
@@ -42,20 +43,21 @@ void UObjectFactory::Update(float deltaTime)
 	}
 }
 
-void UObjectFactory::Render(URenderContext* RenderContext)
+void UObjectFactory::Render()
 {
+	//순서에 따른 그리기 정렬 필요
 	for (UINT i = 0; i < ObjectListSize; ++i)
 	{
 		if (ObjectList[i])
 		{
-			ObjectList[i]->Draw(RenderContext);
+			ObjectList[i]->Draw();
 		}
 	}
 }
 
 UObject* UObjectFactory::CreatePlayer(FVector3 location)
 {
-	UPlayer* newObject = new UPlayer(new UMeshRenderer(new UMesh(FMeshData::SpriteMeshData)));
+	UPlayer* newObject = new UPlayer(new UMeshRenderer(UApp::Ins->GetQuadMesh()));
 	newObject->SetLocation(location);
 	AddObject(newObject);
 	return newObject;

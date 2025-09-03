@@ -9,7 +9,7 @@ class UMesh
 public:
 	UMesh(FMeshData& meshData);
 	void Release();
-
+	void Draw();
 	~UMesh();
 public:
 	ID3D11Buffer* VertexBuffer = nullptr;

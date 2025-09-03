@@ -23,7 +23,7 @@ public:
 	void ReleaseAll();
 	void Update(float deltaTime);
 
-	void Render(class URenderContext* RenderContext);
+	void Render();
 
 // Factory
 public:
