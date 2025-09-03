@@ -8,7 +8,7 @@ UWall::UWall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	InRenderer->ChangeAtlasInfo(UApp::Ins->GetAtlasInfo(WallSpriteAtlasKey));
 
-	FRect collider(colliderExtent * -1, colliderExtent);
+	FRect collider(FVector2(), WALL_SCALE_X, WALL_SCALE_Y);
 	FRect boundary(FVector2(-1.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f));
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, false);
 }

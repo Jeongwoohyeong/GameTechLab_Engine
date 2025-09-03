@@ -98,6 +98,21 @@ public:
 	//pop
 	//insert
 	//eraser
+	void Erase(const T& element)
+	{
+		for (uint32_t i = 0; i < DataCount; ++i)
+		{
+			if (DynamicArray[i] == element)
+			{
+				for (uint32_t j = i; j < DataCount - 1; ++j)
+				{
+					DynamicArray[j] = DynamicArray[j + 1];
+				}
+				DataCount--;
+				return;
+			}
+		}
+	}
 	//size
 	
 };

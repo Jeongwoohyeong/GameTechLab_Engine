@@ -3,6 +3,7 @@
 #include "App.h"
 #include "Ball.h"
 #include "Wall.h"
+#include "Punch.h"
 
 UObjectFactory* UObjectFactory::instance = nullptr;
 UObjectFactory* UObjectFactory::GetInstance()
@@ -29,16 +30,25 @@ void UObjectFactory::ReleaseAll()
 	ObjectList.Clear();
 }
 
+void UObjectFactory::Release(UObject* Object)
+{
+	if (Object)
+	{
+		ObjectList.Erase(Object);
+		delete Object;
+	}
+}
+
 void UObjectFactory::Update(float deltaTime)
 {
-	UINT objListCount = ObjectList.Size();
-	for (UINT i = 0; i < objListCount; ++i)
+	for (UINT i = 0; i < ObjectList.Size(); ++i)
 	{
-		ObjectList[i]->Update(deltaTime);
+		if (ObjectList[i]->bShouldBeReleased) Release(ObjectList[i]);
+		else ObjectList[i]->Update(deltaTime);
 	}
-	for (UINT i = 0; i < objListCount; ++i)
+	for (UINT i = 0; i < ObjectList.Size(); ++i)
 	{
-		for (UINT j = i + 1; j < objListCount; ++j)
+		for (UINT j = i + 1; j < ObjectList.Size(); ++j)
 		{
 			UObject* objA = ObjectList[i];
 			UObject* objB = ObjectList[j];
@@ -119,6 +129,15 @@ UObject* UObjectFactory::CreateBall(FVector3 location, FVector3 scale)
 UObject* UObjectFactory::CreateWall(FVector3 location, FVector3 scale)
 {
 	UWall* newObject = new UWall(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder));
+	newObject->GetTransform()->SetLocation(location);
+	newObject->GetTransform()->SetScale(scale);
+	AddObject(newObject);
+	return newObject;
+}
+
+UObject* UObjectFactory::CreatePunch(FVector3 location, FVector3 scale)
+{
+	UPunch* newObject = new UPunch(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);

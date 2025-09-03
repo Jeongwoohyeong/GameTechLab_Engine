@@ -8,6 +8,7 @@ enum FObjectType
 	Player,
 	Ball,
 	Wall,
+	ETC,
 };
 
 class UObject
@@ -33,4 +34,6 @@ public:
 		return renderer;
 	}
 	void Draw();
+	
+	bool bShouldBeReleased = false;
 };
