@@ -56,6 +56,27 @@ void Transform::SetRotationZ(float degree)
 	isDirty = true;
 }
 
+void Transform::AddRotationX(float degree)
+{
+	rotation.x += DegreeToRadians(degree);
+
+	isDirty = true;
+}
+
+void Transform::AddRotationY(float degree)
+{
+	rotation.y += DegreeToRadians(degree);
+
+	isDirty = true;
+}
+
+void Transform::AddRotationZ(float degree)
+{
+	rotation.z += DegreeToRadians(degree);
+
+	isDirty = true;
+}
+
 void Transform::SetPosition(float x, float y, float z)
 {
 	location = FVector3(x, y, z);
@@ -98,6 +119,15 @@ void Transform::Translate(const FVector3& offset3d)
 	isDirty = true;
 }
 
+FVector3 Transform::GetRotationDegree() const
+{
+	return FVector3(
+		RadiansToDegree(rotation.x),
+		RadiansToDegree(rotation.y),
+		RadiansToDegree(rotation.z)
+	);
+}
+
 const FMatrix4x4& Transform::GetTransform()
 {
 	// SRT중 하나라도 변경되면 행렬 연산
@@ -115,16 +145,16 @@ const FMatrix4x4& Transform::GetTransform()
 	return transform;
 }
 
-float Transform::DegreeToRadians(float degree)
+float Transform::DegreeToRadians(float degree) const
 {
 	float rad = degree * (PI / 180.0f);
 
 	return rad;
 }
 
-float Transform::RadiansToDegree(float radians)
+float Transform::RadiansToDegree(float radians) const
 {
 	float deg = radians * (180.0f / PI);
 
-	return 0.0f;
+	return deg;
 }

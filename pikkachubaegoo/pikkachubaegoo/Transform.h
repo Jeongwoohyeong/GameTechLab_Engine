@@ -16,6 +16,10 @@ public:
 	void SetRotationY(float degree);
 	void SetRotationZ(float degree);
 
+	void AddRotationX(float degree);
+	void AddRotationY(float degree);
+	void AddRotationZ(float degree);
+
 	void SetPosition(float x, float y, float z);
 	void SetPosition(const FVector2&);
 	void SetPosition(const FVector3&);
@@ -24,12 +28,15 @@ public:
 	void Translate(const FVector2&);
 	void Translate(const FVector3&);
 
-	const FMatrix4x4& GetTransform();
-	
+	const FVector3& GetScale() const { return scale; }
+	const FVector3& GetRotationRadians() const { return rotation; }
+	FVector3 GetRotationDegree() const;
+	const FVector3& GetLocation() const { return location; }
 
+	const FMatrix4x4& GetTransform();
 private:
-	float DegreeToRadians(float degree);
-	float RadiansToDegree(float radians);
+	float DegreeToRadians(float degree) const;
+	float RadiansToDegree(float radians) const;
 
 private:
 	FMatrix4x4 transform;
@@ -37,7 +44,7 @@ private:
 	FVector3 rotation;
 	FVector3 location;
 
-	const float PI = 3.1415926f;
+	static constexpr float PI = 3.1415926f;
 
 	// 트랜스폼 변경 검사
 	bool isDirty;

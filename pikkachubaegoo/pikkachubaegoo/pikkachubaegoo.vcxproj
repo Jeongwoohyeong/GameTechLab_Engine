@@ -171,6 +171,7 @@
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UPlayer.h" />
