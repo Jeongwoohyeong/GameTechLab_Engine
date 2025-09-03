@@ -14,6 +14,6 @@ void UObject::Draw(URenderContext* RenderContext)
 {
 	if (renderer)
 	{
-		renderer->DrawMesh(RenderContext);
+		renderer->DrawMesh(RenderContext, GetLocation());
 	}
 }

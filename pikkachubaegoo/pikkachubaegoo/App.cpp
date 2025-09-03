@@ -117,7 +117,16 @@ void UApp::InitDirect()
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
 
-	RenderContext = new URenderContext(DeviceContext);
+	// Create Constant Buffer
+	D3D11_BUFFER_DESC constantbufferdesc = {};
+	constantbufferdesc.ByteWidth = sizeof(FVector3) + 0xf & 0xfffffff0;
+	constantbufferdesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	Device->CreateBuffer(&constantbufferdesc, nullptr, &TestCBuffer);
+
+	RenderContext = new URenderContext(DeviceContext, TestCBuffer);
 }
 void UApp::InitImGui()
 {
