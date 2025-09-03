@@ -144,9 +144,10 @@ void UApp::Loading()
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 1
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 2
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
 	UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
+	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f)); // Wall
 }
 void UApp::Update()
 {

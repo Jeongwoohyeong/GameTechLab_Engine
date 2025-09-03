@@ -15,11 +15,9 @@ public:
 	void Update(float deltaTime) override;
 
 private:
-	const float GROUND_LEVEL = -1;
-
 	// Component
 	class UPhysicsComponent* physicsComponent;
 
 	// Object
-	float size;
+	FVector2 colliderExtent = FVector2(0.1f, 0.3f);
 };

@@ -197,6 +197,9 @@
     <ClInclude Include="Ball.h">
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>헤더 파일\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SpriteShader.hlsl">

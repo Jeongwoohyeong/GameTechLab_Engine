@@ -88,7 +88,7 @@ UObject* UObjectFactory::CreateBall(FVector3 location)
 
 UObject* UObjectFactory::CreateWall(FVector3 location)
 {
-	UWall* newObject = new UWall(new UMeshRenderer(new UMesh(FMeshData::CircleMeshData)));
+	UWall* newObject = new UWall(new UMeshRenderer(UApp::Ins->GetQuadMesh()));
 	newObject->GetTransform()->SetLocation(location);
 	AddObject(newObject);
 	return newObject;

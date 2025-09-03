@@ -1,6 +1,7 @@
 #include "UPlayer.h"
 #include "inputclass.h"
 #include "Windows.h"
+#include "Define.h"
 #include <iostream>
 
 unsigned int UPlayer::playerCount = 0;
@@ -9,11 +10,9 @@ unsigned int UPlayer::playerCount = 0;
 UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	playerIndex = playerCount++;
-	float tempSize = 0.1f;
-	GetTransform()->SetLocation(FVector3(0, GROUND_LEVEL, 0));
-	GetTransform()->SetScale(FVector3(tempSize * 2, tempSize * 2, 1));
-	FRect collider(FVector3(-tempSize, -tempSize, 1), FVector3(tempSize, tempSize, 1)); // 플레이어의 충돌 박스 설정
-	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0)); // 경계 설정
+	float size = 0.1f;
+	FRect collider(FVector2(-size, -size), FVector2(size, size)); // 플레이어의 충돌 박스 설정
+	FRect boundary(FVector2(-1.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f)); // 경계 설정 (플레이어 인덱스마다 다르게 설정 필요)
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY);
 }
 

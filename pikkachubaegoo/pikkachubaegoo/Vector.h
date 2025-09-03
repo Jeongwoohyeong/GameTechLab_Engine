@@ -52,6 +52,7 @@ struct FVector3 {
 struct FVector2 {
 	float x, y;
 	FVector2(float _x = 0.0f, float _y = 0.0f) : x(_x), y(_y){}
+	FVector2(const FVector3& other) : x(other.x), y(other.y) {}
 
 	FVector2 operator+(const FVector2& other) const
 	{

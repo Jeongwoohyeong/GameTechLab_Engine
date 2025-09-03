@@ -157,6 +157,7 @@
     <ClInclude Include="Ball.h" />
     <ClInclude Include="CustomVector.h" />
     <ClInclude Include="D3DUtil.h" />
+    <ClInclude Include="Define.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
     <ClInclude Include="ImGui\imgui_impl_dx11.h" />

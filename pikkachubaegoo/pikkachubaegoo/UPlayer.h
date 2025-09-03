@@ -21,7 +21,6 @@ private:
 	unsigned int playerIndex;
 	// 상수값
 	const float GRAVITY = 0.98f;
-	const float GROUND_LEVEL = -1;
 	const float WALK_SPEED = 1;
 	const float MOVE_SPEED = 0.3f;
 	const float SLIDE_SPEED = 1.0f;

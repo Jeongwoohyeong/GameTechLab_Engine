@@ -1,11 +1,11 @@
 #include "Wall.h"
 #include "PhysicsComponent.h"
+#include "Define.h"
 
 UWall::UWall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
-	GetTransform()->SetLocation(FVector3(0, GROUND_LEVEL, 0));
-	FRect collider(FVector3(-size, -size, 1), FVector3(size, size, 1));
-	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0));
+	FRect collider(colliderExtent * -1, colliderExtent);
+	FRect boundary(FVector2(-1.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f));
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, false);
 }
 
