@@ -6,13 +6,13 @@
 
 inline void LogDebug(const wchar_t* format, ...)
 {
-    wchar_t buffer[1024];
-    va_list args;
-    va_start(args, format);
-    vswprintf_s(buffer, 1024, format, args);
-    va_end(args);
+	wchar_t buffer[1024];
+	va_list args;
+	va_start(args, format);
+	vswprintf_s(buffer, 1024, format, args);
+	va_end(args);
 
-    OutputDebugString(buffer);
+	OutputDebugString(buffer);
 }
 constexpr float GROUND_LEVEL = -0.9f;
 constexpr int MAX_SCORE = 2;
@@ -30,6 +30,7 @@ constexpr float BALL_BASE_POSITION_Y = 0.9f;
 
 // PLAYER
 constexpr float PLAYER_BASE_POSITION_X = 0.7f;
+constexpr float PLAYER_BASE_POSITION_Y = -0.8f;
 constexpr int PLAYER1_INDEX = 0;
 constexpr int PLAYER2_INDEX = 1;
 
