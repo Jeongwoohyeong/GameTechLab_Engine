@@ -1,5 +1,6 @@
 #include "Object.h"
 #include "UMeshRenderer.h"
+#include "App.h"
 
 UObject::~UObject()
 {
@@ -10,10 +11,10 @@ UObject::~UObject()
 	}
 }
 
-void UObject::Draw(URenderContext* RenderContext)
+void UObject::Draw()
 {
 	if (renderer)
 	{
-		renderer->DrawMesh(RenderContext, GetLocation());
+		renderer->DrawMesh(GetLocation());
 	}
 }

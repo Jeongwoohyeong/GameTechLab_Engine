@@ -9,7 +9,7 @@ unsigned int UPlayer::playerCount = 0;
 UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	playerIndex = playerCount++;
-	size = 0.5f;
+	size = 0.1f;
 	location = FVector3(0, GROUND_LEVEL, 0);
 	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
 
@@ -41,6 +41,11 @@ void UPlayer::SetLocation(const FVector3& newLocation)
 	location = newLocation;
 }
 
+UPhysicsComponent* UPlayer::GetPhysicsComponent() const
+{
+	return physicsComponent;
+}
+
 FVector3 UPlayer::GetVelocity()
 {
 	return physicsComponent->GetVelocity();
@@ -49,16 +54,6 @@ FVector3 UPlayer::GetVelocity()
 void UPlayer::SetVelocity(const FVector3& newVelocity)
 {
 	physicsComponent->SetVelocity(newVelocity);
-}
-
-float UPlayer::GetRadius()
-{
-	return 0.0f;
-}
-
-float UPlayer::GetMass()
-{
-	return 0.0f;
 }
 
 // --- 입력 설정 함수 (임시) ---
@@ -87,7 +82,10 @@ void UPlayer::Update(float deltaTime)
 
 	FVector3 velocity = physicsComponent->GetVelocity();
 	float horizontalInput = 0.0f;
-	if (isLeft) horizontalInput = -1.0f;
+	if (isLeft)
+	{
+		horizontalInput = -1.0f;
+	}
 	else if (isRight) horizontalInput = 1.0f;
 	bool jumpPressed = isJump;
 	bool slidePressed = isAction;

@@ -56,10 +56,9 @@ public:
 	FObjectType GetType() override;
 	FVector3 GetLocation() override;
 	void SetLocation(const FVector3& newLocation) override;
+	virtual class UPhysicsComponent* GetPhysicsComponent() const;
 	FVector3 GetVelocity() override;
 	void SetVelocity(const FVector3& newVelocity) override;
-	float GetRadius() override;
-	float GetMass() override;
 
 	void Update(float deltaTime) override;
 
