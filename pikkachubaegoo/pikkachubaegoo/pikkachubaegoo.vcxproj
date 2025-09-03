@@ -70,6 +70,8 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -108,6 +110,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>DirectXTK\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,6 +127,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>DirectXTK\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -160,7 +164,37 @@
     <ClInclude Include="CustomVector.h" />
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="Define.h" />
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <ClInclude Include="IGameState.h" />
+=======
+=======
+>>>>>>> Stashed changes
+    <ClInclude Include="DirectXTK\Inc\Audio.h" />
+    <ClInclude Include="DirectXTK\Inc\BufferHelpers.h" />
+    <ClInclude Include="DirectXTK\Inc\CommonStates.h" />
+    <ClInclude Include="DirectXTK\Inc\DDSTextureLoader.h" />
+    <ClInclude Include="DirectXTK\Inc\DirectXHelpers.h" />
+    <ClInclude Include="DirectXTK\Inc\Effects.h" />
+    <ClInclude Include="DirectXTK\Inc\GamePad.h" />
+    <ClInclude Include="DirectXTK\Inc\GeometricPrimitive.h" />
+    <ClInclude Include="DirectXTK\Inc\GraphicsMemory.h" />
+    <ClInclude Include="DirectXTK\Inc\Keyboard.h" />
+    <ClInclude Include="DirectXTK\Inc\Model.h" />
+    <ClInclude Include="DirectXTK\Inc\Mouse.h" />
+    <ClInclude Include="DirectXTK\Inc\PostProcess.h" />
+    <ClInclude Include="DirectXTK\Inc\PrimitiveBatch.h" />
+    <ClInclude Include="DirectXTK\Inc\ScreenGrab.h" />
+    <ClInclude Include="DirectXTK\Inc\SimpleMath.h" />
+    <ClInclude Include="DirectXTK\Inc\SpriteBatch.h" />
+    <ClInclude Include="DirectXTK\Inc\SpriteFont.h" />
+    <ClInclude Include="DirectXTK\Inc\VertexTypes.h" />
+    <ClInclude Include="DirectXTK\Inc\WICTextureLoader.h" />
+    <ClInclude Include="DirectXTK\Inc\XboxDDSTextureLoader.h" />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
     <ClInclude Include="ImGui\imgui_impl_dx11.h" />
@@ -196,6 +230,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="DirectXTK\Inc\SimpleMath.inl" />
     <None Include="Resource\sprite_sheet.json" />
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
+LPCWSTR SpriteAtlasPath = L"C:\\Users\\Jungle\\Desktop\\git\\pikkachubaegoo\\pikkachubaegoo\\pikkachubaegoo\\Resource\\SpriteAtlas.png";
 UApp* UApp::Ins = nullptr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -151,6 +152,7 @@ void UApp::Loading()
 {
 	QuadMesh = new UMesh(FMeshData::QuadMeshData);
 	CircleMesh = new UMesh(FMeshData::CircleMeshData);
+	D3DUtil::LoadTexture(SpriteAtlasPath, &TestTexture, &TestTextureSRV);
 }
 void UApp::Start()
 {

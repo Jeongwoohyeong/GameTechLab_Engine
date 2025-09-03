@@ -31,11 +31,21 @@
     <Filter Include="소스 파일\Core">
       <UniqueIdentifier>{17e66c12-3d80-4be8-a138-859c393558bc}</UniqueIdentifier>
     </Filter>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <Filter Include="소스 파일\State">
       <UniqueIdentifier>{463607cb-855b-4921-8ed1-a4ad5ba04af6}</UniqueIdentifier>
     </Filter>
     <Filter Include="헤더 파일\State">
       <UniqueIdentifier>{1f399a8c-3d0f-4a3b-aa48-55aa77d718f9}</UniqueIdentifier>
+=======
+    <Filter Include="DirectXTK">
+      <UniqueIdentifier>{aa64e542-f513-4572-a2a1-6db7e70c45be}</UniqueIdentifier>
+>>>>>>> Stashed changes
+=======
+    <Filter Include="DirectXTK">
+      <UniqueIdentifier>{aa64e542-f513-4572-a2a1-6db7e70c45be}</UniqueIdentifier>
+>>>>>>> Stashed changes
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -215,6 +225,8 @@
     <ClInclude Include="CustomVector.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <ClInclude Include="IGameState.h">
       <Filter>헤더 파일\State</Filter>
     </ClInclude>
@@ -223,6 +235,75 @@
     </ClInclude>
     <ClInclude Include="PlayingState.h">
       <Filter>헤더 파일\State</Filter>
+=======
+=======
+>>>>>>> Stashed changes
+    <ClInclude Include="DirectXTK\Inc\Audio.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\BufferHelpers.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\CommonStates.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\DDSTextureLoader.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\DirectXHelpers.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\Effects.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\GamePad.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\GeometricPrimitive.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\GraphicsMemory.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\Keyboard.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\Model.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\Mouse.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\PostProcess.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\PrimitiveBatch.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\ScreenGrab.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\SimpleMath.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\SpriteBatch.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\SpriteFont.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\VertexTypes.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\WICTextureLoader.h">
+      <Filter>DirectXTK</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectXTK\Inc\XboxDDSTextureLoader.h">
+      <Filter>DirectXTK</Filter>
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -237,5 +318,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\sprite_sheet.json" />
+    <None Include="DirectXTK\Inc\SimpleMath.inl">
+      <Filter>DirectXTK</Filter>
+    </None>
   </ItemGroup>
 </Project>
