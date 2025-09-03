@@ -81,7 +81,10 @@ void UPlayer::Update(float deltaTime)
 
 	FVector3 velocity = physicsComponent->GetVelocity();
 	float horizontalInput = 0.0f;
-	if (isLeft) horizontalInput = -1.0f;
+	if (isLeft)
+	{
+		horizontalInput = -1.0f;
+	}
 	else if (isRight) horizontalInput = 1.0f;
 	bool jumpPressed = isJump;
 	bool slidePressed = isAction;

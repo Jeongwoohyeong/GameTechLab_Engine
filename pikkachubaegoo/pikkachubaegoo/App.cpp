@@ -176,6 +176,7 @@ void UApp::Render()
 	DeviceContext->IASetInputLayout(SpriteInputLayout);
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
+	UApp::Ins->GetContext()->VSSetConstantBuffers(0, 1, &TransformCBuffer);
 
 	UObjectFactory::GetInstance()->Render();
 
