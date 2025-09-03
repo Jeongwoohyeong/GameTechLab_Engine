@@ -38,10 +38,14 @@ private:
 	ID3D11InputLayout* SpriteInputLayout;
 	ID3D11VertexShader* SpriteVS;
 	ID3D11PixelShader* SpritePS;
+	ID3D11SamplerState* SpriteSampleState;
 
 	UMesh* QuadMesh;
 	UMesh* CircleMesh;
 	ID3D11Buffer* TransformCBuffer;
+
+	ID3D11Texture2D* TestTexture;
+	ID3D11ShaderResourceView* TestTextureSRV;
 
 	// --- 상태 관리 변수 ---
 	IGameState* currentState = nullptr;
