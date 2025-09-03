@@ -2,22 +2,10 @@
 
 #include "Object.h"
 #include "PhysicsComponent.h"
+#include "Animator.h"
 
 class UPlayer : public UObject
 {
-public:
-	enum class PlayerState
-	{
-		Idle,
-		Walking,
-		Jumping,
-		Sliding,
-		Stunned,
-		UpSpiking,
-		Spiking,
-		DownSpiking,
-	};
-
 private:
 	static unsigned int playerCount;
 	unsigned int playerIndex;
@@ -36,6 +24,10 @@ private:
 	float slideTimer = 0.0f;
 	float stunTimer = 0.0f;
 	float spikeTimer = 0.0f;
+
+	UAnimator animator;
+	UAnimation* animList;
+	USpriteSheet* spriteSheet;
 
 	// 입력 플래그 (임시)
 	bool isLeft = false;

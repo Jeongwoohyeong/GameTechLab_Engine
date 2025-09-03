@@ -23,6 +23,9 @@ private:
 	UObject* ball = nullptr; // 공 오브젝트를 직접 참조하기 위한 포인터
 	UObject* player1 = nullptr;
 	UObject* player2 = nullptr;
+	UObject* bgSky = nullptr;
+	UObject* bgMountain = nullptr;
+	UObject* bgGround = nullptr;
 public:
 	void Enter() override;
 	void Update(float deltaTime) override;

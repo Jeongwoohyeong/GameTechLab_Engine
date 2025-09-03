@@ -9,6 +9,7 @@ enum FObjectType
 	Ball,
 	Wall,
 	ETC,
+	Background
 };
 
 class UObject

@@ -36,4 +36,6 @@ private:
 	// Object
 	FVector3 location;
 	float size;
+
+	FVector3 prevLocation;
 };
