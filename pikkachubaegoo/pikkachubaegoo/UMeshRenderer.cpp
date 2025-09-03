@@ -1,5 +1,4 @@
 #include "UMeshRenderer.h"
-#include "Mesh.h" // cpp 파일에서 실제 UMesh의 정의를 포함
 #include "App.h"
 
 UMeshRenderer::~UMeshRenderer()
