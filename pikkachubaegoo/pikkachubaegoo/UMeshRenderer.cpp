@@ -6,7 +6,7 @@ UMeshRenderer::~UMeshRenderer()
 {
 	if (Mesh)
 	{
-		delete Mesh;
+		Mesh->Release();
 		Mesh = nullptr;
 	}
 }
