@@ -2,9 +2,10 @@
 #include "App.h"
 #include "ObjectFactory.h"
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
+#include "SoundManager.h"
 
-LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
-string SpriteAtlasJsonPath = "..\\pikkachubaegoo\\Resource\\sprite_sheet.json";
+LPCWSTR SpriteShaderFileName = L".\\SpriteShader.hlsl";
+string SpriteAtlasJsonPath = ".\\Resource\\sprite_sheet.json";
 
 UApp* UApp::Ins = nullptr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -130,6 +131,15 @@ void UApp::InitDirect()
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
 
+	if (SpriteVS == nullptr)
+	{
+		ClearColor[2] = 1;
+	}
+	else
+	{
+		ClearColor[2] = 0;
+	}
+
 	// Create Constant Buffer
 	D3D11_BUFFER_DESC constantbufferdesc = {};
 	constantbufferdesc.ByteWidth = sizeof(FMatrix4x4);
@@ -138,6 +148,15 @@ void UApp::InitDirect()
 	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
 	Device->CreateBuffer(&constantbufferdesc, nullptr, &TransformCBuffer);
+
+	//Create SamplerState
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	D3DUtil::CreateSamplerState(&SpriteSampleState, samplerDesc);
 
 }
 void UApp::InitImGui()
@@ -160,12 +179,16 @@ void UApp::Loading()
 	SpriteSheet.Load(SpriteAtlasJsonPath);
 	wstring atlasSpritePath = SpriteSheet.GetImagePath();
 	LPCWSTR atlasSpritePathLPCWSTR = atlasSpritePath.c_str();
-	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTexture, &TestTextureSRV);
+
+	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTextureSRV);
+	USoundManager::GetInstance()->Init();
+
 
 }
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
+	USoundManager::GetInstance()->PlayBGM(SOUND_KEY_BGM);
 }
 void UApp::Update()
 {

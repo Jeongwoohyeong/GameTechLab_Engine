@@ -5,6 +5,7 @@
 #include <string>
 #include "Time.h"
 #include "Define.h"
+#include "SoundManager.h"
 
 // 라운드를 시작하거나 재시작할 때 호출되는 함수
 void PlayingState::ResetRound()
@@ -56,6 +57,7 @@ void PlayingState::Update(float deltaTime)
 		// 공이 바닥에 닿았을 때
 		if (ball->GetPhysicsComponent()->IsGrounded())
 		{
+			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_BALL_LAND);
 			// 왼쪽이면 Player 2 승리, 오른쪽이면 Player 1 승리
 			if (ball->GetTransform()->GetLocation().x < 0)
 			{

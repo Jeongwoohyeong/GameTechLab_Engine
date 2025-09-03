@@ -61,13 +61,22 @@ void D3DUtil::CreateConstantBuffer(ID3D11Buffer** cBuffer, UINT size)
 
 	UApp::Ins->GetDevice()->CreateBuffer(&constantbufferdesc, nullptr, cBuffer);
 }
-void D3DUtil::LoadTexture(LPCWSTR& filePath, ID3D11Texture2D** texture, ID3D11ShaderResourceView** textureSRV)
+void D3DUtil::LoadTexture(LPCWSTR& filePath, ID3D11ShaderResourceView** textureSRV)
 {
 	ID3D11Resource* resource;
 	HRESULT hResult = CreateWICTextureFromFile(UApp::Ins->GetDevice(), filePath, &resource, textureSRV, 0);
 	if (FAILED(hResult))
 	{
 		wcout << "LoadTexture Failed. FileName : " << filePath << endl;
+		return;
+	}
+}
+void D3DUtil::CreateSamplerState(ID3D11SamplerState** samplerState, D3D11_SAMPLER_DESC& desc)
+{
+	HRESULT hResult = UApp::Ins->GetDevice()->CreateSamplerState(&desc, samplerState);
+	if (FAILED(hResult))
+	{
+		cout << "CreateSamplerState Failed" << endl;
 		return;
 	}
 }

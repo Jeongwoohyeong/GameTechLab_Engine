@@ -1,4 +1,5 @@
-#include "Define.h"
+#define ATLASSPRITE_WIDTH 476
+#define ATLASSPRITE_HEIGHT 885
 
 cbuffer TransformConstant : register(b0)
 {

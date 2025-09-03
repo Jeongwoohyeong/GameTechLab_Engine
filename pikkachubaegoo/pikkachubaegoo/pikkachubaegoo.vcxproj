@@ -110,7 +110,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>DirectXTK\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>DirectXTK\DirectXTK.lib;XAudio2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,6 +154,7 @@
     <ClCompile Include="PlayingState.cpp" />
     <ClCompile Include="ResultState.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UPlayer.cpp" />
@@ -207,6 +208,7 @@
     <ClInclude Include="PlayingState.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="ResultState.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="SpriteStruct.h" />
     <ClInclude Include="Time.h" />
@@ -230,6 +232,13 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resource\sprite_sheet.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Resource\Sound\BallLand.wav" />
+    <Media Include="Resource\Sound\bgm.wav" />
+    <Media Include="Resource\Sound\Chu.wav" />
+    <Media Include="Resource\Sound\Pika.wav" />
+    <Media Include="Resource\Sound\Spike.wav" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

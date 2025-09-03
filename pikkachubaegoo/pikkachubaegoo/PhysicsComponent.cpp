@@ -3,6 +3,7 @@
 #include "stdlib.h"
 #include "UPlayer.h"
 #include "Define.h"
+#include "SoundManager.h"
 
 UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary, bool inIsGravity, float inGravityScale, bool inCanReflectWithWall)
 	: owner(inOwner), velocity(), collider(inCollider), boundary(inBoundary), bIsGravity(inIsGravity), gravityScale(inGravityScale), bCanReflectWithWall(inCanReflectWithWall)
@@ -97,6 +98,7 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 				newBallVelocity.y = fabs(newBallVelocity.y);
 			}
 		}
+		USoundManager::GetInstance()->PlaySFX(SOUND_KEY_SPIKE);
 	}
 	else if (otherObject->GetType() == FObjectType::Wall)
 	{

@@ -2,6 +2,7 @@
 #include "inputclass.h"
 #include "Windows.h"
 #include "Define.h"
+#include "SoundManager.h"
 #include <iostream>
 
 unsigned int UPlayer::playerCount = 0;
@@ -97,6 +98,7 @@ void UPlayer::Update(float deltaTime)
 	case PlayerState::Idle:
 		if (jumpPressed)
 		{
+			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_CHU);
 			velocity.y = JUMP_STRENGTH;
 			currentState = PlayerState::Jumping;
 		}
@@ -118,6 +120,7 @@ void UPlayer::Update(float deltaTime)
 		}
 		else if (slidePressed)
 		{
+			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_CHU);
 			currentState = PlayerState::Sliding;
 			slideTimer = SLIDE_DURATION;
 		}
@@ -130,6 +133,7 @@ void UPlayer::Update(float deltaTime)
 		}
 		else if (slidePressed)
 		{
+			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_PIKA);
 			currentState = PlayerState::Spiking;
 			spikeTimer = SPIKE_DURATION;
 			isSpiking = true;
