@@ -3,16 +3,13 @@
 //#include "ResultState.h" // (가정) 결과 상태로 전환하기 위함
 #include "ObjectFactory.h"
 #include <string>
-#include "Time.h"
 
 // 라운드를 시작하거나 재시작할 때 호출되는 함수
 void PlayingState::ResetRound()
 {
-	UTime::GetInstance()->SetTimeScale(1.0f);
 	player1->GetTransform()->SetLocation(FVector3(-0.5f)); // Player 1 위치 초기화
-	player2->GetTransform()->SetLocation(FVector3(0.5f)); // Player 2 위치 초기화
-	ball->GetTransform()->SetLocation(FVector3(0.0, 0.9f)); // Ball 위치 초기화
-	ball->SetVelocity(FVector3(0.0, 0.0f)); // Ball Velocity 초기화
+	player2->GetTransform()->SetLocation(FVector3(0.5f)); // Player 1 위치 초기화
+	ball->GetTransform()->SetLocation(FVector3(0.0, 0.9f)); // Player 1 위치 초기화
 
 	// 상태를 'Ready'로 설정하고 타이머 초기화
 	gameplayState = EGameplayState::Ready;
@@ -25,7 +22,7 @@ void PlayingState::Enter()
 	player1 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
 	player2 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
 	ball = UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
-	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.6f), FVector3(1.0f, 3.0f)); // Wall
+	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f), FVector3(1.0f, 3.0f)); // Wall
 
 	player1Score = 0;
 	player2Score = 0;
@@ -63,15 +60,13 @@ void PlayingState::Update(float deltaTime)
 				player1Score++;
 			}
 
-			UTime::GetInstance()->SetTimeScale(0.5f);
 			gameplayState = EGameplayState::RoundOver;
-			stateTimer = 1.0f; // 2초간 결과 보여주기
+			stateTimer = 2.0f; // 2초간 결과 보여주기
 		}
 		break;
 
 	case EGameplayState::RoundOver:
 		// 라운드 종료 및 상태 전환 로직
-		UObjectFactory::GetInstance()->Update(deltaTime);
 		stateTimer -= deltaTime;
 		if (stateTimer <= 0.0f)
 		{
