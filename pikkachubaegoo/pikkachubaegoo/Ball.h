@@ -18,7 +18,6 @@ private:
 	// Cnst Value
 	const float GRAVITY = 0.98f * 2.0f;
 	const float GROUND_LEVEL = -1;
-	const float WALK_SPEED = 1;
 	const float MOVE_SPEED = 0.1f;
 	const float SLIDE_SPEED = 1.0f;
 	const float SLIDE_DURATION = 0.5f;
