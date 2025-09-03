@@ -88,7 +88,7 @@ void ResultState::Render()
 	// --- 재시작 버튼 ---
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.55f);
-	if (ImGui::Button("Restart", ImVec2(200, 60)))
+	if (ImGui::Button(u8"다시하기", ImVec2(200, 60)))
 	{
 		UApp::Ins->ChangeState(new PlayingState());
 	}
@@ -96,7 +96,7 @@ void ResultState::Render()
 	// --- 메인 메뉴 버튼 ---
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.55f + 80);
-	if (ImGui::Button("Main Menu", ImVec2(200, 60)))
+	if (ImGui::Button(u8"처음으로", ImVec2(200, 60)))
 	{
 		UApp::Ins->ChangeState(new MainMenuState());
 	}
