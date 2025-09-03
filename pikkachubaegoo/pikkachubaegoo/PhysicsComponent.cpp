@@ -58,7 +58,7 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 
 void UPhysicsComponent::ApplyGravity(float deltaTime)
 {
-	velocity.y -= gravityScale * deltaTime;
+	if(!IsGrounded()) velocity.y -= gravityScale * deltaTime;
 }
 
 void UPhysicsComponent::UpdatePosition(float deltaTime)

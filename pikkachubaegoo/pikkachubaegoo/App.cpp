@@ -124,9 +124,9 @@ void UApp::InitDirect()
 	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	Device->CreateBuffer(&constantbufferdesc, nullptr, &TestCBuffer);
+	Device->CreateBuffer(&constantbufferdesc, nullptr, &CBuffer);
 
-	RenderContext = new URenderContext(DeviceContext, TestCBuffer);
+	RenderContext = new URenderContext(DeviceContext, CBuffer);
 }
 void UApp::InitImGui()
 {
@@ -144,7 +144,8 @@ void UApp::Loading()
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3());
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 1
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 2
 }
 void UApp::Update()
 {
@@ -175,7 +176,7 @@ void UApp::Render()
 	DeviceContext->IASetInputLayout(SpriteInputLayout);
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
-	DeviceContext->VSSetConstantBuffers(0, 1, &TestCBuffer);
+	DeviceContext->VSSetConstantBuffers(0, 1, &CBuffer);
 
 	UObjectFactory::GetInstance()->Render(RenderContext);
 
@@ -189,7 +190,7 @@ void UApp::Release()
 	//Release 추가 필요
 	TestSpriteMesh->Release();
 
-	TestCBuffer->Release();
+	CBuffer->Release();
 	SpritePS->Release();
 	SpriteVS->Release();
 	SpriteInputLayout->Release();

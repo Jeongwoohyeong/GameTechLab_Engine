@@ -41,7 +41,7 @@ private:
 	ID3D11PixelShader* SpritePS;
 
 	UMesh* TestSpriteMesh;
-	ID3D11Buffer* TestCBuffer;
+	ID3D11Buffer* CBuffer;
 	FVector3 TestMovePos;
 public:
 	void Init(HINSTANCE hInstance);
