@@ -9,10 +9,11 @@ unsigned int UPlayer::playerCount = 0;
 UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	playerIndex = playerCount++;
-	size = 1.0f;
+	size = 0.5f;
 	location = FVector3(0, GROUND_LEVEL, 0);
 	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
-	FRect boundary(FVector3(-100.0f, GROUND_LEVEL, 0), FVector3(200.0f, 200.0f, 0)); // 경계 설정
+
+	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0)); // 경계 설정
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY);
 }
 
@@ -65,17 +66,17 @@ void UPlayer::SetInput()
 {
 	if (playerIndex == 0)
 	{
-		isLeft = UInput::GetInstance()->IsKeyDown(VK_LEFT);
-		isRight = UInput::GetInstance()->IsKeyDown(VK_RIGHT);
-		isJump = UInput::GetInstance()->IsKeyPressed(VK_UP);
-		isAction = UInput::GetInstance()->IsKeyPressed(VK_DOWN);
-	}
-	else if (playerIndex == 1)
-	{
 		isLeft = UInput::GetInstance()->IsKeyDown('A');
 		isRight = UInput::GetInstance()->IsKeyDown('D');
 		isJump = UInput::GetInstance()->IsKeyPressed('W');
 		isAction = UInput::GetInstance()->IsKeyPressed('S');
+	}
+	else if (playerIndex == 1)
+	{
+		isLeft = UInput::GetInstance()->IsKeyDown(VK_LEFT);
+		isRight = UInput::GetInstance()->IsKeyDown(VK_RIGHT);
+		isJump = UInput::GetInstance()->IsKeyPressed(VK_UP);
+		isAction = UInput::GetInstance()->IsKeyPressed(VK_DOWN);
 	}
 }
 

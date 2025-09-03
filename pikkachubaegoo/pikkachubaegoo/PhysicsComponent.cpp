@@ -4,12 +4,12 @@
 UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary, bool inIsGravity, float inGravityScale, bool inCanReflectWithWall)
 	: owner(inOwner), velocity(), collider(inCollider), boundary(inBoundary), bIsGravity(inIsGravity), gravityScale(inGravityScale), bCanReflectWithWall(inCanReflectWithWall)
 {
-	
+
 }
 
 void UPhysicsComponent::Update(float deltaTime)
 {
-	if(bIsGravity) ApplyGravity(deltaTime);
+	if (bIsGravity) ApplyGravity(deltaTime);
 	UpdatePosition(deltaTime);
 	CheckBoundaryCollision();
 }
@@ -58,7 +58,7 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 
 void UPhysicsComponent::ApplyGravity(float deltaTime)
 {
-	if(!IsGrounded()) velocity.y -= gravityScale * deltaTime;
+	if (!IsGrounded()) velocity.y -= gravityScale * deltaTime;
 }
 
 void UPhysicsComponent::UpdatePosition(float deltaTime)
@@ -68,6 +68,7 @@ void UPhysicsComponent::UpdatePosition(float deltaTime)
 	newLocation.y += velocity.y * deltaTime;
 
 	owner->SetLocation(newLocation);
+	collider.SetCenter(owner->GetLocation());
 }
 
 void UPhysicsComponent::CheckBoundaryCollision()
