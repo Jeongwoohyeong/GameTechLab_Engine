@@ -10,12 +10,12 @@ UMeshRenderer::~UMeshRenderer()
 	}
 }
 
-void UMeshRenderer::DrawMesh(const FVector3& Location)
+void UMeshRenderer::DrawMesh(const FMatrix4x4& Transform)
 {
 	// 실제 메시를 그리는 로직 구현
 	if (Mesh)
 	{
-		D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), UApp::Ins->GetTransformCBuffer(), Location);
+		D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), UApp::Ins->GetTransformCBuffer(), Transform);
 		Mesh->Draw();
 	}
 }

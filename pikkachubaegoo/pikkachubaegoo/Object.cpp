@@ -21,6 +21,6 @@ void UObject::Draw()
 {
 	if (renderer)
 	{
-		renderer->DrawMesh(GetTransform()->GetLocation());
+		renderer->DrawMesh(GetTransform()->GetTransformMatrix());
 	}
 }

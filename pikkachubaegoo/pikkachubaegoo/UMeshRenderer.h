@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.h"
+#include "Matrix.h"
 
 class UMeshRenderer
 {
@@ -12,7 +13,7 @@ public:
 	UMeshRenderer(UMesh* InMesh) : Mesh(InMesh) {}
 	~UMeshRenderer();
 
-	void DrawMesh(const FVector3& Location);
+	void DrawMesh(const FMatrix4x4& Transform);
 	void SetDrawOrder(UINT inDrawOrder)
 	{
 		DrawOrder = inDrawOrder;

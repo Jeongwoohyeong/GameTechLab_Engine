@@ -128,7 +128,7 @@ FVector3 Transform::GetRotationDegree() const
 	);
 }
 
-const FMatrix4x4& Transform::GetTransform()
+const FMatrix4x4& Transform::GetTransformMatrix()
 {
 	// SRT중 하나라도 변경되면 행렬 연산
 	if (isDirty)

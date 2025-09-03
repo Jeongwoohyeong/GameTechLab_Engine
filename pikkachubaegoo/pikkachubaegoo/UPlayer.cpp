@@ -10,9 +10,19 @@ unsigned int UPlayer::playerCount = 0;
 UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	playerIndex = playerCount++;
+
 	float size = 0.1f;
 	FRect collider(FVector2(-size, -size), FVector2(size, size)); // 플레이어의 충돌 박스 설정
-	FRect boundary(FVector2(-1.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f)); // 경계 설정 (플레이어 인덱스마다 다르게 설정 필요)
+
+	FRect boundary;
+	if (playerIndex == 0)
+	{
+		boundary = FRect(FVector2(-1.0f, GROUND_LEVEL), FVector2(0.0f, 1.0f)); // 경계 설정 (플레이어 인덱스마다 다르게 설정 필요)
+	}
+	else
+	{
+		boundary = FRect(FVector2(0.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f)); // 경계 설정 (플레이어 인덱스마다 다르게 설정 필요)
+	}
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY);
 }
 

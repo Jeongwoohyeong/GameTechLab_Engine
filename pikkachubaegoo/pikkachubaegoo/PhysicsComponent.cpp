@@ -5,7 +5,7 @@
 UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary, bool inIsGravity, float inGravityScale, bool inCanReflectWithWall)
 	: owner(inOwner), velocity(), collider(inCollider), boundary(inBoundary), bIsGravity(inIsGravity), gravityScale(inGravityScale), bCanReflectWithWall(inCanReflectWithWall)
 {
-    boundary.SetCenter(owner->GetTransform()->GetLocation());
+	collider.SetCenter(owner->GetTransform()->GetLocation());
 }
 
 void UPhysicsComponent::Update(float deltaTime)
@@ -32,73 +32,73 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 	const FRect& otherCollider = other->GetColliderBounds();
 	FVector2 overlap = CalculateOverlap(collider, otherCollider, ball->GetTransform()->GetLocation(), otherObject->GetTransform()->GetLocation());
 
-    FVector3 newBallLocation = ball->GetTransform()->GetLocation();
-    FVector3 newBallVelocity = GetVelocity();
-    constexpr float MIN_X_VELOCITY = 0.3f;
-    if (fabs(overlap.x) < fabs(overlap.y))
-    {
-        newBallLocation.x -= overlap.x;
-    }
-    else
-    {
-        newBallLocation.y -= overlap.y;
-    }
+	FVector3 newBallLocation = ball->GetTransform()->GetLocation();
+	FVector3 newBallVelocity = GetVelocity();
+	constexpr float MIN_X_VELOCITY = 0.3f;
+	if (fabs(overlap.x) < fabs(overlap.y))
+	{
+		newBallLocation.x -= overlap.x;
+	}
+	else
+	{
+		newBallLocation.y -= overlap.y;
+	}
 
-    if (otherObject->GetType() == FObjectType::Player)
-    {
-        // X Velocity
-        float relativeX = ball->GetTransform()->GetLocation().x - otherObject->GetTransform()->GetLocation().x;
-        if (relativeX > 0)
-        {
-            newBallVelocity.x = fabs(newBallVelocity.x);
-        }
-        else if (relativeX < 0)
-        {
-            newBallVelocity.x = -fabs(newBallVelocity.x);
-        }
-        else
-        {
-            int randomDirection = (rand() % 3) - 1;
-            newBallVelocity.x = randomDirection * newBallVelocity.x;
-        }
+	if (otherObject->GetType() == FObjectType::Player)
+	{
+		// X Velocity
+		float relativeX = ball->GetTransform()->GetLocation().x - otherObject->GetTransform()->GetLocation().x;
+		if (relativeX > 0)
+		{
+			newBallVelocity.x = fabs(newBallVelocity.x);
+		}
+		else if (relativeX < 0)
+		{
+			newBallVelocity.x = -fabs(newBallVelocity.x);
+		}
+		else
+		{
+			int randomDirection = (rand() % 3) - 1;
+			newBallVelocity.x = randomDirection * newBallVelocity.x;
+		}
 
-        if (newBallVelocity.x == 0)
-        {
-            int randomDirection = (rand() % 3) - 1;
-            newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
-        }
+		if (newBallVelocity.x == 0)
+		{
+			int randomDirection = (rand() % 3) - 1;
+			newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
+		}
 
 		// Y Velocity
 		constexpr float MIN_VELOCITY_Y = 0.7f;
 		float currentVelocityY = -newBallVelocity.y;
 
-        if (fabs(currentVelocityY) < MIN_VELOCITY_Y)
-        {
-            newBallVelocity.y = -MIN_VELOCITY_Y;
-        }
-        else
-        {
-            newBallVelocity.y = currentVelocityY;
-        }
-    }
-    else if (otherObject->GetType() == FObjectType::Wall)
-    {
-        if (fabs(overlap.x) < fabs(overlap.y))
-        {
-            newBallVelocity.x *= -1.0f;
-        }
-        else
-        {
-            newBallVelocity.y *= -1.0f;
-        }
+		if (fabs(currentVelocityY) < MIN_VELOCITY_Y)
+		{
+			newBallVelocity.y = -MIN_VELOCITY_Y;
+		}
+		else
+		{
+			newBallVelocity.y = currentVelocityY;
+		}
+	}
+	else if (otherObject->GetType() == FObjectType::Wall)
+	{
+		if (fabs(overlap.x) < fabs(overlap.y))
+		{
+			newBallVelocity.x *= -1.0f;
+		}
+		else
+		{
+			newBallVelocity.y *= -1.0f;
+		}
 
-        if (newBallVelocity.x == 0)
-        {
-            int randomDirection = (rand() % 3) - 1;
-            newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
-        }
+		if (newBallVelocity.x == 0)
+		{
+			int randomDirection = (rand() % 3) - 1;
+			newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
+		}
 
-    }
+	}
 
 	// 최종 위치 및 속도 적용
 	ball->GetTransform()->SetLocation(newBallLocation);
