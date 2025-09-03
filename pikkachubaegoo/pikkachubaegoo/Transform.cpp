@@ -77,21 +77,21 @@ void Transform::AddRotationZ(float degree)
 	isDirty = true;
 }
 
-void Transform::SetPosition(float x, float y, float z)
+void Transform::SetLocation(float x, float y, float z)
 {
 	location = FVector3(x, y, z);
 
 	isDirty = true;
 }
 
-void Transform::SetPosition(const FVector2& location2d)
+void Transform::SetLocation(const FVector2& location2d)
 {
 	location = FVector3(location2d.x, location2d.y, 0.0f);
 
 	isDirty = true;
 }
 
-void Transform::SetPosition(const FVector3& location3d)
+void Transform::SetLocation(const FVector3& location3d)
 {
 	location = location3d;
 

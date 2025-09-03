@@ -1,6 +1,7 @@
 #include "Object.h"
 #include "UMeshRenderer.h"
 #include "App.h"
+#include "Transform.h"
 
 UObject::~UObject()
 {
@@ -11,20 +12,15 @@ UObject::~UObject()
 	}
 }
 
-FVector3 UObject::GetLocation()
+Transform* UObject::GetTransform()
 {
-	return location;
-}
-
-void UObject::SetLocation(const FVector3& newLocation)
-{
-	location = newLocation;
+	return &transform;
 }
 
 void UObject::Draw()
 {
 	if (renderer)
 	{
-		renderer->DrawMesh(GetLocation());
+		renderer->DrawMesh(GetTransform()->GetLocation());
 	}
 }

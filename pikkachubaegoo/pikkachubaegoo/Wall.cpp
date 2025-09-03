@@ -3,7 +3,7 @@
 
 UWall::UWall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
-	SetLocation(FVector3(0, GROUND_LEVEL, 0));
+	GetTransform()->SetLocation(FVector3(0, GROUND_LEVEL, 0));
 	FRect collider(FVector3(-size, -size, 1), FVector3(size, size, 1));
 	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0));
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, false);

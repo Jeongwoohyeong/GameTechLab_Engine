@@ -38,9 +38,6 @@ private:
 	float spikeTimer = 0.0f;
 	bool isSpiking = false;
 
-	// 위치, 속도, 크기
-	float size;
-
 	// 입력 플래그 (임시)
 	bool isLeft = false;
 	bool isRight = false;

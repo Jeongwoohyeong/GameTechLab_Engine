@@ -78,7 +78,7 @@ void UObjectFactory::Render()
 UObject* UObjectFactory::CreatePlayer(FVector3 location)
 {
 	UPlayer* newObject = new UPlayer(new UMeshRenderer(UApp::Ins->GetQuadMesh()));
-	newObject->SetLocation(location);
+	newObject->GetTransform()->SetLocation(location);
 	AddObject(newObject);
 	return newObject;
 }
@@ -86,7 +86,7 @@ UObject* UObjectFactory::CreatePlayer(FVector3 location)
 UObject* UObjectFactory::CreateBall(FVector3 location)
 {
 	UBall* newObject = new UBall(new UMeshRenderer(UApp::Ins->GetCircleMesh()));
-	newObject->SetLocation(location);
+	newObject->GetTransform()->SetLocation(location);
 	AddObject(newObject);
 	return newObject;
 }
@@ -94,7 +94,7 @@ UObject* UObjectFactory::CreateBall(FVector3 location)
 UObject* UObjectFactory::CreateWall(FVector3 location)
 {
 	UWall* newObject = new UWall(new UMeshRenderer(new UMesh(FMeshData::CircleMeshData)));
-	newObject->SetLocation(location);
+	newObject->GetTransform()->SetLocation(location);
 	AddObject(newObject);
 	return newObject;
 }

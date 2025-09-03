@@ -20,9 +20,9 @@ public:
 	void AddRotationY(float degree);
 	void AddRotationZ(float degree);
 
-	void SetPosition(float x, float y, float z);
-	void SetPosition(const FVector2&);
-	void SetPosition(const FVector3&);
+	void SetLocation(float x, float y, float z);
+	void SetLocation(const FVector2&);
+	void SetLocation(const FVector3&);
 
 	void Translate(float dx, float dy, float dz);
 	void Translate(const FVector2&);
