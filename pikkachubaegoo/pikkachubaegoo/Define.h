@@ -1,7 +1,7 @@
 #pragma once
 
 constexpr float GROUND_LEVEL = -0.9f;
-constexpr int MAX_SCORE = 10;
+constexpr int MAX_SCORE = 2;
 
 // BALL
 constexpr float BALL_MIN_VELOCITY_X = 0.4f;

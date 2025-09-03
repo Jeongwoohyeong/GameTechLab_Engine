@@ -152,6 +152,7 @@
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="PlayingState.cpp" />
+    <ClCompile Include="ResultState.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UPlayer.cpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="PlayingState.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="ResultState.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />

@@ -10,7 +10,8 @@ private:
 	{
 		Ready,
 		InProgress,
-		RoundOver
+		RoundOver,
+		End
 	};
 
 	EGameplayState gameplayState;
@@ -19,7 +20,6 @@ private:
 	// --- 추가된 변수 ---
 	int player1Score = 0;
 	int player2Score = 0;
-	const int MAX_SCORE = 10;
 	UObject* ball = nullptr; // 공 오브젝트를 직접 참조하기 위한 포인터
 	UObject* player1 = nullptr;
 	UObject* player2 = nullptr;

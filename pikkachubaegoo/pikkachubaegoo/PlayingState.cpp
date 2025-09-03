@@ -1,6 +1,6 @@
 #include "PlayingState.h"
 #include "App.h"
-//#include "ResultState.h" // (가정) 결과 상태로 전환하기 위함
+#include "ResultState.h"
 #include "ObjectFactory.h"
 #include <string>
 #include "Time.h"
@@ -79,7 +79,8 @@ void PlayingState::Update(float deltaTime)
 			if (player1Score >= MAX_SCORE || player2Score >= MAX_SCORE)
 			{
 				// 게임 종료, 결과 상태로 전환
-				//UApp::Ins->ChangeState(new ResultState());
+				UApp::Ins->ChangeState(new ResultState(player1Score, player2Score));
+				gameplayState = EGameplayState::End;
 			}
 			else
 			{
@@ -161,19 +162,9 @@ void PlayingState::Render()
 
 void PlayingState::Exit()
 {
-	if (player1)
-	{
-		delete player1;
-		player1 = nullptr;
-	}
-	if (player2)
-	{
-		delete player2;
-		player2 = nullptr;
-	}
-	if (ball)
-	{
-		delete ball;
-		ball = nullptr;
-	}
+	UObjectFactory::GetInstance()->ReleaseAll();
+
+	player1 = nullptr;
+	player2 = nullptr;
+	ball = nullptr;
 }
