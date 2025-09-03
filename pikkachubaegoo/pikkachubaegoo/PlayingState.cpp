@@ -68,16 +68,24 @@ void PlayingState::Update(float deltaTime)
 			{
 				player1Score++;
 			}
-			UTime::GetInstance()->SetTimeScale(0.5f);
+			UTime::GetInstance()->SetTimeScale(0.3f);
 			gameplayState = EGameplayState::RoundOver;
-			stateTimer = 1.0f; // 2초간 결과 보여주기
+			stateTimer = 1.5f; // 1.5초간 결과 보여주기 (TimeScale에 영향 받지 않음)
 		}
 		break;
 
 	case EGameplayState::RoundOver:
-		UObjectFactory::GetInstance()->Update(deltaTime);
 		// 라운드 종료 및 상태 전환 로직
-		stateTimer -= deltaTime;
+		UObjectFactory::GetInstance()->Update(deltaTime);
+
+		float timeScale = UTime::GetInstance()->GetTimeScale();
+		// 0 나누기 방지
+		if (timeScale != 0.0f)
+		{
+			// 타임스케일에 영향 받지 않도록 보정
+			stateTimer -= deltaTime / timeScale;
+		}
+
 		if (stateTimer <= 0.0f)
 		{
 			// 최종 스코어 확인
