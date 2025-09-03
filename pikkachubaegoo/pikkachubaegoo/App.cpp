@@ -4,7 +4,7 @@
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
-LPCWSTR SpriteAtlasPath = L"C:\\Users\\Jungle\\Desktop\\git\\pikkachubaegoo\\pikkachubaegoo\\pikkachubaegoo\\Resource\\SpriteAtlas.png";
+LPCWSTR SpriteAtlasPath = L"..\\pikkachubaegoo\\Resource\\sprite_sheet.png";
 UApp* UApp::Ins = nullptr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -199,7 +199,10 @@ void UApp::Render()
 	DeviceContext->IASetInputLayout(SpriteInputLayout);
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
-	UApp::Ins->GetContext()->VSSetConstantBuffers(0, 1, &TransformCBuffer);
+	DeviceContext->VSSetConstantBuffers(0, 1, &TransformCBuffer);
+
+	DeviceContext->PSSetSamplers(0, 1, &SpriteSampleState);
+	DeviceContext->PSSetShaderResources(0, 1, &TestTextureSRV);
 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();

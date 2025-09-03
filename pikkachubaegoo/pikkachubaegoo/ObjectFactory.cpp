@@ -1,5 +1,5 @@
 #include "ObjectFactory.h"
-#include "UMeshRenderer.h"
+#include "MeshRenderer.h"
 #include "App.h"
 #include "Ball.h"
 #include "Wall.h"
