@@ -10,10 +10,13 @@ unsigned int UPlayer::playerCount = 0;
 
 UPlayer::UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
-
 	InRenderer->ChangeAtlasInfo(FVector4(200, 266, 64, 64));
 
 	playerIndex = newPlyaerIndex;
+	if (playerIndex == PLAYER2_INDEX)
+	{
+		GetTransform()->AddRotationY(180);
+	}
 
 	float size = 0.1f;
 	FRect collider(FVector2(-size, -size), FVector2(size, size)); // 플레이어의 충돌 박스 설정
@@ -123,6 +126,7 @@ void UPlayer::Update(float deltaTime)
 			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_CHU);
 			currentState = PlayerState::Sliding;
 			slideTimer = SLIDE_DURATION;
+
 		}
 		break;
 

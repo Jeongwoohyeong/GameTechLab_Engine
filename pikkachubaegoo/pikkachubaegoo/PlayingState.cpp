@@ -26,8 +26,8 @@ void PlayingState::ResetRound()
 void PlayingState::Enter()
 {
 	// 게임 플레이에 필요한 오브젝트들 생성
-	player1 = UObjectFactory::GetInstance()->CreatePlayer(PLAYER1_INDEX, FVector3(-PLAYER_BASE_POSITION_X), FVector3(0.1f, 0.1f)); // Player 1
-	player2 = UObjectFactory::GetInstance()->CreatePlayer(PLAYER2_INDEX, FVector3(PLAYER_BASE_POSITION_X), FVector3(0.1f, 0.1f)); // Player 2
+	player1 = UObjectFactory::GetInstance()->CreatePlayer(PLAYER1_INDEX, FVector3(-PLAYER_BASE_POSITION_X), FVector3(0.1f, 0.1f)); // Player 1, 왼쪽
+	player2 = UObjectFactory::GetInstance()->CreatePlayer(PLAYER2_INDEX, FVector3(PLAYER_BASE_POSITION_X), FVector3(0.1f, 0.1f)); // Player 2, 오른쪽
 	ball = UObjectFactory::GetInstance()->CreateBall(FVector3(BALL_BASE_POSITION_X, BALL_BASE_POSITION_Y)); // Ball
 	UObjectFactory::GetInstance()->CreateWall(FVector3(WALL_BASE_POSITION_X, WALL_BASE_POSITION_Y), FVector3(WALL_SCALE_X, WALL_SCALE_Y)); // Wall
 
