@@ -78,7 +78,7 @@
     <ClCompile Include="PhysicsComponent.cpp">
       <Filter>소스 파일\Object</Filter>
     </ClCompile>
-    <ClCompile Include="UPlayer.cpp">
+    <ClCompile Include="Player.cpp">
       <Filter>소스 파일\Object</Filter>
     </ClCompile>
     <ClCompile Include="inputclass.cpp">
@@ -96,16 +96,10 @@
     <ClCompile Include="MeshData.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Ball.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Matrix.cpp">
       <Filter>소스 파일\Core</Filter>
     </ClCompile>
     <ClCompile Include="ObjectFactory.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Wall.cpp">
@@ -120,17 +114,23 @@
     <ClCompile Include="PlayingState.cpp">
       <Filter>소스 파일\State</Filter>
     </ClCompile>
-    <ClCompile Include="MeshRenderer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ResultState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SpriteSheet.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SoundManager.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultState.cpp">
+      <Filter>소스 파일\State</Filter>
+    </ClCompile>
+    <ClCompile Include="Ball.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>소스 파일\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -173,9 +173,6 @@
     <ClInclude Include="PhysicsComponent.h">
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
-    <ClInclude Include="UPlayer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="inputclass.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -191,9 +188,6 @@
     <ClInclude Include="MeshData.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Ball.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>헤더 파일\Core</Filter>
     </ClInclude>
@@ -201,9 +195,6 @@
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
     <ClInclude Include="ObjectFactory.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SpriteSheet.h">
@@ -293,17 +284,26 @@
     <ClInclude Include="DirectXTK\Inc\XboxDDSTextureLoader.h">
       <Filter>DirectXTK</Filter>
     </ClInclude>
-    <ClInclude Include="MeshRenderer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ResultState.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SoundManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SpriteStruct.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Ball.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultState.h">
+      <Filter>헤더 파일\State</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -157,7 +157,7 @@
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="UPlayer.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -213,7 +213,7 @@
     <ClInclude Include="SpriteStruct.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Transform.h" />
-    <ClInclude Include="UPlayer.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Wall.h" />
   </ItemGroup>

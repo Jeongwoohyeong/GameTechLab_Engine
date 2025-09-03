@@ -1,7 +1,7 @@
 ﻿#include "PhysicsComponent.h"
 #include "math.h"
 #include "stdlib.h"
-#include "UPlayer.h"
+#include "Player.h"
 #include "Define.h"
 #include "SoundManager.h"
 
