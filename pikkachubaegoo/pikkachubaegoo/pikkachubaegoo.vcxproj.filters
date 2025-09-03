@@ -89,6 +89,14 @@
     </ClCompile>
     <ClCompile Include="Matrix.cpp">
       <Filter>소스 파일\Core</Filter>
+    <ClCompile Include="UMeshRenderer.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="UMeshRenderer.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectFactory.cpp">
+      <Filter>소스 파일\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,9 +139,6 @@
     <ClInclude Include="PhysicsComponent.h">
       <Filter>헤더 파일\Object</Filter>
     </ClInclude>
-    <ClInclude Include="UPlayer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="inputclass.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -154,11 +159,24 @@
     </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>헤더 파일\Core</Filter>
+    <ClInclude Include="UPlayer.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectFactory.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SpriteShader.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resource\sprite_sheet.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resource\sprite_sheet.png">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

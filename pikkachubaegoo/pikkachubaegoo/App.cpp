@@ -1,6 +1,7 @@
 
 #include "Time.h"
 #include "App.h"
+#include "ObjectFactory.h"
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
 UApp* UApp::Ins = nullptr;
@@ -116,6 +117,14 @@ void UApp::InitDirect()
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
 
+	// Create Constant Buffer
+	D3D11_BUFFER_DESC constantbufferdesc = {};
+	constantbufferdesc.ByteWidth = sizeof(FVector3) + 0xf & 0xfffffff0;
+	constantbufferdesc.Usage = D3D11_USAGE_DYNAMIC;
+	constantbufferdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	constantbufferdesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	Device->CreateBuffer(&constantbufferdesc, nullptr, &TransformCBuffer);
 
 }
 void UApp::InitImGui()
@@ -129,16 +138,20 @@ void UApp::InitImGui()
 }
 void UApp::Loading()
 {
-	TestSpriteMesh = new UMesh(FMeshData::SpriteMeshData);
+	QuadMesh = new UMesh(FMeshData::QuadMeshData);
 }
 void UApp::Start()
 {
 	UTime::GetInstance()->Init();
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 1
+	UObjectFactory::GetInstance()->CreatePlayer(FVector3()); // Player 2
+	UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
 }
 void UApp::Update()
 {
 	UTime::GetInstance()->Update();
-	// Game Logic
+	UInput::GetInstance()->Update();
+	UObjectFactory::GetInstance()->Update(UTime::GetInstance()->GetDeltaTime());
 }
 void UApp::RenderUI()
 {
@@ -153,8 +166,6 @@ void UApp::RenderUI()
 }
 void UApp::Render()
 {
-
-	//매프레임 설정
 	DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor);
 
 	DeviceContext->RSSetViewports(1, &ViewportInfo);
@@ -166,19 +177,30 @@ void UApp::Render()
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
 
-	UINT offset = 0;
-	DeviceContext->IASetVertexBuffers(0, 1, &TestSpriteMesh->VertexBuffer, &TestSpriteMesh->Stride, &offset);
-	DeviceContext->IASetIndexBuffer(TestSpriteMesh->IndexBuffer, DXGI_FORMAT_R32_UINT, offset);
-	DeviceContext->DrawIndexed(TestSpriteMesh->IndexCount, 0, 0);
+	UObjectFactory::GetInstance()->Render();
 
-
-	//RenderUI();
+	RenderUI();
 	SwapChain->Present(1, 0);
-
 }
 
 void UApp::Release()
 {
+	//Release 추가 필요
+	QuadMesh->Release();
+
+	TransformCBuffer->Release();
+	SpritePS->Release();
+	SpriteVS->Release();
+	SpriteInputLayout->Release();
+	//RenderContext->
+	RasterizerState->Release();
+	FrameBufferRTV->Release();
+	FrameBufferSRV->Release();
+	FrameBuffer->Release();
+	SwapChain->Release();
+	DeviceContext->Release();
+	Device->Release();
+
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();

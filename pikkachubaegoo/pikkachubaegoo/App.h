@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "Mesh.h"
+#include "inputclass.h"
 using namespace std;
 
 class UApp
@@ -37,7 +38,8 @@ private:
 	ID3D11VertexShader* SpriteVS;
 	ID3D11PixelShader* SpritePS;
 
-	UMesh* TestSpriteMesh;
+	UMesh* QuadMesh;
+	ID3D11Buffer* TransformCBuffer;
 public:
 	void Init(HINSTANCE hInstance);
 	void MainLoop();
@@ -49,6 +51,14 @@ public:
 	ID3D11DeviceContext* GetContext() const
 	{
 		return DeviceContext;
+	}
+	ID3D11Buffer* GetTransformCBuffer() const
+	{
+		return TransformCBuffer;
+	}
+	UMesh* GetQuadMesh() const
+	{
+		return QuadMesh;
 	}
 private:
 	void InitWindow(HINSTANCE hInstance);

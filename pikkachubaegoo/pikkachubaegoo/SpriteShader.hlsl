@@ -1,6 +1,6 @@
 cbuffer Constant : register(b0)
 {
-	float4 temp;
+	float3 movePos;
 }
 
 struct VSInput
@@ -17,7 +17,7 @@ struct PSInput
 PSInput mainVS(VSInput input)
 {
 	PSInput output;
-	output.posCS = float4(input.posModel, 1);
+	output.posCS = float4(input.posModel + movePos, 1);
 	output.uv = input.uv;
 	return output;
 }

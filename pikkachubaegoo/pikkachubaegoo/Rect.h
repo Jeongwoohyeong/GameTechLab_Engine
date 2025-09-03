@@ -2,37 +2,37 @@
 #include "Vector.h"
 
 struct FRect {
-    FRect() : min(FVector3(0, 0)), max(FVector3(0, 0)) {}
-    FRect(const FVector3& inMin, const FVector3& inMax) : min(inMin), max(inMax) {}
+    FRect() : _min(FVector3(0, 0)), _max(FVector3(0, 0)) {}
+    FRect(const FVector3& inMin, const FVector3& inMax) : _min(inMin), _max(inMax) {}
     FRect(const FVector3& center, float width, float height) 
     {
-        min.x = center.x - width / 2.0f;
-        min.y = center.y - height / 2.0f;
-        max.x = center.x + width / 2.0f;
-        max.y = center.y + height / 2.0f;
+        _min.x = center.x - width / 2.0f;
+        _min.y = center.y - height / 2.0f;
+        _max.x = center.x + width / 2.0f;
+        _max.y = center.y + height / 2.0f;
     }
 
-    FVector3 min; // Bottom-Left
-    FVector3 max; // Top-Right
+    FVector3 _min; // Bottom-Left
+    FVector3 _max; // Top-Right
 
-    float GetWidth() const { return max.x - min.x; }
-    float GetHeight() const { return max.y - min.y; }
+    float GetWidth() const { return _max.x - _min.x; }
+    float GetHeight() const { return _max.y - _min.y; }
 
     void SetCenter(const FVector3& newCenter)
     {
         float halfWidth = GetWidth() / 2.0f;
         float halfHeight = GetHeight() / 2.0f;
 
-        min.x = newCenter.x - halfWidth;
-        min.y = newCenter.y - halfHeight;
-        max.x = newCenter.x + halfWidth;
-        max.y = newCenter.y + halfHeight;
+        _min.x = newCenter.x - halfWidth;
+        _min.y = newCenter.y - halfHeight;
+        _max.x = newCenter.x + halfWidth;
+        _max.y = newCenter.y + halfHeight;
     }
 
     // AABB Collision Check
     bool Intersects(const FRect& other) const 
     {
-        return !(min.x > other.max.x || max.x < other.min.x ||
-            min.y > other.max.y || max.y < other.min.y);
+        return !(_min.x > other._max.x || _max.x < other._min.x ||
+            _min.y > other._max.y || _max.y < other._min.y);
     }
 };

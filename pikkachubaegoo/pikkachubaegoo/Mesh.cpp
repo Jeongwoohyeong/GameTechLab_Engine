@@ -33,3 +33,27 @@ UMesh::UMesh(FMeshData& meshData)
 		return;
 	}
 }
+void UMesh::Draw()
+{
+	UINT offset = 0;
+	UApp::Ins->GetContext()->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
+	UApp::Ins->GetContext()->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, offset);
+	UApp::Ins->GetContext()->DrawIndexed(IndexCount, 0, 0);
+}
+
+void UMesh::Release()
+{
+	if (VertexBuffer) 
+	{
+		VertexBuffer->Release();
+	}
+	if (IndexBuffer)
+	{
+		IndexBuffer->Release();
+	}
+}
+
+UMesh::~UMesh()
+{
+	Release();
+}
