@@ -1,12 +1,11 @@
 #pragma once
 #include "IGameState.h"
 #include <vector>
-#include "Object.h" // (가정) UObject 클래스
+#include "Object.h" // UObject 클래스
 
 class PlayingState : public IGameState
 {
 private:
-	// PlayingState 내부에서만 사용하는 세부 게임 상태
 	enum class EGameplayState
 	{
 		Ready,
@@ -17,11 +16,20 @@ private:
 	EGameplayState gameplayState;
 	float stateTimer = 0.0f;
 
-	std::vector<UObject*> gameObjects;
-
+	// --- 추가된 변수 ---
+	int player1Score = 0;
+	int player2Score = 0;
+	const int MAX_SCORE = 10;
+	UObject* ball = nullptr; // 공 오브젝트를 직접 참조하기 위한 포인터
+	UObject* player1 = nullptr;
+	UObject* player2 = nullptr;
 public:
 	void Enter() override;
 	void Update(float deltaTime) override;
 	void Render() override;
 	void Exit() override;
+
+private:
+	// 라운드를 초기 상태로 리셋하는 함수
+	void ResetRound();
 };

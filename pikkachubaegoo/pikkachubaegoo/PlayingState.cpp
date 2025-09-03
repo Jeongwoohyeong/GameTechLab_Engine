@@ -4,17 +4,30 @@
 #include "ObjectFactory.h"
 #include <string>
 
+// 라운드를 시작하거나 재시작할 때 호출되는 함수
+void PlayingState::ResetRound()
+{
+	player1->GetTransform()->SetLocation(FVector3(-0.5f)); // Player 1 위치 초기화
+	player2->GetTransform()->SetLocation(FVector3(0.5f)); // Player 1 위치 초기화
+	ball->GetTransform()->SetLocation(FVector3(0.0, 0.9f)); // Player 1 위치 초기화
+
+	// 상태를 'Ready'로 설정하고 타이머 초기화
+	gameplayState = EGameplayState::Ready;
+	stateTimer = 2.0f; // 카운트다운 전체 시간을 2초로 설정
+}
+
 void PlayingState::Enter()
 {
 	// 게임 플레이에 필요한 오브젝트들 생성
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
-	UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
-	UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
+	player1 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
+	player2 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
+	ball = UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
 	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f), FVector3(1.0f, 3.0f)); // Wall
 
-	// 첫 세부 상태를 'Ready'로 설정
-	gameplayState = EGameplayState::Ready;
-	stateTimer = 3.0f; // 3초 카운트다운
+	player1Score = 0;
+	player2Score = 0;
+
+	ResetRound();
 }
 
 void PlayingState::Update(float deltaTime)
@@ -34,13 +47,22 @@ void PlayingState::Update(float deltaTime)
 		// 실제 게임 로직
 		UObjectFactory::GetInstance()->Update(deltaTime);
 
-		// 
-		// (예시) 게임 종료 조건 확인
-		//if (/* 누군가 승리했다면 */)
-		//{
-		//	gameplayState = EGameplayState::RoundOver;
-		//	stateTimer = 2.0f; // 2초간 결과 보여주기
-		//}
+		// 공이 바닥에 닿았을 때
+		if (ball->GetPhysicsComponent()->IsGrounded())
+		{
+			// 왼쪽이면 Player 2 승리, 오른쪽이면 Player 1 승리
+			if (ball->GetTransform()->GetLocation().x < 0)
+			{
+				player2Score++;
+			}
+			else
+			{
+				player1Score++;
+			}
+
+			gameplayState = EGameplayState::RoundOver;
+			stateTimer = 2.0f; // 2초간 결과 보여주기
+		}
 		break;
 
 	case EGameplayState::RoundOver:
@@ -48,8 +70,17 @@ void PlayingState::Update(float deltaTime)
 		stateTimer -= deltaTime;
 		if (stateTimer <= 0.0f)
 		{
-			// UApp에 ResultState로 전환 요청
-			//UApp::Ins->ChangeState(new ResultState());
+			// 최종 스코어 확인
+			if (player1Score >= MAX_SCORE || player2Score >= MAX_SCORE)
+			{
+				// 게임 종료, 결과 상태로 전환
+				//UApp::Ins->ChangeState(new ResultState());
+			}
+			else
+			{
+				// 아직 게임이 끝나지 않았으면 다음 라운드 시작
+				ResetRound();
+			}
 		}
 		break;
 	}
@@ -60,6 +91,27 @@ void PlayingState::Render()
 	// 게임 오브젝트 렌더링
 	UObjectFactory::GetInstance()->Render();
 
+	// --- UI 렌더링 ---
+
+	// 1. 점수판 UI
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, 50)); // 상단에 얇은 바
+	ImGui::Begin("Scoreboard", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
+
+	std::string scoreText = std::to_string(player1Score) + " : " + std::to_string(player2Score);
+	float originalFontSize = ImGui::GetFont()->Scale;
+	ImGui::GetFont()->Scale = 3.0f;
+	ImGui::PushFont(ImGui::GetFont());
+
+	ImVec2 textSize = ImGui::CalcTextSize(scoreText.c_str());
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - textSize.x) * 0.5f);
+	ImGui::SetCursorPosY(10); // 상단에서 약간 아래
+	ImGui::Text(scoreText.c_str());
+
+	ImGui::PopFont();
+	ImGui::GetFont()->Scale = originalFontSize;
+	ImGui::End();
+
 	// 세부 상태에 따른 UI 렌더링 (예: 카운트다운 숫자)
 	if (gameplayState == EGameplayState::Ready)
 	{
@@ -69,13 +121,13 @@ void PlayingState::Render()
 		ImGui::Begin("CountdownUI", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
 
 		// 2. 타이머 값에 따라 표시할 텍스트를 결정합니다.
+		// 2. 타이머 값에 따라 표시할 텍스트를 결정합니다.
 		std::string countdownText;
-		if (stateTimer > 0.0f)
+		if (stateTimer > 0.5f) // 남은 시간이 0.5초보다 많으면
 		{
-			// 타이머 값을 올림하여 정수로 만들고 문자열로 변환합니다. (e.g., 2.9초 -> "3")
-			countdownText = std::to_string((int)ceil(stateTimer));
+			countdownText = "Ready";
 		}
-		else
+		else // 남은 시간이 0.5초 이하이면
 		{
 			countdownText = "START!";
 		}
@@ -104,10 +156,19 @@ void PlayingState::Render()
 
 void PlayingState::Exit()
 {
-	// 생성했던 모든 게임 오브젝트 삭제
-	for (auto& obj : gameObjects)
+	if (player1)
 	{
-		delete obj;
+		delete player1;
+		player1 = nullptr;
 	}
-	gameObjects.clear();
+	if (player2)
+	{
+		delete player2;
+		player2 = nullptr;
+	}
+	if (ball)
+	{
+		delete ball;
+		ball = nullptr;
+	}
 }
