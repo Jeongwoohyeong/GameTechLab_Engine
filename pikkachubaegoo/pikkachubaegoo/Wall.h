@@ -1,11 +1,11 @@
 #pragma once
 #include "Object.h"
 
-class UBall : public UObject
+class UWall : public UObject
 {
 public:
-	UBall(UMeshRenderer* InRenderer);
-	~UBall();
+	UWall(UMeshRenderer* InRenderer);
+	~UWall();
 
 	// UObject override
 	FObjectType GetType() override;
@@ -15,21 +15,11 @@ public:
 	void Update(float deltaTime) override;
 
 private:
-	// Cnst Value
-	const float GRAVITY = 0.98f * 2.0f;
 	const float GROUND_LEVEL = -1;
-	const float WALK_SPEED = 1;
-	const float MOVE_SPEED = 0.1f;
-	const float SLIDE_SPEED = 1.0f;
-	const float SLIDE_DURATION = 0.5f;
-	const float STUN_DURATION = 0.2f;
-	const float JUMP_STRENGTH = 1.0f;
-	const float SPIKE_DURATION = 0.5f;
 
 	// Component
 	class UPhysicsComponent* physicsComponent;
 
 	// Object
-	FVector3 location;
 	float size;
 };

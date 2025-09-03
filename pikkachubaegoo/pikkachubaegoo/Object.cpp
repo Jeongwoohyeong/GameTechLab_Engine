@@ -11,6 +11,16 @@ UObject::~UObject()
 	}
 }
 
+FVector3 UObject::GetLocation()
+{
+	return location;
+}
+
+void UObject::SetLocation(const FVector3& newLocation)
+{
+	location = newLocation;
+}
+
 void UObject::Draw()
 {
 	if (renderer)

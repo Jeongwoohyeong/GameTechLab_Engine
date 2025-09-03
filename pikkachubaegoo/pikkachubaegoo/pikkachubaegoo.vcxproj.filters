@@ -88,7 +88,13 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Matrix.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="UMeshRenderer.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="UMeshRenderer.cpp">
+      <Filter>소스 파일\Object</Filter>
     </ClCompile>
     <ClCompile Include="ObjectFactory.cpp">
       <Filter>소스 파일</Filter>
@@ -101,6 +107,12 @@
     </ClCompile>
     <ClCompile Include="UMeshRenderer.h">
       <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Wall.cpp">
+      <Filter>소스 파일\Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Ball.cpp">
+      <Filter>소스 파일\Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -165,7 +177,10 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Matrix.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="UPlayer.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
     <ClInclude Include="ObjectFactory.h">
       <Filter>헤더 파일</Filter>
@@ -175,6 +190,12 @@
     </ClInclude>
     <ClInclude Include="SpriteSheet.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Wall.h">
+      <Filter>헤더 파일\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Ball.h">
+      <Filter>헤더 파일\Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

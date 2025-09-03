@@ -29,6 +29,7 @@ public:
 public:
 	UObject* CreatePlayer(FVector3 location);
 	UObject* CreateBall(FVector3 location);
+	UObject* CreateWall(FVector3 location);
 
 private:
 	void AddObject(UObject* newObject);

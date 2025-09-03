@@ -39,7 +39,6 @@ private:
 	bool isSpiking = false;
 
 	// 위치, 속도, 크기
-	FVector3 location;
 	float size;
 
 	// 입력 플래그 (임시)
@@ -54,8 +53,6 @@ public:
 
 	// UObject 오버라이드
 	FObjectType GetType() override;
-	FVector3 GetLocation() override;
-	void SetLocation(const FVector3& newLocation) override;
 	virtual class UPhysicsComponent* GetPhysicsComponent() const;
 	FVector3 GetVelocity() override;
 	void SetVelocity(const FVector3& newVelocity) override;

@@ -39,6 +39,7 @@ private:
 	ID3D11PixelShader* SpritePS;
 
 	UMesh* QuadMesh;
+	UMesh* CircleMesh;
 	ID3D11Buffer* TransformCBuffer;
 public:
 	void Init(HINSTANCE hInstance);
@@ -59,6 +60,10 @@ public:
 	UMesh* GetQuadMesh() const
 	{
 		return QuadMesh;
+	}
+	UMesh* GetCircleMesh() const
+	{
+		return CircleMesh;
 	}
 private:
 	void InitWindow(HINSTANCE hInstance);

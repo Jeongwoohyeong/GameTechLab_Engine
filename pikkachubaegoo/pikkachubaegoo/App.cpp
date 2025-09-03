@@ -139,6 +139,7 @@ void UApp::InitImGui()
 void UApp::Loading()
 {
 	QuadMesh = new UMesh(FMeshData::QuadMeshData);
+	CircleMesh = new UMesh(FMeshData::CircleMeshData);
 }
 void UApp::Start()
 {

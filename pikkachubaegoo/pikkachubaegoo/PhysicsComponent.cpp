@@ -22,85 +22,114 @@ bool UPhysicsComponent::CheckCollision(const UPhysicsComponent* other)
 
 void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 {
-	if ((owner->GetType() == FObjectType::Ball && other->GetOwner()->GetType() == FObjectType::Player))
-	{
-		UObject* ball = GetOwner();
-		UObject* player = other->GetOwner();
+    if (owner->GetType() != FObjectType::Ball)
+    {
+        return;
+    }
 
-		const FRect& playerCollider = other->GetColliderBounds();
+    UObject* ball = GetOwner();
+    UObject* otherObject = other->GetOwner();
+    const FRect& otherCollider = other->GetColliderBounds();
+    FVector2 overlap = CalculateOverlap(collider, otherCollider, ball->GetLocation(), otherObject->GetLocation());
 
-		float overlapX = 0.0f;
-		if (collider._max.x > playerCollider._min.x && collider._min.x < playerCollider._max.x)
-		{
-			if (ball->GetLocation().x > player->GetLocation().x)
-			{
-				overlapX = collider._min.x - playerCollider._max.x;
-			}
-			else
-			{
-				overlapX = collider._max.x - playerCollider._min.x;
-			}
-		}
-		float overlapY = 0.0f;
-		if (collider._max.y > playerCollider._min.y && collider._min.y < playerCollider._max.y)
-		{
-			if (ball->GetLocation().y > player->GetLocation().y)
-			{
-				overlapY = collider._min.y - playerCollider._max.y;
-			}
-			else
-			{
-				overlapY = collider._max.y - playerCollider._min.y;
-			}
-		}
+    FVector3 newBallLocation = ball->GetLocation();
+    FVector3 newBallVelocity = GetVelocity();
 
-		FVector3 newBallLocation = ball->GetLocation();
-		if (fabs(overlapX) < fabs(overlapY))
-		{
-			newBallLocation.x -= overlapX;
-		}
-		else
-		{
-			newBallLocation.y -= overlapY;
-		}
-		ball->SetLocation(newBallLocation);
+    if (otherObject->GetType() == FObjectType::Player)
+    {
+        if (fabs(overlap.x) < fabs(overlap.y))
+        {
+            newBallLocation.x -= overlap.x;
+        }
+        else
+        {
+            newBallLocation.y -= overlap.y;
+        }
 
-		FVector3 newBallVelocity = GetVelocity();
+        // X Velocity
+        float relativeX = ball->GetLocation().x - otherObject->GetLocation().x;
+        if (relativeX > 0)
+        {
+            newBallVelocity.x = fabs(newBallVelocity.x);
+        }
+        else if (relativeX < 0)
+        {
+            newBallVelocity.x = -fabs(newBallVelocity.x);
+        }
+        else
+        {
+            int randomDirection = (rand() % 3) - 1;
+            newBallVelocity.x = randomDirection * newBallVelocity.x;
+        }
 
-		// X Velocity
-		float relativeX = ball->GetLocation().x - player->GetLocation().x;
-		if (relativeX > 0)
-		{
-			newBallVelocity.x = fabs(newBallVelocity.x);
-		}
-		else if (relativeX < 0)
-		{
-			newBallVelocity.x = -fabs(newBallVelocity.x);
-		}
+        if (newBallVelocity.x == 0)
+        {
+            int randomDirection = (rand() % 3) - 1;
+            constexpr float MIN_X_VELOCITY = 0.3f;
+            newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
+        }
 
-		if (newBallVelocity.x == 0)
-		{
-			int randomDirection = (rand() % 3) - 1;
+        // Y Velocity
+        constexpr float MIN_VELOCITY_Y = 0.7f;
+        float currentVelocityY = -newBallVelocity.y;
 
-			constexpr float MIN_X_VELOCITY = 0.3f;
-			newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
-		}
+        if (fabs(currentVelocityY) < MIN_VELOCITY_Y)
+        {
+            newBallVelocity.y = -MIN_VELOCITY_Y;
+        }
+        else
+        {
+            newBallVelocity.y = currentVelocityY;
+        }
+    }
+    else if (otherObject->GetType() == FObjectType::Wall)
+    {
+        if (fabs(overlap.x) < fabs(overlap.y))
+        {
+            newBallLocation.x -= overlap.x;
+            newBallVelocity.y *= -1.0f;
+        }
+        else
+        {
+            newBallLocation.y -= overlap.y;
+            newBallVelocity.x *= -1.0f;
+        }
+    }
 
-		// Y Velocity
-		constexpr float MIN_VELOCITY_Y = 0.7f;
-		float currentVelocityY = -newBallVelocity.y;
+    // 최종 위치 및 속도 적용
+    ball->SetLocation(newBallLocation);
+    SetVelocity(newBallVelocity);
+}
 
-		if (fabs(currentVelocityY) < MIN_VELOCITY_Y)
-		{
-			newBallVelocity.y = -MIN_VELOCITY_Y;
-		}
-		else
-		{
-			newBallVelocity.y = currentVelocityY;
-		}
+FVector2 UPhysicsComponent::CalculateOverlap(const FRect& collider, const FRect& otherCollider, const FVector3& objectLocation, const FVector3& otherObjectLocation)
+{
+    float overlapX = 0.0f;
+    if (collider._max.x > otherCollider._min.x && collider._min.x < otherCollider._max.x)
+    {
+        if (objectLocation.x > otherObjectLocation.x)
+        {
+            overlapX = collider._min.x - otherCollider._max.x;
+        }
+        else
+        {
+            overlapX = collider._max.x - otherCollider._min.x;
+        }
+    }
 
-		SetVelocity(newBallVelocity);
-	}
+    float overlapY = 0.0f;
+    if (collider._max.y > otherCollider._min.y && collider._min.y < otherCollider._max.y)
+    {
+        if (objectLocation.y > otherObjectLocation.y)
+        {
+            overlapY = collider._min.y - otherCollider._max.y;
+        }
+        else
+        {
+            overlapY = collider._max.y - otherCollider._min.y;
+        }
+    }
+
+    return FVector2(overlapX, overlapY);
 }
 
 void UPhysicsComponent::ApplyGravity(float deltaTime)

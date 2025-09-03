@@ -25,16 +25,6 @@ FObjectType UBall::GetType()
 	return FObjectType::Ball;
 }
 
-FVector3 UBall::GetLocation()
-{
-	return location;
-}
-
-void UBall::SetLocation(const FVector3& newLocation)
-{
-	location = newLocation;
-}
-
 UPhysicsComponent* UBall::GetPhysicsComponent() const
 {
 	return physicsComponent;

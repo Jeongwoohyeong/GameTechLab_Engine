@@ -20,6 +20,8 @@ public:
     const FRect& GetColliderBounds() const { return collider; }
 
 private:
+    FVector2 CalculateOverlap(const FRect& collider, const FRect& otherCollider, const FVector3& objectLocation, const FVector3& otherObjectLocation);
+
     void ApplyGravity(float deltaTime);
     void UpdatePosition(float deltaTime);
     void CheckBoundaryCollision();

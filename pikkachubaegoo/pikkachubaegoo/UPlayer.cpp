@@ -10,9 +10,8 @@ UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	playerIndex = playerCount++;
 	size = 0.1f;
-	location = FVector3(0, GROUND_LEVEL, 0);
-	FRect collider(FVector3(-size / 2, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
-
+	SetLocation(FVector3(0, GROUND_LEVEL, 0));
+	FRect collider(FVector3(-size, -size, 1), FVector3(size, size, 1)); // 플레이어의 충돌 박스 설정
 	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0)); // 경계 설정
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY);
 }
@@ -29,16 +28,6 @@ UPlayer::~UPlayer()
 FObjectType UPlayer::GetType()
 {
 	return FObjectType::Player;
-}
-
-FVector3 UPlayer::GetLocation()
-{
-	return location;
-}
-
-void UPlayer::SetLocation(const FVector3& newLocation)
-{
-	location = newLocation;
 }
 
 UPhysicsComponent* UPlayer::GetPhysicsComponent() const

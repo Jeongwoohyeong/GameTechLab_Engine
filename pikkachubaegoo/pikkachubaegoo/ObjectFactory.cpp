@@ -2,6 +2,7 @@
 #include "UMeshRenderer.h"
 #include "App.h"
 #include "Ball.h"
+#include "Wall.h"
 
 UObjectFactory* UObjectFactory::instance = nullptr;
 UObjectFactory* UObjectFactory::GetInstance()
@@ -84,7 +85,15 @@ UObject* UObjectFactory::CreatePlayer(FVector3 location)
 
 UObject* UObjectFactory::CreateBall(FVector3 location)
 {
-	UBall* newObject = new UBall(new UMeshRenderer(new UMesh(FMeshData::CircleMeshData)));
+	UBall* newObject = new UBall(new UMeshRenderer(UApp::Ins->GetCircleMesh()));
+	newObject->SetLocation(location);
+	AddObject(newObject);
+	return newObject;
+}
+
+UObject* UObjectFactory::CreateWall(FVector3 location)
+{
+	UWall* newObject = new UWall(new UMeshRenderer(new UMesh(FMeshData::CircleMeshData)));
 	newObject->SetLocation(location);
 	AddObject(newObject);
 	return newObject;
