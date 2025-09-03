@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Ball.h" />
+    <ClInclude Include="CustomVector.h" />
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />

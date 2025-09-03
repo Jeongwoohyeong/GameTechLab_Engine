@@ -2,6 +2,7 @@
 #include "Object.h"
 #include "Vector.h"
 #include "UPlayer.h"
+#include "CustomVector.h"
 
 class UObjectFactory
 {
@@ -13,8 +14,7 @@ public:
 private:
 	static UObjectFactory* instance;
 
-	UObject** ObjectList = nullptr;
-	UINT ObjectListSize = 0;
+	UCustomVector<UObject*> ObjectList;
 
 public:
 	UObjectFactory() = default;
