@@ -129,6 +129,16 @@ void UPlayer::Update(float deltaTime)
 			currentState = PlayerState::Sliding;
 			slideTimer = SLIDE_DURATION;
 
+			bool bSlideLeft = GetVelocity().x < 0;
+			float rotY = GetTransform()->GetRotationDegree().y;
+			if (bSlideLeft && abs(rotY) < 10)
+			{
+				GetTransform()->AddRotationY(180);
+			}
+			if (bSlideLeft == false && abs(rotY) > 170)
+			{
+				GetTransform()->AddRotationY(180);
+			}
 		}
 		break;
 
@@ -181,6 +191,16 @@ void UPlayer::Update(float deltaTime)
 		if (stunTimer <= 0)
 		{
 			currentState = PlayerState::Idle;
+			float rotY = GetTransform()->GetRotationDegree().y;
+			if (playerIndex == PLAYER1_INDEX && abs(rotY) > 170)
+			{
+				GetTransform()->AddRotationY(180);
+			}
+			if (playerIndex == PLAYER2_INDEX && abs(rotY) < 10)
+			{
+				GetTransform()->AddRotationY(180);
+			}
+		
 		}
 		break;
 	}

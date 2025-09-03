@@ -155,6 +155,13 @@ float Transform::DegreeToRadians(float degree) const
 float Transform::RadiansToDegree(float radians) const
 {
 	float deg = radians * (180.0f / PI);
-
+	while (deg <= -360)
+	{
+		deg += 360;
+	}
+	while (deg >= 360)
+	{
+		deg -= 360;
+	}
 	return deg;
 }
