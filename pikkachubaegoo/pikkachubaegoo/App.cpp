@@ -140,6 +140,15 @@ void UApp::InitDirect()
 
 	Device->CreateBuffer(&constantbufferdesc, nullptr, &TransformCBuffer);
 
+	//Create SamplerState
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	D3DUtil::CreateSamplerState(&SpriteSampleState, samplerDesc);
+
 }
 void UApp::InitImGui()
 {
@@ -158,8 +167,11 @@ void UApp::Loading()
 	SpriteSheet.Load(SpriteAtlasJsonPath);
 	wstring atlasSpritePath = SpriteSheet.GetImagePath();
 	LPCWSTR atlasSpritePathLPCWSTR = atlasSpritePath.c_str();
-	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTexture, &TestTextureSRV);
+
+	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTextureSRV);
 	USoundManager::GetInstance()->Init();
+
+
 }
 void UApp::Start()
 {

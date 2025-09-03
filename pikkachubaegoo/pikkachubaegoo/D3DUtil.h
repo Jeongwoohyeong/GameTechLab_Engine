@@ -15,7 +15,8 @@ public:
 	static void CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader** vs, ID3D11InputLayout** inputLayout);
 	static void CreatePS(LPCWSTR& fileName, ID3D11PixelShader** ps);
 	static void CreateConstantBuffer(ID3D11Buffer** cBuffer, UINT size);
-	static void LoadTexture(LPCWSTR& filePath, ID3D11Texture2D** texture, ID3D11ShaderResourceView** textureSRV);
+	static void LoadTexture(LPCWSTR& filePath, ID3D11ShaderResourceView** textureSRV);
+	static void CreateSamplerState(ID3D11SamplerState** samplerState, D3D11_SAMPLER_DESC& desc);
 	template<typename T>
 	static void UpdateConstantBuffer(ID3D11DeviceContext* context, ID3D11Buffer* cBuffer, T& cBufferData)
 	{
