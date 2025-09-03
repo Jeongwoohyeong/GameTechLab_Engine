@@ -120,7 +120,7 @@ FVector4 USpriteSheet::GetSourceRect(const std::string& spriteName)
 {
     FVector4 rect;
 
-    FSpriteFrame* frame = this->GetFrame(spriteName);
+    const FSpriteFrame* frame = this->GetFrame(spriteName);
     if (frame)
     {
         float x, y, w, h;

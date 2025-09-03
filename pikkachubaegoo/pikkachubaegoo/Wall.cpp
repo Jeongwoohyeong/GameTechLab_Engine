@@ -1,6 +1,7 @@
 #include "Wall.h"
 #include "PhysicsComponent.h"
 #include "Define.h"
+const string UWall::WallSpriteAtlasKey = "objects/net_pillar.png";
 
 UWall::UWall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {

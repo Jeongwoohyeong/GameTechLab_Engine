@@ -2,6 +2,7 @@
 #include "Rect.h"
 #include "PhysicsComponent.h"
 #include "Define.h"
+const string UBall::BallSpriteAtlasKey = "ball/ball_0.png";
 
 UBall::UBall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {

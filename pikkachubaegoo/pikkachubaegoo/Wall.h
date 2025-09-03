@@ -1,8 +1,12 @@
 #pragma once
 #include "Object.h"
+#include <string>
+using namespace std;
 
 class UWall : public UObject
 {
+public:
+	const static string WallSpriteAtlasKey;
 public:
 	UWall(UMeshRenderer* InRenderer);
 	~UWall();

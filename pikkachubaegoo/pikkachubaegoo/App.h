@@ -12,6 +12,7 @@
 #include "Mesh.h"
 #include "inputclass.h"
 #include "IGameState.h"
+#include "SpriteSheet.h"
 
 
 using namespace std;
@@ -46,6 +47,7 @@ private:
 
 	ID3D11Texture2D* TestTexture;
 	ID3D11ShaderResourceView* TestTextureSRV;
+	USpriteSheet SpriteSheet;
 
 	// --- 상태 관리 변수 ---
 	IGameState* currentState = nullptr;

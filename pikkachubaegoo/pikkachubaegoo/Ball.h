@@ -1,8 +1,13 @@
 #pragma once
 #include "Object.h"
+#include <string>
+using namespace std;
 
 class UBall : public UObject
 {
+public:	
+	const static string BallSpriteAtlasKey;
+
 public:
 	UBall(UMeshRenderer* InRenderer);
 	~UBall();
