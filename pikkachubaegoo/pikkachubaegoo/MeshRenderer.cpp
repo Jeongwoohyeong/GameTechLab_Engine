@@ -18,6 +18,10 @@ UMeshRenderer::~UMeshRenderer()
 		//Mesh->Release();	게임 종료시 UApp에서 Release 호출해줘서 주석 처리
 		Mesh = nullptr;
 	}
+	if (AtlasInfoCBuffer)
+	{
+		AtlasInfoCBuffer->Release();
+	}
 }
 void UMeshRenderer::ChangeAtlasInfo(const FVector4& atlasInfo)
 {
