@@ -10,9 +10,9 @@ void PlayingState::ResetRound()
 {
 	UTime::GetInstance()->SetTimeScale(1.0f);
 	player1->GetTransform()->SetLocation(FVector3(-0.5f)); // Player 1 위치 초기화
-	player2->GetTransform()->SetLocation(FVector3(0.5f)); // Player 1 위치 초기화
-	ball->GetTransform()->SetLocation(FVector3(0.0, 0.9f)); // Player 1 위치 초기화
-	ball->SetVelocity(FVector3(0.0, 0.0f)); // Player 1 위치 초기화
+	player2->GetTransform()->SetLocation(FVector3(0.5f)); // Player 2 위치 초기화
+	ball->GetTransform()->SetLocation(FVector3(0.0, 0.9f)); // Ball 위치 초기화
+	ball->SetVelocity(FVector3(0.0, 0.0f)); // Ball Velocity 초기화
 
 	// 상태를 'Ready'로 설정하고 타이머 초기화
 	gameplayState = EGameplayState::Ready;
@@ -25,7 +25,7 @@ void PlayingState::Enter()
 	player1 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(-0.5f)); // Player 1
 	player2 = UObjectFactory::GetInstance()->CreatePlayer(FVector3(0.5f)); // Player 2
 	ball = UObjectFactory::GetInstance()->CreateBall(FVector3(0.0, 0.9f)); // Ball
-	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.9f), FVector3(1.0f, 3.0f)); // Wall
+	UObjectFactory::GetInstance()->CreateWall(FVector3(0.0f, -0.6f), FVector3(1.0f, 3.0f)); // Wall
 
 	player1Score = 0;
 	player2Score = 0;
