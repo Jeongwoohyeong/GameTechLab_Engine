@@ -102,23 +102,11 @@
     <ClCompile Include="Matrix.cpp">
       <Filter>소스 파일\Core</Filter>
     </ClCompile>
-    <ClCompile Include="UMeshRenderer.h">
-      <Filter>헤더 파일\Object</Filter>
-    </ClCompile>
-    <ClCompile Include="UMeshRenderer.cpp">
-      <Filter>소스 파일\Object</Filter>
-    </ClCompile>
     <ClCompile Include="ObjectFactory.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="UMeshRenderer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="UMeshRenderer.h">
-      <Filter>헤더 파일</Filter>
     </ClCompile>
     <ClCompile Include="Wall.cpp">
       <Filter>소스 파일\Object</Filter>
@@ -131,6 +119,18 @@
     </ClCompile>
     <ClCompile Include="PlayingState.cpp">
       <Filter>소스 파일\State</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ResultState.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteSheet.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -293,6 +293,18 @@
     <ClInclude Include="DirectXTK\Inc\XboxDDSTextureLoader.h">
       <Filter>DirectXTK</Filter>
     </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultState.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteStruct.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="SpriteShader.hlsl">
@@ -309,5 +321,22 @@
     <None Include="DirectXTK\Inc\SimpleMath.inl">
       <Filter>DirectXTK</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="Resource\Sound\BallLand.wav">
+      <Filter>리소스 파일</Filter>
+    </Media>
+    <Media Include="Resource\Sound\bgm.wav">
+      <Filter>리소스 파일</Filter>
+    </Media>
+    <Media Include="Resource\Sound\Chu.wav">
+      <Filter>리소스 파일</Filter>
+    </Media>
+    <Media Include="Resource\Sound\Pika.wav">
+      <Filter>리소스 파일</Filter>
+    </Media>
+    <Media Include="Resource\Sound\Spike.wav">
+      <Filter>리소스 파일</Filter>
+    </Media>
   </ItemGroup>
 </Project>
