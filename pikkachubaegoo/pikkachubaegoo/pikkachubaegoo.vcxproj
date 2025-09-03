@@ -152,6 +152,7 @@
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="PhysicsComponent.cpp" />
     <ClCompile Include="PlayingState.cpp" />
+    <ClCompile Include="Punch.cpp" />
     <ClCompile Include="ResultState.cpp" />
     <ClCompile Include="SpriteSheet.cpp" />
     <ClCompile Include="SoundManager.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="ObjectFactory.h" />
     <ClInclude Include="PhysicsComponent.h" />
     <ClInclude Include="PlayingState.h" />
+    <ClInclude Include="Punch.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="ResultState.h" />
     <ClInclude Include="SoundManager.h" />

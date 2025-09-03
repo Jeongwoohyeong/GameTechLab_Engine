@@ -58,6 +58,7 @@ void PlayingState::Update(float deltaTime)
 		if (ball->GetPhysicsComponent()->IsGrounded())
 		{
 			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_BALL_LAND);
+			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_BALL_LAND_SCALE, PUNCH_BALL_LAND_SCALE));
 			// 왼쪽이면 Player 2 승리, 오른쪽이면 Player 1 승리
 			if (ball->GetTransform()->GetLocation().x < 0)
 			{

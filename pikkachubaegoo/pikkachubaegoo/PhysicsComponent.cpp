@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Define.h"
 #include "SoundManager.h"
+#include "ObjectFactory.h"
 
 UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary, bool inIsGravity, float inGravityScale, bool inCanReflectWithWall)
 	: owner(inOwner), velocity(), collider(inCollider), boundary(inBoundary), bIsGravity(inIsGravity), gravityScale(inGravityScale), bCanReflectWithWall(inCanReflectWithWall)
@@ -71,16 +72,19 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		UPlayer* player = static_cast<UPlayer*>(otherObject);
 		if (player->GetState() == UPlayer::PlayerState::UpSpiking)
 		{
+			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;
 			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
 		}
 		else if (player->GetState() == UPlayer::PlayerState::Spiking)
 		{
+			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;		
 			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
 		}
 		else if (player->GetState() == UPlayer::PlayerState::DownSpiking)
 		{
+			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_MIN_VELOCITY_X : -BALL_MIN_VELOCITY_X;
 			newBallVelocity.y = -BALL_SPIKE_VELOCITY_Y;
 		}
