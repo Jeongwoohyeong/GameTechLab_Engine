@@ -58,15 +58,40 @@ void UObjectFactory::Update(float deltaTime)
 
 void UObjectFactory::Render()
 {
-	//������ ���� �׸��� ���� �ʿ�
+	//렌더되는 오브젝트만 추출
 	UINT objListCount = ObjectList.Size();
-
+	UCustomVector<UObject*> renderObjects;
 	for (UINT i = 0; i < objListCount; ++i)
 	{
-		if (ObjectList[i])
+		if (ObjectList[i]->GetRenderer() != nullptr)
 		{
-			ObjectList[i]->Draw();
+			renderObjects.PushBack(ObjectList[i]);
 		}
+	}
+	UINT renderObjectCount = renderObjects.Size();
+	
+	//렌더되는 오브젝트 order순서에 따라 정렬 0 ~ 9999 오름차순
+	for (UINT i = 0; i < renderObjectCount - 1; ++i)
+	{
+		for (UINT j = 0; j < renderObjectCount - i - 1; ++j)
+		{
+			UObject* prev = renderObjects[j];
+			UObject* next = renderObjects[j + 1];
+			UINT prevDrawOrder = prev->GetRenderer()->GetDrawOrder();
+			UINT nextDrawOrder = next->GetRenderer()->GetDrawOrder();
+
+			if (prevDrawOrder > nextDrawOrder)
+			{
+				renderObjects[j] = next;
+				renderObjects[j + 1] = prev;
+			}
+		}
+	}
+
+	//순서에 맞게 렌더링
+	for (UINT i = 0; i < renderObjectCount; ++i)
+	{
+		renderObjects[i]->Draw();
 	}
 }
 

@@ -19,13 +19,13 @@ private:
 			return false;
 		}
 		uint32_t newArrayCount = ArrayCount << 1;
-		T* newDoublePointer = new T[newArrayCount];
+		T* newDynamicArray = new T[newArrayCount];
 		for (int i = 0; i < DataCount; i++)
 		{
-			newDoublePointer[i] = DynamicArray[i];
+			newDynamicArray[i] = DynamicArray[i];
 		}
 		delete[] DynamicArray;
-		DynamicArray = newDoublePointer;
+		DynamicArray = newDynamicArray;
 		ArrayCount = newArrayCount;
 		return true;
 	}
@@ -78,7 +78,7 @@ public:
 		DynamicArray[DataCount] = nullptr;
 		DataCount--;
 	}
-	T operator [](uint32_t idx) const
+	T& operator [](uint32_t idx)
 	{
 		return DynamicArray[idx];
 	}

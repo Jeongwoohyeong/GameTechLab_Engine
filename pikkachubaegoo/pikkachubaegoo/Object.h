@@ -27,5 +27,10 @@ public:
 	virtual void SetVelocity(const FVector3& newVelocity) = 0;
 
 	virtual void Update(float deltaTime) = 0;
+
+	UMeshRenderer* GetRenderer() const
+	{
+		return renderer;
+	}
 	void Draw();
 };

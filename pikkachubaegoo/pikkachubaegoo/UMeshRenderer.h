@@ -17,4 +17,8 @@ public:
 	{
 		DrawOrder = inDrawOrder;
 	}
+	const UINT GetDrawOrder() const
+	{
+		return DrawOrder;
+	}
 };
