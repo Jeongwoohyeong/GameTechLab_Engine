@@ -165,7 +165,7 @@ void UApp::InitImGui()
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.Fonts->AddFontFromFileTTF("Resource/NanumGothic-Bold.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
+	io.Fonts->AddFontFromFileTTF("Resource/NanumGothic-Bold.ttf", 24.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
 
 	// ImGui 백엔드 초기화
 	ImGui_ImplWin32_Init((void*)HWnd);

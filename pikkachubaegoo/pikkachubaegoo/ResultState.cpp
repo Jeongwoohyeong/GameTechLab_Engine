@@ -10,11 +10,11 @@ ResultState::ResultState(int p1Score, int p2Score)
 	// 생성자에서 점수를 기반으로 결과 메시지를 미리 만듭니다.
 	if (finalPlayer1Score > finalPlayer2Score)
 	{
-		resultMessage = "Player 1 Wins!";
+		resultMessage = u8"플레이어1 승리!";
 	}
 	else if (finalPlayer2Score > finalPlayer1Score)
 	{
-		resultMessage = "Player 2 Wins!";
+		resultMessage = u8"플레이어2 승리!";
 	}
 	else
 	{
@@ -36,12 +36,20 @@ void ResultState::Update(float deltaTime)
 
 void ResultState::Render()
 {
-	// 전체 화면을 덮는 결과 창을 만듭니다.
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::Begin("ResultScreen", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
 
-	// 1. 결과 메시지 (승자)
+	// 승자 색상
+	ImVec4 winColor;
+	if (finalPlayer1Score > finalPlayer2Score)
+		winColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f); // 빨강
+	else if (finalPlayer2Score > finalPlayer1Score)
+		winColor = ImVec4(0.0f, 0.5f, 1.0f, 1.0f); // 파랑
+	else
+		winColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); // 노랑
+
+	// --- 결과 메시지 (엄청 크게) ---
 	float originalFontSize = ImGui::GetFont()->Scale;
 	ImGui::GetFont()->Scale = 5.0f; // 큰 폰트로
 	ImGui::PushFont(ImGui::GetFont());
@@ -49,11 +57,16 @@ void ResultState::Render()
 	ImVec2 textSize = ImGui::CalcTextSize(resultMessage.c_str());
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - textSize.x) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.3f);
-	ImGui::Text(resultMessage.c_str());
+	ImGui::GetWindowDrawList()->AddText(
+		ImVec2((ImGui::GetWindowWidth() - ImGui::CalcTextSize(resultMessage.c_str()).x) * 0.5f, ImGui::GetWindowHeight() * 0.2f),
+		ImColor(winColor),
+		resultMessage.c_str()
+	);
 
 	ImGui::PopFont();
+	ImGui::GetFont()->Scale = originalFontSize;
 
-	// 2. 최종 점수
+	// --- 점수 (엄청 크게, 메시지 바로 아래) ---
 	ImGui::GetFont()->Scale = 3.0f; // 조금 작은 폰트로
 	ImGui::PushFont(ImGui::GetFont());
 
@@ -65,31 +78,48 @@ void ResultState::Render()
 	ImGui::PopFont();
 	ImGui::GetFont()->Scale = originalFontSize; // 폰트 스케일 원복
 
-	// 3. 재시작 버튼
-	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 150) * 0.5f);
-	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.6f);
-	if (ImGui::Button("Restart", ImVec2(150, 50)))
+	// --- 버튼 스타일 ---
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, 10));
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 200, 100, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 170, 70, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 140, 50, 255));
+
+	// --- 재시작 버튼 ---
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.55f);
+	if (ImGui::Button("Restart", ImVec2(200, 60)))
 	{
 		UApp::Ins->ChangeState(new PlayingState());
 	}
 
-	// 4. 메인 메뉴로 돌아가기 버튼
-	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 150) * 0.5f);
-	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.6f + 60);
-	if (ImGui::Button("Main Menu", ImVec2(150, 50)))
+	// --- 메인 메뉴 버튼 ---
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.55f + 80);
+	if (ImGui::Button("Main Menu", ImVec2(200, 60)))
 	{
 		UApp::Ins->ChangeState(new MainMenuState());
 	}
 
-	// 5. 크레딧 (추가된 부분)
+	ImGui::PopStyleColor(3);
+	ImGui::PopStyleVar(2);
+
+	// --- 크레딧 ---
+	ImGui::GetFont()->Scale = 2.0f; // 조금 작은 폰트로
+	ImGui::PushFont(ImGui::GetFont());
+
 	const char* creditsText = u8"개발자 - 국동희, 김진철, 김호민, 정우형";
 	textSize = ImGui::CalcTextSize(creditsText);
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - textSize.x) * 0.5f);
-	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.9f); // 화면 하단에 배치
-	ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), creditsText); // 밝은 회색으로 표시
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.9f);
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), creditsText);
+
+	ImGui::PopFont();
+	ImGui::GetFont()->Scale = originalFontSize; // 폰트 스케일 원복
 
 	ImGui::End();
 }
+
 
 void ResultState::Exit()
 {

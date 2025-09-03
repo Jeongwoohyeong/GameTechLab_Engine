@@ -19,36 +19,63 @@ void MainMenuState::Update(float deltaTime)
 
 void MainMenuState::Render()
 {
-	// ImGui를 사용하여 메뉴 창을 만듭니다.
-	// 화면을 꽉 채우는 보이지 않는 창을 만들어 UI 요소들을 중앙에 배치합니다.
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-	ImGui::Begin("MainMenu", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
+	ImGui::Begin("MainMenu", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoBackground);
 
-	// --- UI 요소 배치 ---
 
-	// 게임 제목
-	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize("MY GAME").x) * 0.5f);
-	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.3f);
-	ImGui::Text("MY GAME");
 
-	// 게임 시작 버튼
-	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 150) * 0.5f);
+	// 폰트 크기를 일시적으로 키웁니다.
+	float originalFontSize = ImGui::GetFont()->Scale;
+	ImGui::GetFont()->Scale = 6.0f; // 6배 크기로 설정
+	ImGui::PushFont(ImGui::GetFont()); // 변경된 폰트 적용
+
+	// --- 게임 제목 ---
+	ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]); // 폰트를 크게 적용했다면 여기서 선택
+	ImVec2 titleSize = ImGui::CalcTextSize(u8"피카츄 배구");
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - titleSize.x) * 0.5f);
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.2f);
+
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 215, 0, 255)); // 금색 느낌
+	ImGui::Text(u8"피카츄 배구");
+	ImGui::PopStyleColor();
+	ImGui::PopFont();
+
+	// 폰트 크기를 원래대로 복원합니다.
+	ImGui::PopFont();
+	ImGui::GetFont()->Scale = originalFontSize;
+
+	// --- 버튼 스타일 설정 ---
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, 10));
+	ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 200, 100, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 170, 70, 255));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 140, 50, 255));
+
+	// --- 게임 시작 버튼 ---
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.5f);
-	if (ImGui::Button("Game Start", ImVec2(150, 50)))
+	if (ImGui::Button(u8"게임 시작", ImVec2(200, 60)))
 	{
-		// 버튼이 클릭되면 UApp에 PlayingState로 상태를 변경해달라고 요청합니다.
 		UApp::Ins->ChangeState(new PlayingState());
 	}
 
-	// 게임 종료 버튼
-	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 150) * 0.5f);
-	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.5f + 60); // 시작 버튼 아래에 배치
-	if (ImGui::Button("Exit Game", ImVec2(150, 50)))
+	// --- 게임 종료 버튼 ---
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.5f + 80);
+	if (ImGui::Button(u8"게임 종료", ImVec2(200, 60)))
 	{
-		// 윈도우에 종료 메시지를 보내 프로그램을 종료시킵니다.
 		PostMessage(UApp::Ins->HWnd, WM_QUIT, 0, 0);
 	}
+
+	// 스타일 원상복귀
+	ImGui::PopStyleColor(3);
+	ImGui::PopStyleVar(2);
 
 	ImGui::End();
 }

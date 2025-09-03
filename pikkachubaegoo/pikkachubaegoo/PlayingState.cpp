@@ -105,7 +105,7 @@ void PlayingState::Render()
 
 	// 1. 점수판 UI
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, 50)); // 상단에 얇은 바
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetIO().DisplaySize.x, 200)); // 상단에 얇은 바
 	ImGui::Begin("Scoreboard", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
 
 	std::string scoreText = std::to_string(player1Score) + " : " + std::to_string(player2Score);
