@@ -1,4 +1,4 @@
-#include "D3DUtil.h"
+﻿#include "D3DUtil.h"
 #include "App.h"
 
 void D3DUtil::CreateVSAndInputLayout(LPCWSTR& fileName, ID3D11VertexShader** vs, ID3D11InputLayout** inputLayout)

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*
 점프, 슬라이딩(스파이크) - 한 번만 입력받기
