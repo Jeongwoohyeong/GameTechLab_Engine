@@ -165,8 +165,11 @@
     <ClInclude Include="D3DUtil.h" />
     <ClInclude Include="Define.h" />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     <ClInclude Include="IGameState.h" />
 =======
+=======
+>>>>>>> Stashed changes
     <ClInclude Include="DirectXTK\Inc\Audio.h" />
     <ClInclude Include="DirectXTK\Inc\BufferHelpers.h" />
     <ClInclude Include="DirectXTK\Inc\CommonStates.h" />
@@ -188,6 +191,9 @@
     <ClInclude Include="DirectXTK\Inc\VertexTypes.h" />
     <ClInclude Include="DirectXTK\Inc\WICTextureLoader.h" />
     <ClInclude Include="DirectXTK\Inc\XboxDDSTextureLoader.h" />
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
