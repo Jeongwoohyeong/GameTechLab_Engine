@@ -69,7 +69,7 @@ void UObjectFactory::Render()
 		}
 	}
 	UINT renderObjectCount = renderObjects.Size();
-	
+
 	//렌더되는 오브젝트 order순서에 따라 정렬 0 ~ 9999 오름차순
 	for (UINT i = 0; i < renderObjectCount - 1; ++i)
 	{
@@ -95,14 +95,12 @@ void UObjectFactory::Render()
 	}
 }
 
-UObject* UObjectFactory::CreatePlayer(FVector3 location, FVector3 scale)
+UObject* UObjectFactory::CreatePlayer(int newPlayerIndex, FVector3 location, FVector3 scale)
 {
-	static int pikkachuCount = 0;
-	UPlayer* newObject = new UPlayer(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::PikkachuOrder + pikkachuCount));
+	UPlayer* newObject = new UPlayer(newPlayerIndex, new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::PikkachuOrder + newPlayerIndex));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);
-	pikkachuCount++;
 
 	return newObject;
 }

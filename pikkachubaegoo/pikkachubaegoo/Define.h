@@ -16,6 +16,8 @@ constexpr float BALL_BASE_POSITION_Y = 0.9f;
 
 // PLAYER
 constexpr float PLAYER_BASE_POSITION_X = 0.7f;
+constexpr int PLAYER1_INDEX = 0;
+constexpr int PLAYER2_INDEX = 1;
 
 
 // WALL

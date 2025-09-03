@@ -43,7 +43,7 @@ private:
 	bool isAction = false;
 
 public:
-	UPlayer(UMeshRenderer* InRenderer);
+	UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer);
 	~UPlayer();
 
 	// UObject 오버라이드

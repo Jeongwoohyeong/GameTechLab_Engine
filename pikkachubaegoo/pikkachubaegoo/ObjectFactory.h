@@ -25,9 +25,9 @@ public:
 
 	void Render();
 
-// Factory
+	// Factory
 public:
-	UObject* CreatePlayer(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
+	UObject* CreatePlayer(int newPlyaerIndex, FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateBall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateWall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 

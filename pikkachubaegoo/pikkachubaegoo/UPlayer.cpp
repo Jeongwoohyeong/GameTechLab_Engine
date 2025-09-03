@@ -7,15 +7,15 @@
 unsigned int UPlayer::playerCount = 0;
 
 
-UPlayer::UPlayer(UMeshRenderer* InRenderer) : UObject(InRenderer)
+UPlayer::UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
-	playerIndex = playerCount++;
+	playerIndex = newPlyaerIndex;
 
 	float size = 0.1f;
 	FRect collider(FVector2(-size, -size), FVector2(size, size)); // 플레이어의 충돌 박스 설정
 
 	FRect boundary;
-	if (playerIndex == 0)
+	if (playerIndex == PLAYER1_INDEX)
 	{
 		boundary = FRect(FVector2(-1.0f, GROUND_LEVEL), FVector2(0.0f, 1.0f)); // 경계 설정 (플레이어 인덱스마다 다르게 설정 필요)
 	}
@@ -58,14 +58,14 @@ void UPlayer::SetVelocity(const FVector3& newVelocity)
 // --- 입력 설정 함수 (임시) ---
 void UPlayer::SetInput()
 {
-	if (playerIndex == 0)
+	if (playerIndex == PLAYER1_INDEX)
 	{
 		isLeft = UInput::GetInstance()->IsKeyDown('A');
 		isRight = UInput::GetInstance()->IsKeyDown('D');
 		isJump = UInput::GetInstance()->IsKeyPressed('W');
 		isAction = UInput::GetInstance()->IsKeyPressed('S');
 	}
-	else if (playerIndex == 1)
+	else
 	{
 		isLeft = UInput::GetInstance()->IsKeyDown(VK_LEFT);
 		isRight = UInput::GetInstance()->IsKeyDown(VK_RIGHT);
