@@ -3,6 +3,9 @@
 #include "Windows.h"
 #include "Define.h"
 #include "SoundManager.h"
+#include "Animator.h"
+#include "Animation.h"
+#include "SpriteSheet.h"
 #include <iostream>
 
 unsigned int UPlayer::playerCount = 0;
@@ -31,6 +34,11 @@ UPlayer::UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer) : UObject(InRend
 		boundary = FRect(FVector2(0.0f, GROUND_LEVEL), FVector2(1.0f, 1.0f)); // 경계 설정 (플레이어 인덱스마다 다르게 설정 필요)
 	}
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY);
+
+	animList = new UAnimation();
+	spriteSheet = new USpriteSheet();
+	spriteSheet->Load(".\\Resource\\sprite_sheet.json");
+	animator.Initialize(animList, spriteSheet);
 }
 
 UPlayer::~UPlayer()
@@ -97,6 +105,8 @@ void UPlayer::Update(float deltaTime)
 		horizontalInput = -1.0f;
 	}
 	else if (isRight) horizontalInput = 1.0f;
+
+	PlayerState previousState = currentState;
 
 	switch (currentState)
 	{
@@ -205,6 +215,11 @@ void UPlayer::Update(float deltaTime)
 		break;
 	}
 
+	if (previousState != currentState)
+	{
+		animator.SetState(currentState);
+	}
+
 	// --- 수평 속도 설정 ---
 	switch (currentState)
 	{
@@ -220,6 +235,18 @@ void UPlayer::Update(float deltaTime)
 	case PlayerState::Sliding:
 		velocity.x = (velocity.x > 0) ? SLIDE_SPEED : -SLIDE_SPEED;
 		break;
+	}
+
+	animator.Update(deltaTime);
+	if (animator.GetCurrentFrame())
+	{
+		FVector4 rect = { 
+			animator.GetCurrentFrame()->position.x,
+			animator.GetCurrentFrame()->position.y,
+			animator.GetCurrentFrame()->size.x,
+			animator.GetCurrentFrame()->size.y
+		};
+		this->GetRenderer()->ChangeAtlasInfo(rect);
 	}
 
 	physicsComponent->SetVelocity(velocity);
