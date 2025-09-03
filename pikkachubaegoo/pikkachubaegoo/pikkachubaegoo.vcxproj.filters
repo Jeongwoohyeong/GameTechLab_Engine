@@ -141,6 +141,12 @@
     <ClCompile Include="Animator.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="BallTrail.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Background.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -321,6 +327,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="PlayerState.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BallTrail.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Background.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

@@ -134,6 +134,7 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Animator.cpp" />
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Background.cpp" />
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="BallTrail.cpp" />
     <ClCompile Include="D3DUtil.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Animator.h" />
     <ClInclude Include="App.h" />
+    <ClInclude Include="Background.h" />
     <ClInclude Include="Ball.h" />
     <ClInclude Include="BallTrail.h" />
     <ClInclude Include="CustomVector.h" />

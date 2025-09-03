@@ -2,12 +2,15 @@
 #include "App.h"                // UApp의 인스턴스(Ins)와 ChangeState()를 사용하기 위함
 #include "PlayingState.h"       // PlayingState로 전환하기 위함
 #include "ImGui/imgui.h"        // ImGui UI를 사용하기 위함
+#include "ObjectFactory.h"
+#include "Background.h"
 
 void MainMenuState::Enter()
 {
 	// 메뉴 상태에 처음 진입했을 때 필요한 초기화 로직을 넣습니다.
 	// (예: 메뉴 배경음악 재생, 메뉴용 리소스 로딩 등)
 	// 지금은 특별한 초기화가 필요 없으므로 비워둡니다.
+	UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder);
 }
 
 void MainMenuState::Update(float deltaTime)
@@ -19,6 +22,8 @@ void MainMenuState::Update(float deltaTime)
 
 void MainMenuState::Render()
 {
+	UObjectFactory::GetInstance()->Render();
+
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::Begin("MainMenu", nullptr,

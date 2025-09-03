@@ -3,6 +3,7 @@
 #include "ObjectFactory.h"
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 #include "SoundManager.h"
+#include "Background.h"
 
 LPCWSTR SpriteShaderFileName = L".\\SpriteShader.hlsl";
 string SpriteAtlasJsonPath = ".\\Resource\\sprite_sheet.json";
@@ -173,8 +174,6 @@ void UApp::Loading()
 
 	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTextureSRV);
 	USoundManager::GetInstance()->Init();
-
-
 }
 void UApp::Start()
 {

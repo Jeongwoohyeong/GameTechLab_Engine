@@ -5,6 +5,7 @@
 #include "Wall.h"
 #include "Punch.h"
 #include "BallTrail.h"
+#include "Background.h"
 
 UObjectFactory* UObjectFactory::instance = nullptr;
 UObjectFactory* UObjectFactory::GetInstance()
@@ -107,12 +108,14 @@ void UObjectFactory::Render()
 		renderObjects[i]->Draw();
 	}
 }
-//UObject* UObjectFactory::CreateBG(const string& atlasinfoKey, const UINT order)
-//{
-//	UBackground* newBG = new UBackground(new UMeshRenderer(UApp::Ins->GetQuadMesh(), order), atlasinfoKey);
-//	AddObject(newBG);
-//	return newBG;
-//}
+
+UObject* UObjectFactory::CreateBG(const string& atlasinfoKey, const UINT order)
+{
+	UBackground* newBG = new UBackground(new UMeshRenderer(UApp::Ins->GetQuadMesh(), order), atlasinfoKey);
+	AddObject(newBG);
+	return newBG;
+}
+
 UObject* UObjectFactory::CreatePlayer(int newPlayerIndex, FVector3 location, FVector3 scale)
 {
 	UPlayer* newObject = new UPlayer(newPlayerIndex, new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::PikkachuOrder + newPlayerIndex));

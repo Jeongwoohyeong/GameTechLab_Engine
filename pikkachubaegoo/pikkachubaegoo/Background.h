@@ -18,6 +18,4 @@ public:
 	void SetVelocity(const FVector3& newVelocity) override;
 	void Update(float deltaTime) override;
 	virtual class UPhysicsComponent* GetPhysicsComponent() const;
-
-
 };

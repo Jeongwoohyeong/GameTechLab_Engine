@@ -3,6 +3,8 @@
 #include "PlayingState.h"   // '재시작'을 위해 포함
 #include "MainMenuState.h"  // '메인 메뉴로'를 위해 포함
 #include "imgui/imgui.h"
+#include "ObjectFactory.h"
+#include "Background.h"
 
 ResultState::ResultState(int p1Score, int p2Score)
 	: finalPlayer1Score(p1Score), finalPlayer2Score(p2Score)
@@ -27,6 +29,7 @@ ResultState::ResultState(int p1Score, int p2Score)
 void ResultState::Enter()
 {
 	// 결과 화면 진입 시 필요한 초기화 로직 (예: 결과 BGM 재생)
+	UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder);
 }
 
 void ResultState::Update(float deltaTime)
@@ -36,6 +39,8 @@ void ResultState::Update(float deltaTime)
 
 void ResultState::Render()
 {
+	UObjectFactory::GetInstance()->Render();
+
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::Begin("ResultScreen", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
@@ -124,4 +129,5 @@ void ResultState::Render()
 void ResultState::Exit()
 {
 	// 결과 화면을 나갈 때 필요한 정리 로직
+	UObjectFactory::GetInstance()->ReleaseAll();
 }
