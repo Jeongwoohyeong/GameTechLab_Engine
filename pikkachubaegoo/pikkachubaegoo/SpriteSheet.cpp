@@ -1,10 +1,13 @@
+#include "SpriteSheet.h"
+#include "SpriteSheet.h"
 #include <fstream>
 #include <iostream>
+#include <Windows.h>
+#include "SpriteSheet.h"
 #include "json.hpp"
 #include "SpriteSheet.h"
 
 USpriteSheet::USpriteSheet()
-    :texture(nullptr)
 {
 }
 
@@ -47,6 +50,8 @@ bool USpriteSheet::Load(std::string jsonPath)
             meta["size"]["h"]
         };
         metaData.scale = std::stof(meta["scale"].get<std::string>());
+
+        spriteImagePath = ConvertStringToWstring(metaData.imagePath);
     }
     
     // spriteframe 추출
@@ -108,4 +113,19 @@ const FSpriteFrame* USpriteSheet::GetFrame(const std::string& spriteName) const
     }
 
     return &it->second;
+}
+
+std::wstring USpriteSheet::ConvertStringToWstring(std::string& source)
+{
+    if (source.empty())
+    {
+        return L"";
+    }
+    int size = MultiByteToWideChar(CP_UTF8, 0, &source[0], (int)source.size(), NULL, 0);
+
+    std::wstring wstr(size, 0);
+
+    MultiByteToWideChar(CP_UTF8, 0, &source[0], (int)source.size(), &wstr[0], size);
+
+    return wstr;
 }
