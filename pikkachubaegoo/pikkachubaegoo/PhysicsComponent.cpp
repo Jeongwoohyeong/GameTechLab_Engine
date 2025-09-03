@@ -1,6 +1,8 @@
 #include "PhysicsComponent.h"
 #include "math.h"
 #include "stdlib.h"
+#include "UPlayer.h"
+#include "Define.h"
 
 UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary, bool inIsGravity, float inGravityScale, bool inCanReflectWithWall)
 	: owner(inOwner), velocity(), collider(inCollider), boundary(inBoundary), bIsGravity(inIsGravity), gravityScale(inGravityScale), bCanReflectWithWall(inCanReflectWithWall)
@@ -34,51 +36,40 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 
 	FVector3 newBallLocation = ball->GetTransform()->GetLocation();
 	FVector3 newBallVelocity = GetVelocity();
-	constexpr float MIN_X_VELOCITY = 0.3f;
-	if (fabs(overlap.x) < fabs(overlap.y))
-	{
-		newBallLocation.x -= overlap.x;
-	}
-	else
-	{
-		newBallLocation.y -= overlap.y;
-	}
 
 	if (otherObject->GetType() == FObjectType::Player)
 	{
-		// X Velocity
-		float relativeX = ball->GetTransform()->GetLocation().x - otherObject->GetTransform()->GetLocation().x;
-		if (relativeX > 0)
+		newBallLocation.y += fabs(overlap.y);
+		UPlayer* player = static_cast<UPlayer*>(otherObject);
+		if (player->IsSpiking())
 		{
-			newBallVelocity.x = fabs(newBallVelocity.x);
-		}
-		else if (relativeX < 0)
-		{
-			newBallVelocity.x = -fabs(newBallVelocity.x);
+			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;
+			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
 		}
 		else
 		{
-			int randomDirection = (rand() % 3) - 1;
-			newBallVelocity.x = randomDirection * newBallVelocity.x;
-		}
+			float relativeX = ball->GetTransform()->GetLocation().x - otherObject->GetTransform()->GetLocation().x;
+			newBallVelocity.x = relativeX * 8.0f;
 
-		if (newBallVelocity.x == 0)
-		{
-			int randomDirection = (rand() % 3) - 1;
-			newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
-		}
+			if (newBallVelocity.x == 0)
+			{
+				int randomDirection = (rand() % 3) - 1;
+				newBallVelocity.x = randomDirection * BALL_MIN_VELOCITY_X;
+			}
 
-		// Y Velocity
-		constexpr float MIN_VELOCITY_Y = 0.7f;
-		float currentVelocityY = -newBallVelocity.y;
-
-		if (fabs(currentVelocityY) < MIN_VELOCITY_Y)
-		{
-			newBallVelocity.y = -MIN_VELOCITY_Y;
-		}
-		else
-		{
-			newBallVelocity.y = currentVelocityY;
+			// Y Velocity
+			if (fabs(newBallVelocity.y) > (BALL_MIN_VELOCITY_Y + BALL_SPIKE_VELOCITY_Y) / 2)
+			{
+				newBallVelocity.y = (BALL_MIN_VELOCITY_Y + BALL_SPIKE_VELOCITY_Y * 0.8f) / 2;
+			}
+			else if (fabs(newBallVelocity.y) < BALL_MIN_VELOCITY_Y)
+			{
+				newBallVelocity.y = BALL_MIN_VELOCITY_Y;
+			}
+			else
+			{
+				newBallVelocity.y = fabs(newBallVelocity.y);
+			}
 		}
 	}
 	else if (otherObject->GetType() == FObjectType::Wall)
@@ -86,16 +77,18 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		if (fabs(overlap.x) < fabs(overlap.y))
 		{
 			newBallVelocity.x *= -1.0f;
+			newBallLocation.x -= overlap.x;
 		}
 		else
 		{
 			newBallVelocity.y *= -1.0f;
+			newBallLocation.y -= overlap.y;
 		}
 
 		if (newBallVelocity.x == 0)
 		{
 			int randomDirection = (rand() % 3) - 1;
-			newBallVelocity.x = randomDirection * MIN_X_VELOCITY;
+			newBallVelocity.x = randomDirection * BALL_MIN_VELOCITY_X;
 		}
 
 	}

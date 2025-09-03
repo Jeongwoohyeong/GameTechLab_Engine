@@ -54,6 +54,7 @@ public:
 	void SetVelocity(const FVector3& newVelocity) override;
 
 	void Update(float deltaTime) override;
+	bool IsSpiking() const { return isSpiking; }
 
 private:
 	void SetInput();
