@@ -26,5 +26,7 @@ PSInput mainVS(VSInput input)
 
 float4 mainPS(PSInput input) : SV_TARGET
 {
-	return SpriteTexture.Sample(SpriteSampler, input.uv);
+	float3 color = SpriteTexture.Sample(SpriteSampler, input.uv).rgb;
+	float alpha = color.r + color.g + color.b > 0.2f ? 1 : 0;
+	return float4(color,alpha);
 }

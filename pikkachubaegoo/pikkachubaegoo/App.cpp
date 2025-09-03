@@ -4,7 +4,7 @@
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 
 LPCWSTR SpriteShaderFileName = L"SpriteShader.hlsl";
-LPCWSTR SpriteAtlasPath = L"..\\pikkachubaegoo\\Resource\\SpriteAtlas.png";
+LPCWSTR SpriteAtlasPath = L"..\\pikkachubaegoo\\Resource\\sprite_sheet.png";
 UApp* UApp::Ins = nullptr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
