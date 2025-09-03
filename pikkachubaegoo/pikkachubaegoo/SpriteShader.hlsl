@@ -3,6 +3,8 @@ cbuffer Constant : register(b0)
 	float4x4 transform;
 }
 
+Texture2D SpriteTexture : register(t0);
+SamplerState SpriteSampler : register(s0);
 struct VSInput
 {
 	float3 posModel : POSITION;
@@ -24,5 +26,5 @@ PSInput mainVS(VSInput input)
 
 float4 mainPS(PSInput input) : SV_TARGET
 {
-	return float4(input.uv.x,input.uv.y, 1, 1);
+	return SpriteTexture.Sample(SpriteSampler, input.uv);
 }

@@ -199,7 +199,10 @@ void UApp::Render()
 	DeviceContext->IASetInputLayout(SpriteInputLayout);
 	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
 	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
-	UApp::Ins->GetContext()->VSSetConstantBuffers(0, 1, &TransformCBuffer);
+	DeviceContext->VSSetConstantBuffers(0, 1, &TransformCBuffer);
+
+	DeviceContext->PSSetSamplers(0, 1, &SpriteSampleState);
+	DeviceContext->PSSetShaderResources(0, 1, &TestTextureSRV);
 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
