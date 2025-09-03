@@ -37,6 +37,6 @@ constexpr int PLAYER2_INDEX = 1;
 // WALL
 constexpr float WALL_BASE_POSITION_X = 0.0f;
 constexpr float WALL_BASE_POSITION_Y = -0.6f;
-constexpr float WALL_SCALE_X = 0.1f;
-constexpr float WALL_SCALE_Y = 0.3f;
+constexpr float WALL_SCALE_X = 0.05f;
+constexpr float WALL_SCALE_Y = 0.35f;
 

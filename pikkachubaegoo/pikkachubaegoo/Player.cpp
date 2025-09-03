@@ -70,14 +70,18 @@ void UPlayer::SetInput()
 		isLeft = UInput::GetInstance()->IsKeyDown('A');
 		isRight = UInput::GetInstance()->IsKeyDown('D');
 		isJump = UInput::GetInstance()->IsKeyPressed('W');
-		isAction = UInput::GetInstance()->IsKeyPressed('S');
+		isSlide = UInput::GetInstance()->IsKeyPressed('S');
+		isDown = UInput::GetInstance()->IsKeyDown('S');
+		isAction = UInput::GetInstance()->IsKeyPressed(VK_SPACE);
 	}
 	else
 	{
 		isLeft = UInput::GetInstance()->IsKeyDown(VK_LEFT);
 		isRight = UInput::GetInstance()->IsKeyDown(VK_RIGHT);
 		isJump = UInput::GetInstance()->IsKeyPressed(VK_UP);
-		isAction = UInput::GetInstance()->IsKeyPressed(VK_DOWN);
+		isSlide = UInput::GetInstance()->IsKeyPressed(VK_DOWN);
+		isDown = UInput::GetInstance()->IsKeyDown(VK_DOWN);
+		isAction = UInput::GetInstance()->IsKeyPressed(VK_RETURN);
 	}
 }
 
@@ -93,13 +97,11 @@ void UPlayer::Update(float deltaTime)
 		horizontalInput = -1.0f;
 	}
 	else if (isRight) horizontalInput = 1.0f;
-	bool jumpPressed = isJump;
-	bool slidePressed = isAction;
 
 	switch (currentState)
 	{
 	case PlayerState::Idle:
-		if (jumpPressed)
+		if (isJump)
 		{
 			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_CHU);
 			velocity.y = JUMP_STRENGTH;
@@ -112,7 +114,7 @@ void UPlayer::Update(float deltaTime)
 		break;
 
 	case PlayerState::Walking:
-		if (jumpPressed)
+		if (isJump)
 		{
 			velocity.y = JUMP_STRENGTH;
 			currentState = PlayerState::Jumping;
@@ -121,7 +123,7 @@ void UPlayer::Update(float deltaTime)
 		{
 			currentState = PlayerState::Idle;
 		}
-		else if (slidePressed)
+		else if (isSlide)
 		{
 			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_CHU);
 			currentState = PlayerState::Sliding;
@@ -135,20 +137,32 @@ void UPlayer::Update(float deltaTime)
 		{
 			currentState = PlayerState::Idle;
 		}
-		else if (slidePressed)
+		else if (isAction)
 		{
 			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_PIKA);
-			currentState = PlayerState::Spiking;
+
 			spikeTimer = SPIKE_DURATION;
-			isSpiking = true;
+			if (isDown)
+			{
+				currentState = PlayerState::DownSpiking;
+			}
+			else if (horizontalInput != 0)
+			{
+				currentState = PlayerState::Spiking;
+			}
+			else
+			{
+				currentState = PlayerState::UpSpiking;
+			}
 		}
 		break;
 
+	case PlayerState::UpSpiking:
 	case PlayerState::Spiking:
+	case PlayerState::DownSpiking:
 		spikeTimer -= deltaTime;
 		if (spikeTimer <= 0)
 		{
-			isSpiking = false;
 			currentState = PlayerState::Jumping;
 		}
 		break;

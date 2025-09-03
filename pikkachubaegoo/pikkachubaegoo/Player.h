@@ -13,7 +13,9 @@ public:
 		Jumping,
 		Sliding,
 		Stunned,
-		Spiking
+		UpSpiking,
+		Spiking,
+		DownSpiking,
 	};
 
 private:
@@ -34,12 +36,13 @@ private:
 	float slideTimer = 0.0f;
 	float stunTimer = 0.0f;
 	float spikeTimer = 0.0f;
-	bool isSpiking = false;
 
 	// 입력 플래그 (임시)
 	bool isLeft = false;
 	bool isRight = false;
 	bool isJump = false;
+	bool isSlide = false;
+	bool isDown = false;
 	bool isAction = false;
 
 public:
@@ -53,7 +56,7 @@ public:
 	void SetVelocity(const FVector3& newVelocity) override;
 
 	void Update(float deltaTime) override;
-	bool IsSpiking() const { return isSpiking; }
+	PlayerState GetState() const { return currentState; }
 
 private:
 	void SetInput();

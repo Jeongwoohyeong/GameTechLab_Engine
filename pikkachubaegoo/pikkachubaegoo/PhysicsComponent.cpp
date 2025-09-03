@@ -69,10 +69,20 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		}
 
 		UPlayer* player = static_cast<UPlayer*>(otherObject);
-		if (player->IsSpiking())
+		if (player->GetState() == UPlayer::PlayerState::UpSpiking)
 		{
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;
 			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
+		}
+		else if (player->GetState() == UPlayer::PlayerState::Spiking)
+		{
+			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;		
+			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
+		}
+		else if (player->GetState() == UPlayer::PlayerState::DownSpiking)
+		{
+			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_MIN_VELOCITY_X : -BALL_MIN_VELOCITY_X;
+			newBallVelocity.y = -BALL_SPIKE_VELOCITY_Y;
 		}
 		else
 		{
