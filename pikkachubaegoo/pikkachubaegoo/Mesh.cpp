@@ -33,3 +33,20 @@ UMesh::UMesh(FMeshData& meshData)
 		return;
 	}
 }
+
+void UMesh::Release()
+{
+	if (VertexBuffer) 
+	{
+		VertexBuffer->Release();
+	}
+	if (IndexBuffer)
+	{
+		IndexBuffer->Release();
+	}
+}
+
+UMesh::~UMesh()
+{
+	Release();
+}

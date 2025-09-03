@@ -178,6 +178,21 @@ void UApp::Render()
 void UApp::Release()
 {
 	//Release 추가 필요
+	TestSpriteMesh->Release();
+
+	TestCBuffer->Release();
+	SpritePS->Release();
+	SpriteVS->Release();
+	SpriteInputLayout->Release();
+	//RenderContext->
+	RasterizerState->Release();
+	FrameBufferRTV->Release();
+	FrameBufferSRV->Release();
+	FrameBuffer->Release();
+	SwapChain->Release();
+	DeviceContext->Release();
+	Device->Release();
+
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
