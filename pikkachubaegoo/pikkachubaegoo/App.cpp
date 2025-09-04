@@ -4,7 +4,6 @@
 #include "MainMenuState.h" // 초기 상태 설정을 위해 포함
 #include "SoundManager.h"
 #include "Background.h"
-#include <fstream>
 
 LPCWSTR SpriteShaderFileName = L".\\SpriteShader.hlsl";
 LPCWSTR SpriteAtlasShaderFileName = L".\\SpriteAtlasShader.hlsl";
@@ -24,6 +23,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_GETMINMAXINFO: {
+		LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+
+		int currentWidth = rect.right - rect.left;
+		int currentHeight = rect.bottom - rect.top;
+
+		double ratio = (double)currentWidth / currentHeight;
+
+		if (ratio > 1) {
+			// 현재 비율이 16:9보다 크면 (즉, 가로가 너무 길면), 높이를 기준으로 너비를 계산
+			lpMMI->ptMaxTrackSize.x = (LONG)(currentHeight * 1);
+			lpMMI->ptMaxTrackSize.y = currentHeight;
+		}
+		else {
+			// 현재 비율이 16:9보다 작으면 (즉, 세로가 너무 길면), 너비를 기준으로 높이를 계산
+			lpMMI->ptMaxTrackSize.x = currentWidth;
+			lpMMI->ptMaxTrackSize.y = (LONG)(currentWidth * 1);
+		}
+
+		// 창의 최소 크기 설정 (옵션)
+		lpMMI->ptMinTrackSize.x = 1024; // 최소 너비
+		lpMMI->ptMinTrackSize.y = 1024; // 최소 높이 (16:9 비율 유지)
+		break;
+	}
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -162,40 +187,7 @@ void UApp::InitImGui()
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
-	ImFont* font = nullptr;
-
-	// --- 1. 나눔고딕 시도 ---
-	const char* nanumGothicPath = "Resource/NanumGothic-Bold.ttf";
-	// 파일이 존재하는지 먼저 확인
-	if (std::ifstream(nanumGothicPath).good())
-	{
-		// 존재할 때만 로드 시도
-		font = io.Fonts->AddFontFromFileTTF(nanumGothicPath, 24.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
-	}
-
-	// --- 2. 맑은 고딕 시도 (첫 번째 폰트가 로드되지 않았을 경우) ---
-	if (font == nullptr)
-	{
-		const char* malgunGothicPath = "C:/Windows/Fonts/malgunbd.ttf";
-		// 파일이 존재하는지 먼저 확인
-		if (std::ifstream(malgunGothicPath).good())
-		{
-			// 존재할 때만 로드 시도
-			font = io.Fonts->AddFontFromFileTTF(malgunGothicPath, 24.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
-		}
-	}
-
-	// --- 3. 최종 안전장치 (모든 커스텀 폰트가 실패했을 경우) ---
-	if (font == nullptr)
-	{
-		io.Fonts->AddFontDefault();
-	}
-
-	// --- 3단계 (최종 안전장치): 모든 폰트 로드에 실패하면 기본 폰트 로드 ---
-	if (font == nullptr)
-	{
-		io.Fonts->AddFontDefault();
-	}
+	io.Fonts->AddFontFromFileTTF("Resource/NanumGothic-Bold.ttf", 24.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
 
 	// ImGui 백엔드 초기화
 	ImGui_ImplWin32_Init((void*)HWnd);
