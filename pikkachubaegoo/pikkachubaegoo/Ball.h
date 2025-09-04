@@ -21,7 +21,7 @@ public:
 	void Reset() override;
 
 	bool IsSpiking() const { return bIsSpiking; }
-	void SetIsSpiking(bool IsSpiking) { bIsSpiking = IsSpiking; }
+	void SetIsSpiking(bool IsSpiking);
 
 private:
 	// Const Value

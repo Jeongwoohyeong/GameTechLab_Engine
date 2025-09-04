@@ -78,3 +78,12 @@ void UBall::Reset()
 		prevTrail->bShouldBeReleased = true;
 	}
 }
+
+void UBall::SetIsSpiking(bool IsSpiking)
+{
+	if (IsSpiking && !bIsSpiking)
+	{
+		UObjectFactory::GetInstance()->CreatePunch(GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
+	}
+	bIsSpiking = IsSpiking;
+}
