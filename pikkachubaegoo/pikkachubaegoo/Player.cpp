@@ -7,6 +7,7 @@
 #include "Animation.h"
 #include "SpriteSheet.h"
 #include <iostream>
+#include "App.h"
 
 unsigned int UPlayer::playerCount = 0;
 
@@ -39,6 +40,8 @@ UPlayer::UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer) : UObject(InRend
 	spriteSheet = new USpriteSheet();
 	spriteSheet->Load(".\\Resource\\sprite_sheet.json");
 	animator.Initialize(animList, spriteSheet);
+	GetRenderer()->SetShader(UApp::Ins->SpriteAtlasInputLayout, UApp::Ins->SpriteAtlasVS, UApp::Ins->SpriteAtlasPS);
+
 }
 
 UPlayer::~UPlayer()

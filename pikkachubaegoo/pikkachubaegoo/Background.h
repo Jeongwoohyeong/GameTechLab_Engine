@@ -9,7 +9,7 @@ public:
 	const static string BGGroundSpriteAtlasKey;
 	const static string BGMountainSpriteAtlasKey;
 public:
-	UBackground(UMeshRenderer* InRenderer, const string& atlasKey, const FVector3& location, const FVector3& scale);
+	UBackground(UMeshRenderer* InRenderer, const FVector3& location, const FVector3& scale);
 	~UBackground();
 
 	// UObject override

@@ -5,6 +5,8 @@ const string UBallTrail::BallTrailSpriteAtlasKey = "ball/ball_trail.png";
 UBallTrail::UBallTrail(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
     InRenderer->ChangeAtlasInfo(UApp::Ins->GetAtlasInfo(BallTrailSpriteAtlasKey));
+    GetRenderer()->SetShader(UApp::Ins->SpriteAtlasInputLayout, UApp::Ins->SpriteAtlasVS, UApp::Ins->SpriteAtlasPS);
+
 }
 
 UBallTrail::~UBallTrail()

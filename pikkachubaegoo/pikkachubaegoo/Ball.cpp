@@ -15,6 +15,8 @@ UBall::UBall(UMeshRenderer* InRenderer) : UObject(InRenderer)
 	FRect collider(FVector3(-size, -size, 1), FVector3(size, size, 1));
 	FRect boundary(FVector3(-1.0f, GROUND_LEVEL, 0), FVector3(1.0f, 1.0f, 0));
 	physicsComponent = new UPhysicsComponent(this, collider, boundary, true, GRAVITY, true);
+	GetRenderer()->SetShader(UApp::Ins->SpriteAtlasInputLayout, UApp::Ins->SpriteAtlasVS, UApp::Ins->SpriteAtlasPS);
+
 }
 
 UBall::~UBall()
