@@ -10,7 +10,7 @@ void MainMenuState::Enter()
 	// 메뉴 상태에 처음 진입했을 때 필요한 초기화 로직을 넣습니다.
 	// (예: 메뉴 배경음악 재생, 메뉴용 리소스 로딩 등)
 	// 지금은 특별한 초기화가 필요 없으므로 비워둡니다.
-	UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder);
+	UObjectFactory::GetInstance()->CreateBGS();
 }
 
 void MainMenuState::Update(float deltaTime)

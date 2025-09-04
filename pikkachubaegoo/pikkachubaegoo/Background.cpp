@@ -4,12 +4,11 @@ const string UBackground::BGSkySpriteAtlasKey = "objects/sky_blue.png";
 const string UBackground::BGGroundSpriteAtlasKey = "objects/ground_yellow.png";
 const string UBackground::BGMountainSpriteAtlasKey = "objects/mountain.png";
 
-UBackground::UBackground(UMeshRenderer* InRenderer, const string& atlasKey) : UObject(InRenderer)
+UBackground::UBackground(UMeshRenderer* InRenderer, const string& atlasKey, const FVector3& location, const FVector3& scale) : UObject(InRenderer)
 {
 	InRenderer->ChangeAtlasInfo(UApp::Ins->GetAtlasInfo(atlasKey));
-
-	GetTransform()->SetScale(FVector3(0.1f, .1f));
-	GetTransform()->SetLocation(FVector3(0, 0, 0));
+	GetTransform()->SetLocation(location);
+	GetTransform()->SetScale(scale);
 }
 UBackground::~UBackground()
 { 
