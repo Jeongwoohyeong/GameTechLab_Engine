@@ -41,14 +41,12 @@ public:
     void SetCanReflectWithWall(bool inCanReflectWithWall) 
         { bCanReflectWithWall = inCanReflectWithWall; }
     bool IsGrounded(float groundEpsilon = 0.01f) const;
-    bool IsSpiking() const { return bIsSpiking; }
 
 private:
     bool bIsGravity;
     float gravityScale;
     bool bCanReflectWithWall;
     bool bIsPassingThroughPlayer = false;
-    bool bIsSpiking = false;
     UPhysicsComponent* OverlappingPlayer = nullptr;
 };
 

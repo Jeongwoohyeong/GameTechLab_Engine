@@ -57,12 +57,22 @@ void UBall::Update(float deltaTime)
 	timeAccumulator += deltaTime;
 	if (timeAccumulator >= executionInterval)
 	{
-		if (physicsComponent->IsSpiking())
+		if (IsSpiking())
 		{
 			if(!(prevLocation.x == 0 && prevLocation.y == 0))
-				UObjectFactory::GetInstance()->CreateBallTrail(prevLocation, FVector3(size, size));
+				prevTrail = UObjectFactory::GetInstance()->CreateBallTrail(prevLocation, FVector3(size, size));
 		}
 		prevLocation = GetTransform()->GetLocation();
 		timeAccumulator -= executionInterval;
+	}
+}
+
+void UBall::Reset()
+{
+	UObject::Reset();
+	SetIsSpiking(false);
+	if (prevTrail)
+	{
+		prevTrail->bShouldBeReleased = true;
 	}
 }

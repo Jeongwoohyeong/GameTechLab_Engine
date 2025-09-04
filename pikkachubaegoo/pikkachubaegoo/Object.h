@@ -27,6 +27,7 @@ public:
 	Transform* GetTransform();
 	virtual FVector3 GetVelocity() = 0;
 	virtual void SetVelocity(const FVector3& newVelocity) = 0;
+	virtual void Reset();
 
 	virtual void Update(float deltaTime) = 0;
 

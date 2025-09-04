@@ -47,7 +47,7 @@ void UPunch::Update(float deltaTime)
         timeAccumulator -= scaleInterval;
 
         // 크기가 너무 작아지면 오브젝트 해제
-        if (GetTransform()->GetScale().x < 0.002f)
+        if (GetTransform()->GetScale().x < 0.02f)
         {
             bShouldBeReleased = true;
             

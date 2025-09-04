@@ -17,6 +17,11 @@ Transform* UObject::GetTransform()
 	return &transform;
 }
 
+void UObject::Reset()
+{
+	SetVelocity(FVector3());
+}
+
 void UObject::Draw()
 {
 	if (renderer)
