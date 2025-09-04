@@ -49,6 +49,7 @@ public:
 
 	void Update(float deltaTime) override;
 	PlayerState GetState() const { return currentState; }
+	unsigned int GetPlayerIdx() const { return playerIndex; }
 
 	void Reset() override;
 

@@ -82,14 +82,16 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		else if (player->GetState() == PlayerState::Spiking)
 		{
 			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
-			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;		
-			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
+			newBallVelocity.x = (player->GetVelocity().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;
+			newBallVelocity.x *= 2;
+			newBallVelocity.y /= 3;
 			ball->SetIsSpiking(true);
 		}
 		else if (player->GetState() == PlayerState::DownSpiking)
 		{
 			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
-			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_MIN_VELOCITY_X : -BALL_MIN_VELOCITY_X;
+			newBallVelocity.x = (player->GetPlayerIdx() == PLAYER1_INDEX) ? BALL_MIN_VELOCITY_X : -BALL_MIN_VELOCITY_X;
+			newBallVelocity.x *= 2;
 			newBallVelocity.y = -BALL_SPIKE_VELOCITY_Y;
 			ball->SetIsSpiking(true);
 		}
