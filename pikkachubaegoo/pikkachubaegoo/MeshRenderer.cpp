@@ -45,14 +45,42 @@ void UMeshRenderer::SetShader(ID3D11InputLayout* inputLayout, ID3D11VertexShader
 void UMeshRenderer::DrawMesh(const FMatrix4x4& Transform)
 {
 	// 실제 메시를 그리는 로직 구현
+	static ID3D11VertexShader* lastVS = nullptr;
+	static ID3D11PixelShader* lastPS = nullptr;
+	static ID3D11InputLayout* lastInputLayout = nullptr;
+	static ID3D11ShaderResourceView* lastSRV = nullptr;
+
 	if (Mesh)
 	{
+		if (lastVS == nullptr)
+		{
+			UApp::Ins->GetContext()->IASetInputLayout(InputLayout);
+			UApp::Ins->GetContext()->VSSetShader(VS, 0, 0);
+			UApp::Ins->GetContext()->PSSetShader(PS, 0, 0);
+			UApp::Ins->GetContext()->PSSetShaderResources(0, 1, &TextureSRV);
+		}
+		else
+		{
+			if (lastVS != VS)
+			{
+				UApp::Ins->GetContext()->VSSetShader(VS, 0, 0);
+			}
+			if (lastPS != PS)
+			{
+				UApp::Ins->GetContext()->VSSetShader(VS, 0, 0);
+			}
+			if (lastInputLayout != InputLayout)
+			{
+				UApp::Ins->GetContext()->IASetInputLayout(InputLayout);
+			}
+			if (lastSRV != TextureSRV)
+			{
+				UApp::Ins->GetContext()->PSSetShaderResources(0, 1, &TextureSRV);
+			}
+		}
 		D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), UApp::Ins->GetTransformCBuffer(), Transform);
-		UApp::Ins->GetContext()->IASetInputLayout(InputLayout);
-		UApp::Ins->GetContext()->VSSetShader(VS, 0, 0);
-		UApp::Ins->GetContext()->PSSetShader(PS, 0, 0);
 		UApp::Ins->GetContext()->VSSetConstantBuffers(1, 1, &AtlasInfoCBuffer);
-		UApp::Ins->GetContext()->PSSetShaderResources(0, 1, &TextureSRV);
+
 
 		Mesh->Draw();
 	}
