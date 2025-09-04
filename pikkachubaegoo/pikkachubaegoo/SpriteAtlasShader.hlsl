@@ -1,3 +1,6 @@
+#define ATLASSPRITE_WIDTH 476
+#define ATLASSPRITE_HEIGHT 885
+
 cbuffer TransformConstant : register(b0)
 {
     float4x4 transform;
@@ -23,7 +26,9 @@ PSInput mainVS(VSInput input)
 {
     PSInput output;
     output.posCS = mul(transform, float4(input.posModel, 1.0f));
-    output.uv = input.uv;
+    float2 uvmin = float2(atlasInfo.x / ATLASSPRITE_WIDTH, atlasInfo.y / ATLASSPRITE_HEIGHT);
+    float2 uvsize = float2(atlasInfo.z / ATLASSPRITE_WIDTH, atlasInfo.w / ATLASSPRITE_HEIGHT);
+    output.uv = uvmin + input.uv * uvsize;
     return output;
 }
 

@@ -22,6 +22,15 @@ class UApp
 public:
 	static UApp* Ins;
 	HWND HWnd;
+
+	//시간없어서 PUBLIC에 둠
+	ID3D11InputLayout* SpriteInputLayout;
+	ID3D11VertexShader* SpriteVS;
+	ID3D11PixelShader* SpritePS;
+
+	ID3D11InputLayout* SpriteAtlasInputLayout;
+	ID3D11VertexShader* SpriteAtlasVS;
+	ID3D11PixelShader* SpriteAtlasPS;
 private:
 
 	ID3D11Device* Device = nullptr;
@@ -36,17 +45,16 @@ private:
 	D3D11_VIEWPORT ViewportInfo;
 	float ClearColor[4] = { 0, 1, 0, 1 };
 
-	ID3D11InputLayout* SpriteInputLayout;
-	ID3D11VertexShader* SpriteVS;
-	ID3D11PixelShader* SpritePS;
+
+
 	ID3D11SamplerState* SpriteSampleState;
 
 	UMesh* QuadMesh;
 	UMesh* CircleMesh;
 	ID3D11Buffer* TransformCBuffer;
 
-	ID3D11Texture2D* TestTexture;
-	ID3D11ShaderResourceView* TestTextureSRV;
+	ID3D11ShaderResourceView* AtlasSRV;
+	ID3D11ShaderResourceView* BackgroundSRV;
 	USpriteSheet SpriteSheet;
 
 	FVector4 BackgroundSkyAtlasInfo;
@@ -88,6 +96,14 @@ public:
 		FVector2 pos = frame->position;
 		FVector2 size = frame->size;
 		return FVector4(pos.x, pos.y, size.x, size.y);
+	}
+	ID3D11ShaderResourceView* GetAtlasSpriteSRV()
+	{
+		return AtlasSRV;
+	}
+	ID3D11ShaderResourceView* GetBGSpriteSRV() 
+	{
+		return BackgroundSRV;
 	}
 private:
 	void InitWindow(HINSTANCE hInstance);

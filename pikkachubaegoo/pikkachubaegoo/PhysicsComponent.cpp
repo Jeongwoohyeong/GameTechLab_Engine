@@ -6,6 +6,7 @@
 #include "SoundManager.h"
 #include "ObjectFactory.h"
 #include "PlayerState.h"
+#include "Ball.h"
 
 UPhysicsComponent::UPhysicsComponent(UObject* inOwner, const FRect& inCollider, const FRect& inBoundary, bool inIsGravity, float inGravityScale, bool inCanReflectWithWall)
 	: owner(inOwner), velocity(), collider(inCollider), boundary(inBoundary), bIsGravity(inIsGravity), gravityScale(inGravityScale), bCanReflectWithWall(inCanReflectWithWall)
@@ -44,7 +45,7 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 		return;
 	}
 
-	UObject* ball = GetOwner();
+	UBall* ball = static_cast<UBall*>(owner);
 	UObject* otherObject = other->GetOwner();
 	const FRect& otherCollider = other->GetColliderBounds();
 	FVector2 overlap = CalculateOverlap(collider, otherCollider, ball->GetTransform()->GetLocation(), otherObject->GetTransform()->GetLocation());
@@ -76,25 +77,25 @@ void UPhysicsComponent::OnCollision(UPhysicsComponent* other)
 			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;
 			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
-			bIsSpiking = true;
+			ball->SetIsSpiking(true);
 		}
 		else if (player->GetState() == PlayerState::Spiking)
 		{
 			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_SPIKE_VELOCITY_X : -BALL_SPIKE_VELOCITY_X;		
 			newBallVelocity.y = BALL_SPIKE_VELOCITY_Y;
-			bIsSpiking = true;
+			ball->SetIsSpiking(true);
 		}
 		else if (player->GetState() == PlayerState::DownSpiking)
 		{
 			UObjectFactory::GetInstance()->CreatePunch(ball->GetTransform()->GetLocation(), FVector3(PUNCH_SPIKE_SCALE, PUNCH_SPIKE_SCALE));
 			newBallVelocity.x = (ball->GetTransform()->GetLocation().x - player->GetTransform()->GetLocation().x > 0) ? BALL_MIN_VELOCITY_X : -BALL_MIN_VELOCITY_X;
 			newBallVelocity.y = -BALL_SPIKE_VELOCITY_Y;
-			bIsSpiking = true;
+			ball->SetIsSpiking(true);
 		}
 		else
 		{
-			bIsSpiking = false;
+			ball->SetIsSpiking(false);
 			float relativeX = ball->GetTransform()->GetLocation().x - otherObject->GetTransform()->GetLocation().x;
 			newBallVelocity.x = relativeX * 8.0f;
 			if (newBallVelocity.x == 0)

@@ -15,9 +15,9 @@ void PlayingState::ResetRound()
 	player1->GetTransform()->SetLocation(FVector3(-PLAYER_BASE_POSITION_X, PLAYER_BASE_POSITION_Y)); // Player 1 위치 초기화
 	player2->GetTransform()->SetLocation(FVector3(PLAYER_BASE_POSITION_X, PLAYER_BASE_POSITION_Y)); // Player 2 위치 초기화
 	ball->GetTransform()->SetLocation(FVector3(BALL_BASE_POSITION_X, BALL_BASE_POSITION_Y)); // Ball 위치 초기화
-	player1->SetVelocity(FVector3()); // Player1 속도 초기화
-	player2->SetVelocity(FVector3()); // Player2 속도 초기화
-	ball->SetVelocity(FVector3()); // Ball 속도 초기화
+	player1->Reset(); // Player1 속도 초기화
+	player2->Reset(); // Player2 속도 초기화
+	ball->Reset(); // Ball 속도 초기화
 
 	// 상태를 'Ready'로 설정하고 타이머 초기화
 	gameplayState = EGameplayState::Ready;

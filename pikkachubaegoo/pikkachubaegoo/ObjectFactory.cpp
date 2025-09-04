@@ -110,20 +110,18 @@ void UObjectFactory::Render()
 }
 void UObjectFactory::CreateBGS()
 {
-	UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder, FVector3(0, -0.5f, 0), FVector3(1, 0.2f, 1));
-	UObjectFactory::GetInstance()->CreateBG(UBackground::BGSkySpriteAtlasKey, UMeshRenderer::BGSkyOrder, FVector3(0, 0, 0), FVector3(1, 1, 1));
-	UObjectFactory::GetInstance()->CreateBG(UBackground::BGMountainSpriteAtlasKey, UMeshRenderer::BGMountainOrder, FVector3(0, 0, 0), FVector3(1, 1, 1));
+	UObjectFactory::GetInstance()->CreateBG(UMeshRenderer::BGGroundOrder, FVector3(0, 0, 0), FVector3(1, 1, 1));
 }
-UObject* UObjectFactory::CreateBG(const string& atlasinfoKey, const UINT order, const FVector3& location, const FVector3& scale)
+UObject* UObjectFactory::CreateBG(const UINT order, const FVector3& location, const FVector3& scale)
 {
-	UBackground* newBG = new UBackground(new UMeshRenderer(UApp::Ins->GetQuadMesh(), order), atlasinfoKey, location, scale);
+	UBackground* newBG = new UBackground(new UMeshRenderer(UApp::Ins->GetQuadMesh(), order, UApp::Ins->GetBGSpriteSRV()), location, scale);
 	AddObject(newBG);
 	return newBG;
 }
 
 UObject* UObjectFactory::CreatePlayer(int newPlayerIndex, FVector3 location, FVector3 scale)
 {
-	UPlayer* newObject = new UPlayer(newPlayerIndex, new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::PikkachuOrder + newPlayerIndex));
+	UPlayer* newObject = new UPlayer(newPlayerIndex, new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::PikkachuOrder + newPlayerIndex, UApp::Ins->GetAtlasSpriteSRV()));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);
@@ -133,7 +131,7 @@ UObject* UObjectFactory::CreatePlayer(int newPlayerIndex, FVector3 location, FVe
 
 UObject* UObjectFactory::CreateBall(FVector3 location, FVector3 scale)
 {
-	UBall* newObject = new UBall(new UMeshRenderer(UApp::Ins->GetCircleMesh(), UMeshRenderer::BallOrder));
+	UBall* newObject = new UBall(new UMeshRenderer(UApp::Ins->GetCircleMesh(), UMeshRenderer::BallOrder, UApp::Ins->GetAtlasSpriteSRV()));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);
@@ -142,7 +140,7 @@ UObject* UObjectFactory::CreateBall(FVector3 location, FVector3 scale)
 
 UObject* UObjectFactory::CreateWall(FVector3 location, FVector3 scale)
 {
-	UWall* newObject = new UWall(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder));
+	UWall* newObject = new UWall(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder, UApp::Ins->GetAtlasSpriteSRV()));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);
@@ -151,7 +149,7 @@ UObject* UObjectFactory::CreateWall(FVector3 location, FVector3 scale)
 
 UObject* UObjectFactory::CreatePunch(FVector3 location, FVector3 scale)
 {
-	UPunch* newObject = new UPunch(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder));
+	UPunch* newObject = new UPunch(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::NetOrder, UApp::Ins->GetAtlasSpriteSRV()));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);
@@ -160,7 +158,7 @@ UObject* UObjectFactory::CreatePunch(FVector3 location, FVector3 scale)
 
 UObject* UObjectFactory::CreateBallTrail(FVector3 location, FVector3 scale)
 {
-	UBallTrail* newObject = new UBallTrail(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::BallTrailOrder));
+	UBallTrail* newObject = new UBallTrail(new UMeshRenderer(UApp::Ins->GetQuadMesh(), UMeshRenderer::BallTrailOrder, UApp::Ins->GetAtlasSpriteSRV()));
 	newObject->GetTransform()->SetLocation(location);
 	newObject->GetTransform()->SetScale(scale);
 	AddObject(newObject);

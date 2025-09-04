@@ -9,9 +9,12 @@ const UINT UMeshRenderer::BGSkyOrder = 0;
 const UINT UMeshRenderer::BGGroundOrder = 2;
 const UINT UMeshRenderer::BGMountainOrder = 1;
 
-void UMeshRenderer::Init()
+UMeshRenderer::UMeshRenderer(UMesh* InMesh, UINT InDrawOrder, ID3D11ShaderResourceView* textureSRV)
 {
+	Mesh = InMesh;
+	SetDrawOrder(InDrawOrder);
 	D3DUtil::CreateConstantBuffer(&AtlasInfoCBuffer, sizeof(FVector4));
+	SetTextureSRV(textureSRV);
 }
 
 
@@ -32,6 +35,12 @@ void UMeshRenderer::ChangeAtlasInfo(const FVector4& atlasInfo)
 	AtlasInfo = atlasInfo;
 	D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), AtlasInfoCBuffer, AtlasInfo);
 }
+void UMeshRenderer::SetShader(ID3D11InputLayout* inputLayout, ID3D11VertexShader* vs, ID3D11PixelShader* ps)
+{
+	InputLayout = inputLayout;
+	VS = vs;
+	PS = ps;
+}
 
 void UMeshRenderer::DrawMesh(const FMatrix4x4& Transform)
 {
@@ -39,7 +48,12 @@ void UMeshRenderer::DrawMesh(const FMatrix4x4& Transform)
 	if (Mesh)
 	{
 		D3DUtil::UpdateConstantBuffer(UApp::Ins->GetContext(), UApp::Ins->GetTransformCBuffer(), Transform);
+		UApp::Ins->GetContext()->IASetInputLayout(InputLayout);
+		UApp::Ins->GetContext()->VSSetShader(VS, 0, 0);
+		UApp::Ins->GetContext()->PSSetShader(PS, 0, 0);
 		UApp::Ins->GetContext()->VSSetConstantBuffers(1, 1, &AtlasInfoCBuffer);
+		UApp::Ins->GetContext()->PSSetShaderResources(0, 1, &TextureSRV);
+
 		Mesh->Draw();
 	}
 }

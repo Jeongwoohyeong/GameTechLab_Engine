@@ -6,6 +6,8 @@ const string UPunch::PunchSpriteAtlasKey = "ball/ball_punch.png";
 UPunch::UPunch(UMeshRenderer* InRenderer) : UObject(InRenderer)
 {
 	InRenderer->ChangeAtlasInfo(UApp::Ins->GetAtlasInfo(PunchSpriteAtlasKey));
+    GetRenderer()->SetShader(UApp::Ins->SpriteAtlasInputLayout, UApp::Ins->SpriteAtlasVS, UApp::Ins->SpriteAtlasPS);
+
 }
 
 UPunch::~UPunch()
@@ -47,7 +49,7 @@ void UPunch::Update(float deltaTime)
         timeAccumulator -= scaleInterval;
 
         // 크기가 너무 작아지면 오브젝트 해제
-        if (GetTransform()->GetScale().x < 0.002f)
+        if (GetTransform()->GetScale().x < 0.02f)
         {
             bShouldBeReleased = true;
             

@@ -42,6 +42,6 @@ constexpr float WALL_SCALE_X = 0.05f;
 constexpr float WALL_SCALE_Y = 0.35f;
 
 // PUNCH
-constexpr float PUNCH_SCALE_SPEED = 0.55f;
-constexpr float PUNCH_BALL_LAND_SCALE = 0.2f;
+constexpr float PUNCH_SCALE_SPEED = 0.5f;
+constexpr float PUNCH_BALL_LAND_SCALE = 0.18f;
 constexpr float PUNCH_SPIKE_SCALE = 0.15f;

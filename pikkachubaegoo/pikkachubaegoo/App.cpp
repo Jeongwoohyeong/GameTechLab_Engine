@@ -7,8 +7,9 @@
 #include <fstream>
 
 LPCWSTR SpriteShaderFileName = L".\\SpriteShader.hlsl";
+LPCWSTR SpriteAtlasShaderFileName = L".\\SpriteAtlasShader.hlsl";
 string SpriteAtlasJsonPath = ".\\Resource\\sprite_sheet.json";
-
+LPCWSTR SpriteBackgroundFilePath = L".\\Resource\\background.png";
 UApp* UApp::Ins = nullptr;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -132,6 +133,9 @@ void UApp::InitDirect()
 
 	D3DUtil::CreateVSAndInputLayout(SpriteShaderFileName, &SpriteVS, &SpriteInputLayout);
 	D3DUtil::CreatePS(SpriteShaderFileName, &SpritePS);
+	
+	D3DUtil::CreateVSAndInputLayout(SpriteAtlasShaderFileName, &SpriteAtlasVS, &SpriteAtlasInputLayout);
+	D3DUtil::CreatePS(SpriteAtlasShaderFileName, &SpriteAtlasPS);
 
 	// Create Constant Buffer
 	D3D11_BUFFER_DESC constantbufferdesc = {};
@@ -206,7 +210,8 @@ void UApp::Loading()
 	wstring atlasSpritePath = SpriteSheet.GetImagePath();
 	LPCWSTR atlasSpritePathLPCWSTR = atlasSpritePath.c_str();
 
-	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &TestTextureSRV);
+	D3DUtil::LoadTexture(atlasSpritePathLPCWSTR, &AtlasSRV);
+	D3DUtil::LoadTexture(SpriteBackgroundFilePath, &BackgroundSRV);
 	USoundManager::GetInstance()->Init();
 }
 void UApp::Start()
@@ -252,13 +257,10 @@ void UApp::Render()
 	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, nullptr);
 	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-	DeviceContext->IASetInputLayout(SpriteInputLayout);
-	DeviceContext->VSSetShader(SpriteVS, nullptr, 0);
-	DeviceContext->PSSetShader(SpritePS, nullptr, 0);
 	DeviceContext->VSSetConstantBuffers(0, 1, &TransformCBuffer);
 
 	DeviceContext->PSSetSamplers(0, 1, &SpriteSampleState);
-	DeviceContext->PSSetShaderResources(0, 1, &TestTextureSRV);
+	DeviceContext->PSSetShaderResources(0, 1, &AtlasSRV);
 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();

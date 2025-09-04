@@ -15,6 +15,12 @@ private:
 	UINT DrawOrder = 0;
 	FVector4 AtlasInfo;
 	ID3D11Buffer* AtlasInfoCBuffer;
+
+	//가리키는것 생성,파괴 x
+	ID3D11ShaderResourceView* TextureSRV;
+	ID3D11PixelShader* PS;
+	ID3D11VertexShader* VS;
+	ID3D11InputLayout* InputLayout;
 public:
 	const static UINT PikkachuOrder;
 	const static UINT BallOrder;
@@ -27,17 +33,13 @@ public:
 
 public:
 	// 생성자에서 UMesh를 받아 초기화하거나, 별도의 SetMesh 함수를 둘 수 있습니다.
-	UMeshRenderer(UMesh* InMesh) : Mesh(InMesh)
-	{
-		Init();
-	}
-	UMeshRenderer(UMesh* InMesh, UINT InDrawOrder) : Mesh(InMesh), DrawOrder(InDrawOrder) 
-	{
-		Init();
-	}
-	void Init();
+	UMeshRenderer(UMesh* InMesh, UINT InDrawOrder, ID3D11ShaderResourceView* textureSRV);
 	~UMeshRenderer();
 
+	void SetTextureSRV(ID3D11ShaderResourceView* textureSRV)
+	{
+		TextureSRV = textureSRV;
+	}
 	void ChangeAtlasInfo(const FVector4& atlasInfo);
 	void DrawMesh(const FMatrix4x4& Transform);
 	void SetDrawOrder(UINT inDrawOrder)
@@ -48,4 +50,5 @@ public:
 	{
 		return DrawOrder;
 	}
+	void SetShader(ID3D11InputLayout* inputLayout, ID3D11VertexShader* vs, ID3D11PixelShader* ps);
 };

@@ -29,7 +29,7 @@ public:
 	// Factory
 public:
 	void CreateBGS();
-	UObject* CreateBG(const string& atlasinfoKey, const UINT order, const FVector3& location, const FVector3& scale);
+	UObject* CreateBG(const UINT order, const FVector3& location, const FVector3& scale);
 	UObject* CreatePlayer(int newPlyaerIndex, FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateBall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
 	UObject* CreateWall(FVector3 location, FVector3 scale = FVector3(1.0f, 1.0f, 1.0f));
