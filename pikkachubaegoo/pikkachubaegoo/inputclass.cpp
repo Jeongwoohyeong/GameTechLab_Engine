@@ -22,7 +22,7 @@ void UInput::Update()
 
 	for (int i = 0; i < MAX_KEYS; i++)
 	{
-		CurrentKeyStates[i] = GetAsyncKeyState(i) & 0x8000;
+		CurrentKeyStates[i] = GetAsyncKeyState(i) & 0x8000; //현재 눌려있는지 여부
 	}
 }
 
