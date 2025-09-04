@@ -50,6 +50,8 @@ public:
 	void Update(float deltaTime) override;
 	PlayerState GetState() const { return currentState; }
 
+	void Reset() override;
+
 private:
 	void SetInput();
 };

@@ -22,8 +22,9 @@ UPlayer::UPlayer(int newPlyaerIndex, UMeshRenderer* InRenderer) : UObject(InRend
 		GetTransform()->AddRotationY(180);
 	}
 
-	float size = 0.1f;
-	FRect collider(FVector2(-size, -size), FVector2(size, size)); // 플레이어의 충돌 박스 설정
+	float sizeX = 0.06f;
+	float sizeY = 0.08f;
+	FRect collider(FVector2(-sizeX, -sizeY), FVector2(sizeX, sizeY)); // 플레이어의 충돌 박스 설정
 
 	FRect boundary;
 	if (playerIndex == PLAYER1_INDEX)
@@ -255,4 +256,11 @@ void UPlayer::Update(float deltaTime)
 	physicsComponent->SetVelocity(velocity);
 	// 위치 업데이트
 	physicsComponent->Update(deltaTime);
+}
+
+void UPlayer::Reset()
+{
+	UObject::Reset();
+	currentState = PlayerState::Idle;
+	animator.SetState(currentState);
 }

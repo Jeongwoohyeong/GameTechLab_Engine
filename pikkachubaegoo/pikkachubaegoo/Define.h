@@ -38,8 +38,8 @@ constexpr int PLAYER2_INDEX = 1;
 // WALL
 constexpr float WALL_BASE_POSITION_X = 0.0f;
 constexpr float WALL_BASE_POSITION_Y = -0.6f;
-constexpr float WALL_SCALE_X = 0.05f;
-constexpr float WALL_SCALE_Y = 0.35f;
+constexpr float WALL_SCALE_X = 0.03f;
+constexpr float WALL_SCALE_Y = 0.3f;
 
 // PUNCH
 constexpr float PUNCH_SCALE_SPEED = 0.5f;
