@@ -130,6 +130,7 @@ void UPlayer::Update(float deltaTime)
 	case PlayerState::Walking:
 		if (isJump)
 		{
+			USoundManager::GetInstance()->PlaySFX(SOUND_KEY_CHU);
 			velocity.y = JUMP_STRENGTH;
 			currentState = PlayerState::Jumping;
 		}
