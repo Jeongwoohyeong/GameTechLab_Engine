@@ -41,5 +41,10 @@ void UTime::Update()
         deltaTime = actualDeltaTime;
     }
 
+    if (deltaTime > 1 / 30.0f)
+    {
+        deltaTime = 1 / 30.0f;
+    }
+
     prevTime = currentTime;
 }
