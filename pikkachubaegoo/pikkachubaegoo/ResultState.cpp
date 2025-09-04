@@ -50,7 +50,7 @@ void ResultState::Render()
 	if (finalPlayer1Score > finalPlayer2Score)
 		winColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f); // 빨강
 	else if (finalPlayer2Score > finalPlayer1Score)
-		winColor = ImVec4(0.0f, 0.5f, 1.0f, 1.0f); // 파랑
+		winColor = ImVec4(0.0f, 0.0f, 1.0f, 1.0f); // 파랑
 	else
 		winColor = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); // 노랑
 
@@ -90,6 +90,7 @@ void ResultState::Render()
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 170, 70, 255));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 140, 50, 255));
 
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 	// --- 재시작 버튼 ---
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.55f);
@@ -105,6 +106,7 @@ void ResultState::Render()
 	{
 		UApp::Ins->ChangeState(new MainMenuState());
 	}
+	ImGui::PopStyleColor();
 
 	ImGui::PopStyleColor(3);
 	ImGui::PopStyleVar(2);
@@ -113,11 +115,11 @@ void ResultState::Render()
 	ImGui::GetFont()->Scale = 2.0f; // 조금 작은 폰트로
 	ImGui::PushFont(ImGui::GetFont());
 
-	const char* creditsText = u8"개발자 - 국동희, 김진철, 김호민, 정우형";
+	const char* creditsText = u8"3팀 - 국동희, 김진철, 김호민, 정우형";
 	textSize = ImGui::CalcTextSize(creditsText);
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - textSize.x) * 0.5f);
-	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.9f);
-	ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), creditsText);
+	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.8f);
+	ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.8f, 1.0f), creditsText);
 
 	ImGui::PopFont();
 	ImGui::GetFont()->Scale = originalFontSize; // 폰트 스케일 원복

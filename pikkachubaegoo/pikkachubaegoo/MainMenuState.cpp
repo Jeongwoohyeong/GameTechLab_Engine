@@ -62,6 +62,7 @@ void MainMenuState::Render()
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 170, 70, 255));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 140, 50, 255));
 
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 	// --- 게임 시작 버튼 ---
 	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 200) * 0.5f);
 	ImGui::SetCursorPosY(ImGui::GetWindowHeight() * 0.5f);
@@ -77,6 +78,7 @@ void MainMenuState::Render()
 	{
 		PostMessage(UApp::Ins->HWnd, WM_QUIT, 0, 0);
 	}
+	ImGui::PopStyleColor();
 
 	// 스타일 원상복귀
 	ImGui::PopStyleColor(3);
