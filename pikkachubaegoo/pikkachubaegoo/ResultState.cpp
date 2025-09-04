@@ -29,7 +29,7 @@ ResultState::ResultState(int p1Score, int p2Score)
 void ResultState::Enter()
 {
 	// 결과 화면 진입 시 필요한 초기화 로직 (예: 결과 BGM 재생)
-	UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder);
+	UObjectFactory::GetInstance()->CreateBGS();
 }
 
 void ResultState::Update(float deltaTime)

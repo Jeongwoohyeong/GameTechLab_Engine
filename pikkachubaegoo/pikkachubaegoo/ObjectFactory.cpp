@@ -108,10 +108,15 @@ void UObjectFactory::Render()
 		renderObjects[i]->Draw();
 	}
 }
-
-UObject* UObjectFactory::CreateBG(const string& atlasinfoKey, const UINT order)
+void UObjectFactory::CreateBGS()
 {
-	UBackground* newBG = new UBackground(new UMeshRenderer(UApp::Ins->GetQuadMesh(), order), atlasinfoKey);
+	UObjectFactory::GetInstance()->CreateBG(UBackground::BGGroundSpriteAtlasKey, UMeshRenderer::BGGroundOrder, FVector3(0, -0.5f, 0), FVector3(1, 0.2f, 1));
+	UObjectFactory::GetInstance()->CreateBG(UBackground::BGSkySpriteAtlasKey, UMeshRenderer::BGSkyOrder, FVector3(0, 0, 0), FVector3(1, 1, 1));
+	UObjectFactory::GetInstance()->CreateBG(UBackground::BGMountainSpriteAtlasKey, UMeshRenderer::BGMountainOrder, FVector3(0, 0, 0), FVector3(1, 1, 1));
+}
+UObject* UObjectFactory::CreateBG(const string& atlasinfoKey, const UINT order, const FVector3& location, const FVector3& scale)
+{
+	UBackground* newBG = new UBackground(new UMeshRenderer(UApp::Ins->GetQuadMesh(), order), atlasinfoKey, location, scale);
 	AddObject(newBG);
 	return newBG;
 }
