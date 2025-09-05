@@ -26,7 +26,7 @@ void UShader::PrepareShader()
 	}
 }
 
-void UShader::UpdateContant(float x, float y, float z, float scale)
+void UShader::UpdateContant(float x, float y, float z, float Scale)
 {
 	if (!ConstantBuffer)
 	{
@@ -38,7 +38,7 @@ void UShader::UpdateContant(float x, float y, float z, float scale)
 	DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMSR);
 	FConstants* constants = (FConstants*)constantBufferMSR.pData;
 	constants->offset = { x, y, z };
-	constants->scale = 0.05f;
+	constants->Scale = 0.05f;
 	DeviceContext->Unmap(ConstantBuffer, 0);
 }
 

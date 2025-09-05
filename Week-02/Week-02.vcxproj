@@ -123,6 +123,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FMatrix.cpp" />
+    <ClCompile Include="FMatrix.h" />
+    <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
@@ -139,6 +142,8 @@
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FTransform.h" />
+    <ClInclude Include="FVector.h" />
     <ClInclude Include="FVertexStruct.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />

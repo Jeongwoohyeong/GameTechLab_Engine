@@ -2368,7 +2368,7 @@ void ImGui::ShadeVertsLinearUV(ImDrawList* draw_list, int vert_start_idx, int ve
 {
     const ImVec2 size = b - a;
     const ImVec2 uv_size = uv_b - uv_a;
-    const ImVec2 scale = ImVec2(
+    const ImVec2 Scale = ImVec2(
         size.x != 0.0f ? (uv_size.x / size.x) : 0.0f,
         size.y != 0.0f ? (uv_size.y / size.y) : 0.0f);
 
@@ -2379,12 +2379,12 @@ void ImGui::ShadeVertsLinearUV(ImDrawList* draw_list, int vert_start_idx, int ve
         const ImVec2 min = ImMin(uv_a, uv_b);
         const ImVec2 max = ImMax(uv_a, uv_b);
         for (ImDrawVert* vertex = vert_start; vertex < vert_end; ++vertex)
-            vertex->uv = ImClamp(uv_a + ImMul(ImVec2(vertex->pos.x, vertex->pos.y) - a, scale), min, max);
+            vertex->uv = ImClamp(uv_a + ImMul(ImVec2(vertex->pos.x, vertex->pos.y) - a, Scale), min, max);
     }
     else
     {
         for (ImDrawVert* vertex = vert_start; vertex < vert_end; ++vertex)
-            vertex->uv = uv_a + ImMul(ImVec2(vertex->pos.x, vertex->pos.y) - a, scale);
+            vertex->uv = uv_a + ImMul(ImVec2(vertex->pos.x, vertex->pos.y) - a, Scale);
     }
 }
 
@@ -5369,12 +5369,12 @@ const char* ImFont::CalcWordWrapPosition(float size, const char* text, const cha
     // e.g.: "The tropical fish" with ~5 characters worth of width --> "The tr" "opical" "fish"
 
     ImFontBaked* baked = GetFontBaked(size);
-    const float scale = size / baked->Size;
+    const float Scale = size / baked->Size;
 
     float line_width = 0.0f;
     float word_width = 0.0f;
     float blank_width = 0.0f;
-    wrap_width /= scale; // We work with unscaled widths to avoid scaling every characters
+    wrap_width /= Scale; // We work with unscaled widths to avoid scaling every characters
 
     const char* word_end = text;
     const char* prev_word_end = NULL;
@@ -5467,7 +5467,7 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
 
     const float line_height = size;
     ImFontBaked* baked = GetFontBaked(size);
-    const float scale = size / baked->Size;
+    const float Scale = size / baked->Size;
 
     ImVec2 text_size = ImVec2(0, 0);
     float line_width = 0.0f;
@@ -5521,7 +5521,7 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
         float char_width = (c < (unsigned int)baked->IndexAdvanceX.Size) ? baked->IndexAdvanceX.Data[c] : -1.0f;
         if (char_width < 0.0f)
             char_width = BuildLoadGlyphGetAdvanceOrFallback(baked, c);
-        char_width *= scale;
+        char_width *= Scale;
 
         if (line_width + char_width >= max_width)
         {
@@ -5553,16 +5553,16 @@ void ImFont::RenderChar(ImDrawList* draw_list, float size, const ImVec2& pos, Im
         return;
     if (glyph->Colored)
         col |= ~IM_COL32_A_MASK;
-    float scale = (size >= 0.0f) ? (size / baked->Size) : 1.0f;
+    float Scale = (size >= 0.0f) ? (size / baked->Size) : 1.0f;
     float x = IM_TRUNC(pos.x);
     float y = IM_TRUNC(pos.y);
 
-    float x1 = x + glyph->X0 * scale;
-    float x2 = x + glyph->X1 * scale;
+    float x1 = x + glyph->X0 * Scale;
+    float x2 = x + glyph->X1 * Scale;
     if (cpu_fine_clip && (x1 > cpu_fine_clip->z || x2 < cpu_fine_clip->x))
         return;
-    float y1 = y + glyph->Y0 * scale;
-    float y2 = y + glyph->Y1 * scale;
+    float y1 = y + glyph->Y0 * Scale;
+    float y2 = y + glyph->Y1 * Scale;
     float u1 = glyph->U0;
     float v1 = glyph->V0;
     float u2 = glyph->U1;
@@ -5599,7 +5599,7 @@ begin:
     const float line_height = size;
     ImFontBaked* baked = GetFontBaked(size);
 
-    const float scale = size / baked->Size;
+    const float Scale = size / baked->Size;
     const float origin_x = x;
     const bool word_wrap_enabled = (wrap_width > 0.0f);
 
@@ -5699,14 +5699,14 @@ begin:
         //if (glyph == NULL)
         //    continue;
 
-        float char_width = glyph->AdvanceX * scale;
+        float char_width = glyph->AdvanceX * Scale;
         if (glyph->Visible)
         {
             // We don't do a second finer clipping test on the Y axis as we've already skipped anything before clip_rect.y and exit once we pass clip_rect.w
-            float x1 = x + glyph->X0 * scale;
-            float x2 = x + glyph->X1 * scale;
-            float y1 = y + glyph->Y0 * scale;
-            float y2 = y + glyph->Y1 * scale;
+            float x1 = x + glyph->X0 * Scale;
+            float x2 = x + glyph->X1 * Scale;
+            float y1 = y + glyph->Y0 * Scale;
+            float y2 = y + glyph->Y1 * Scale;
             if (x1 <= clip_rect.z && x2 >= clip_rect.x)
             {
                 // Render a character
@@ -5804,11 +5804,11 @@ begin:
 //-----------------------------------------------------------------------------
 
 // Render an arrow aimed to be aligned with text (p_min is a position in the same space text would be positioned). To e.g. denote expanded/collapsed state
-void ImGui::RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float scale)
+void ImGui::RenderArrow(ImDrawList* draw_list, ImVec2 pos, ImU32 col, ImGuiDir dir, float Scale)
 {
     const float h = draw_list->_Data->FontSize * 1.00f;
-    float r = h * 0.40f * scale;
-    ImVec2 center = pos + ImVec2(h * 0.50f, h * 0.50f * scale);
+    float r = h * 0.40f * Scale;
+    ImVec2 center = pos + ImVec2(h * 0.50f, h * 0.50f * Scale);
 
     ImVec2 a, b, c;
     switch (dir)

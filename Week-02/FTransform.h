@@ -1,0 +1,48 @@
+#pragma once
+
+#include "FMatrix.h"
+
+class FTransform
+{
+public:
+	FTransform();
+	~FTransform();
+
+	void SetScale(float x, float y, float z);
+	void SetScale(const FVector&);
+
+	void SetRotationX(float degree);
+	void SetRotationY(float degree);
+	void SetRotationZ(float degree);
+
+	void AddRotationX(float degree);
+	void AddRotationY(float degree);
+	void AddRotationZ(float degree);
+
+	void SetLocation(float x, float y, float z);
+	void SetLocation(const FVector&);
+
+	void Translate(float dx, float dy, float dz);
+	void Translate(const FVector&);
+
+	const FVector& GetScale() const { return Scale; }
+	const FVector& GetRotationRadians() const { return Rotation; }
+	FVector GetRotationDegree() const;
+	const FVector& GetLocation() const { return Location; }
+
+	const FMatrix& GetTransformMatrix();
+private:
+	float DegreeToRadians(float degree) const;
+	float RadiansToDegree(float radians) const;
+
+private:
+	FMatrix Transform;
+	FVector Scale;
+	FVector Rotation;
+	FVector Location;
+
+	static constexpr float PI = 3.1415926f;
+
+	// 트랜스폼 변경 검사
+	bool isDirty;
+};

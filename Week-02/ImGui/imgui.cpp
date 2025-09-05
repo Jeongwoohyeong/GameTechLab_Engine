@@ -3902,22 +3902,22 @@ void ImGui::RenderMouseCursor(ImVec2 base_pos, float base_scale, ImGuiMouseCurso
         if (!ImFontAtlasGetMouseCursorTexData(font_atlas, mouse_cursor, &offset, &size, &uv[0], &uv[2]))
             continue;
         const ImVec2 pos = base_pos - offset;
-        const float scale = base_scale;
-        if (!viewport->GetMainRect().Overlaps(ImRect(pos, pos + ImVec2(size.x + 2, size.y + 2) * scale)))
+        const float Scale = base_scale;
+        if (!viewport->GetMainRect().Overlaps(ImRect(pos, pos + ImVec2(size.x + 2, size.y + 2) * Scale)))
             continue;
         ImDrawList* draw_list = GetForegroundDrawList(viewport);
         ImTextureRef tex_ref = font_atlas->TexRef;
         draw_list->PushTexture(tex_ref);
-        draw_list->AddImage(tex_ref, pos + ImVec2(1, 0) * scale, pos + (ImVec2(1, 0) + size) * scale, uv[2], uv[3], col_shadow);
-        draw_list->AddImage(tex_ref, pos + ImVec2(2, 0) * scale, pos + (ImVec2(2, 0) + size) * scale, uv[2], uv[3], col_shadow);
-        draw_list->AddImage(tex_ref, pos,                        pos + size * scale,                  uv[2], uv[3], col_border);
-        draw_list->AddImage(tex_ref, pos,                        pos + size * scale,                  uv[0], uv[1], col_fill);
+        draw_list->AddImage(tex_ref, pos + ImVec2(1, 0) * Scale, pos + (ImVec2(1, 0) + size) * Scale, uv[2], uv[3], col_shadow);
+        draw_list->AddImage(tex_ref, pos + ImVec2(2, 0) * Scale, pos + (ImVec2(2, 0) + size) * Scale, uv[2], uv[3], col_shadow);
+        draw_list->AddImage(tex_ref, pos,                        pos + size * Scale,                  uv[2], uv[3], col_border);
+        draw_list->AddImage(tex_ref, pos,                        pos + size * Scale,                  uv[0], uv[1], col_fill);
         if (mouse_cursor == ImGuiMouseCursor_Wait || mouse_cursor == ImGuiMouseCursor_Progress)
         {
             float a_min = ImFmod((float)g.Time * 5.0f, 2.0f * IM_PI);
             float a_max = a_min + IM_PI * 1.65f;
-            draw_list->PathArcTo(pos + ImVec2(14, -1) * scale, 6.0f * scale, a_min, a_max);
-            draw_list->PathStroke(col_fill, ImDrawFlags_None, 3.0f * scale);
+            draw_list->PathArcTo(pos + ImVec2(14, -1) * Scale, 6.0f * Scale, a_min, a_max);
+            draw_list->PathStroke(col_fill, ImDrawFlags_None, 3.0f * Scale);
         }
         draw_list->PopTexture();
     }
@@ -8475,11 +8475,11 @@ ImVec2 ImGui::GetFontTexUvWhitePixel()
 
 // Prefer using PushFont(NULL, style.FontSizeBase * factor), or use style.FontScaleMain to scale all windows.
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-void ImGui::SetWindowFontScale(float scale)
+void ImGui::SetWindowFontScale(float Scale)
 {
-    IM_ASSERT(scale > 0.0f);
+    IM_ASSERT(Scale > 0.0f);
     ImGuiWindow* window = GetCurrentWindow();
-    window->FontWindowScale = scale;
+    window->FontWindowScale = Scale;
     UpdateCurrentFontSize(0.0f);
 }
 #endif
@@ -10072,14 +10072,14 @@ void ImGui::UpdateMouseWheel()
         LockWheelingWindow(mouse_window, wheel.y);
         ImGuiWindow* window = mouse_window;
         const float new_font_scale = ImClamp(window->FontWindowScale + g.IO.MouseWheel * 0.10f, 0.50f, 2.50f);
-        const float scale = new_font_scale / window->FontWindowScale;
+        const float Scale = new_font_scale / window->FontWindowScale;
         window->FontWindowScale = new_font_scale;
         if (window == window->RootWindow)
         {
-            const ImVec2 offset = window->Size * (1.0f - scale) * (g.IO.MousePos - window->Pos) / window->Size;
+            const ImVec2 offset = window->Size * (1.0f - Scale) * (g.IO.MousePos - window->Pos) / window->Size;
             SetWindowPos(window, window->Pos + offset, 0);
-            window->Size = ImTrunc(window->Size * scale);
-            window->SizeFull = ImTrunc(window->SizeFull * scale);
+            window->Size = ImTrunc(window->Size * Scale);
+            window->SizeFull = ImTrunc(window->SizeFull * Scale);
         }
         return;
     }
@@ -12434,22 +12434,22 @@ ImVec2 ImGui::FindBestWindowPosForPopup(ImGuiWindow* window)
         // - Require some tidying up. In theory we could handle both cases in same location, but requires a bit of shuffling
         //   as drag and drop tooltips are calling SetNextWindowPos() leading to 'window_pos_set_by_api' being set in Begin().
         IM_ASSERT(g.CurrentWindow == window);
-        const float scale = g.Style.MouseCursorScale;
+        const float Scale = g.Style.MouseCursorScale;
         const ImVec2 ref_pos = NavCalcPreferredRefPos();
 
         if (g.IO.MouseSource == ImGuiMouseSource_TouchScreen && NavCalcPreferredRefPosSource() == ImGuiInputSource_Mouse)
         {
-            ImVec2 tooltip_pos = ref_pos + TOOLTIP_DEFAULT_OFFSET_TOUCH * scale - (TOOLTIP_DEFAULT_PIVOT_TOUCH * window->Size);
+            ImVec2 tooltip_pos = ref_pos + TOOLTIP_DEFAULT_OFFSET_TOUCH * Scale - (TOOLTIP_DEFAULT_PIVOT_TOUCH * window->Size);
             if (r_outer.Contains(ImRect(tooltip_pos, tooltip_pos + window->Size)))
                 return tooltip_pos;
         }
 
-        ImVec2 tooltip_pos = ref_pos + TOOLTIP_DEFAULT_OFFSET_MOUSE * scale;
+        ImVec2 tooltip_pos = ref_pos + TOOLTIP_DEFAULT_OFFSET_MOUSE * Scale;
         ImRect r_avoid;
         if (g.NavCursorVisible && g.NavHighlightItemUnderNav && !g.IO.ConfigNavMoveSetMousePos)
             r_avoid = ImRect(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 16, ref_pos.y + 8);
         else
-            r_avoid = ImRect(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24 * scale, ref_pos.y + 24 * scale); // FIXME: Hard-coded based on mouse cursor shape expectation. Exact dimension not very important.
+            r_avoid = ImRect(ref_pos.x - 16, ref_pos.y - 8, ref_pos.x + 24 * Scale, ref_pos.y + 24 * Scale); // FIXME: Hard-coded based on mouse cursor shape expectation. Exact dimension not very important.
         //GetForegroundDrawList()->AddRect(r_avoid.Min, r_avoid.Max, IM_COL32(255, 0, 255, 255));
 
         return FindBestWindowPosForPopupEx(tooltip_pos, window->Size, &window->AutoPosLastDirection, r_outer, r_avoid, ImGuiPopupPositionPolicy_Tooltip);
@@ -15379,22 +15379,22 @@ void ImGui::SetWindowViewport(ImGuiWindow* window, ImGuiViewportP* viewport)
     window->Viewport = viewport;
 }
 
-static void ScaleWindow(ImGuiWindow* window, float scale)
+static void ScaleWindow(ImGuiWindow* window, float Scale)
 {
     ImVec2 origin = window->Viewport->Pos;
-    window->Pos = ImFloor((window->Pos - origin) * scale + origin);
-    window->Size = ImTrunc(window->Size * scale);
-    window->SizeFull = ImTrunc(window->SizeFull * scale);
-    window->ContentSize = ImTrunc(window->ContentSize * scale);
+    window->Pos = ImFloor((window->Pos - origin) * Scale + origin);
+    window->Size = ImTrunc(window->Size * Scale);
+    window->SizeFull = ImTrunc(window->SizeFull * Scale);
+    window->ContentSize = ImTrunc(window->ContentSize * Scale);
 }
 
 // Scale all windows (position, size). Use when e.g. changing DPI. (This is a lossy operation!)
-void ImGui::ScaleWindowsInViewport(ImGuiViewportP* viewport, float scale)
+void ImGui::ScaleWindowsInViewport(ImGuiViewportP* viewport, float Scale)
 {
     ImGuiContext& g = *GImGui;
     for (ImGuiWindow* window : g.Windows)
         if (window->Viewport == viewport)
-            ScaleWindow(window, scale);
+            ScaleWindow(window, Scale);
 }
 
 // Update viewports and monitor infos
@@ -15693,8 +15693,8 @@ void ImGui::DebugRenderViewportThumbnail(ImDrawList* draw_list, ImGuiViewportP* 
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
 
-    ImVec2 scale = bb.GetSize() / viewport->Size;
-    ImVec2 off = bb.Min - viewport->Pos * scale;
+    ImVec2 Scale = bb.GetSize() / viewport->Size;
+    ImVec2 off = bb.Min - viewport->Pos * Scale;
     float alpha_mul = 1.0f;
     window->DrawList->AddRectFilled(bb.Min, bb.Max, GetColorU32(ImGuiCol_Border, alpha_mul * 0.40f));
     for (ImGuiWindow* thumb_window : g.Windows)
@@ -15704,8 +15704,8 @@ void ImGui::DebugRenderViewportThumbnail(ImDrawList* draw_list, ImGuiViewportP* 
 
         ImRect thumb_r = thumb_window->Rect();
         ImRect title_r = thumb_window->TitleBarRect();
-        thumb_r = ImRect(ImTrunc(off + thumb_r.Min * scale), ImTrunc(off +  thumb_r.Max * scale));
-        title_r = ImRect(ImTrunc(off + title_r.Min * scale), ImTrunc(off +  ImVec2(title_r.Max.x, title_r.Min.y + title_r.GetHeight() * 3.0f) * scale)); // Exaggerate title bar height
+        thumb_r = ImRect(ImTrunc(off + thumb_r.Min * Scale), ImTrunc(off +  thumb_r.Max * Scale));
+        title_r = ImRect(ImTrunc(off + title_r.Min * Scale), ImTrunc(off +  ImVec2(title_r.Max.x, title_r.Min.y + title_r.GetHeight() * 3.0f) * Scale)); // Exaggerate title bar height
         thumb_r.ClipWithFull(bb);
         title_r.ClipWithFull(bb);
         const bool window_is_focused = (g.NavWindow && thumb_window->RootWindowForTitleBarHighlight == g.NavWindow->RootWindowForTitleBarHighlight);
@@ -15741,15 +15741,15 @@ static void RenderViewportsThumbnails()
 // Draw an arbitrary US keyboard layout to visualize translated keys
 void ImGui::DebugRenderKeyboardPreview(ImDrawList* draw_list)
 {
-    const float scale = ImGui::GetFontSize() / 13.0f;
-    const ImVec2 key_size = ImVec2(35.0f, 35.0f) * scale;
-    const float  key_rounding = 3.0f * scale;
-    const ImVec2 key_face_size = ImVec2(25.0f, 25.0f) * scale;
-    const ImVec2 key_face_pos = ImVec2(5.0f, 3.0f) * scale;
-    const float  key_face_rounding = 2.0f * scale;
-    const ImVec2 key_label_pos = ImVec2(7.0f, 4.0f) * scale;
+    const float Scale = ImGui::GetFontSize() / 13.0f;
+    const ImVec2 key_size = ImVec2(35.0f, 35.0f) * Scale;
+    const float  key_rounding = 3.0f * Scale;
+    const ImVec2 key_face_size = ImVec2(25.0f, 25.0f) * Scale;
+    const ImVec2 key_face_pos = ImVec2(5.0f, 3.0f) * Scale;
+    const float  key_face_rounding = 2.0f * Scale;
+    const ImVec2 key_label_pos = ImVec2(7.0f, 4.0f) * Scale;
     const ImVec2 key_step = ImVec2(key_size.x - 1.0f, key_size.y - 1.0f);
-    const float  key_row_offset = 9.0f * scale;
+    const float  key_row_offset = 9.0f * Scale;
 
     ImVec2 board_min = GetCursorScreenPos();
     ImVec2 board_max = ImVec2(board_min.x + 3 * key_step.x + 2 * key_row_offset + 10.0f, board_min.y + 3 * key_step.y + 10.0f);

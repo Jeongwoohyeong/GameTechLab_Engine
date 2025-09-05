@@ -19,6 +19,15 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{6de9fc94-36c1-48a9-9a74-0b397a28b491}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Shape">
+      <UniqueIdentifier>{e50f2e3f-b8f9-4884-a64e-d7650cdfbc4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Util">
+      <UniqueIdentifier>{f39110df-20f4-4594-b8e6-cf620d6a6e20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Util">
+      <UniqueIdentifier>{50bd747d-e422-49fe-b4a7-8e0ca4d7d1c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\imgui.cpp">
@@ -63,6 +72,15 @@
     <ClCompile Include="UUIManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="FMatrix.cpp">
+      <Filter>소스 파일\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="FMatrix.h">
+      <Filter>헤더 파일\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="FTransform.cpp">
+      <Filter>소스 파일\Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -92,9 +110,6 @@
     <ClInclude Include="FVertexStruct.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="UD3dDevice.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -112,6 +127,15 @@
     </ClInclude>
     <ClInclude Include="UUIManager.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>헤더 파일\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="FVector.h">
+      <Filter>헤더 파일\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="FTransform.h">
+      <Filter>헤더 파일\Util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

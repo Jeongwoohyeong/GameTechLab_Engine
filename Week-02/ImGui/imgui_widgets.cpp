@@ -3962,7 +3962,7 @@ static ImVec2 InputTextCalcTextSize(ImGuiContext* ctx, const char* text_begin, c
     //ImFont* font = g.Font;
     ImFontBaked* baked = g.FontBaked;
     const float line_height = g.FontSize;
-    const float scale = line_height / baked->Size;
+    const float Scale = line_height / baked->Size;
 
     ImVec2 text_size = ImVec2(0, 0);
     float line_width = 0.0f;
@@ -3988,7 +3988,7 @@ static ImVec2 InputTextCalcTextSize(ImGuiContext* ctx, const char* text_begin, c
         if (c == '\r')
             continue;
 
-        line_width += baked->GetCharAdvance((ImWchar)c) * scale;
+        line_width += baked->GetCharAdvance((ImWchar)c) * Scale;
     }
 
     if (text_size.x < line_width)

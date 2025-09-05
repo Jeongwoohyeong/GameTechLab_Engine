@@ -21,7 +21,7 @@ struct FVector
 struct FConstants
 {
 	FVector offset;
-	float scale;
+	float Scale;
 };
 
 class UShader
@@ -32,7 +32,7 @@ public:
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*);
 	void PrepareShader();
-	void UpdateContant(float x, float y, float z, float scale);
+	void UpdateContant(float x, float y, float z, float Scale);
 	void Release();
 
 private:
