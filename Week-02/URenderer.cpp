@@ -53,12 +53,12 @@ void URenderer::Render()
 	Device->SetRSState(RasterizerState);
 	FMatrix worldMatrix = FMatrix::Identity();
 	worldMatrix = worldMatrix * Mesh->GetTransform()->GetTransformMatrix();	
-
-	Shader->PrepareShader();
-	Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 	
-	Shader->UpdateConstant(worldMatrix);
+	Shader->PrepareShader();
+	
+	Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
 	UI.ObjectControlUI(Mesh->GetTransform());
 
 	Device->EndScene();

@@ -14,6 +14,7 @@
  */
 #include <iostream>
 #include <cmath>
+#include <cassert>
 
 #ifndef MATH_EPSILON
 #define MATH_EPSILON 1e-6f
@@ -231,103 +232,102 @@ struct FMatrix
 		return Result;
 	}
 
-	static FMatrix MakeView(const FVector& Location, const FVector& Rotation, const FVector& Target, const FVector& Up)
-	{
-		FVector Forward = (Target - Location); // Z축
-		Forward.Normalize();
-		FVector Right = Cross(Up, Forward); // X축
-		Right.Normalize();
-		FVector TrueUp = Cross(Forward, Right); // Y축
+	/* 왜 필요한지 모르겠음, 아직 검증되지 않았음 */
+	//static FMatrix MakeView(const FVector& Location, const FVector& Rotation, const FVector& Target, const FVector& Up)
+	//{
+	//	FVector Forward = (Target - Location); // Z축
+	//	Forward.Normalize();
+	//	FVector Right = Cross(Up, Forward); // X축
+	//	Right.Normalize();
+	//	FVector TrueUp = Cross(Forward, Right); // Y축
 
-		// 카메라의 기저 벡터를 행렬로 표현
-		FMatrix Basis = Identity();
-		Basis.M[0][0] = Right.X;
-		Basis.M[0][1] = Right.Y;
-		Basis.M[0][2] = Right.Z;
-		Basis.M[1][0] = TrueUp.X;
-		Basis.M[1][1] = TrueUp.Y;
-		Basis.M[1][2] = TrueUp.Z;
-		Basis.M[2][0] = Forward.X;
-		Basis.M[2][1] = Forward.Y;
-		Basis.M[2][2] = Forward.Z;
+	//	// 카메라의 기저 벡터를 행렬로 표현
+	//	FMatrix Basis = Identity();
+	//	Basis.M[0][0] = Right.X;
+	//	Basis.M[0][1] = Right.Y;
+	//	Basis.M[0][2] = Right.Z;
+	//	Basis.M[1][0] = TrueUp.X;
+	//	Basis.M[1][1] = TrueUp.Y;
+	//	Basis.M[1][2] = TrueUp.Z;
+	//	Basis.M[2][0] = Forward.X;
+	//	Basis.M[2][1] = Forward.Y;
+	//	Basis.M[2][2] = Forward.Z;
 
-		// 카메라 기적 벡터를 회전
-		Basis = Basis * MakeRotation(Rotation);
-		Right = { Basis.M[0][0], Basis.M[0][1], Basis.M[0][2] };
-		TrueUp = { Basis.M[1][0], Basis.M[1][1], Basis.M[1][2] };
-		Forward = { Basis.M[2][0], Basis.M[2][1], Basis.M[2][2] };
+	//	// 카메라 기적 벡터를 회전
+	//	Basis = Basis * MakeRotation(Rotation);
+	//	Right = { Basis.M[0][0], Basis.M[0][1], Basis.M[0][2] };
+	//	TrueUp = { Basis.M[1][0], Basis.M[1][1], Basis.M[1][2] };
+	//	Forward = { Basis.M[2][0], Basis.M[2][1], Basis.M[2][2] };
 
-		FMatrix Result = Identity();
+	//	FMatrix Result = Identity();
 
-		// 카메라 기저 벡터와 위치로 뷰 행렬 구성
-		Result.M[0][0] = Right.X;
-		Result.M[0][1] = Right.Y;
-		Result.M[0][2] = Right.Z;
-		Result.M[0][3] = 0.0f;
+	//	// 카메라 기저 벡터와 위치로 뷰 행렬 구성
+	//	Result.M[0][0] = Right.X;
+	//	Result.M[0][1] = Right.Y;
+	//	Result.M[0][2] = Right.Z;
+	//	Result.M[0][3] = 0.0f;
 
-		Result.M[1][0] = TrueUp.X;
-		Result.M[1][1] = TrueUp.Y;
-		Result.M[1][2] = TrueUp.Z;
-		Result.M[1][3] = 0.0f;
+	//	Result.M[1][0] = TrueUp.X;
+	//	Result.M[1][1] = TrueUp.Y;
+	//	Result.M[1][2] = TrueUp.Z;
+	//	Result.M[1][3] = 0.0f;
 
-		Result.M[2][0] = Forward.X;
-		Result.M[2][1] = Forward.Y;
-		Result.M[2][2] = Forward.Z;
-		Result.M[2][3] = 0.0f;
+	//	Result.M[2][0] = Forward.X;
+	//	Result.M[2][1] = Forward.Y;
+	//	Result.M[2][2] = Forward.Z;
+	//	Result.M[2][3] = 0.0f;
 
-		Result.M[3][0] = -Dot(Right ,Location);
-		Result.M[3][1] = -Dot(TrueUp, Location);
-		Result.M[3][2] = -Dot(Forward, Location);
-		Result.M[3][3] = 1.0f;
+	//	Result.M[3][0] = -Dot(Right ,Location);
+	//	Result.M[3][1] = -Dot(TrueUp, Location);
+	//	Result.M[3][2] = -Dot(Forward, Location);
+	//	Result.M[3][3] = 1.0f;
 
-		return Result;
-	}
+	//	return Result;
+	//}
 
 	static FMatrix MakeView(const FVector& Location, const FVector& Rotation)
 	{
-		FMatrix R = MakeRotation(Rotation);
-		FVector Right = { R.M[0][0], R.M[0][1], R.M[0][2] };
-		FVector TrueUp = { R.M[1][0], R.M[1][1], R.M[1][2] };
-		FVector Forward = { R.M[2][0], R.M[2][1], R.M[2][2] };
-
-		FMatrix Result = Identity();
-
-		// 카메라 기저 벡터와 위치로 뷰 행렬 구성
-		Result.M[0][0] = Right.X;
-		Result.M[0][1] = Right.Y;
-		Result.M[0][2] = Right.Z;
-		Result.M[0][3] = 0.0f;
-		Result.M[1][0] = TrueUp.X;
-		Result.M[1][1] = TrueUp.Y;
-		Result.M[1][2] = TrueUp.Z;
-		Result.M[1][3] = 0.0f;
-		Result.M[2][0] = Forward.X;
-		Result.M[2][1] = Forward.Y;
-		Result.M[2][2] = Forward.Z;
-		Result.M[2][3] = 0.0f;
-		Result.M[3][0] = -Dot(Right,Location);
-		Result.M[3][1] = -Dot(TrueUp,Location);
-		Result.M[3][2] = -Dot(Forward,Location);
-		Result.M[3][3] = 1.0f;
-
-		return Result;
+		return MakeTranslation(-Location) * MakeRotation(-Rotation); // v' = v * R * T
 	}
 
-	static FMatrix MakePerspectiveFovLH(float fovY, float aspect, float zn, float zf)
-	{
-		// 주의: Direct3D NDC z ∈ [0,1]
-		const float yScale = 1.0f / std::tan(fovY * 0.5f);
-		const float xScale = yScale / aspect;
-		const float Q = zf / (zf - zn);          // LH
+	/* 원인은 모르지만 동작하지 않는다. 추후 리뷰  */
+	//static FMatrix MakePerspectiveFovLH(float fovY, float aspect, float zn, float zf)
+	//{
+	//	// 주의: Direct3D NDC z ∈ [0,1]
+	//	const float yScale = 1.0f / std::tan(fovY * 0.5f);
+	//	const float xScale = yScale / aspect;
+	//	const float Q = zf / (zf - zn);          // LH
 
-		FMatrix m = FMatrix::Identity();
-		m.M[0][0] = xScale;
-		m.M[1][1] = yScale;
-		m.M[2][2] = Q;
-		m.M[2][3] = (-zn * zf) / (zf - zn);      // row-major에서는 (2,3)
-		m.M[3][2] = 1.0f;                        // row-major에서는 (3,2)
-		m.M[3][3] = 0.0f;
-		return m;
+	//	FMatrix m = FMatrix::Identity();
+	//	m.M[0][0] = xScale;
+	//	m.M[1][1] = yScale;
+	//	m.M[2][2] = Q;
+	//	m.M[2][3] = (-zn * zf) / (zf - zn);      // row-major에서는 (2,3)
+	//	m.M[3][2] = 1.0f;                        // row-major에서는 (3,2)
+	//	m.M[3][3] = 0.0f;
+	//	return m;
+	//}
+
+	static FMatrix MakePerspective(float FovY, float Aspect, float NearZ, float FarZ)
+	{
+		assert(Aspect > 0 && NearZ > 0 && FarZ > NearZ);
+		assert(FovY > MATH_EPSILON && FovY < Math::Pi );
+
+		float Ys = 1.0f / std::tan(FovY * 0.5f);
+		float Xs = Ys / Aspect;
+
+		float A = FarZ / (FarZ - NearZ);
+		float B = -NearZ * FarZ / (FarZ - NearZ);
+
+		FMatrix Result = {};
+		Result.M[0][0] = Xs;
+		Result.M[1][1] = Ys;
+		Result.M[2][2] = A;
+		Result.M[2][3] = 1.0f;   // w' = z
+		Result.M[3][2] = B;      // z' = z*A + B
+		Result.M[3][3] = 0.0f;
+
+		return Result;
 	}
 };
 
