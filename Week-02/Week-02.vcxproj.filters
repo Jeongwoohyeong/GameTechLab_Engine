@@ -72,14 +72,11 @@
     <ClCompile Include="UUIManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="FMatrix.cpp">
-      <Filter>소스 파일\Util</Filter>
-    </ClCompile>
-    <ClCompile Include="FMatrix.h">
-      <Filter>헤더 파일\Util</Filter>
-    </ClCompile>
     <ClCompile Include="FTransform.cpp">
       <Filter>소스 파일\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Math.h">
+      <Filter>헤더 파일\Util</Filter>
     </ClCompile>
     <ClCompile Include="UCamera.cpp">
       <Filter>소스 파일</Filter>
@@ -131,17 +128,17 @@
     <ClInclude Include="UUIManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>헤더 파일\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="FVector.h">
-      <Filter>헤더 파일\Util</Filter>
-    </ClInclude>
     <ClInclude Include="FTransform.h">
       <Filter>헤더 파일\Util</Filter>
     </ClInclude>
     <ClInclude Include="UCamera.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>헤더 파일\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>헤더 파일\Shape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

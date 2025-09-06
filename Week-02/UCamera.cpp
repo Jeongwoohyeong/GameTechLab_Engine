@@ -1,33 +1,21 @@
 #include "UCamera.h"
 
-void UCamera::SetCameraPosition(const float x, const float y, const float z)
+void Camera::Init()
 {
-	// 월드 스페이스에서의 위치 - 월드의 원점에서 얼마나 이동했는지
-	Position = { x, y, z };
+	Location = { 0.0f, 0.0f, -5.0f };
+	Rotation = { 0.0f, 0.0f, 0.0f };
+	Target = { 0.0f, 0.0f, 0.0f };
+	Up = { 0.0f, 1.0f, 0.0f };
+	FOV = DegToRad(60.0f);
+	AspectRatio = 1.0f;
+	NearPlane = 0.1f;
+	FarPlane = 100.0f;
 }
 
-void UCamera::SetCameraPosition(const FVector& position)
+FMatrix Camera::MakeMVP(const FMatrix& World)
 {
-	Position = position;
-}
+	FMatrix View = FMatrix::MakeView(Location, Rotation);
+	FMatrix Projection = FMatrix::MakePerspectiveFovLH(FOV, AspectRatio, NearPlane, FarPlane);
 
-void UCamera::SetCameraRotation(const float degreeX, const float degreeY, const float degreeZ)
-{
-	Rotation = { (degreeX * (3.1415926f / 180.0f)), (degreeY * (3.1415926f / 180.0f)), (degreeZ * (3.1415926f / 180.0f)) };
-}
-
-void UCamera::SetCameraRotation(const FVector& degrees)
-{
-	Rotation = { (degrees.x * (3.1415926f / 180.0f)), (degrees.y * (3.1415926f / 180.0f)), (degrees.z * (3.1415926f / 180.0f)) };
-}
-
-void UCamera::CreateMVPMatrix()
-{
-	FVector eyePosition = { -Position.x, -Position.y, -Position.z };
-
-	FMatrix translationMatrix = FMatrix::CreateTranslation(eyePosition);
-	FMatrix rotationMatrix = FMatrix::CreateFromYawPitchRoll(Rotation.z, Rotation.x, Rotation.y).Transpose();
-	
-	ViewMatrix = translationMatrix * rotationMatrix;
-
+	return World * View * Projection;
 }

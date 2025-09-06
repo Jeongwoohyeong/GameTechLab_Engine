@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FMatrix.h"
+#include "Math.h"
 
 
 class FTransform
@@ -34,8 +34,6 @@ public:
 	const FMatrix& GetInverseMatrix();
 	const FMatrix& GetTransformMatrix();
 private:
-	float DegreeToRadians(float degree) const;
-	float RadiansToDegree(float radians) const;
 
 private:
 	FMatrix Transform;

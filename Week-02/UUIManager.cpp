@@ -40,8 +40,8 @@ void UUIManager::ReleaseUI()
 void UUIManager::TransformUI()
 {	
 	ImGui::Text("Hello Jungle!");
-	ImGui::SliderFloat("Translation", &offset.x, -1.0f, 1.0f);
-	ImGui::SliderFloat("Rotation", &offset.y, -1.0f, 1.0f);
-	ImGui::SliderFloat("TransScalelation", &offset.z, -1.0f, 1.0f);
+	ImGui::SliderFloat("Translation", &offset.X, -1.0f, 1.0f);
+	ImGui::SliderFloat("Rotation", &offset.X, -1.0f, 1.0f);
+	ImGui::SliderFloat("TransScalelation", &offset.Z, -1.0f, 1.0f);
 	Transform->Translate(offset);	
 }

@@ -123,8 +123,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FMatrix.cpp" />
-    <ClCompile Include="FMatrix.h" />
     <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
@@ -134,6 +132,7 @@
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Math.h" />
     <ClCompile Include="UCamera.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
     <ClCompile Include="UMesh.cpp" />
@@ -143,8 +142,8 @@
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cube.h" />
     <ClInclude Include="FTransform.h" />
-    <ClInclude Include="FVector.h" />
     <ClInclude Include="FVertexStruct.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
