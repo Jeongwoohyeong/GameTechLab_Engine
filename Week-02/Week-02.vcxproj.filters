@@ -66,9 +66,6 @@
     <ClCompile Include="UShader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="USwapChain.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="UUIManager.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -120,9 +117,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="UShader.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="USwapChain.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="UUIManager.h">

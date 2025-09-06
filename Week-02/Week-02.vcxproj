@@ -138,7 +138,6 @@
     <ClCompile Include="UMesh.cpp" />
     <ClCompile Include="URenderer.cpp" />
     <ClCompile Include="UShader.cpp" />
-    <ClCompile Include="USwapChain.cpp" />
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,7 +158,6 @@
     <ClInclude Include="UMesh.h" />
     <ClInclude Include="URenderer.h" />
     <ClInclude Include="UShader.h" />
-    <ClInclude Include="USwapChain.h" />
     <ClInclude Include="UUIManager.h" />
   </ItemGroup>
   <ItemGroup>
