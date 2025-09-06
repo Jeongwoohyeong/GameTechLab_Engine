@@ -48,6 +48,15 @@ void FTransform::SetRotationZ(float degree)
 	isDirty = true;
 }
 
+void FTransform::SetRotation(const FVector& degrees)
+{
+	this->SetRotationX(degrees.x);
+	this->SetRotationY(degrees.y);
+	this->SetRotationZ(degrees.z);
+
+	isDirty = true;
+}
+
 void FTransform::AddRotationX(float degree)
 {
 	Rotation.x += DegreeToRadians(degree);
@@ -83,16 +92,16 @@ void FTransform::SetLocation(const FVector& location2d)
 	isDirty = true;
 }
 
-void FTransform::Translate(float dx, float dy, float dz)
+void FTransform::Translate(float dx = 0.0f, float dy = 0.0f, float dz = 0.0f)
 {
 	Location = Location + FVector(dx, dy, dz);
 
 	isDirty = true;
 }
 
-void FTransform::Translate(const FVector& offset3d)
+void FTransform::Translate(const FVector& offset)
 {
-	Location = Location + offset3d;
+	Location = Location + offset;
 
 	isDirty = true;
 }
@@ -104,6 +113,22 @@ FVector FTransform::GetRotationDegree() const
 		RadiansToDegree(Rotation.y),
 		RadiansToDegree(Rotation.z)
 	);
+}
+
+const FMatrix& FTransform::GetInverseMatrix()
+{
+	if (isDirty)
+	{
+		FMatrix scaleMatrix = FMatrix::CreateScale(Scale.x, Scale.y, Scale.z);
+		FMatrix rotationMatrix = FMatrix::CreateFromYawPitchRoll(Rotation.y, Rotation.x, Rotation.z);
+		FMatrix translationMatrix = FMatrix::CreateTranslation(Location.x, Location.y, Location.z);
+
+		Inverse = translationMatrix * rotationMatrix * scaleMatrix;
+
+		isDirty = false;
+	}
+
+	return Inverse;
 }
 
 const FMatrix& FTransform::GetTransformMatrix()

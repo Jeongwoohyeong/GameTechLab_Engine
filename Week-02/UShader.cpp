@@ -26,7 +26,7 @@ void UShader::PrepareShader()
 	}
 }
 
-void UShader::UpdateContant(float x, float y, float z, float Scale)
+void UShader::UpdateContant(FVector location, float scale)
 {
 	if (!ConstantBuffer)
 	{
@@ -37,7 +37,7 @@ void UShader::UpdateContant(float x, float y, float z, float Scale)
 
 	DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMSR);
 	FConstants* constants = (FConstants*)constantBufferMSR.pData;
-	constants->offset = { x, y, z };
+	constants->offset = { location };
 	constants->Scale = 0.05f;
 	DeviceContext->Unmap(ConstantBuffer, 0);
 }
@@ -141,6 +141,6 @@ bool UShader::CreateConstBuffer()
 		MessageBox(nullptr, L"constbuffer create fail,", L"error", MB_OK);
 		return false;
 	}
-
+	
 	return true;
 }

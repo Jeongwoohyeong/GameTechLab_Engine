@@ -17,6 +17,8 @@ bool UMesh::Initialize(const void* vertices, const UINT stride, const UINT verte
 		return false;
 	}
 
+	Transform = FTransform();
+
 	return true;
 }
 

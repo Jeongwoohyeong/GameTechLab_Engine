@@ -2,6 +2,7 @@
 
 #include "FMatrix.h"
 
+
 class FTransform
 {
 public:
@@ -14,6 +15,7 @@ public:
 	void SetRotationX(float degree);
 	void SetRotationY(float degree);
 	void SetRotationZ(float degree);
+	void SetRotation(const FVector&);
 
 	void AddRotationX(float degree);
 	void AddRotationY(float degree);
@@ -29,7 +31,7 @@ public:
 	const FVector& GetRotationRadians() const { return Rotation; }
 	FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
-
+	const FMatrix& GetInverseMatrix();
 	const FMatrix& GetTransformMatrix();
 private:
 	float DegreeToRadians(float degree) const;
@@ -37,11 +39,10 @@ private:
 
 private:
 	FMatrix Transform;
+	FMatrix Inverse;
 	FVector Scale;
 	FVector Rotation;
-	FVector Location;
-
-	static constexpr float PI = 3.1415926f;
+	FVector Location;	
 
 	// 트랜스폼 변경 검사
 	bool isDirty;

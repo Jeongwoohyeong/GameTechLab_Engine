@@ -5,7 +5,6 @@
 #include "UMesh.h"
 #include "Sphere.h"
 
-
 URenderer::URenderer()
 {	
 	
@@ -36,7 +35,7 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}
 
-	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
+	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext(), Mesh->GetTransform());
 
 	return true;
 }
@@ -48,7 +47,7 @@ void URenderer::Render()
 	Shader->PrepareShader();
 	Mesh->PrepareMesh();
 
-	Shader->UpdateContant(0.0f, 0.0f, 0.0f, 0.05f);
+	Shader->UpdateContant(Mesh->GetTransform()->GetLocation(), 1.0f);
 
 	UI.RenderUI();
 
@@ -101,4 +100,9 @@ bool URenderer::CreateRasterizerState()
 	}
 
 	return true;
+}
+
+void URenderer::MVP()
+{
+	FMatrix ModelMatrix = Mesh->GetTransform()->GetTransformMatrix() * MVPMatrix;
 }

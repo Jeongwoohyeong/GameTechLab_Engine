@@ -1,4 +1,5 @@
 #pragma once
+#include "FVector.h"
 
 class ID3DDevice;
 class ID3D11DeviceContext;
@@ -13,10 +14,7 @@ class ID3D11Buffer;
 //
 //
 //******************************************/
-struct FVector
-{
-	float x, y, z;
-};
+
 
 struct FConstants
 {
@@ -32,13 +30,13 @@ public:
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*);
 	void PrepareShader();
-	void UpdateContant(float x, float y, float z, float Scale);
+	void UpdateContant(FVector location, float scale);
 	void Release();
 
 private:
 	bool CreateVertexShader();
 	bool CreatePixelShader();
-	bool CreateConstBuffer();
+	bool CreateConstBuffer();	
 
 private:
 	ID3D11Device* Device = nullptr;
@@ -46,5 +44,5 @@ private:
 	ID3D11VertexShader* VertexShader = nullptr;
 	ID3D11PixelShader* PixelShader = nullptr;
 	ID3D11InputLayout* InputLayout = nullptr;
-	ID3D11Buffer* ConstantBuffer = nullptr;
+	ID3D11Buffer* ConstantBuffer = nullptr;	
 };

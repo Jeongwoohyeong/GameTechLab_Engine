@@ -1,5 +1,6 @@
 #pragma once
 #include "UUIManager.h"
+#include "FMatrix.h"
 
 class UD3dDevice;
 class UShader;
@@ -16,7 +17,7 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
-
+	void MVP();
 private:
 
 private:
@@ -25,4 +26,5 @@ private:
 	UMesh* Mesh= nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
+	FMatrix MVPMatrix = FMatrix::CreateIdentity();
 };

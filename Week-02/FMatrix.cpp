@@ -1,4 +1,3 @@
-#include <cmath>
 #include "FMatrix.h"
 
 FMatrix::FMatrix()
@@ -26,6 +25,17 @@ FMatrix FMatrix::CreateScale(float x, float y, float z)
     return Scale;
 }
 
+FMatrix FMatrix::CreateScale(const FVector& scale)
+{
+    FMatrix Scale;
+
+    Scale.m[0][0] = scale.x;
+    Scale.m[1][1] = scale.y;
+    Scale.m[2][2] = scale.z;
+
+    return Scale;
+}
+
 FMatrix FMatrix::CreateTranslation(float x, float y, float z)
 {
     FMatrix translation;
@@ -36,9 +46,20 @@ FMatrix FMatrix::CreateTranslation(float x, float y, float z)
     return translation;
 }
 
-FMatrix FMatrix::CreateRotationX(float radians)
+FMatrix FMatrix::CreateTranslation(const FVector& offset)
 {
-    FMatrix rotationX;
+    FMatrix translation;
+    translation.m[3][0] = offset.x;
+    translation.m[3][1] = offset.y;
+    translation.m[3][2] = offset.z;
+
+    return FMatrix();
+}
+
+FMatrix FMatrix::CreateRotationX(float degree)
+{
+    FMatrix rotationX = FMatrix::CreateIdentity();
+    float radians = degree * (PI / 180.0f);
     float cosTheta = cos(radians);
     float sinTheta = sin(radians);
 
@@ -46,36 +67,38 @@ FMatrix FMatrix::CreateRotationX(float radians)
     rotationX.m[1][2] = -sinTheta;
     rotationX.m[2][1] = sinTheta;
     rotationX.m[2][2] = cosTheta;
-
+    
     return rotationX;
 }
 
-FMatrix FMatrix::CreateRotationY(float radians)
+FMatrix FMatrix::CreateRotationY(float degree)
 {
-    FMatrix rotationX;
+    FMatrix rotationY = FMatrix::CreateIdentity();
+    float radians = degree * (PI / 180.0f);
     float cosTheta = cos(radians);
     float sinTheta = sin(radians);
 
-    rotationX.m[0][0] = cosTheta;
-    rotationX.m[0][2] = sinTheta;
-    rotationX.m[2][0] = -sinTheta;
-    rotationX.m[2][2] = cosTheta;
+    rotationY.m[0][0] = cosTheta;
+    rotationY.m[0][2] = sinTheta;
+    rotationY.m[2][0] = -sinTheta;
+    rotationY.m[2][2] = cosTheta;
 
-    return rotationX;
+    return rotationY;
 }
 
-FMatrix FMatrix::CreateRotationZ(float radians)
+FMatrix FMatrix::CreateRotationZ(float degree)
 {
-    FMatrix rotationX;
+    FMatrix rotationZ = FMatrix::CreateIdentity();
+    float radians = degree * (PI / 180.0f);
     float cosTheta = cos(radians);
     float sinTheta = sin(radians);
 
-    rotationX.m[0][0] = cosTheta;
-    rotationX.m[0][1] = -sinTheta;
-    rotationX.m[1][0] = sinTheta;
-    rotationX.m[1][1] = cosTheta;
+    rotationZ.m[0][0] = cosTheta;
+    rotationZ.m[0][1] = -sinTheta;
+    rotationZ.m[1][0] = sinTheta;
+    rotationZ.m[1][1] = cosTheta;
 
-    return rotationX;
+    return rotationZ;
 }
 
 FMatrix FMatrix::CreateFromYawPitchRoll(float yaw, float pitch, float roll)

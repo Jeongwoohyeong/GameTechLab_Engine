@@ -1,4 +1,5 @@
 #pragma once
+#include "FTransform.h"
 
 class ID3D11Device;
 class ID3D11DeviceContext;
@@ -20,7 +21,7 @@ public:
 	bool Initialize(const void* vertices, const UINT stride, const UINT vertexCount);
 	void Release();
 	void PrepareMesh();
-
+	FTransform* GetTransform() { return &Transform; }
 
 private:
 	bool CreateVertexBuffer(const void* vertices);
@@ -31,7 +32,9 @@ private:
 	ID3D11Buffer* IndexBuffer = nullptr;
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
+	FTransform Transform = {};
 	UINT Stride = 0;
 	UINT offset = 0;
 	UINT VertexCount = 0;
+	
 };

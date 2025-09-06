@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 
 struct FVector
 {
@@ -61,6 +62,48 @@ struct FVector
 	static float Dot(const FVector& lhs, const FVector& rhs)
 	{
 		return (lhs.x * rhs.x) + (lhs.y * rhs.y) + (lhs.z * rhs.z);
+	}
+
+	static FVector Cross(const FVector& lhs, const FVector& rhs)
+	{
+		return FVector(
+			(lhs.y * rhs.z) - (lhs.z * rhs.y),
+			(lhs.z * rhs.x) - (lhs.x * rhs.z),
+			(lhs.x * rhs.y) - (lhs.y * rhs.x)
+		);
+	}
+
+	float Length() const
+	{
+		float length = FVector::Dot(*this, *this);
+		return sqrtf(length);
+	}
+
+	float LenghtSq() const
+	{
+		return FVector::Dot(*this, *this);
+	}
+
+	FVector& Normalize()
+	{
+		// 자신을 정규화
+		float length = this->Length();
+		if (length > 1e-6)
+		{
+			*this /= length;
+		}
+		return *this;
+	}
+
+	FVector Normalize() const
+	{
+		// 정규화된 복사본 반환
+		float length = this->Length();
+		if (length > 1e-6)
+		{
+			return (*this) / length;
+		}
+		return FVector(0.0f, 0.0f, 0.0f);
 	}
 };
 
@@ -129,5 +172,38 @@ struct FVector4
 	static float Dot(const FVector4& lhs, const FVector4& rhs)
 	{
 		return (lhs.x * rhs.x) + (lhs.y * rhs.y) + (lhs.z * rhs.z) + (lhs.w * rhs.w);
+	}
+
+	float Length() const
+	{
+		float length = FVector4::Dot(*this, *this);
+		return sqrtf(length);
+	}
+
+	float LenghtSq() const
+	{
+		return FVector4::Dot(*this, *this);
+	}
+
+	FVector4& Normalize()
+	{
+		// 자신을 정규화
+		float length = this->Length();
+		if (length > 1e-6)
+		{
+			*this /= length;
+		}
+		return *this;
+	}
+
+	FVector4 Normalize() const
+	{
+		// 정규화된 복사본 반환
+		float length = this->Length();
+		if (length > 1e-6)
+		{
+			return (*this) / length;
+		}
+		return FVector4(0.0f, 0.0f, 0.0f, 0.0f);
 	}
 };

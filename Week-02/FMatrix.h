@@ -1,6 +1,7 @@
 #pragma once
-
 #include "FVector.h"
+
+static constexpr float PI = 3.1415926f;
 
 struct FMatrix
 {
@@ -19,10 +20,14 @@ struct FMatrix
 
 	static FMatrix CreateIdentity();
 	static FMatrix CreateScale(float x, float y, float z);
+	static FMatrix CreateScale(const FVector&);
+
 	static FMatrix CreateTranslation(float x, float y, float z);
-	static FMatrix CreateRotationX(float radians);
-	static FMatrix CreateRotationY(float radians);
-	static FMatrix CreateRotationZ(float radians);
+	static FMatrix CreateTranslation(const FVector&);
+
+	static FMatrix CreateRotationX(float degree);
+	static FMatrix CreateRotationY(float degree);
+	static FMatrix CreateRotationZ(float degree);
 
 	static FMatrix CreateFromYawPitchRoll(float yaw, float pitch, float roll);
 

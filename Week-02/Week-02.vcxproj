@@ -134,6 +134,7 @@
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="UCamera.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
     <ClCompile Include="UMesh.cpp" />
     <ClCompile Include="URenderer.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="UCamera.h" />
     <ClInclude Include="UD3dDevice.h" />
     <ClInclude Include="UMesh.h" />
     <ClInclude Include="URenderer.h" />
@@ -164,6 +166,7 @@
   <ItemGroup>
     <FxCompile Include="ShaderW0.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
