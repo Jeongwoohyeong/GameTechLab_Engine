@@ -7,12 +7,17 @@ UMesh::UMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 }
 
-bool UMesh::Initialize(const void* vertices, const UINT stride, const UINT vertexCount)
+bool UMesh::Initialize(const void* vertices, const void* indices, const UINT vertexByteWidth, const UINT indexByteWidth, const UINT vertexCount)
 {
-	Stride = stride;
-	VertexCount = vertexCount;
+	VertexByteWidth = vertexByteWidth;
+	IndexByteWidth = indexByteWidth;
 
 	if (!this->CreateVertexBuffer(vertices))
+	{
+		return false;
+	}
+
+	if (!this->CreateIndexBuffer(indices))
 	{
 		return false;
 	}
@@ -35,10 +40,11 @@ void UMesh::Release()
 	}
 }
 
-void UMesh::PrepareMesh()
+void UMesh::PrepareMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format)
 {	
-	DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
-	DeviceContext->Draw(VertexCount, 0);
+	DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &vertexStride, &offset);
+	DeviceContext->IASetIndexBuffer(IndexBuffer, format, 0);
+	DeviceContext->DrawIndexed(indicesCount, 0, 0);
 }
 
 bool UMesh::CreateVertexBuffer(const void* vertices)
@@ -46,7 +52,7 @@ bool UMesh::CreateVertexBuffer(const void* vertices)
 	HRESULT result;
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
-	vertexBufferDesc.ByteWidth = Stride * VertexCount;
+	vertexBufferDesc.ByteWidth = VertexByteWidth;
 	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
@@ -64,7 +70,25 @@ bool UMesh::CreateVertexBuffer(const void* vertices)
 	return true;
 }
 
-bool UMesh::CreateIndexBuffer()
+bool UMesh::CreateIndexBuffer(const void* indices)
 {
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.ByteWidth = IndexByteWidth;
+	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBufferSRD = {};
+	indexBufferSRD.pSysMem = indices;
+
+	hr = Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &IndexBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
 	return true;
 }

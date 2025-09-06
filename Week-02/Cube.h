@@ -25,7 +25,7 @@ FVertexSimple GCubeVertices[] =
 // Top(+Y):    v3 v2 v6 v7
 // Bottom(-Y): v0 v4 v5 v1
 // (삼각형은 (0,1,2), (0,2,3) 패턴)
-unsigned int GCubeIndices[] =
+UINT GCubeIndices[] =
 {
     // Front (+Z)
     4, 5, 6,   4, 6, 7,

@@ -13,12 +13,12 @@ public:
 	UUIManager() {};
 	~UUIManager() {};
 
-	void Initialize(HWND hWnd, ID3D11Device*, ID3D11DeviceContext*, FTransform*);
-	void RenderUI();	
+	void Initialize(HWND hWnd, ID3D11Device*, ID3D11DeviceContext*);
+	void ObjectControlUI(FTransform* object);
 	void ReleaseUI();
 
 private:
-	void TransformUI();
-	FTransform* Transform;
+	void ObjectControl();
+	FTransform* ObjectTransform;
 	FVector offset;
 };

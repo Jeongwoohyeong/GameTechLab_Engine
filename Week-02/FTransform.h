@@ -32,7 +32,7 @@ public:
 	FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
 	const FMatrix& GetInverseMatrix();
-	const FMatrix& GetTransformMatrix();
+	FMatrix& GetTransformMatrix();
 private:
 
 private:

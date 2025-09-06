@@ -26,7 +26,7 @@ void UShader::PrepareShader()
 	}
 }
 
-void UShader::UpdateContant(FVector location, float scale)
+void UShader::UpdateConstant(const FMatrix& mvpMatrix)
 {
 	if (!ConstantBuffer)
 	{
@@ -37,8 +37,8 @@ void UShader::UpdateContant(FVector location, float scale)
 
 	DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMSR);
 	FConstants* constants = (FConstants*)constantBufferMSR.pData;
-	constants->offset = { location };
-	constants->Scale = 0.05f;
+	constants->MVPMatrix = mvpMatrix;
+	
 	DeviceContext->Unmap(ConstantBuffer, 0);
 }
 

@@ -18,8 +18,7 @@ class ID3D11Buffer;
 
 struct FConstants
 {
-	FVector offset;
-	float Scale;
+	FMatrix MVPMatrix;
 };
 
 class UShader
@@ -30,7 +29,7 @@ public:
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*);
 	void PrepareShader();
-	void UpdateContant(FVector location, float scale);
+	void UpdateConstant(const FMatrix&);
 	void Release();
 
 private:

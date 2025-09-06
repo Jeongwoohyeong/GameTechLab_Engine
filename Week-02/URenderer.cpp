@@ -2,8 +2,9 @@
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
+#include "UCamera.h"
 #include "UMesh.h"
-#include "Sphere.h"
+#include "Cube.h"
 
 URenderer::URenderer()
 {	
@@ -25,7 +26,10 @@ bool URenderer::Initialize(HWND hWnd)
 	}
 	
 	Mesh = new UMesh(Device->GetDeivce(), Device->GetDeviceContext());
-	if (!Mesh->Initialize(&sphere_vertices, sizeof(FVertexSimple), sizeof(sphere_vertices) / sizeof(FVertexSimple)))
+	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, 
+		sizeof(GCubeVertices), 
+		sizeof(GCubeIndices), 
+		sizeof(GCubeVertices) / sizeof(FVertexSimple)))
 	{		
 		return false;
 	}
@@ -35,7 +39,10 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}
 
-	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext(), Mesh->GetTransform());
+	UCamera::GetInstance().Init();
+		
+
+	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
 
 	return true;
 }
@@ -44,12 +51,15 @@ void URenderer::Render()
 {
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
+	FMatrix worldMatrix = FMatrix::Identity();
+	worldMatrix = worldMatrix * Mesh->GetTransform()->GetTransformMatrix();	
+
 	Shader->PrepareShader();
-	Mesh->PrepareMesh();
+	Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
+	
+	Shader->UpdateConstant(FMatrix::Transpose(worldMatrix));
 
-	Shader->UpdateContant(Mesh->GetTransform()->GetLocation(), 1.0f);
-
-	UI.RenderUI();
+	UI.ObjectControlUI(Mesh->GetTransform());
 
 	Device->EndScene();
 }
@@ -100,9 +110,4 @@ bool URenderer::CreateRasterizerState()
 	}
 
 	return true;
-}
-
-void URenderer::MVP()
-{
-	FMatrix ModelMatrix = Mesh->GetTransform()->GetTransformMatrix() * MVPMatrix;
 }

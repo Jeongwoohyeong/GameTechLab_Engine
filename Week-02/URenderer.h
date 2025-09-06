@@ -6,6 +6,7 @@ class UD3dDevice;
 class UShader;
 class UMesh;
 class ID3D11RasterizerState;
+class UCamera;
 
 class URenderer
 {
@@ -17,14 +18,13 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
-	void MVP();
+
 private:
 
 private:
 	UD3dDevice* Device = nullptr;;
 	UShader* Shader = nullptr;;
 	UMesh* Mesh= nullptr;
-	ID3D11RasterizerState* RasterizerState = nullptr;
+	ID3D11RasterizerState* RasterizerState = nullptr;	
 	UUIManager UI = {};
-	FMatrix MVPMatrix = FMatrix::Identity();
 };

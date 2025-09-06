@@ -1,8 +1,8 @@
 #include "UCamera.h"
 
-void Camera::Init()
+void UCamera::Init()
 {
-	Location = { 0.0f, 0.0f, -5.0f };
+	Location = { 0.0f, 0.0f, -10.0f };
 	Rotation = { 0.0f, 0.0f, 0.0f };
 	Target = { 0.0f, 0.0f, 0.0f };
 	Up = { 0.0f, 1.0f, 0.0f };
@@ -12,7 +12,7 @@ void Camera::Init()
 	FarPlane = 100.0f;
 }
 
-FMatrix Camera::MakeMVP(const FMatrix& World)
+FMatrix UCamera::MakeMVP(const FMatrix& World)
 {
 	FMatrix View = FMatrix::MakeView(Location, Rotation);
 	FMatrix Projection = FMatrix::MakePerspectiveFovLH(FOV, AspectRatio, NearPlane, FarPlane);

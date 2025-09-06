@@ -18,14 +18,15 @@ public:
 	UMesh(ID3D11Device*, ID3D11DeviceContext*);
 	~UMesh() {};
 
-	bool Initialize(const void* vertices, const UINT stride, const UINT vertexCount);
+	bool Initialize(const void* vertices, const void* indices,
+		const UINT vertexByteWidth, const UINT indexByteWidth, const UINT vertexCount);
 	void Release();
-	void PrepareMesh();
+	void PrepareMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format);
 	FTransform* GetTransform() { return &Transform; }
 
 private:
 	bool CreateVertexBuffer(const void* vertices);
-	bool CreateIndexBuffer();
+	bool CreateIndexBuffer(const void* indices);
 
 private:
 	ID3D11Buffer* VertexBuffer = nullptr;
@@ -33,8 +34,8 @@ private:
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
 	FTransform Transform = {};
-	UINT Stride = 0;
+	UINT VertexByteWidth = 0;
+	UINT IndexByteWidth = 0;
 	UINT offset = 0;
-	UINT VertexCount = 0;
-	
+
 };

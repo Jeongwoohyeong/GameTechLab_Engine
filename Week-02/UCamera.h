@@ -1,7 +1,7 @@
 #pragma once
 #include "Math.h"
 
-class Camera
+class UCamera
 {
 public:
 	FVector Location; // 카메라 위치
@@ -14,9 +14,9 @@ public:
 	float FarPlane; // 원평면
 
 	// 싱글톤 인스턴스 접근
-	static Camera& GetInstance()
+	static UCamera& GetInstance()
 	{
-		static Camera instance;
+		static UCamera instance;
 		return instance;
 	}
 

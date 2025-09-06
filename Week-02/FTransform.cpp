@@ -132,7 +132,7 @@ const FMatrix& FTransform::GetInverseMatrix()
 	return Inverse;
 }
 
-const FMatrix& FTransform::GetTransformMatrix()
+FMatrix& FTransform::GetTransformMatrix()
 {
 	// SRT중 하나라도 변경되면 행렬 연산
 	if (isDirty)
