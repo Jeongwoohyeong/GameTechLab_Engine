@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CInputManager.cpp" />
     <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CInputManager.h" />
     <ClInclude Include="Containers.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Cube.h" />
