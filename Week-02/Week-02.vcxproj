@@ -141,6 +141,8 @@
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Containers.h" />
+    <ClInclude Include="Types.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="FTransform.h" />
     <ClInclude Include="FVertexStruct.h" />
@@ -154,10 +156,16 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="UCamera.h" />
+    <ClInclude Include="UCubeComp.h" />
     <ClInclude Include="UD3dDevice.h" />
+    <ClInclude Include="UEngineStatics.h" />
     <ClInclude Include="UMesh.h" />
+    <ClInclude Include="UObject.h" />
+    <ClInclude Include="UPrimitiveComponent.h" />
     <ClInclude Include="URenderer.h" />
+    <ClInclude Include="USceneComponent.h" />
     <ClInclude Include="UShader.h" />
+    <ClInclude Include="USphereComp.h" />
     <ClInclude Include="UUIManager.h" />
   </ItemGroup>
   <ItemGroup>

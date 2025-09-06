@@ -28,6 +28,9 @@
     <Filter Include="소스 파일\Util">
       <UniqueIdentifier>{50bd747d-e422-49fe-b4a7-8e0ca4d7d1c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Wrapping">
+      <UniqueIdentifier>{eda3a8f1-402a-4a87-8a67-76ca986326b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\imgui.cpp">
@@ -133,6 +136,30 @@
     </ClInclude>
     <ClInclude Include="Cube.h">
       <Filter>헤더 파일\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="UObject.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>헤더 파일\Wrapping</Filter>
+    </ClInclude>
+    <ClInclude Include="UEngineStatics.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers.h">
+      <Filter>헤더 파일\Wrapping</Filter>
+    </ClInclude>
+    <ClInclude Include="USceneComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="UPrimitiveComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="UCubeComp.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="USphereComp.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
