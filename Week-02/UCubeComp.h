@@ -1,5 +1,5 @@
 #pragma once
-#include "UPrimitiveComponent .h"
+#include "UPrimitiveComponent.h"
 
 class UCubeComp :public UPrimitiveComponent
 {
