@@ -57,7 +57,7 @@ void URenderer::Render()
 	Shader->PrepareShader();
 	Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 	
-	Shader->UpdateConstant(FMatrix::Transpose(worldMatrix));
+	Shader->UpdateConstant(worldMatrix);
 
 	UI.ObjectControlUI(Mesh->GetTransform());
 

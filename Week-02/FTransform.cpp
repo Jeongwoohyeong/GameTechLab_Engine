@@ -88,7 +88,7 @@ void FTransform::SetLocation(float x, float y, float z)
 
 void FTransform::SetLocation(const FVector& location)
 {
-	Location = FVector(location.X, location.X, location.Y);
+	Location = FVector(location.X, location.Y, location.Z);
 
 	isDirty = true;
 }
