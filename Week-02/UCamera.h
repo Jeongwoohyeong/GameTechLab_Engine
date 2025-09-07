@@ -1,5 +1,6 @@
 #pragma once
 #include "Math.h"
+#include "FRay.h"
 
 class UCamera
 {
@@ -24,4 +25,6 @@ public:
 
 	// MVP 행렬 계산
 	FMatrix MakeMVP(const FMatrix& World);
+
+	FRay CastRay(int screenX, int screenY, int screenWidth, int screenHeight);
 };
