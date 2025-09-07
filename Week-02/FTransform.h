@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "Math.h"
 
@@ -12,14 +12,14 @@ public:
 	void SetScale(float x, float y, float z);
 	void SetScale(const FVector&);
 
-	void SetRotationX(float degree);
-	void SetRotationY(float degree);
-	void SetRotationZ(float degree);
-	void SetRotation(const FVector&);
+	void SetRotationDegX(float degree);
+	void SetRotationDegY(float degree);
+	void SetRotationDegZ(float degree);
+	void SetRotationDeg(const FVector&);
 
-	void AddRotationX(float degree);
-	void AddRotationY(float degree);
-	void AddRotationZ(float degree);
+	void AddRotationDegX(float degree);
+	void AddRotationDegY(float degree);
+	void AddRotationDegZ(float degree);
 
 	void SetLocation(float x, float y, float z);
 	void SetLocation(const FVector&);

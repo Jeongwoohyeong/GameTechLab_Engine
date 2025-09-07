@@ -62,7 +62,7 @@ void UUIManager::ObjectControl()
 	{
 		rotationDeg = FVector(0.0f, 0.0f, 0.0f);
 	};
-	ObjectTransform->SetRotation(rotationDeg);
+	ObjectTransform->SetRotationDeg(rotationDeg);
 
 	// 이동 조정 (float3)
 	static FVector translation = FVector(0.0f, 0.0f, 0.0f);

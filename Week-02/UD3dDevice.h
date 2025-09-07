@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <d3d11.h>
 
 class UD3dDevice
@@ -19,11 +19,13 @@ public:
 private:
 	bool CreateDeviceAndSwapChain(HWND hWnd);
 	bool CreateFrameBuffer();
+	bool CreateRasterizerState();
 	
-
-private:
+public:
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
+
+private:
 	IDXGISwapChain* SwapChain = nullptr;
 	ID3D11Texture2D* FrameBuffer = nullptr;
 	ID3D11RenderTargetView* FrameBufferRTV = nullptr;

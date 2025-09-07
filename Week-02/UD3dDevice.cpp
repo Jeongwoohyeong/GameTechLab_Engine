@@ -10,6 +10,10 @@ bool UD3dDevice::Initialize(HWND hWnd)
 	{
 		return false;
 	}
+	if (!this->CreateRasterizerState())
+	{
+		return false;
+	}
 
 	return true;	
 }
@@ -50,11 +54,12 @@ void UD3dDevice::Release()
 void UD3dDevice::BeginScene(float r, float g, float b, float a)
 {
 	float Color[] = { r,g,b, a };
-
 	DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, nullptr);
-	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
 	DeviceContext->ClearRenderTargetView(FrameBufferRTV, Color);
+
 	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
 
 void UD3dDevice::EndScene()
@@ -123,5 +128,20 @@ bool UD3dDevice::CreateFrameBuffer()
 		return false;
 	}
 
+	return true;
+}
+
+bool UD3dDevice::CreateRasterizerState()
+{
+	HRESULT result;
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	result = Device->CreateRasterizerState(&rasterizerDesc, nullptr);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"rasterizerstate create fail,", L"error", MB_OK);
+		return false;
+	}
 	return true;
 }

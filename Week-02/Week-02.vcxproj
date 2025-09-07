@@ -124,9 +124,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CInputManager.cpp" />
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="CSceneSerializer.cpp" />
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />
+    <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
@@ -134,13 +136,14 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="LocalGizmo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.h" />
+    <ClCompile Include="ShapeData.cpp" />
     <ClCompile Include="UCamera.cpp" />
     <ClCompile Include="UCubeComp.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
     <ClCompile Include="UEngineStatics.cpp" />
-    <ClCompile Include="UMesh.cpp" />
     <ClCompile Include="UObject.cpp" />
     <ClCompile Include="UPrimitiveComponent.cpp" />
     <ClCompile Include="URenderer.cpp" />
@@ -148,13 +151,20 @@
     <ClCompile Include="UShader.cpp" />
     <ClCompile Include="USphereComp.cpp" />
     <ClCompile Include="UUIManager.cpp" />
+    <ClCompile Include="WorldGizmo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CInputManager.h" />
+    <ClInclude Include="Cone.h" />
     <ClInclude Include="Containers.h" />
     <ClInclude Include="CSceneSerializer.h" />
     <ClInclude Include="ImGui\imgui_console.h" />
     <ClInclude Include="SimpleJSON\json.hpp" />
+    <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="LocalGizmo.h" />
+    <ClInclude Include="ShapeData.h" />
+    <ClInclude Include="ShapeType.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="FTransform.h" />
@@ -172,7 +182,6 @@
     <ClInclude Include="UCubeComp.h" />
     <ClInclude Include="UD3dDevice.h" />
     <ClInclude Include="UEngineStatics.h" />
-    <ClInclude Include="UMesh.h" />
     <ClInclude Include="UObject.h" />
     <ClInclude Include="UPrimitiveComponent.h" />
     <ClInclude Include="UPrimitiveTypes.h" />
@@ -182,6 +191,7 @@
     <ClInclude Include="UShader.h" />
     <ClInclude Include="USphereComp.h" />
     <ClInclude Include="UUIManager.h" />
+    <ClInclude Include="WorldGizmo.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ShaderW0.hlsl">
