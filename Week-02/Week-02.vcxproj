@@ -136,6 +136,7 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="CameraInputMove.cpp" />
     <ClCompile Include="LocalGizmo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Containers.h" />
     <ClInclude Include="CSceneSerializer.h" />
     <ClInclude Include="ImGui\imgui_console.h" />
+    <ClInclude Include="CameraInputMove.h" />
     <ClInclude Include="SimpleJSON\json.hpp" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Gizmo.h" />

@@ -6,6 +6,8 @@
 
 #include "URenderer.h"
 #include "UPrimitiveComponent.h"
+#include "CameraInputMove.h"
+#include "UCamera.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -47,6 +49,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		nullptr, nullptr, hInstance, nullptr);
 
 	URenderer renderer;
+	CameraInputMove input;
+	input.Initialize(&hWnd);
 	// UPrimitiveComponent* Cube = new UPrimitiveComponent();
 	
 
@@ -73,6 +77,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					break;
 				}
 			}
+
+			input.UpdateInputToCamera();
 
 			renderer.Render();
 		}
