@@ -4,8 +4,8 @@ void UCamera::Init()
 {
 	Location = { 0.0f, 0.0f, -5.0f };
 	Rotation = { 0.0f, 0.0f, 0.0f };
-	Target = { 0.0f, 0.0f, 0.0f };
-	Up = { 0.0f, 1.0f, 0.0f };
+	/*Target = { 0.0f, 0.0f, 0.0f };
+	Up = { 0.0f, 1.0f, 0.0f };*/
 	FovY = DegToRad(60.0f);
 	AspectRatio = 1.0f;
 	NearPlane = 0.1f;

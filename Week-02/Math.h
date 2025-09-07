@@ -287,7 +287,10 @@ struct FMatrix
 
 	static FMatrix MakeView(const FVector& Location, const FVector& Rotation)
 	{
-		return MakeTranslation(-Location) * MakeRotation(-Rotation); // v' = v * R * T
+		FMatrix InverseRotation = Transpose(MakeRotation(Rotation)); // R^-1 = R^T
+		FMatrix InverseTranslation = MakeTranslation(-Location); // T^-1 = -T
+
+		return InverseTranslation * InverseRotation; // T^-1 * R^-1
 	}
 
 	/* 원인은 모르지만 동작하지 않는다. 추후 리뷰  */
