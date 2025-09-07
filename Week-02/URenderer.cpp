@@ -1,4 +1,4 @@
-#include <d3d11.h>
+﻿#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -26,10 +26,7 @@ bool URenderer::Initialize(HWND hWnd)
 	}
 	
 	Mesh = new UMesh(Device->GetDeivce(), Device->GetDeviceContext());
-	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, 
-		sizeof(GCubeVertices), 
-		sizeof(GCubeIndices), 
-		sizeof(GCubeVertices) / sizeof(FVertexSimple)))
+	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, sizeof(GCubeVertices), sizeof(GCubeIndices)))
 	{		
 		return false;
 	}
@@ -56,7 +53,7 @@ void URenderer::Render()
 	
 	Shader->PrepareShader();
 	
-	Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
+	Mesh->RenderMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
 	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
 	UI.ObjectControlUI(Mesh->GetTransform());

@@ -136,8 +136,11 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.h" />
     <ClCompile Include="UCamera.cpp" />
+    <ClCompile Include="UCubeComp.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
     <ClCompile Include="UMesh.cpp" />
+    <ClCompile Include="UObject.cpp" />
+    <ClCompile Include="UPrimitiveComponent.cpp" />
     <ClCompile Include="URenderer.cpp" />
     <ClCompile Include="UShader.cpp" />
     <ClCompile Include="UUIManager.cpp" />
@@ -166,6 +169,7 @@
     <ClInclude Include="UMesh.h" />
     <ClInclude Include="UObject.h" />
     <ClInclude Include="UPrimitiveComponent.h" />
+    <ClInclude Include="UPrimitiveTypes.h" />
     <ClInclude Include="URenderer.h" />
     <ClInclude Include="USceneComponent.h" />
     <ClInclude Include="UShader.h" />

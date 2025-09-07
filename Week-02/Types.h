@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <cstdint>
 
 ////////////////////////////////////////////////////
 //
@@ -19,24 +20,14 @@
 //
 ////////////////////////////////////////////////////
 
-using int32 = int;
-using uint32 = unsigned int;
+// 8 bit
+using int8 = int8_t;
+using uint8 = uint8_t;
 
+// 16 bit
+using int16 = int16_t;
+using uint16 = uint16_t;
 
-////////////////////////////////////////////////////
-//
-//			연산자
-//
-////////////////////////////////////////////////////
-
-inline void* operator new(size_t size)
-{
-	void* ptr;
-	ptr = malloc(size);
-	return ptr;
-}
-
-inline void operator delete(void* p)
-{
-	free(p);
-}
+// 32 bit 
+using int32 = int32_t;
+using uint32 = uint32_t;

@@ -87,6 +87,15 @@
     <ClCompile Include="FRay.h">
       <Filter>헤더 파일</Filter>
     </ClCompile>
+    <ClCompile Include="UObject.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UPrimitiveComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UCubeComp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -172,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="ImGui\imgui_console.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="UPrimitiveTypes.h">
+      <Filter>헤더 파일\Shape</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

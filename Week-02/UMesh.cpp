@@ -7,7 +7,7 @@ UMesh::UMesh(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
 }
 
-bool UMesh::Initialize(const void* vertices, const void* indices, const UINT vertexByteWidth, const UINT indexByteWidth, const UINT vertexCount)
+bool UMesh::Initialize(const void* vertices, const void* indices, const UINT vertexByteWidth, const UINT indexByteWidth)
 {
 	VertexByteWidth = vertexByteWidth;
 	IndexByteWidth = indexByteWidth;
@@ -40,7 +40,7 @@ void UMesh::Release()
 	}
 }
 
-void UMesh::PrepareMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format)
+void UMesh::RenderMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format)
 {	
 	DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &vertexStride, &offset);
 	DeviceContext->IASetIndexBuffer(IndexBuffer, format, 0);

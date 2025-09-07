@@ -5,13 +5,6 @@ struct ID3D11Device;
 struct ID3D11DeviceContext;
 struct ID3D11Buffer;
 
-//******************************************/
-//
-//	IndexBuffer 미완성
-//
-//
-//******************************************/
-
 class UMesh
 {
 public:
@@ -19,9 +12,9 @@ public:
 	~UMesh() {};
 
 	bool Initialize(const void* vertices, const void* indices,
-		const UINT vertexByteWidth, const UINT indexByteWidth, const UINT vertexCount);
+		const UINT vertexByteWidth, const UINT indexByteWidth);
 	void Release();
-	void PrepareMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format);
+	void RenderMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format);
 	FTransform* GetTransform() { return &Transform; }
 
 private:
@@ -37,5 +30,4 @@ private:
 	UINT VertexByteWidth = 0;
 	UINT IndexByteWidth = 0;
 	UINT offset = 0;
-
 };
