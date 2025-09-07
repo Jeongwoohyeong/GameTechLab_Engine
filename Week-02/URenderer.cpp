@@ -50,8 +50,6 @@ void URenderer::Render()
 
 	// Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
-	
-	
 	FMatrix worldMatrix = FMatrix::Identity();
 	worldMatrix = worldMatrix * localCube->Transform.GetTransformMatrix();
 	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
@@ -59,7 +57,6 @@ void URenderer::Render()
 
 	worldGizmo->Render(this);
 
-	SetTopology(false); // 삼각형으로 렌더링
 	UI.ObjectControlUI(&localCube->Transform);
 
 	Device->EndScene();
