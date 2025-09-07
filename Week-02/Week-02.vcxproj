@@ -145,6 +145,7 @@
     <ClCompile Include="URenderer.cpp" />
     <ClCompile Include="FScene.cpp" />
     <ClCompile Include="UShader.cpp" />
+    <ClCompile Include="USphereComp.cpp" />
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
