@@ -21,13 +21,12 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
+	void UpdateConstant(const FMatrix& mvp);
 
 private:
-
-private:
-	UD3dDevice* Device = nullptr;;
-	UShader* Shader = nullptr;;
+	UD3dDevice* Device = nullptr;
 	UMesh* Mesh= nullptr;
+	UShader* Shader = nullptr;
 
 	ShapeData* Shape = nullptr;
 	WorldGizmo* worldGizmo = nullptr;

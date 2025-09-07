@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include "FVertexStruct.h"
+#include "UPrimitiveComponent.h"
 
-class Gizmo
+
+class Gizmo : public UPrimitiveComponent
 {
 };
 

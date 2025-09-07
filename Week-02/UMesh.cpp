@@ -47,6 +47,26 @@ void UMesh::RenderMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format)
 	DeviceContext->DrawIndexed(indicesCount, 0, 0);
 }
 
+void UMesh::RenderMesh(ID3D11Buffer* VertexBuffer, UINT NumVertices, ID3D11Buffer* IndexBuffer, UINT IndexCount, UINT Stride)
+{
+	UINT offset = 0; // 버퍼 오프셋 초기화
+	// 정점 버퍼 설정
+	DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
+
+	if (IndexBuffer)
+	{
+		// 인덱스 버퍼 설정
+		DeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		// 드로우 콜 (인덱스 버퍼 사용)
+		DeviceContext->DrawIndexed(IndexCount, 0, 0); // 인덱스 수와 시작 인덱스 설정
+	}
+	else
+	{
+		// 인덱스 버퍼가 없을 때 드로우 콜
+		DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
+	}
+}
+
 bool UMesh::CreateVertexBuffer(const void* vertices)
 {
 	HRESULT result;
@@ -136,4 +156,16 @@ bool UMesh::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, 
 	}
 
 	return true;
+}
+
+void UMesh::SetTopology(bool isLine)
+{
+	if (isLine)
+	{
+		DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	}
+	else
+	{
+		DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
 }

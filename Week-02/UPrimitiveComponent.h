@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "USceneComponent.h"
 #include "Types.h"
 #include "Math.h"

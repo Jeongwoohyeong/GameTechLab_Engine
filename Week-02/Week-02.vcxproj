@@ -162,6 +162,7 @@
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Gizmo.h" />
     <ClInclude Include="ShapeData.h" />
+    <ClInclude Include="ShapeType.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="FTransform.h" />

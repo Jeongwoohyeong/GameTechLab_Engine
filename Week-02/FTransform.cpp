@@ -31,7 +31,7 @@ void FTransform::SetScale(const FVector& scale)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationX(float degree)
+void FTransform::SetRotationDegX(float degree)
 {
 	Rotation.X = DegToRad(degree);
 
@@ -39,7 +39,7 @@ void FTransform::SetRotationX(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationY(float degree)
+void FTransform::SetRotationDegY(float degree)
 {
 	Rotation.Y = DegToRad(degree);
 
@@ -47,7 +47,7 @@ void FTransform::SetRotationY(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationZ(float degree)
+void FTransform::SetRotationDegZ(float degree)
 {
 	Rotation.Z = DegToRad(degree);
 
@@ -55,17 +55,17 @@ void FTransform::SetRotationZ(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotation(const FVector& degrees)
+void FTransform::SetRotationDeg(const FVector& degrees)
 {
-	this->SetRotationX(degrees.X);
-	this->SetRotationY(degrees.Y);
-	this->SetRotationZ(degrees.Z);
+	this->SetRotationDegX(degrees.X);
+	this->SetRotationDegY(degrees.Y);
+	this->SetRotationDegZ(degrees.Z);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
 
-void FTransform::AddRotationX(float degree)
+void FTransform::AddRotationDegX(float degree)
 {
 	Rotation.X += DegToRad(degree);
 
@@ -73,7 +73,7 @@ void FTransform::AddRotationX(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::AddRotationY(float degree)
+void FTransform::AddRotationDegY(float degree)
 {
 	Rotation.Y += DegToRad(degree);
 
@@ -81,7 +81,7 @@ void FTransform::AddRotationY(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::AddRotationZ(float degree)
+void FTransform::AddRotationDegZ(float degree)
 {
 	Rotation.Z += DegToRad(degree);
 

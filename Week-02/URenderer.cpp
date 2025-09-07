@@ -38,7 +38,7 @@ bool URenderer::Initialize(HWND hWnd)
 	Shape->Initialize(*Mesh);
 	
 	worldGizmo = new WorldGizmo();
-	worldGizmo->Initialize();
+	worldGizmo->Initialize(*Mesh);
 	
 
 	if (!this->CreateRasterizerState())
@@ -66,6 +66,8 @@ void URenderer::Render()
 
 	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
 	UI.ObjectControlUI(Mesh->GetTransform());
+
+	worldGizmo->Render(this);
 
 	Device->EndScene();
 }
@@ -116,4 +118,9 @@ bool URenderer::CreateRasterizerState()
 	}
 
 	return true;
+}
+
+void URenderer::UpdateConstant(const FMatrix& mvp)
+{
+	Shader->UpdateConstant(mvp);
 }
