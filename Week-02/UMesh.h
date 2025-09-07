@@ -30,11 +30,11 @@ private:
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
 
-	ID3D11Buffer* VertexBuffer = nullptr;
-	ID3D11Buffer* IndexBuffer = nullptr;
+	//id3d11buffer* vertexbuffer = nullptr;
+	//id3d11buffer* indexbuffer = nullptr;
 
-	FTransform Transform = {};
-	UINT VertexByteWidth = 0;
-	UINT IndexByteWidth = 0;
-	UINT offset = 0;
+	//unsigned int vertexbytewidth = 0;
+	//unsigned int indexbytewidth = 0;
+	//unsigned int offset = 0;
+
 };

@@ -1,6 +1,5 @@
 ﻿#include "Cube.h"
 
-
 // This is the one and only definition for GCubeVertices.
 FVertexSimple GCubeVertices[] =
 {

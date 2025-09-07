@@ -28,13 +28,13 @@ bool URenderer::Initialize(HWND hWnd)
 	}
 	
 	Mesh = new UMesh(Device->GetDeivce(), Device->GetDeviceContext());
-	/*if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, 
+	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices,
 		sizeof(GCubeVertices), 
 		sizeof(GCubeIndices), 
 		sizeof(GCubeVertices) / sizeof(FVertexSimple)))
 	{		
 		return false;
-	}*/
+	}
 
 	//Shape = new ShapeData();
 	//Shape->Initialize(*Mesh);
@@ -132,7 +132,22 @@ void URenderer::UpdateConstantR(const FMatrix& mvp)
 	Shader->UpdateConstant(mvp);
 }
 
-void URenderer::RenderMeshR(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
+void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
 {
-	Mesh->RenderMesh(VertexBuffer, NumVertices, IndexBuffer, IndexCount, Stride);
+	unsigned int offset = 0; // 버퍼 오프셋 초기화
+	// 정점 버퍼 설정
+	Device.DeviceContext.IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
+
+	if (IndexBuffer)
+	{
+		// 인덱스 버퍼 설정
+		DeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		// 드로우 콜 (인덱스 버퍼 사용)
+		DeviceContext->DrawIndexed(IndexCount, 0, 0); // 인덱스 수와 시작 인덱스 설정
+	}
+	else
+	{
+		// 인덱스 버퍼가 없을 때 드로우 콜
+		DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
+	}
 }

@@ -25,11 +25,10 @@ public:
 
 	void SetTopologyR(bool isLine);
 	void UpdateConstantR(const FMatrix& mvp);
-	void RenderMeshR(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
+	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
 
 private:
 	UD3dDevice* Device = nullptr;
-	UMesh* Mesh= nullptr;
 	UShader* Shader = nullptr;
 
 	ShapeData* Shape = nullptr;

@@ -27,7 +27,7 @@ bool UMesh::Initialize(const void* vertices, const void* indices, const UINT ver
 
 void UMesh::Release()
 {
-	if (IndexBuffer)
+	/*if (IndexBuffer)
 	{
 		IndexBuffer->Release();
 	}
@@ -35,7 +35,7 @@ void UMesh::Release()
 	if (VertexBuffer)
 	{
 		VertexBuffer->Release();
-	}
+	}*/
 }
 
 void UMesh::RenderMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format)
