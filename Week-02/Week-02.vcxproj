@@ -124,6 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CInputManager.cpp" />
+    <ClCompile Include="CSceneSerializer.cpp" />
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
@@ -142,13 +143,16 @@
     <ClCompile Include="UObject.cpp" />
     <ClCompile Include="UPrimitiveComponent.cpp" />
     <ClCompile Include="URenderer.cpp" />
+    <ClCompile Include="FScene.cpp" />
     <ClCompile Include="UShader.cpp" />
     <ClCompile Include="UUIManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CInputManager.h" />
     <ClInclude Include="Containers.h" />
+    <ClInclude Include="CSceneSerializer.h" />
     <ClInclude Include="ImGui\imgui_console.h" />
+    <ClInclude Include="SimpleJSON\json.hpp" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="FTransform.h" />
@@ -171,6 +175,7 @@
     <ClInclude Include="UPrimitiveComponent.h" />
     <ClInclude Include="UPrimitiveTypes.h" />
     <ClInclude Include="URenderer.h" />
+    <ClInclude Include="FScene.h" />
     <ClInclude Include="USceneComponent.h" />
     <ClInclude Include="UShader.h" />
     <ClInclude Include="USphereComp.h" />
