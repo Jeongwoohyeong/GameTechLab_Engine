@@ -139,6 +139,7 @@
     <ClCompile Include="UCamera.cpp" />
     <ClCompile Include="UCubeComp.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
+    <ClCompile Include="UEngineStatics.cpp" />
     <ClCompile Include="UMesh.cpp" />
     <ClCompile Include="UObject.cpp" />
     <ClCompile Include="UPrimitiveComponent.cpp" />

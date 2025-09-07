@@ -13,8 +13,9 @@ public:
 public:
 	uint32 UUID;
 	uint32 InternalIndex;
-	uint32 TotalAllocationBytes;
-	uint32 TatalAllocationCount;
+	static uint64 TotalAllocationBytes;
+	static uint64 TotalAllocationCount;
+	static TMap<void*, size_t> AllocatedBytesMap;
 };
 
 extern TArray<UObject*> GUObjectArray;
