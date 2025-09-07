@@ -1,0 +1,41 @@
+#pragma once
+#include "FTransform.h"
+
+class ID3D11Device;
+class ID3D11DeviceContext;
+class ID3D11Buffer;
+
+//******************************************/
+//
+//	IndexBuffer 미완성
+//
+//
+//******************************************/
+
+class UMesh
+{
+public:
+	UMesh(ID3D11Device*, ID3D11DeviceContext*);
+	~UMesh() {};
+
+	bool Initialize(const void* vertices, const void* indices,
+		const UINT vertexByteWidth, const UINT indexByteWidth, const UINT vertexCount);
+	void Release();
+	void PrepareMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format);
+	FTransform* GetTransform() { return &Transform; }
+
+private:
+	bool CreateVertexBuffer(const void* vertices);
+	bool CreateIndexBuffer(const void* indices);
+
+private:
+	ID3D11Buffer* VertexBuffer = nullptr;
+	ID3D11Buffer* IndexBuffer = nullptr;
+	ID3D11Device* Device = nullptr;
+	ID3D11DeviceContext* DeviceContext = nullptr;
+	FTransform Transform = {};
+	UINT VertexByteWidth = 0;
+	UINT IndexByteWidth = 0;
+	UINT offset = 0;
+
+};
