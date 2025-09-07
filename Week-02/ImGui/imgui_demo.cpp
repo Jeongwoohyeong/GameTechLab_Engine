@@ -1,4 +1,4 @@
-// dear imgui, v1.92.2 WIP
+﻿// dear imgui, v1.92.2 WIP
 // (demo code)
 
 // Help:
@@ -9081,6 +9081,29 @@ struct ExampleAppConsole
         return 0;
     }
 };
+
+namespace ImGui
+{
+    // 전역 콘솔 인스턴스
+    static ExampleAppConsole GExampleAppConsole;
+
+    // 콘솔 창 표시
+    void ShowExampleAppConsoleWindow(bool* p_open)
+    {
+        GExampleAppConsole.Draw("Example: Console", p_open);
+    }
+
+    // 콘솔에 로그 추가
+    void ExampleConsoleAddLog(const char* fmt, ...)
+    {
+        char buf[1024];
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buf, IM_ARRAYSIZE(buf), fmt, args);
+        va_end(args);
+        GExampleAppConsole.AddLog("%s\n", buf);
+    }
+}
 
 static void ShowExampleAppConsole(bool* p_open)
 {

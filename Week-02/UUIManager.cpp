@@ -10,6 +10,9 @@ void UUIManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext
 	ImGuiIO& io = ImGui::GetIO();
 	ImGui_ImplWin32_Init((void*)hWnd);
 	ImGui_ImplDX11_Init(device, deviceContext);
+
+	bShowConsoleWindow = true;
+	UE_LOG("UI Manager Initialized");
 }
 
 void UUIManager::ObjectControlUI(FTransform* object)
@@ -22,9 +25,10 @@ void UUIManager::ObjectControlUI(FTransform* object)
 	/***********************/
 	// ImGui UI 추가 위치 - ImGui::NewFrame()과 ImGui::Render() 사이에 위치한다.
 	ImGui::Begin("Jungle Property Window");
-
-	ObjectControl();
-
+	{
+		ObjectControl();
+		ImGui::ShowExampleAppConsoleWindow(&bShowConsoleWindow);
+	}
 	ImGui::End();
 
 	ImGui::Render();

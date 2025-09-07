@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="CInputManager.h" />
     <ClInclude Include="Containers.h" />
+    <ClInclude Include="ImGui\imgui_console.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="FTransform.h" />
