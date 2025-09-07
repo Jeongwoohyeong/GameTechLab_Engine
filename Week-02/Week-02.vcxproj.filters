@@ -117,9 +117,6 @@
     <ClCompile Include="ShapeData.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Cube.cpp">
-      <Filter>헤더 파일\Shape</Filter>
-    </ClCompile>
     <ClCompile Include="LocalGizmo.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

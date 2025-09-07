@@ -49,8 +49,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		nullptr, nullptr, hInstance, nullptr);
 
 	URenderer renderer;
-	CameraInputMove input;
-	input.Initialize(&hWnd);
+
+	CameraInputMove* input = nullptr; // 포인터를 nullptr로 초기화하는 것이 좋은 습관입니다.
+	input = new CameraInputMove();   // 객체 생성 및 포인터에 할당
+	input->Initialize(&hWnd);
 	// UPrimitiveComponent* Cube = new UPrimitiveComponent();
 	
 
@@ -78,7 +80,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			input.UpdateInputToCamera();
+			input->UpdateInputToCamera();
 
 			renderer.Render();
 		}

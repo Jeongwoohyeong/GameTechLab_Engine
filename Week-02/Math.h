@@ -58,7 +58,7 @@ struct FVector
 	FVector& operator-=(const FVector& V) { X -= V.X; Y -= V.Y; Z -= V.Z; return *this; }
 	FVector& operator*=(float S) { X *= S; Y *= S, Z *= S; return *this; }
 	FVector& operator/=(float S) { X /= S; Y /= S, Z /= S; return *this; }
-
+	
 	constexpr bool operator==(const FVector& V) const noexcept { return X == V.X && Y == V.Y && Z == V.Z; }
 	constexpr bool operator!=(const FVector& V) const noexcept { return !(*this == V); }
 
