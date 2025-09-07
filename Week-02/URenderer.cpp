@@ -90,7 +90,7 @@ void URenderer::Release()
 	}	
 }
 
-void URenderer::UpdateConstantR(const FMatrix& mvp)
+void URenderer::UpdateConstant(const FMatrix& mvp)
 {
 	Shader->UpdateConstant(mvp);
 }

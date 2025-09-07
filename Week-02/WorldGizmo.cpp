@@ -37,7 +37,7 @@ void WorldGizmo::Initialize(URenderer* renderer)
 void WorldGizmo::Render(URenderer* renderer)
 {
     renderer->SetTopology(true); // 선으로 렌더링
-    renderer->UpdateConstantR(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
+    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
     renderer->RenderMesh(gridVerticesBuffer,
         static_cast<unsigned int>(xzGridVertices.size()),
         gridIndicesBuffer,
