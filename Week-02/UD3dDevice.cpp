@@ -103,6 +103,8 @@ bool UD3dDevice::CreateDeviceAndSwapChain(HWND hWnd)
 	Viewport.Height = (float)swapChainDesc.BufferDesc.Height;
 	Viewport.MinDepth = 0.0f;
 	Viewport.MaxDepth = 1.0f;
+
+	return true;
 }
 
 bool UD3dDevice::CreateFrameBuffer()
