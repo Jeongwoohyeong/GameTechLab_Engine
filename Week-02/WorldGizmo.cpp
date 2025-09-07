@@ -25,11 +25,11 @@ void WorldGizmo::Initialize(URenderer* renderer)
     gridVerticesBuffer = nullptr;
     gridIndicesBuffer = nullptr;
 
-    renderer->CreateVertexBuffer(gridVerticesBuffer,
+    renderer->CreateVertexBuffer(&gridVerticesBuffer,
         xzGridVertices.data(),
         static_cast<unsigned int>(xzGridVertices.size() * sizeof(FVertexSimple)));
 
-    renderer->CreateIndexBuffer(gridIndicesBuffer,
+    renderer->CreateIndexBuffer(&gridIndicesBuffer,
         xzGridIndices.data(),
         static_cast<unsigned int>(xzGridIndices.size() * sizeof(unsigned int)));
 }

@@ -2,9 +2,9 @@
 #include "UD3dDevice.h"
 #include "UShader.h"
 #include "UCamera.h"
-#include "Cube.h"
 
 #include "ShapeData.h"
+#include "LocalGizmo.h"
 #include "WorldGizmo.h"
 
 URenderer::URenderer() {}
@@ -47,11 +47,19 @@ void URenderer::Render()
 
 	// Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
-	FMatrix worldMatrix = FMatrix::Identity();
-	// worldMatrix = worldMatrix * GetTransform()->GetTransformMatrix();
-	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
+	LocalGizmo* localCube = new LocalGizmo();
+	localCube->Initialize(this);
+	
 
-	// UI.ObjectControlUI(Mesh->GetTransform());
+
+	//FMatrix worldMatrix = FMatrix::Identity();
+	//worldMatrix = worldMatrix * GetTransform()->GetTransformMatrix();
+
+
+	// Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
+
+
+	//UI.ObjectControlUI(Mesh->GetTransform());
 
 	worldGizmo->Render(this);
 
@@ -115,7 +123,7 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 	}
 }
 
-bool URenderer::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, unsigned int byteWidth)
+bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth)
 {
 	HRESULT result;
 
@@ -127,7 +135,7 @@ bool URenderer::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* ver
 
 	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { vertices };
 
-	result = Device->Device->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &verticesBuffer);
+	result = Device->Device->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, verticesBuffer);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
@@ -137,7 +145,7 @@ bool URenderer::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* ver
 	return true;
 }
 
-bool URenderer::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, unsigned int byteWidth)
+bool URenderer::CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indices, unsigned int byteWidth)
 {
 	HRESULT hr;
 
@@ -149,7 +157,7 @@ bool URenderer::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indic
 
 	D3D11_SUBRESOURCE_DATA indexBufferSRD = { indices };
 
-	hr = Device->Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &indicesBuffer);
+	hr = Device->Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, indicesBuffer);
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);

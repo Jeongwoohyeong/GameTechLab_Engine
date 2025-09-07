@@ -3,24 +3,17 @@
 #include "UPrimitiveComponent.h"
 #include <vector>
 
-
+class URenderer;
+class ID3D11Buffer;
 class Gizmo
 {
 public:
 	Gizmo() = default;
 	~Gizmo() = default;
 
-	void Initialize(URenderer* renderer);
-	void Render(URenderer* renderer);
-	void Release();
+	virtual void Initialize(URenderer* renderer) = 0;
+	virtual void Render(URenderer* renderer) = 0;
+	virtual void Release() = 0;
 
 	FTransform Transform;
-
-private:
-	std::vector<FVertexSimple>* vertices;
-	std::vector<unsigned int>*  xzGridIndices;
-
-	ID3D11Buffer* cubeVerticesBuffer = nullptr;
-	ID3D11Buffer* cubeIndicesBuffer = nullptr;
 };
-

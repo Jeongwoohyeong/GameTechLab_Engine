@@ -136,6 +136,7 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="LocalGizmo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.h" />
     <ClCompile Include="ShapeData.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="SimpleJSON\json.hpp" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="LocalGizmo.h" />
     <ClInclude Include="ShapeData.h" />
     <ClInclude Include="ShapeType.h" />
     <ClInclude Include="Types.h" />
