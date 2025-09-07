@@ -2,11 +2,8 @@
 #include<d3d11.h>
 
 #include "FVertexStruct.h"
-#include "UMesh.h"
 
-#include "Cone.h"
 #include "Cube.h"
-#include "Cylinder.h"
 #include "Sphere.h"
 
 class ShapeData
@@ -29,21 +26,15 @@ private:
 	ID3D11Buffer* indexBufferCone;
 
 public :
-	void Initialize(UMesh mesh)
+	void Initialize()
 	{
 		numVerticesCube = sizeof(GCubeVertices) / sizeof(FVertexSimple);
-		numVerticesCylinder = sizeof(GCylinderVertices) / sizeof(FVertexSimple);
-		numVerticesCone = sizeof(GConeVertices) / sizeof(FVertexSimple);
 		numVerticesSphere = sizeof(GSphereVertices) / sizeof(FVertexSimple);
 
 		 mesh.CreateVertexBuffer(vertexBufferCube, GCubeVertices, sizeof(GCubeVertices));
-		 mesh.CreateVertexBuffer(vertexBufferCylinder, GCylinderVertices, sizeof(GCylinderVertices));
-		 mesh.CreateVertexBuffer(vertexBufferCone, GConeVertices, sizeof(GConeVertices));
 		 mesh.CreateVertexBuffer(vertexBufferSphere, GSphereVertices, sizeof(GSphereVertices));
 
 		 mesh.CreateIndexBuffer(indexBufferCube, GCubeIndices, sizeof(GCubeIndices));
-		 mesh.CreateIndexBuffer(indexBufferCylinder, GCylinderIndices, sizeof(GCylinderIndices));
-		 mesh.CreateIndexBuffer(indexBufferCone, GConeIndices, sizeof(GConeIndices));
 	}
 };
 

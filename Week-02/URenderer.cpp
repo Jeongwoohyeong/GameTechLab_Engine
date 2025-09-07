@@ -8,10 +8,7 @@
 #include "ShapeData.h"
 #include "WorldGizmo.h"
 
-URenderer::URenderer()
-{	
-	
-}
+URenderer::URenderer() {}
 
 bool URenderer::Initialize(HWND hWnd)
 {
@@ -136,7 +133,8 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 {
 	unsigned int offset = 0; // 버퍼 오프셋 초기화
 	// 정점 버퍼 설정
-	Device.DeviceContext.IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
+	Device.
+DeviceContext.IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
 
 	if (IndexBuffer)
 	{
