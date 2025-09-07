@@ -1,4 +1,4 @@
-#include "UD3dDevice.h"
+﻿#include "UD3dDevice.h"
 
 bool UD3dDevice::Initialize(HWND hWnd)
 {

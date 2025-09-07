@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "FVertexStruct.h"
 
 // ===== 8개 꼭짓점 (LH, +Z가 앞) =====

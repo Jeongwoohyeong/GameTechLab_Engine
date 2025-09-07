@@ -1,4 +1,4 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 #include "CInputManager.h"
 
 void CInputManager::Update()
