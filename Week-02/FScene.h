@@ -9,5 +9,5 @@ class FScene
 public:
 	int32 Version;
 	uint32 NextUUID;
-	TArray<UPrimitiveComponent*> Primitives; // Key: UUID, Value: UPrimitiveComponent*
+	TArray<UPrimitiveComponent*> Primitives;
 };

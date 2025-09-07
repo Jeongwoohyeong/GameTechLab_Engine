@@ -16,7 +16,39 @@ static inline void EnsureScenesDirectory()
 #endif
 }
 
-void CSceneSerializer::SaveScene(const FString& Name, const FScene& Scene)
+// 원하는 키 순서(Version, NextUUID, Primitives)로 루트만 출력
+static FString DumpSceneRootOrdered(const json::JSON& Root)
+{
+	using namespace json;
+
+	TArray<TPair<const char*, const JSON*>> Items;
+	if (Root.hasKey("Version"))    Items.push_back({ "Version",    &Root.at("Version") });
+	if (Root.hasKey("NextUUID"))   Items.push_back({ "NextUUID",   &Root.at("NextUUID") });
+	if (Root.hasKey("Primitives")) Items.push_back({ "Primitives", &Root.at("Primitives") });
+
+	FString Result;
+	Result += "{\n";
+	const FString Indent = "  ";
+
+	for (size_t i = 0; i < Items.size(); ++i)
+	{
+		const bool bIsLast = (i + 1 == Items.size());
+		const bool bIsPrimitives = (std::strcmp(Items[i].first, "Primitives") == 0);
+
+		Result += Indent;
+		Result += "\"";
+		Result += Items[i].first;
+		Result += "\" : ";
+		// Primitives는 중첩 객체이므로 들여쓰기 깊이를 한 단계 더 주어 보기 좋게 출력
+		Result += Items[i].second->dump(bIsPrimitives ? 2 : 1, "  ");
+		Result += bIsLast ? "\n" : ",\n";
+	}
+
+	Result += "}";
+	return Result;
+}
+
+void CSceneSerializer::Serialize(const FString& Name, const FScene& Scene)
 {
 	using namespace json;
 
@@ -76,8 +108,8 @@ void CSceneSerializer::SaveScene(const FString& Name, const FScene& Scene)
 		return;
 	}
 
-	// 보기 좋은 포맷으로 출력(SimpleJSON의 dump는 기본 2 스페이스 들여쓰기)
-	Ofs << Root.dump();
+	// 루트만 원하는 키 순서로 출력
+	Ofs << DumpSceneRootOrdered(Root);
 	Ofs.close();
 
 	UE_LOG("Scene saved to %s", OutPath.c_str());
@@ -128,7 +160,7 @@ inline UPrimitiveComponent* CreatePrimitiveFromType(const FString& TypeStr)
 	}
 }
 
-FScene CSceneSerializer::LoadScene(const FString& Name)
+FScene CSceneSerializer::Parse(const FString& Name)
 {
 	using namespace json;
 
