@@ -1,6 +1,5 @@
 ﻿#include "WorldGizmo.h"
 #include "URenderer.h"
-#include "UCamera.h"
 
 void WorldGizmo::Initialize(URenderer* renderer)
 {

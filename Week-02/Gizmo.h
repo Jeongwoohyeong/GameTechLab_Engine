@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "FVertexStruct.h"
 #include "UPrimitiveComponent.h"
+#include "UCamera.h"
 #include <vector>
 
 class URenderer;

@@ -50,18 +50,15 @@ void URenderer::Render()
 	LocalGizmo* localCube = new LocalGizmo();
 	localCube->Initialize(this);
 	
-
-
-	//FMatrix worldMatrix = FMatrix::Identity();
-	//worldMatrix = worldMatrix * GetTransform()->GetTransformMatrix();
-
-
-	// Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
-
-
-	//UI.ObjectControlUI(Mesh->GetTransform());
+	FMatrix worldMatrix = FMatrix::Identity();
+	worldMatrix = worldMatrix * localCube->Transform.GetTransformMatrix();
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
+	localCube->Render(this);
 
 	worldGizmo->Render(this);
+
+	SetTopology(false); // 삼각형으로 렌더링
+	UI.ObjectControlUI(&localCube->Transform);
 
 	Device->EndScene();
 }
