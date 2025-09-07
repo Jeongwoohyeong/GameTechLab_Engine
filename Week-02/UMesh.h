@@ -1,5 +1,4 @@
-﻿#pragma once
-#include "FTransform.h"
+#pragma once
 
 struct ID3D11Device;
 struct ID3D11DeviceContext;
@@ -18,10 +17,10 @@ public:
 	FTransform* GetTransform() { return &Transform; }
 
 	// 임시로 추가, gizmo에서 사용
-	void RenderMesh(ID3D11Buffer* VertexBuffer, UINT NumVertices, ID3D11Buffer* IndexBuffer, UINT IndexCount, UINT Stride);
+	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
 
-	bool CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, UINT byteWidth);
-	bool CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, UINT byteWidth);
+	bool CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, unsigned int byteWidth);
+	bool CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, unsigned int byteWidth);
 	void SetTopology(bool isLine);
 private:
 	bool CreateVertexBuffer(const void* vertices);

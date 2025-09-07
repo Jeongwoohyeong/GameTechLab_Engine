@@ -1,4 +1,4 @@
-﻿#include<d3d11.h>
+#include<d3d11.h>
 #include "UMesh.h"
 
 
@@ -21,8 +21,6 @@ bool UMesh::Initialize(const void* vertices, const void* indices, const UINT ver
 	{
 		return false;
 	}
-
-	Transform = FTransform();
 
 	return true;
 }
@@ -47,9 +45,9 @@ void UMesh::RenderMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format)
 	DeviceContext->DrawIndexed(indicesCount, 0, 0);
 }
 
-void UMesh::RenderMesh(ID3D11Buffer* VertexBuffer, UINT NumVertices, ID3D11Buffer* IndexBuffer, UINT IndexCount, UINT Stride)
+void UMesh::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
 {
-	UINT offset = 0; // 버퍼 오프셋 초기화
+	unsigned int offset = 0; // 버퍼 오프셋 초기화
 	// 정점 버퍼 설정
 	DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
 
@@ -90,7 +88,7 @@ bool UMesh::CreateVertexBuffer(const void* vertices)
 	return true;
 }
 
-bool UMesh::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, UINT byteWidth)
+bool UMesh::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, unsigned int byteWidth)
 {
 	HRESULT result;
 
@@ -136,7 +134,7 @@ bool UMesh::CreateIndexBuffer(const void* indices)
 }
 
 
-bool UMesh::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, UINT byteWidth)
+bool UMesh::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, unsigned int byteWidth)
 {
 	HRESULT hr;
 

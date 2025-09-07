@@ -1,4 +1,3 @@
-﻿#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -29,18 +28,20 @@ bool URenderer::Initialize(HWND hWnd)
 	}
 	
 	Mesh = new UMesh(Device->GetDeivce(), Device->GetDeviceContext());
-	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, sizeof(GCubeVertices), sizeof(GCubeIndices)))
+	/*if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, 
+		sizeof(GCubeVertices), 
+		sizeof(GCubeIndices), 
+		sizeof(GCubeVertices) / sizeof(FVertexSimple)))
 	{		
 		return false;
-	}
+	}*/
 
-	Shape = new ShapeData();
-	Shape->Initialize(*Mesh);
+	//Shape = new ShapeData();
+	//Shape->Initialize(*Mesh);
 	
 	worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(*Mesh);
 	
-
 	if (!this->CreateRasterizerState())
 	{
 		return false;
@@ -57,15 +58,16 @@ void URenderer::Render()
 {
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
-	FMatrix worldMatrix = FMatrix::Identity();
-	worldMatrix = worldMatrix * Mesh->GetTransform()->GetTransformMatrix();	
 	
 	Shader->PrepareShader();
-	
-	Mesh->RenderMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
-	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
-	UI.ObjectControlUI(Mesh->GetTransform());
+	// Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
+
+	/*FMatrix worldMatrix = FMatrix::Identity();
+	worldMatrix = worldMatrix * Mesh->GetTransform()->GetTransformMatrix();
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));*/
+
+	// UI.ObjectControlUI(Mesh->GetTransform());
 
 	worldGizmo->Render(this);
 
@@ -120,7 +122,17 @@ bool URenderer::CreateRasterizerState()
 	return true;
 }
 
-void URenderer::UpdateConstant(const FMatrix& mvp)
+void URenderer::SetTopologyR(bool isLine)
+{
+	Mesh->SetTopology(isLine);
+}
+
+void URenderer::UpdateConstantR(const FMatrix& mvp)
 {
 	Shader->UpdateConstant(mvp);
+}
+
+void URenderer::RenderMeshR(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
+{
+	Mesh->RenderMesh(VertexBuffer, NumVertices, IndexBuffer, IndexCount, Stride);
 }

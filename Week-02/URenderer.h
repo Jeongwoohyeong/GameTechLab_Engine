@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <d3d11.h>
 #include "UUIManager.h"
 #include "Math.h"
 
@@ -21,7 +22,10 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
-	void UpdateConstant(const FMatrix& mvp);
+
+	void SetTopologyR(bool isLine);
+	void UpdateConstantR(const FMatrix& mvp);
+	void RenderMeshR(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
 
 private:
 	UD3dDevice* Device = nullptr;

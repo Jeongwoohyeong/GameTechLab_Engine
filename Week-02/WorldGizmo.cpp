@@ -5,7 +5,6 @@
 
 void WorldGizmo::Initialize(UMesh InMesh)
 {
-    mesh = InMesh;
     Transform.SetRotationDeg({ 0.0f, 0.0f, 0.0f });
 
     // XZ 평면 그리드 + Y축 기즈모 생성
@@ -25,20 +24,20 @@ void WorldGizmo::Initialize(UMesh InMesh)
     gridVerticesBuffer = nullptr;
     gridIndicesBuffer = nullptr;
 
-    mesh.CreateVertexBuffer(gridVerticesBuffer,
+    InMesh.CreateVertexBuffer(gridVerticesBuffer,
         xzGridVertices.data(),
         static_cast<unsigned int>(xzGridVertices.size() * sizeof(FVertexSimple)));
 
-    mesh.CreateIndexBuffer(gridIndicesBuffer,
+    InMesh.CreateIndexBuffer(gridIndicesBuffer,
         xzGridIndices.data(),
         static_cast<unsigned int>(xzGridIndices.size() * sizeof(unsigned int)));
 }
 
 void WorldGizmo::Render(URenderer* renderer)
 {
-    mesh.SetTopology(true); // 선으로 렌더링
-    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
-    mesh.RenderMesh(gridVerticesBuffer,
+    renderer->SetTopologyR(true); // 선으로 렌더링
+    renderer->UpdateConstantR(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
+    renderer->RenderMeshR(gridVerticesBuffer,
         static_cast<unsigned int>(xzGridVertices.size()),
         gridIndicesBuffer,
         static_cast<unsigned int>(xzGridIndices.size()),

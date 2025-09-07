@@ -124,6 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CInputManager.cpp" />
+    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="CSceneSerializer.cpp" />
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />

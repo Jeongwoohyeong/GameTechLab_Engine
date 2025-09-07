@@ -4,7 +4,6 @@
 
 // 전방 선언
 class URenderer;
-class UMesh;
 struct ID3D11Buffer;
 
 class WorldGizmo : public Gizmo
@@ -34,7 +33,6 @@ private:
     std::vector<FVertexSimple> xzGridVertices;
     std::vector<unsigned int>  xzGridIndices;
 
-    UMesh mesh;
     ID3D11Buffer* gridVerticesBuffer = nullptr;
     ID3D11Buffer* gridIndicesBuffer = nullptr;
 
