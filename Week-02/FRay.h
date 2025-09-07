@@ -9,7 +9,7 @@ public:
 
     FRay(const FVector& _Origin, const FVector& _Direction) : Origin(_Origin), Direction(_Direction) {}
 
-    inline FVector At(double T) const
+    inline FVector At(float T) const
     {
         return Origin + T * Direction;
     }

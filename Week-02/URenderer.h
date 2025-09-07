@@ -1,11 +1,11 @@
-#pragma once
+﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 
 class UD3dDevice;
 class UShader;
 class UMesh;
-class ID3D11RasterizerState;
+struct ID3D11RasterizerState;
 class UCamera;
 
 class URenderer
