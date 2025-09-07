@@ -28,6 +28,9 @@ bool URenderer::Initialize(HWND hWnd)
 	//Shape->Initialize(*Mesh);
 	
 	// TODO 
+	localCube = new LocalGizmo();
+	localCube->Initialize(this);
+
 	worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);
 
@@ -47,8 +50,7 @@ void URenderer::Render()
 
 	// Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
-	LocalGizmo* localCube = new LocalGizmo();
-	localCube->Initialize(this);
+	
 	
 	FMatrix worldMatrix = FMatrix::Identity();
 	worldMatrix = worldMatrix * localCube->Transform.GetTransformMatrix();

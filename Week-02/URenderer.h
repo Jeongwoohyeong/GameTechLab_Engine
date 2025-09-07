@@ -10,6 +10,7 @@ class UCamera;
 
 class ShapeData;
 class WorldGizmo;
+class LocalGizmo;
 
 class URenderer
 {
@@ -34,6 +35,8 @@ private:
 	UShader* Shader = nullptr;
 
 	ShapeData* Shape = nullptr;
+
+	LocalGizmo* localCube = nullptr;
 	WorldGizmo* worldGizmo = nullptr;
 	
 	ID3D11RasterizerState* RasterizerState = nullptr;	
