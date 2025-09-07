@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 #include <d3d11.h>
 #include "UUIManager.h"
 #include "Math.h"
+#include "CScene.h"
 
 class UD3dDevice;
 class UShader;
@@ -35,6 +36,7 @@ private:
 	UShader* Shader = nullptr;
 
 	ShapeData* Shape = nullptr;
+	CScene CurrentScene = {};
 
 	LocalGizmo* localCube = nullptr;
 	WorldGizmo* worldGizmo = nullptr;

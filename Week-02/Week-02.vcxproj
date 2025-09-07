@@ -124,7 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CInputManager.cpp" />
-    <ClCompile Include="CSceneSerializer.cpp" />
+    <ClCompile Include="CScene.cpp" />
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="Gizmo.cpp" />
@@ -147,7 +147,6 @@
     <ClCompile Include="UObject.cpp" />
     <ClCompile Include="UPrimitiveComponent.cpp" />
     <ClCompile Include="URenderer.cpp" />
-    <ClCompile Include="FScene.cpp" />
     <ClCompile Include="UShader.cpp" />
     <ClCompile Include="USphereComp.cpp" />
     <ClCompile Include="UUIManager.cpp" />
@@ -157,7 +156,7 @@
     <ClInclude Include="CInputManager.h" />
     <ClInclude Include="Cone.h" />
     <ClInclude Include="Containers.h" />
-    <ClInclude Include="CSceneSerializer.h" />
+    <ClInclude Include="CScene.h" />
     <ClInclude Include="ImGui\imgui_console.h" />
     <ClInclude Include="CameraInputMove.h" />
     <ClInclude Include="SimpleJSON\json.hpp" />
@@ -187,7 +186,6 @@
     <ClInclude Include="UPrimitiveComponent.h" />
     <ClInclude Include="UPrimitiveTypes.h" />
     <ClInclude Include="URenderer.h" />
-    <ClInclude Include="FScene.h" />
     <ClInclude Include="USceneComponent.h" />
     <ClInclude Include="UShader.h" />
     <ClInclude Include="USphereComp.h" />

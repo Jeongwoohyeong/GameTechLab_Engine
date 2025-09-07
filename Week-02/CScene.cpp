@@ -1,4 +1,4 @@
-﻿#include "CSceneSerializer.h"
+﻿#include "CScene.h"
 #include "SimpleJSON/json.hpp"
 #include "UUIManager.h"
 #include "UCubeComp.h"
@@ -8,6 +8,23 @@
 #if defined(_WIN32)
 #include <direct.h>   // _mkdir
 #endif
+
+void CScene::Initialize()
+{
+	Version = 1;
+	NextUUID = 0;
+	Primitives.clear();
+}
+
+void CScene::Save(const FString& Name)
+{
+	Serialize(Name);
+}
+
+void CScene::Load(const FString& Name)
+{
+	Parse(Name);
+}
 
 static inline void EnsureScenesDirectory()
 {
@@ -48,19 +65,19 @@ static FString DumpSceneRootOrdered(const json::JSON& Root)
 	return Result;
 }
 
-void CSceneSerializer::Serialize(const FString& Name, const FScene& Scene)
+void CScene::Serialize(const FString& Name)
 {
 	using namespace json;
 
 	EnsureScenesDirectory();
 
 	JSON Root = Object();
-	Root["Version"] = Scene.Version;
-	Root["NextUUID"] = Scene.NextUUID;
+	Root["Version"] = Version;
+	Root["NextUUID"] = NextUUID;
 
 	JSON PrimitivesObj = Object();
 
-	for (UPrimitiveComponent* Primitive : Scene.Primitives)
+	for (UPrimitiveComponent* Primitive : Primitives)
 	{
 		uint32 UUID = Primitive->UUID;
 		if (!Primitive) 
@@ -160,21 +177,17 @@ inline UPrimitiveComponent* CreatePrimitiveFromType(const FString& TypeStr)
 	}
 }
 
-FScene CSceneSerializer::Parse(const FString& Name)
+void CScene::Parse(const FString& Name)
 {
 	using namespace json;
 
-	FScene Scene;
-	Scene.Version = 1;
-	Scene.NextUUID = 0;
-	Scene.Primitives.clear();
+	Initialize();
 
 	const FString InPath = FString("Scenes/") + Name + ".scene";
 	std::ifstream Ifs(InPath, std::ios::in);
 	if (!Ifs.is_open())
 	{
 		UE_LOG("Error: Could not open file %s for reading.", InPath.c_str());
-		return Scene;
 	}
 
 	// 파일 전체를 문자열로 로드
@@ -185,17 +198,16 @@ FScene CSceneSerializer::Parse(const FString& Name)
 	if (Root.JSONType() != JSON::Class::Object)
 	{
 		UE_LOG("Error: Invalid scene format in %s.", InPath.c_str());
-		return Scene;
 	}
 
 	// Version / NextUUID
 	if (Root.hasKey("Version"))  
 	{
-		Scene.Version = static_cast<int32>(Root.at("Version").ToInt());
+		Version = static_cast<int32>(Root.at("Version").ToInt());
 	}
 	if (Root.hasKey("NextUUID")) 
 	{
-		Scene.NextUUID = static_cast<uint32>(Root.at("NextUUID").ToInt());
+		NextUUID = static_cast<uint32>(Root.at("NextUUID").ToInt());
 	}
 
 	// Primitives
@@ -242,13 +254,11 @@ FScene CSceneSerializer::Parse(const FString& Name)
 			Comp->UUID = UUID;
 
 			// Scene에 추가
-			Scene.Primitives.push_back(Comp);
+			Primitives.push_back(Comp);
 		}
 	}
 	else
 	{
 		UE_LOG("Warning: No 'Primitives' object in scene file %s.", InPath.c_str());
 	}
-
-	return Scene;
 }

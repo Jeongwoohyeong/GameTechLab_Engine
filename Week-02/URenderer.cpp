@@ -22,6 +22,8 @@ bool URenderer::Initialize(HWND hWnd)
 	{
 		return false;
 	}
+
+	CurrentScene.Initialize();
 	
 	// TODO 
 	//Shape = new ShapeData();
@@ -57,6 +59,19 @@ void URenderer::Render()
 	localCube->Render(this);
 
 	worldGizmo->Render(this);
+
+	// 씬 렌더링
+	/*for (UPrimitiveComponent* Primitive : CurrentScene.Primitives)
+	{
+		if (Primitive.Component == nullptr)
+		{
+			continue;
+		}
+		FMatrix world = FMatrix::Identity();
+		world = world * prim.Component->Transform.GetTransformMatrix();
+		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(world));
+		prim.Component->Render(Device->DeviceContext);
+	}*/
 
 	UI.ObjectControlUI(&localCube->Transform);
 
