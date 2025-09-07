@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Gizmo.h"
-#include <vector>
 
 // 전방 선언
 class URenderer;
@@ -31,8 +30,6 @@ private:
         const FVertexSimple& AxisYColor);
 
 private:
-    FTransform Transform;
-
     std::vector<FVertexSimple> xzGridVertices;
     std::vector<unsigned int>  xzGridIndices;
 
