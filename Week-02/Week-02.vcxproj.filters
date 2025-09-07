@@ -31,6 +31,9 @@
     <Filter Include="헤더 파일\Wrapping">
       <UniqueIdentifier>{eda3a8f1-402a-4a87-8a67-76ca986326b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SimpleJSON">
+      <UniqueIdentifier>{20fe9c19-d904-4ee5-9f52-1305ce8dd846}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGui\imgui.cpp">
@@ -94,6 +97,12 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="UCubeComp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneSerializer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UScene.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -184,6 +193,15 @@
     </ClInclude>
     <ClInclude Include="UPrimitiveTypes.h">
       <Filter>헤더 파일\Shape</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneSerializer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleJSON\json.hpp">
+      <Filter>SimpleJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="UScene.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

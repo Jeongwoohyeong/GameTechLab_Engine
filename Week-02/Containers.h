@@ -2,6 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <string>
 
 ////////////////////////////////////////////////////
 //
@@ -31,3 +32,5 @@ using TSet = std::unordered_set<T>;
 
 template<typename T1, typename T2>
 using TPair = std::pair<T1, T2>;
+
+using FString = std::string;
