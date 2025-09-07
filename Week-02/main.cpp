@@ -8,7 +8,7 @@
 #include "UPrimitiveComponent.h"
 #include "CameraInputMove.h"
 #include "UCamera.h"
-#include "CSceneSerializer.h"
+#include "CScene.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -59,8 +59,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if (renderer.Initialize(hWnd))
 	{
-		FScene Scene = CSceneSerializer::Parse("Default");
-		CSceneSerializer::Serialize("AutoSave", Scene);
+		CScene scene;
+		scene.Initialize();
+		scene.Load("Default");
+		scene.Save("AutoSave");
 
 		bool bIsExit = false;
 		while (bIsExit == false)

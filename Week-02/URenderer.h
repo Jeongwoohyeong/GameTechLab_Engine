@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
+#include "CScene.h"
 
 class UD3dDevice;
 class UShader;
@@ -36,5 +37,7 @@ private:
 	ID3D11RasterizerState* RasterizerState = nullptr;	
 	UUIManager UI = {};
 
+	// TODO: WorldGizmo 인터페이스 호환되지 않는 문제 해결해야 함
+	// WorldGizmo* worldGizmo = nullptr;
 	
 };

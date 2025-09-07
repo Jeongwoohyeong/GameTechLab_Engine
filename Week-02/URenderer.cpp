@@ -38,9 +38,11 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}
 
+	/*worldGizmo = new WorldGizmo();
+	worldGizmo->Initialize(this);*/
+
 	UCamera::GetInstance().Init();
 		
-
 	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
 
 	return true;
@@ -59,6 +61,8 @@ void URenderer::Render()
 
 	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
 	UI.ObjectControlUI(Primitives->GetTransform());
+
+	// worldGizmo->Render(this);
 
 	Device->EndScene();
 }
