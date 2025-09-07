@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "UPrimitiveComponent.h"
+#include "Types.h"
+
 
 class UCubeComp :public UPrimitiveComponent
 {
@@ -8,7 +10,11 @@ public:
 	~UCubeComp() override {};
 	
 	virtual EPrimitiveType GetPrimitiveType() override;
+	virtual void RenderPrimitive(ID3D11DeviceContext*) override;
 
 private:
 	EPrimitiveType Type;
+	uint32 IndexCount;
+	uint32 Offset;
+	uint32 Stride;
 };

@@ -4,7 +4,7 @@
 // ===== 8개 꼭짓점 (LH, +Z가 앞) =====
 // v0: (-,-,-)  v1: (+,-,-)  v2: (+,+,-)  v3: (-,+,-)
 // v4: (-,-,+)  v5: (+,-,+)  v6: (+,+,+)  v7: (-,+,+)
-FVertexSimple GCubeVertices[] =
+static FVertexSimple GCubeVertices[] =
 {
     { -0.5f, -0.5f, -0.5f, 1,0,0,1 }, // v0
     {  0.5f, -0.5f, -0.5f, 0,1,0,1 }, // v1
@@ -25,7 +25,7 @@ FVertexSimple GCubeVertices[] =
 // Top(+Y):    v3 v2 v6 v7
 // Bottom(-Y): v0 v4 v5 v1
 // (삼각형은 (0,1,2), (0,2,3) 패턴)
-UINT GCubeIndices[] =
+static UINT GCubeIndices[] =
 {
     // Front (+Z)
     4, 5, 6,   4, 6, 7,

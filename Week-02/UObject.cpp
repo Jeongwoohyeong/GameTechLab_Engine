@@ -4,6 +4,11 @@
 
 TArray<UObject*> GUObjectArray;
 
+UObject::UObject()
+{
+
+}
+
 void* UObject::operator new(size_t size)
 {
 	void* ptr = malloc(size);
