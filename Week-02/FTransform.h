@@ -31,7 +31,7 @@ public:
 	const FVector& GetRotationRadians() const { return Rotation; }
 	FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
-	const FMatrix& GetInverseMatrix();
+	bool TryGetInverseMatrix(FMatrix& Out);
 	FMatrix& GetTransformMatrix();
 private:
 
@@ -43,5 +43,6 @@ private:
 	FVector Location;	
 
 	// 트랜스폼 변경 검사
-	bool isDirty;
+	bool bIsTransformDirty;
+	bool bIsInverseDirty;
 };

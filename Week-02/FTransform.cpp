@@ -7,7 +7,8 @@ FTransform::FTransform()
 	Rotation = FVector(0.0f, 0.0f, 0.0f);
 	Location = FVector(0.0f, 0.0f, 0.0f);
 	Inverse = {};
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 FTransform::~FTransform()
@@ -18,35 +19,40 @@ void FTransform::SetScale(float x, float y, float z)
 {
 	Scale = FVector(x, y, z);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetScale(const FVector& scale)
 {
 	Scale = FVector(scale.X, scale.Y, scale.Z);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetRotationX(float degree)
 {
 	Rotation.X = DegToRad(degree);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetRotationY(float degree)
 {
 	Rotation.Y = DegToRad(degree);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetRotationZ(float degree)
 {
 	Rotation.Z = DegToRad(degree);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetRotation(const FVector& degrees)
@@ -55,56 +61,64 @@ void FTransform::SetRotation(const FVector& degrees)
 	this->SetRotationY(degrees.Y);
 	this->SetRotationZ(degrees.Z);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::AddRotationX(float degree)
 {
 	Rotation.X += DegToRad(degree);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::AddRotationY(float degree)
 {
 	Rotation.Y += DegToRad(degree);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::AddRotationZ(float degree)
 {
 	Rotation.Z += DegToRad(degree);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetLocation(float x, float y, float z)
 {
 	Location = FVector(x, y, z);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::SetLocation(const FVector& location)
 {
 	Location = FVector(location.X, location.Y, location.Z);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::Translate(float dx = 0.0f, float dy = 0.0f, float dz = 0.0f)
 {
 	Location = Location + FVector(dx, dy, dz);
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 void FTransform::Translate(const FVector& offset)
 {
 	Location = Location + offset;
 
-	isDirty = true;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
 }
 
 FVector FTransform::GetRotationDegree() const
@@ -116,26 +130,45 @@ FVector FTransform::GetRotationDegree() const
 	);
 }
 
-const FMatrix& FTransform::GetInverseMatrix()
+bool FTransform::TryGetInverseMatrix(FMatrix& Out)
 {
-	if (isDirty)
+	// Rotation은 정규직교 보장된다고 가정
+	// 스케일 값 중 절댓값 MATH_EPSILON 이하가 있으면 역행렬 계산 불가
+	bool bCheckX = (Scale.X > MATH_EPSILON || Scale.X < -MATH_EPSILON);
+	bool bCheckY = (Scale.Y > MATH_EPSILON || Scale.Y < -MATH_EPSILON);
+	bool bCheckZ = (Scale.Z > MATH_EPSILON || Scale.Z < -MATH_EPSILON);
+	if (!(bCheckX && bCheckY && bCheckZ))
 	{
-		FMatrix scaleMatrix = FMatrix::MakeScale(Scale);
-		FMatrix rotationMatrix = FMatrix::MakeRotation(Rotation);
-		FMatrix translationMatrix = FMatrix::MakeTranslation(Location);
-
-		Inverse = translationMatrix * rotationMatrix * scaleMatrix;
-
-		isDirty = false;
+		return false;
 	}
 
-	return Inverse;
+	FMatrix Result = FMatrix::Identity();
+	if (bIsInverseDirty)
+	{
+		FMatrix InvScaleMatrix = FMatrix::Identity();
+		InvScaleMatrix[0][0] = 1.0f / Scale.X;
+		InvScaleMatrix[1][1] = 1.0f / Scale.Y;
+		InvScaleMatrix[2][2] = 1.0f / Scale.Z;
+		FMatrix InvRotationMatrix = FMatrix::MakeRotation(Rotation);
+		InvRotationMatrix = FMatrix::Transpose(InvRotationMatrix);
+		FMatrix InvTranslationMatrix = FMatrix::Identity();
+		InvTranslationMatrix[3][0] = -Location.X;
+		InvTranslationMatrix[3][1] = -Location.Y;
+		InvTranslationMatrix[3][2] = -Location.Z;
+
+		Inverse = InvTranslationMatrix * InvRotationMatrix * InvScaleMatrix;
+		bIsInverseDirty = false;
+
+		Out = Inverse;
+	}
+
+	return true;
 }
 
 FMatrix& FTransform::GetTransformMatrix()
 {
 	// SRT중 하나라도 변경되면 행렬 연산
-	if (isDirty)
+	if (bIsTransformDirty)
 	{
 		FMatrix scaleMatrix = FMatrix::MakeScale(Scale);
 		FMatrix rotationMatrix = FMatrix::MakeRotation(Rotation);
@@ -143,7 +176,7 @@ FMatrix& FTransform::GetTransformMatrix()
 
 		Transform = scaleMatrix * rotationMatrix * translationMatrix;
 
-		isDirty = false;
+		bIsTransformDirty = false;
 	}
 
 	return Transform;
