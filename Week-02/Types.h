@@ -5,7 +5,7 @@
 //	
 //
 //		래핑 모음
-//
+//		자료형, 동적할당 연산자
 //
 //
 //
@@ -23,3 +23,20 @@ using int32 = int;
 using uint32 = unsigned int;
 
 
+////////////////////////////////////////////////////
+//
+//			연산자
+//
+////////////////////////////////////////////////////
+
+inline void* operator new(size_t size)
+{
+	void* ptr;
+	ptr = malloc(size);
+	return ptr;
+}
+
+inline void operator delete(void* p)
+{
+	free(p);
+}
