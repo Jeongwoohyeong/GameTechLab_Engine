@@ -17,6 +17,9 @@ public:
 	void RenderMesh(UINT vertexStride, UINT indicesCount, DXGI_FORMAT format);
 	FTransform* GetTransform() { return &Transform; }
 
+	// 임시로 추가, gizmo에서 사용
+	bool CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, UINT byteWidth);
+	bool CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, UINT byteWidth);
 private:
 	bool CreateVertexBuffer(const void* vertices);
 	bool CreateIndexBuffer(const void* indices);

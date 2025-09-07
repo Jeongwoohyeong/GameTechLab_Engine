@@ -1,4 +1,4 @@
-﻿// © 2024 KRAFTON, Inc. ALL RIGHTS RESERVED.
+// © 2024 KRAFTON, Inc. ALL RIGHTS RESERVED.
 
 #pragma once
 

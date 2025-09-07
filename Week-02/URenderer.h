@@ -8,6 +8,9 @@ class UMesh;
 struct ID3D11RasterizerState;
 class UCamera;
 
+class ShapeData;
+class WorldGizmo;
+
 class URenderer
 {
 public:
@@ -25,6 +28,10 @@ private:
 	UD3dDevice* Device = nullptr;;
 	UShader* Shader = nullptr;;
 	UMesh* Mesh= nullptr;
+
+	ShapeData* Shape = nullptr;
+	WorldGizmo* worldGizmo = nullptr;
+	
 	ID3D11RasterizerState* RasterizerState = nullptr;	
 	UUIManager UI = {};
 };

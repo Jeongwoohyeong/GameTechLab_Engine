@@ -70,6 +70,28 @@ bool UMesh::CreateVertexBuffer(const void* vertices)
 	return true;
 }
 
+bool UMesh::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, UINT byteWidth)
+{
+	HRESULT result;
+
+	D3D11_BUFFER_DESC vertexBufferDesc = {};
+	vertexBufferDesc.ByteWidth = byteWidth;
+	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { vertices };
+
+	result = Device->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &verticesBuffer);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
 bool UMesh::CreateIndexBuffer(const void* indices)
 {
 	HRESULT hr;
@@ -84,6 +106,29 @@ bool UMesh::CreateIndexBuffer(const void* indices)
 	indexBufferSRD.pSysMem = indices;
 
 	hr = Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &IndexBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+
+bool UMesh::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, UINT byteWidth)
+{
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.ByteWidth = byteWidth;
+	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBufferSRD = { indices };
+
+	hr = Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &indicesBuffer);
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);

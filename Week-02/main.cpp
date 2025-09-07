@@ -5,6 +5,7 @@
 #pragma comment(lib, "d3dcompiler")
 
 #include "URenderer.h"
+#include "UPrimitiveComponent.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -46,6 +47,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		nullptr, nullptr, hInstance, nullptr);
 
 	URenderer renderer;
+	UPrimitiveComponent* Cube = new UPrimitiveComponent();
+
 	if (renderer.Initialize(hWnd))
 	{
 		bool bIsExit = false;

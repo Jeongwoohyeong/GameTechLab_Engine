@@ -6,6 +6,9 @@
 #include "UMesh.h"
 #include "Cube.h"
 
+#include "ShapeData.h"
+#include "WorldGizmo.h"
+
 URenderer::URenderer()
 {	
 	
@@ -31,6 +34,13 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}
 
+	Shape = new ShapeData();
+	Shape->Initialize(*Mesh);
+	
+	worldGizmo = new WorldGizmo();
+	worldGizmo->Initialize();
+	
+
 	if (!this->CreateRasterizerState())
 	{
 		return false;
@@ -38,7 +48,6 @@ bool URenderer::Initialize(HWND hWnd)
 
 	UCamera::GetInstance().Init();
 		
-
 	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
 
 	return true;
