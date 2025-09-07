@@ -349,4 +349,20 @@ inline float RadToDeg(float Radian)
 inline FVector RadToDeg(const FVector& Radian)
 {
 	return Radian * Math::RadToDeg;
+
+}
+
+inline FVector ToFVector3(const FVector4& V4)
+{
+    return FVector(V4.X, V4.Y, V4.Z);
+}
+
+inline FVector4 operator*(const FVector4& V, const FMatrix& M)
+{
+	FVector4 Result;
+	Result.X = V.X * M.M[0][0] + V.Y * M.M[1][0] + V.Z * M.M[2][0] + V.W * M.M[3][0];
+	Result.Y = V.X * M.M[0][1] + V.Y * M.M[1][1] + V.Z * M.M[2][1] + V.W * M.M[3][1];
+	Result.Z = V.X * M.M[0][2] + V.Y * M.M[1][2] + V.Z * M.M[2][2] + V.W * M.M[3][2];
+	Result.W = V.X * M.M[0][3] + V.Y * M.M[1][3] + V.Z * M.M[2][3] + V.W * M.M[3][3];
+	return Result;
 }
