@@ -5,8 +5,6 @@
 class CSceneSerializer
 {
 public:
-	CSceneSerializer() = default;
-
-	void SaveScene(const FString& Name, const FScene& Scene);
-	FScene LoadScene(const FString& Name);
+	static void SaveScene(const FString& Name, const FScene& Scene);
+	static FScene LoadScene(const FString& Name);
 };
