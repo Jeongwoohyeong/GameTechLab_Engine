@@ -1,12 +1,14 @@
 ﻿#include "CSceneSerializer.h"
 #include "SimpleJSON/json.hpp"
 
-void CSceneSerializer::SaveScene(const FString& Filepath, const UScene& Scene)
+void CSceneSerializer::SaveScene(const FString& Name, const FScene& Scene)
 {
-
+    
 }
 
-UScene CSceneSerializer::LoadScene(const FString& Filepath)
+FScene CSceneSerializer::LoadScene(const FString& Name)
 {
-	return UScene();
+	FScene scene;
+
+    return scene;
 }
