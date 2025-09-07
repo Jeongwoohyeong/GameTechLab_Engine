@@ -20,7 +20,7 @@ FMatrix UCamera::MakeMVP(const FMatrix& World)
 	return World * View * Projection;
 }
 
-// 클라이언트 화면 상에서의 커서 좌표를 이용해 3D 공간상의 레이를 만年求.
+// 클라이언트 화면 상에서의 커서 좌표를 이용해 3D 공간상의 레이를 만든다
 FRay UCamera::CastRay(int ClientX, int ClientY, int ClientWidth, int ClientHeight)
 {
 	// 클라이언트 좌표계: 좌상단 (0,0) ~ 우하단 (width,height)
