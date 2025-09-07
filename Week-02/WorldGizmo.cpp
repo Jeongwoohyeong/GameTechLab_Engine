@@ -1,11 +1,12 @@
 ﻿#include "WorldGizmo.h"
-#include "UMesh.h"
 #include "URenderer.h"
 #include "UCamera.h"
 
-void WorldGizmo::Initialize(UMesh InMesh)
+void WorldGizmo::Initialize(URenderer* renderer)
 {
-    Transform.SetRotationDeg({ 0.0f, 0.0f, 0.0f });
+	Transform.SetLocation(FVector(0.0f, 0.0f, 0.0f));
+	Transform.SetScale(FVector(1.0f, 1.0f, 1.0f));
+    Transform.SetRotationDeg(FVector(0.0f, 0.0f, 0.0f));
 
     // XZ 평면 그리드 + Y축 기즈모 생성
     BuildGridXZwithYaxis(
@@ -24,24 +25,38 @@ void WorldGizmo::Initialize(UMesh InMesh)
     gridVerticesBuffer = nullptr;
     gridIndicesBuffer = nullptr;
 
-    InMesh.CreateVertexBuffer(gridVerticesBuffer,
+    renderer->CreateVertexBuffer(gridVerticesBuffer,
         xzGridVertices.data(),
         static_cast<unsigned int>(xzGridVertices.size() * sizeof(FVertexSimple)));
 
-    InMesh.CreateIndexBuffer(gridIndicesBuffer,
+    renderer->CreateIndexBuffer(gridIndicesBuffer,
         xzGridIndices.data(),
         static_cast<unsigned int>(xzGridIndices.size() * sizeof(unsigned int)));
 }
 
 void WorldGizmo::Render(URenderer* renderer)
 {
-    renderer->SetTopologyR(true); // 선으로 렌더링
+    renderer->SetTopology(true); // 선으로 렌더링
     renderer->UpdateConstantR(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
-    renderer->RenderMeshR(gridVerticesBuffer,
+    renderer->RenderMesh(gridVerticesBuffer,
         static_cast<unsigned int>(xzGridVertices.size()),
         gridIndicesBuffer,
         static_cast<unsigned int>(xzGridIndices.size()),
         sizeof(FVertexSimple));
+}
+
+void WorldGizmo::Release()
+{
+    if (gridVerticesBuffer)
+    {
+        gridVerticesBuffer->Release();
+        gridVerticesBuffer = nullptr;
+    }
+    if (gridIndicesBuffer)
+    {
+        gridIndicesBuffer->Release();
+        gridIndicesBuffer = nullptr;
+	}
 }
 
 void WorldGizmo::BuildGridXZwithYaxis(

@@ -1,12 +1,11 @@
-﻿#pragma once
+#pragma once
 #include <d3d11.h>
 #include "UUIManager.h"
 #include "Math.h"
 
 class UD3dDevice;
 class UShader;
-class UMesh;
-struct ID3D11RasterizerState;
+class ID3D11RasterizerState;
 class UCamera;
 
 class ShapeData;
@@ -21,9 +20,12 @@ public:
 	bool Initialize(HWND hWnd);
 	void Render();
 	void Release();
-	bool CreateRasterizerState();
 
-	void SetTopologyR(bool isLine);
+	bool CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, unsigned int byteWidth);
+	bool CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, unsigned int byteWidth);
+	
+	void SetTopology(bool isLine);
+
 	void UpdateConstantR(const FMatrix& mvp);
 	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
 

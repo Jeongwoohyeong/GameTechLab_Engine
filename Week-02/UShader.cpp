@@ -1,4 +1,4 @@
-#include <d3d11.h>
+﻿#include <d3d11.h>
 #include <d3dcompiler.h>
 #include "UShader.h"
 
@@ -84,8 +84,12 @@ bool UShader::CreateVertexShader()
 		return false;
 	}
 
-	Device->CreateVertexShader(vertexShaderCSO->GetBufferPointer(), 
-		vertexShaderCSO->GetBufferSize(), nullptr, &VertexShader);
+	Device->CreateVertexShader(
+		vertexShaderCSO->GetBufferPointer(), 
+		vertexShaderCSO->GetBufferSize(), 
+		nullptr, 
+		&VertexShader
+	);
 	
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{

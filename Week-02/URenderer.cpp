@@ -2,7 +2,6 @@
 #include "UD3dDevice.h"
 #include "UShader.h"
 #include "UCamera.h"
-#include "UMesh.h"
 #include "Cube.h"
 
 #include "ShapeData.h"
@@ -24,25 +23,13 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}
 	
-	Mesh = new UMesh(Device->GetDeivce(), Device->GetDeviceContext());
-	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices,
-		sizeof(GCubeVertices), 
-		sizeof(GCubeIndices), 
-		sizeof(GCubeVertices) / sizeof(FVertexSimple)))
-	{		
-		return false;
-	}
-
+	// TODO 
 	//Shape = new ShapeData();
 	//Shape->Initialize(*Mesh);
 	
+	// TODO 
 	worldGizmo = new WorldGizmo();
-	worldGizmo->Initialize(*Mesh);
-	
-	if (!this->CreateRasterizerState())
-	{
-		return false;
-	}
+	worldGizmo->Initialize(this);
 
 	UCamera::GetInstance().Init();
 		
@@ -60,9 +47,9 @@ void URenderer::Render()
 
 	// Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
 
-	/*FMatrix worldMatrix = FMatrix::Identity();
-	worldMatrix = worldMatrix * Mesh->GetTransform()->GetTransformMatrix();
-	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));*/
+	FMatrix worldMatrix = FMatrix::Identity();
+	// worldMatrix = worldMatrix * GetTransform()->GetTransformMatrix();
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
 
 	// UI.ObjectControlUI(Mesh->GetTransform());
 
@@ -81,18 +68,18 @@ void URenderer::Release()
 		RasterizerState = nullptr;
 	}
 
-	if (Mesh)
-	{
-		Mesh->Release();
-		delete Mesh;
-		Mesh = nullptr;
-	}
-
 	if (Shader)
 	{
 		Shader->Release();
 		delete Shader;
 		Shader = nullptr;
+	}
+
+	if (worldGizmo)
+	{
+		worldGizmo->Release();
+		delete worldGizmo;
+		worldGizmo = nullptr;
 	}
 
 	if (Device)
@@ -101,27 +88,6 @@ void URenderer::Release()
 		delete Device;
 		Device = nullptr;
 	}	
-}
-
-bool URenderer::CreateRasterizerState()
-{
-	HRESULT result;
-	D3D11_RASTERIZER_DESC rasterizerDesc = {};
-	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizerDesc.CullMode = D3D11_CULL_BACK;
-	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
-	if (FAILED(result))
-	{
-		MessageBox(nullptr, L"rasterizerstate create fail,", L"error", MB_OK);
-		return false;
-	}
-
-	return true;
-}
-
-void URenderer::SetTopologyR(bool isLine)
-{
-	Mesh->SetTopology(isLine);
 }
 
 void URenderer::UpdateConstantR(const FMatrix& mvp)
@@ -133,19 +99,75 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 {
 	unsigned int offset = 0; // 버퍼 오프셋 초기화
 	// 정점 버퍼 설정
-	Device.
-DeviceContext.IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
+	Device->DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
 
 	if (IndexBuffer)
 	{
 		// 인덱스 버퍼 설정
-		DeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		Device->DeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		// 드로우 콜 (인덱스 버퍼 사용)
-		DeviceContext->DrawIndexed(IndexCount, 0, 0); // 인덱스 수와 시작 인덱스 설정
+		Device->DeviceContext->DrawIndexed(IndexCount, 0, 0); // 인덱스 수와 시작 인덱스 설정
 	}
 	else
 	{
 		// 인덱스 버퍼가 없을 때 드로우 콜
-		DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
+		Device->DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
+	}
+}
+
+bool URenderer::CreateVertexBuffer(ID3D11Buffer* verticesBuffer, const void* vertices, unsigned int byteWidth)
+{
+	HRESULT result;
+
+	D3D11_BUFFER_DESC vertexBufferDesc = {};
+	vertexBufferDesc.ByteWidth = byteWidth;
+	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { vertices };
+
+	result = Device->Device->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &verticesBuffer);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+bool URenderer::CreateIndexBuffer(ID3D11Buffer* indicesBuffer, const void* indices, unsigned int byteWidth)
+{
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.ByteWidth = byteWidth;
+	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBufferSRD = { indices };
+
+	hr = Device->Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &indicesBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+
+void URenderer::SetTopology(bool isLine)
+{
+	if (isLine)
+	{
+		Device->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	}
+	else
+	{
+		Device->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 }

@@ -2,9 +2,8 @@
 #include<d3d11.h>
 
 #include "FVertexStruct.h"
-
 #include "Cube.h"
-#include "Sphere.h"
+#include "URenderer.h"
 
 class ShapeData
 {
@@ -15,26 +14,22 @@ private:
 	UINT numVerticesSphere;
 
 	// 정점 버퍼 생성
-	ID3D11Buffer* vertexBufferCube;
-	ID3D11Buffer* vertexBufferCylinder;
-	ID3D11Buffer* vertexBufferCone;
-	ID3D11Buffer* vertexBufferSphere;
+	static ID3D11Buffer* vertexBufferCube;
+	static ID3D11Buffer* vertexBufferCylinder;
+	static ID3D11Buffer* vertexBufferCone;
+	static ID3D11Buffer* vertexBufferSphere;
 
 	// 인덱스 버퍼 생성
-	ID3D11Buffer* indexBufferCube;
-	ID3D11Buffer* indexBufferCylinder;
-	ID3D11Buffer* indexBufferCone;
+	static ID3D11Buffer* indexBufferCube;
+	static ID3D11Buffer* indexBufferCylinder;
+	static ID3D11Buffer* indexBufferCone;
 
 public :
-	void Initialize()
+	void Initialize(URenderer* renderer)
 	{
 		numVerticesCube = sizeof(GCubeVertices) / sizeof(FVertexSimple);
-		numVerticesSphere = sizeof(GSphereVertices) / sizeof(FVertexSimple);
-
-		 mesh.CreateVertexBuffer(vertexBufferCube, GCubeVertices, sizeof(GCubeVertices));
-		 mesh.CreateVertexBuffer(vertexBufferSphere, GSphereVertices, sizeof(GSphereVertices));
-
-		 mesh.CreateIndexBuffer(indexBufferCube, GCubeIndices, sizeof(GCubeIndices));
+		renderer->CreateVertexBuffer(vertexBufferCube, GCubeVertices, sizeof(GCubeVertices));
+		renderer->CreateIndexBuffer(indexBufferCube, GCubeIndices, sizeof(GCubeIndices));
 	}
 };
 

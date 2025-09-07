@@ -3,7 +3,7 @@
 #include "UPrimitiveComponent.h"
 
 
-class Gizmo : public UPrimitiveComponent
+class Gizmo
 {
 };
 

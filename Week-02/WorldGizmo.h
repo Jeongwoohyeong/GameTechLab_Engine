@@ -12,8 +12,9 @@ public:
     WorldGizmo() = default;
     ~WorldGizmo() = default;
 
-    void Initialize(UMesh InMesh);
+    void Initialize(URenderer* renderer);
     void Render(URenderer* renderer);
+	void Release(); 
 
 private:
     void BuildGridXZwithYaxis(
@@ -30,6 +31,8 @@ private:
         const FVertexSimple& AxisYColor);
 
 private:
+    FTransform Transform;
+
     std::vector<FVertexSimple> xzGridVertices;
     std::vector<unsigned int>  xzGridIndices;
 

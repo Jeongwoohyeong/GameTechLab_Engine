@@ -1,4 +1,4 @@
-﻿#include "FTransform.h"
+#include "FTransform.h"
 
 FTransform::FTransform()
 {
@@ -170,6 +170,7 @@ FMatrix& FTransform::GetTransformMatrix()
 	// SRT중 하나라도 변경되면 행렬 연산
 	if (bIsTransformDirty)
 	{
+		// SRT중 하나라도 변경되면 행렬 연산
 		FMatrix scaleMatrix = FMatrix::MakeScale(Scale);
 		FMatrix rotationMatrix = FMatrix::MakeRotation(Rotation);
 		FMatrix translationMatrix = FMatrix::MakeTranslation(Location);

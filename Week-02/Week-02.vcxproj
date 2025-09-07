@@ -143,7 +143,6 @@
     <ClCompile Include="UCubeComp.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
     <ClCompile Include="UEngineStatics.cpp" />
-    <ClCompile Include="UMesh.cpp" />
     <ClCompile Include="UObject.cpp" />
     <ClCompile Include="UPrimitiveComponent.cpp" />
     <ClCompile Include="URenderer.cpp" />
@@ -181,7 +180,6 @@
     <ClInclude Include="UCubeComp.h" />
     <ClInclude Include="UD3dDevice.h" />
     <ClInclude Include="UEngineStatics.h" />
-    <ClInclude Include="UMesh.h" />
     <ClInclude Include="UObject.h" />
     <ClInclude Include="UPrimitiveComponent.h" />
     <ClInclude Include="UPrimitiveTypes.h" />

@@ -63,9 +63,6 @@
     <ClCompile Include="UD3dDevice.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="UMesh.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="URenderer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -153,9 +150,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="UD3dDevice.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="UMesh.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="URenderer.h">

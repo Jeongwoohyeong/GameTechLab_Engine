@@ -47,7 +47,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		nullptr, nullptr, hInstance, nullptr);
 
 	URenderer renderer;
-	UPrimitiveComponent* Cube = new UPrimitiveComponent();
+	// UPrimitiveComponent* Cube = new UPrimitiveComponent();
 	
 
 	if (renderer.Initialize(hWnd))
