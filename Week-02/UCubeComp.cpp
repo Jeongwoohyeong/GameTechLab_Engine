@@ -4,9 +4,15 @@
 #include "Cube.h" // 헤더 추가하면 오류 발생, 작성 완료 되면 주석 해제
 
 UCubeComp::UCubeComp()
-	:Type(EPrimitiveType::Cube), IndexCount(sizeof(GCubeIndices) / sizeof(uint32)), Stride(sizeof(FVertexSimple)), Offset(0)
+	:Type(EPrimitiveType::Cube)
 {
-
+	UPrimitiveComponent::Offset = 0;
+	UPrimitiveComponent::Stride = sizeof(FVertexSimple);
+	UPrimitiveComponent::Vertices = &GCubeVertices;
+	UPrimitiveComponent::Indices = &GCubeIndices;
+	UPrimitiveComponent::VertexByteWidth = sizeof(GCubeVertices);
+	UPrimitiveComponent::IndexByteWidth = sizeof(GCubeIndices);
+	UPrimitiveComponent::IndexCount = IndexByteWidth / sizeof(uint32);
 }
 
 EPrimitiveType UCubeComp::GetPrimitiveType()
@@ -16,9 +22,5 @@ EPrimitiveType UCubeComp::GetPrimitiveType()
 
 void UCubeComp::RenderPrimitive(ID3D11DeviceContext* deviceContext)
 {
-	UPrimitiveComponent::RenderPrimitive(deviceContext);
-
-	deviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
-	deviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	deviceContext->DrawIndexed(IndexCount, 0, 0);
+	UPrimitiveComponent::RenderPrimitive(deviceContext);	
 }

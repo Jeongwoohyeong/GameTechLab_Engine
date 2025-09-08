@@ -1,16 +1,13 @@
-#pragma once
-#include <d3d11.h>
+﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 
 class UD3dDevice;
 class UShader;
-class ID3D11RasterizerState;
+class UMesh;
+struct ID3D11RasterizerState;
 class UCamera;
-
-class ShapeData;
-class WorldGizmo;
-class LocalGizmo;
+class UPrimitiveComponent;
 
 class URenderer
 {
@@ -21,24 +18,17 @@ public:
 	bool Initialize(HWND hWnd);
 	void Render();
 	void Release();
+	bool CreateRasterizerState();
 
-	bool CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth);
-	bool CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indices, unsigned int byteWidth);
-	
-	void SetTopology(bool isLine);
-
-	void UpdateConstant(const FMatrix& mvp);
-	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
+private:
+	bool CreateVertexBuffer();
+	bool CreateIndexBuffer();
 
 private:
 	UD3dDevice* Device = nullptr;
 	UShader* Shader = nullptr;
-
-	ShapeData* Shape = nullptr;
-
-	LocalGizmo* localCube = nullptr;
-	WorldGizmo* worldGizmo = nullptr;
-	
+	UPrimitiveComponent* Primitives;
+	UMesh* Mesh= nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;	
 	UUIManager UI = {};
 };
