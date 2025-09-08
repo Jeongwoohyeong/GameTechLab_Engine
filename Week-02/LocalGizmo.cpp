@@ -50,11 +50,22 @@ void LocalGizmo::Render(URenderer* renderer)
         gizmoConeIndicesBuffer, static_cast<unsigned int>(coneIdx.size()),
         sizeof(FVertexSimple)
     );
-    //renderer->RenderMesh(
-    //    gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
-    //    gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
-    //    sizeof(FVertexSimple)
-    //);
+    renderer->RenderMesh(
+        gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
+        gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
+        sizeof(FVertexSimple)
+    );
+    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
+    renderer->RenderMesh(
+        gizmoConeVerticesBuffer, static_cast<unsigned int>(coneVerts.size()),
+        gizmoConeIndicesBuffer, static_cast<unsigned int>(coneIdx.size()),
+        sizeof(FVertexSimple)
+    );
+    renderer->RenderMesh(
+        gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
+        gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
+        sizeof(FVertexSimple)
+    );
 }
 
 void LocalGizmo::Release()
