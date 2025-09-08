@@ -22,8 +22,6 @@ bool URenderer::Initialize(HWND hWnd)
 	{
 		return false;
 	}
-
-	CurrentScene.Initialize();
 	
 	// TODO 
 	//Shape = new ShapeData();
