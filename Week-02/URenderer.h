@@ -24,6 +24,8 @@ public:
 	bool CreateCubeMesh();
 	// TODO: bool CreateSphereMesh();
 
+	void Resize(UINT, UINT);
+
 #pragma region Gizmo 사용, 추후 수정
 	bool CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth);
 	bool CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indices, unsigned int byteWidth);
@@ -48,11 +50,11 @@ public:
 private:
 	WorldGizmo* worldGizmo = nullptr;
 	UD3dDevice* Device = nullptr;
-	UShader* Shader = nullptr;	
-	ID3D11RasterizerState* RasterizerState = nullptr;	
+	UShader* Shader = nullptr;
+	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
 
 	// TODO: WorldGizmo 인터페이스 호환되지 않는 문제 해결해야 함
 	// WorldGizmo* worldGizmo = nullptr;
-	
+
 };

@@ -12,6 +12,7 @@ public:
 	void BeginScene(float r = 0.05f, float g = 0.05f, float b = 0.05f, float a = 1.0f);
 	void EndScene();
 	void SetRSState(ID3D11RasterizerState*);
+	void Resize(UINT, UINT);
 
 	ID3D11Device* GetDeivce() const { return Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }		

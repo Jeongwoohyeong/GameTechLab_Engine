@@ -115,7 +115,8 @@ void URenderer::Release()
 		Device->Release();
 		delete Device;
 		Device = nullptr;
-	}	
+	}
+
 }
 
 bool URenderer::CreateRasterizerState()
@@ -162,6 +163,16 @@ bool URenderer::CreateCubeMesh()
 	}
 
 	return false;
+}
+
+void URenderer::Resize(UINT width, UINT height)
+{
+	if (Device == nullptr)
+	{
+		return;
+	}
+
+	Device->Resize(width, height);
 }
 
 bool URenderer::CreateVertexBuffer(FMesh* Mesh)
