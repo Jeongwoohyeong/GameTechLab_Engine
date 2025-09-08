@@ -1,6 +1,6 @@
 ﻿#include "IntersectionTest.h"
 
-bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform& T)
+bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, FTransform T)
 {
     // 1. 월드좌표계 Ray를 로컬좌표계로 변환
     FMatrix InvMat;

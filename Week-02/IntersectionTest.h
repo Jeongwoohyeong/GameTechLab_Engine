@@ -22,4 +22,4 @@ struct FHit {
     FVector NormalWorld;// 월드 히트 노멀(옵션)
 };
 
-bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform& T);
+bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform T);
