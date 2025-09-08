@@ -100,19 +100,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			// TODO: Scene에 Update() 함수 만들어서 그 안에서 처리하기 (더 좋은 구조 있으면 그 쪽으로)
 			if (CInputManager::GetInstance().IsMouseBtnPressed(0)) // 왼쪽 버튼 클릭 시
 			{
-				uint32 PickedUUID = -1;
-				uint32 ClientW = CInputManager::GetInstance().GetClientW();
-				uint32 ClientH = CInputManager::GetInstance().GetClientH();
+				uint32 PickedUUID = -2;
+				int32 ClientW = CInputManager::GetInstance().GetClientW();
+				int32 ClientH = CInputManager::GetInstance().GetClientH();
 				POINT MousePos = CInputManager::GetInstance().GetMouseClientPos();
 				UPrimitiveComponent* PickedPrim = CScene::GetInstance().PickAtMouse(MousePos.x, MousePos.y, ClientW, ClientH, PickedUUID);
-				if (PickedUUID != -1 && PickedPrim)
+				if (PickedUUID != -2 && PickedPrim)
 				{
-					UE_LOG("Picked primitive UUID: %d", PickedUUID);
 					CScene::GetInstance().SetSelectedPrimitiveByUUID(PickedUUID);
 				}
 				else
 				{
-					UE_LOG("No primitive picked.");
+					UE_LOG("main.cpp: No primitive picked.");
 				}
 				
 			}

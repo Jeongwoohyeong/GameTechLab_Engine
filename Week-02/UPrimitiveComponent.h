@@ -7,6 +7,7 @@
 #include "IntersectionTest.h"
 #include "FMesh.h"
 #include "LocalGizmo.h"
+#include "UUIManager.h"
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
@@ -34,4 +35,5 @@ public:
 protected:
 	LocalGizmo Gizmo;
 	FAABB AABB;
+	bool bIsAABBCreated = false;
 };
