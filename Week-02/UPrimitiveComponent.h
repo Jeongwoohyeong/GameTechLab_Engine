@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "USceneComponent.h"
 #include "Types.h"
 #include "Math.h"
@@ -19,7 +19,7 @@ public:
 
 	inline uint32 GetVertexByteWidth() const { return VertexByteWidth; }
 	inline uint32 GetIndexByteWidth() const { return IndexByteWidth; }
-	inline uint32 GetVertexStride() const { return VertexStide; }
+	inline uint32 GetVertexStride() const { return VertexStride; }
 	inline uint32 GetIndexCount() const { return IndexCount; }
 	inline const void* GetVertices() const { return Vertices; }
 	inline const void* GetIndices() const { return Indices; }

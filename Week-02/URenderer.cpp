@@ -1,4 +1,4 @@
-#include <d3d11.h>
+﻿#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -66,7 +66,7 @@ void URenderer::Render()
 
 	// TODO: 모든 Primitive 렌더링은 Scene의 렌더링 함수 내에서 수행
 
-	UI.ObjectControlUI(&localCube->Transform);
+	// UI.ObjectControlUI(&localCube->Transform);
 
 	Device->EndScene();
 }
