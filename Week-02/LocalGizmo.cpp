@@ -2,6 +2,7 @@
 #include "URenderer.h"
 #include "Cone.h"
 #include "Cylinder.h"
+#include "Cube.h"
 
 void LocalGizmo::Initialize(URenderer* renderer)
 {
@@ -10,8 +11,8 @@ void LocalGizmo::Initialize(URenderer* renderer)
     Transform.SetRotationDeg({ 0,0,0 });
 
     // C 배열 → span으로 자동 래핑
-    coneVerts = std::span<FVertexSimple>(GConeVertices);
-    coneIdx = std::span<unsigned int>(GConeIndices);
+    coneVerts = std::span<FVertexSimple>(GCubeVertices);
+    coneIdx = std::span<unsigned int>(GCubeIndices);
     cylinderVerts = std::span<FVertexSimple>(GCylinderVertices);
     cylinderIdx = std::span<unsigned int>(GCylinderIndices);
 
@@ -43,17 +44,17 @@ void LocalGizmo::Initialize(URenderer* renderer)
 void LocalGizmo::Render(URenderer* renderer)
 {
     renderer->SetTopology(false);
-    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()), COLOR_G);
+    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
     renderer->RenderMesh(
         gizmoConeVerticesBuffer, static_cast<unsigned int>(coneVerts.size()),
         gizmoConeIndicesBuffer, static_cast<unsigned int>(coneIdx.size()),
         sizeof(FVertexSimple)
     );
-    renderer->RenderMesh(
-        gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
-        gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
-        sizeof(FVertexSimple)
-    );
+    //renderer->RenderMesh(
+    //    gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
+    //    gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
+    //    sizeof(FVertexSimple)
+    //);
 }
 
 void LocalGizmo::Release()
