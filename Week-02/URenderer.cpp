@@ -38,7 +38,7 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}*/
 
-	if (!this->CreateCubeMesh())
+	if (!this->CreateAllMesh())
 	{
 		return false;
 	}
@@ -122,6 +122,21 @@ bool URenderer::CreateRasterizerState()
 	return true;
 }
 
+bool URenderer::CreateAllMesh()
+{
+	if (!this->CreateCubeMesh())
+	{
+		return false;
+	}
+
+	if (!this->CreateSphereMesh())
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool URenderer::CreateCubeMesh()
 {
 	if (CubeMesh == nullptr)
@@ -142,6 +157,28 @@ bool URenderer::CreateCubeMesh()
 		}
 
 		if (!this->CreateIndexBuffer(CubeMesh))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool URenderer::CreateSphereMesh()
+{
+	if (SphereMesh == nullptr)
+	{
+		SphereMesh = new FMesh();
+		SphereMesh->Vertices = GSphereVertices;
+		SphereMesh->VertexByteWidth = sizeof(GSphereVertices);
+		SphereMesh->Offset = 0;
+		SphereMesh->Stride = sizeof(FVertexSimple);
+		SphereMesh->bUseIndexBuffer = false;
+
+		if (!this->CreateVertexBuffer(SphereMesh))
 		{
 			return false;
 		}
@@ -210,9 +247,18 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	// 드로우 콜
 	FMesh* Mesh = Primitive->GetMesh();
-	DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
-	DeviceContext->IASetIndexBuffer(Mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	DeviceContext->DrawIndexed(Mesh->IndexCount, 0, 0);
+
+	if (Mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
+		DeviceContext->IASetIndexBuffer(Mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(Mesh->IndexCount, 0, 0);
+	}
+	else
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
+		DeviceContext->Draw(Mesh->VertexByteWidth / Mesh->Stride, 0);
+	}
 
 	return true;
 }

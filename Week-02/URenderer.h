@@ -20,14 +20,15 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
-	bool CreateCubeMesh();
-	// TODO: bool CreateSphereMesh();
 
 private:
 	bool CreateVertexBuffer(FMesh* Mesh);
 	bool CreateIndexBuffer(FMesh* Mesh);
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
 
+	bool CreateAllMesh();
+	bool CreateCubeMesh();
+	bool CreateSphereMesh();
 	void ReleaseAllMesh();
 
 public:
