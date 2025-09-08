@@ -52,6 +52,7 @@ void URenderer::Render()
 
 	FMatrix worldMatrix = FMatrix::Identity();
 	worldMatrix = worldMatrix * localCube->Transform.GetTransformMatrix();
+	
 	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
 	localCube->Render(this);
 
