@@ -7,6 +7,12 @@
 class CScene
 {
 public:
+	static CScene& GetInstance()
+	{
+		static CScene Instance;
+		return Instance;
+	}
+
 	void New();
 	void Save(const FString& Name);
 	void Load(const FString& Name);

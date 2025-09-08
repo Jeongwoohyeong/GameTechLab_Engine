@@ -2,6 +2,7 @@
 #include "UUIManager.h"
 #include "FTransform.h"
 #include "UCamera.h"
+#include "CScene.h"
 
 void UUIManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
@@ -106,4 +107,29 @@ void UUIManager::ObjectControl()
 	float zf = UCamera::GetInstance().FarPlane;
 	if (ImGui::DragFloat("Far  (zf)", &zf, 1.0f, 10.0f, 100000.0f, "%.1f"))
 		UCamera::GetInstance().FarPlane = zf;
+
+	ImGui::Separator();
+
+	// Scene
+	CScene& scene = CScene::GetInstance();
+
+	// Scene Name 입력
+	static char sceneName[128] = "Default";
+	ImGui::InputText("Scene Name", sceneName, IM_ARRAYSIZE(sceneName));
+
+	// New Scene
+	if (ImGui::Button("New Scene"))
+	{
+		scene.New();
+	}
+	// Save Scene
+	if (ImGui::Button("Save Scene"))
+	{
+		scene.Save(sceneName);
+	}
+	// Load Scene
+	if (ImGui::Button("Load Scene"))
+	{
+		scene.Load(sceneName);
+	}
 }

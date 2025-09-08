@@ -36,7 +36,6 @@ private:
 	UShader* Shader = nullptr;
 
 	ShapeData* Shape = nullptr;
-	CScene CurrentScene = {};
 
 	LocalGizmo* localCube = nullptr;
 	WorldGizmo* worldGizmo = nullptr;

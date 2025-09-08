@@ -23,6 +23,8 @@ void CScene::New()
 		}
 	}
 	Primitives.clear();
+
+	UE_LOG("New scene created.");
 }
 
 static inline void EnsureScenesDirectory()
