@@ -20,7 +20,10 @@ private:
 	bool CreateDeviceAndSwapChain(HWND hWnd);
 	bool CreateFrameBuffer();
 	bool CreateRasterizerState();
-	
+
+	// depth stencil buffer & view & state
+	bool CreateDepthStencilBuffer();
+	bool CreateDepthStates();
 public:
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
@@ -30,4 +33,11 @@ private:
 	ID3D11Texture2D* FrameBuffer = nullptr;
 	ID3D11RenderTargetView* FrameBufferRTV = nullptr;
 	D3D11_VIEWPORT Viewport = {};
+
+	ID3D11Texture2D* DepthStencilBuffer = nullptr;
+	ID3D11DepthStencilView* DepthStencilView = nullptr;
+	ID3D11DepthStencilState* DepthStateOpaque = nullptr;     // 깊이 쓰기 ON
+
+	UINT BackBufferWidth = 0;
+	UINT BackBufferHeight = 0;
 };
