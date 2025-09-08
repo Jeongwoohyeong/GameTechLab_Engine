@@ -8,6 +8,7 @@
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
+class LocalGizmo;
 
 class UPrimitiveComponent :public USceneComponent
 {
@@ -36,6 +37,8 @@ public:
 	virtual void CreateAABB();
 
 protected:
+	std::unique_ptr<LocalGizmo> Gizmo;
+
 	const void* Vertices = nullptr;
 	const void* Indices = nullptr;
 	uint32 VertexByteWidth = 0;
