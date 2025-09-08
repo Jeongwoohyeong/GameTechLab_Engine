@@ -363,6 +363,20 @@ struct FMatrix
 
 		return Result;
 	}
+
+	static FMatrix MakeOrthographic(float left, float right, float bottom, float top, float nearZ, float farZ)
+	{
+		FMatrix Result = {};
+		Result.M[0][0] = (2.0f / (right - left));
+		Result.M[1][1] = (2.0f / (top - bottom));
+		Result.M[2][2] = (1.0f / (farZ - nearZ));
+		Result.M[3][3] = 1.0f;
+		Result.M[0][3] = -(right + left) / (right - left);
+		Result.M[1][3] = -(top + bottom) / (top - bottom);
+		Result.M[2][3] = -nearZ / (farZ - nearZ);
+
+		return Result;
+	}
 };
 
 inline float DegToRad(float Degree)
