@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Gizmo.h"
-
+#include <vector>
+#include "FVertexStruct.h"
 // 전방 선언
 class URenderer;
 struct ID3D11Buffer;

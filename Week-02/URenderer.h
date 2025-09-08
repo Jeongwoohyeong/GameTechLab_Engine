@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
@@ -9,6 +9,7 @@ class UShader;
 struct ID3D11RasterizerState;
 class UCamera;
 class UPrimitiveComponent;
+class WorldGizmo;
 
 class URenderer
 {
@@ -45,6 +46,7 @@ public:
 	static FMesh* SphereMesh;
 
 private:
+	WorldGizmo* worldGizmo = nullptr;
 	UD3dDevice* Device = nullptr;
 	UShader* Shader = nullptr;	
 	ID3D11RasterizerState* RasterizerState = nullptr;	

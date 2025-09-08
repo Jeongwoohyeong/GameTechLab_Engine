@@ -7,6 +7,7 @@
 #include "CScene.h"
 #include "Cube.h"
 #include "Sphere.h"
+#include "WorldGizmo.h"
 
 //ID3D11Buffer* URenderer::CubeVertexBuffer = nullptr;
 //ID3D11Buffer* URenderer::CubeIndexBuffer = nullptr;
@@ -52,9 +53,9 @@ bool URenderer::Initialize(HWND hWnd)
 	{
 		return false;
 	}	
-	
-	/*worldGizmo = new WorldGizmo();
-	worldGizmo->Initialize(this);*/
+
+	worldGizmo = new WorldGizmo();
+	worldGizmo->Initialize(this);
 
 	UCamera::GetInstance().Init();
 		
@@ -76,7 +77,7 @@ void URenderer::Render()
 		RenderPrimitive(Primitive);
 		Primitive->Render(this);
 	}
-
+	worldGizmo->Render(this);
 	// 선택된 프리미티브의 컨트롤 UI 표시
 	UI.ObjectControlUI(Primitives[0]->GetTransform());
 
@@ -96,7 +97,12 @@ void URenderer::Release()
 	}
 
 	ReleaseAllMesh();
-
+	if(worldGizmo)
+	{
+		worldGizmo->Release();
+		delete worldGizmo;
+		worldGizmo = nullptr;
+	}
 	if (Shader)
 	{
 		Shader->Release();
