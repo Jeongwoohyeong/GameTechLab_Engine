@@ -14,7 +14,7 @@ public:
 		UpdateKeyboardInput();
 		UpdateMouseDelta();
 		ApplyToCamera();
-	}	
+	}
 
 	HWND* hWnd = nullptr;
 	POINT CurMouseDelta = { 0, 0 };

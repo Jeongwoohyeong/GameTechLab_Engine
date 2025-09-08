@@ -22,4 +22,6 @@ struct FHit {
     FVector NormalWorld;// 월드 히트 노멀(옵션)
 };
 
-bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform T);
+bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform T); // 교차 여부만 검사
+
+bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform T, FHit& OutHit); // 교차 여부 및 히트 정보 반환

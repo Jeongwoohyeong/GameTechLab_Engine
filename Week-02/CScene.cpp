@@ -350,3 +350,41 @@ void CScene::Clear()
 	UUIDToPrimitive.clear();
 	SelectedPrimitive = nullptr;
 }
+
+UPrimitiveComponent* CScene::PickAtMouse(int ClientX, int ClientY, int ClientW, int ClientH, uint32& OutUUID)
+{
+	// 1) 카메라로부터 월드 레이 생성
+	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH);
+
+	// 2) 모든 프리미티브에 대해: 로컬 AABB + 컴포넌트 변환으로 교차검사
+	float BestT = FLT_MAX;
+	OutUUID = -1;
+	UPrimitiveComponent* BestPrim = nullptr;
+
+	for (const auto& Pair : UUIDToPrimitive)
+	{
+		uint32 UUID = Pair.first;
+		UPrimitiveComponent* Prim = Pair.second;
+		if (!Prim)
+		{
+			continue;
+		}
+
+		const FAABB aabbL = Prim->GetAABB(); // 로컬 AABB (버텍스 기반)
+		const FTransform Transform = *Prim->GetTransform();
+
+		FHit hit{};
+		if (CheckIntersectionRayBox(rayW, aabbL, Transform, hit))
+		{
+			if (hit.T >= 0.0f && hit.T < BestT)
+			{
+				BestT = hit.T;
+				OutUUID = UUID;
+				BestPrim = Prim;
+			}
+		}
+	}
+
+	SelectedPrimitive = BestPrim;
+	return BestPrim;
+}

@@ -96,12 +96,6 @@
     <ClCompile Include="UCubeComp.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="CSceneSerializer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="FScene.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="USphereComp.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -121,6 +115,15 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="CameraInputMove.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CScene.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FMesh.h">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="IntersectionTest.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,14 +212,8 @@
     <ClInclude Include="UPrimitiveTypes.h">
       <Filter>헤더 파일\Shape</Filter>
     </ClInclude>
-    <ClInclude Include="CSceneSerializer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SimpleJSON\json.hpp">
       <Filter>SimpleJSON</Filter>
-    </ClInclude>
-    <ClInclude Include="FScene.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="WorldGizmo.h">
       <Filter>헤더 파일</Filter>
@@ -240,6 +237,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="CameraInputMove.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CScene.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="IntersectionTest.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

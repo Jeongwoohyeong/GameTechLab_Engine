@@ -2,8 +2,7 @@
 #include "d3d11.h"
 #include "LocalGizmo.h"
 
-UPrimitiveComponent::UPrimitiveComponent()
-{}
+UPrimitiveComponent::UPrimitiveComponent() { }
 
 void UPrimitiveComponent::Initialize(URenderer* renderer)
 {
@@ -27,6 +26,14 @@ void UPrimitiveComponent::CreateAABB()
 
 	FMesh* Mesh = GetMesh();
 
+	if(Mesh == nullptr || Mesh->Vertices == nullptr || Mesh->VertexByteWidth == 0 || Mesh->Stride == 0)
+	{
+		UE_LOG("Warning: Cannot create AABB because Mesh or its vertex data is invalid.");
+		AABB.Min = Min;
+		AABB.Max = Max;
+		return;
+	}
+
 	const uint32 VertexCount = Mesh->VertexByteWidth / Mesh->Stride;
 	for (uint32 Offset = 0; Offset < Mesh->VertexByteWidth; Offset += Mesh->Stride)
 	{
@@ -45,4 +52,14 @@ void UPrimitiveComponent::CreateAABB()
 
 	AABB.Min = Min;
 	AABB.Max = Max;
+}
+
+FAABB UPrimitiveComponent::GetAABB()
+{
+	if (!bIsAABBCreated)
+	{
+		CreateAABB();
+		bIsAABBCreated = true;
+	}
+	return AABB;
 }

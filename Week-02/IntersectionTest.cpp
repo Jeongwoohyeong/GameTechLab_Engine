@@ -1,12 +1,11 @@
 ﻿#include "IntersectionTest.h"
 
-bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, FTransform T)
+static bool IntersectImpl(const FRay& Ray, const FAABB& LocalBox, FTransform T, FHit* OutHitOpt)
 {
     // 1. 월드좌표계 Ray를 로컬좌표계로 변환
     FMatrix InvMat;
     if (!T.TryGetInverseMatrix(InvMat))
         return false; // 스케일 중 0이 포함되어 있는 경우
-
 
     // Ray의 Origin 변환 (점)
     FVector4 OriginLocal4 = FVector4::MakePoint(Ray.Origin) * InvMat;
@@ -20,30 +19,56 @@ bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, FTransform 
     float TMin = -FLT_MAX;
     float TMax = FLT_MAX;
 
+    // 2. Slab Method로 AABB 교차 판정
     for (int Axis = 0; Axis < 3; ++Axis)
     {
         float Origin = (Axis == 0) ? OriginLocal.X : (Axis == 1) ? OriginLocal.Y : OriginLocal.Z;
-        float Direction = (Axis == 0) ? DirLocal.X : (Axis == 1) ? DirLocal.Y : DirLocal.Z;
-        float BoxMin = (Axis == 0) ? LocalBox.Min.X : (Axis == 1) ? LocalBox.Min.Y : LocalBox.Min.Z;
-        float BoxMax = (Axis == 0) ? LocalBox.Max.X : (Axis == 1) ? LocalBox.Max.Y : LocalBox.Max.Z;
+        float Dir = (Axis == 0) ? DirLocal.X : (Axis == 1) ? DirLocal.Y : DirLocal.Z;
+        float BMin = (Axis == 0) ? LocalBox.Min.X : (Axis == 1) ? LocalBox.Min.Y : LocalBox.Min.Z;
+        float BMax = (Axis == 0) ? LocalBox.Max.X : (Axis == 1) ? LocalBox.Max.Y : LocalBox.Max.Z;
 
-        if (fabs(Direction) < MATH_EPSILON)
+		// 박스 면에 평행한 경우
+        if (fabs(Dir) < MATH_EPSILON)
         {
-            // 박스 면에 평행하므로 박스 내부에 없으면 교차 X
-            if (Origin < BoxMin || Origin > BoxMax)
-                return false;
+            if (Origin < BMin || Origin > BMax)
+            {
+                return false; // 광선이 박스 바깥에 있으면 교차 X
+            }
+			continue; // 광선이 박스를 통과하지만 이 축에 대해서는 교차 X
         }
-        else
-        {
-			// T1: Origin에서 가까운 slab까지의 거리, T2: Origin에서 먼 slab까지의 거리
-            float T1 = (BoxMin - Origin) / Direction;
-            float T2 = (BoxMax - Origin) / Direction;
-            if (T1 > T2) std::swap(T1, T2);
 
-			TMin = std::max(TMin, T1); // Max of Min
-			TMax = std::min(TMax, T2); // Min of Max
-        }
+        float T1 = (BMin - Origin) / Dir;
+        float T2 = (BMax - Origin) / Dir;
+        if (T1 > T2) std::swap(T1, T2);
+
+        TMin = std::max(TMin, T1);
+        TMax = std::min(TMax, T2);
+        if (TMax < TMin) return false;
     }
 
-	return TMax >= TMin && TMax >= 0.0f;
+    if (TMax < 0.0f) return false; // 박스가 레이 뒤쪽
+
+    if (OutHitOpt)
+    {
+        FHit& Hit = *OutHitOpt;
+        Hit.TEnter = TMin;
+        Hit.TExit = TMax;
+        Hit.bIsInside = (TMin < 0.0f);
+        Hit.T = Hit.bIsInside ? TMax : TMin;
+
+        // 로컬 히트 포인트
+        Hit.PointLocal = OriginLocal + DirLocal * Hit.T;
+    }
+
+    return true;
+}
+
+bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform T)
+{
+    return IntersectImpl(Ray, LocalBox, T, nullptr);
+}
+
+bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& LocalBox, const FTransform T, FHit& OutHit)
+{
+    return IntersectImpl(Ray, LocalBox, T, &OutHit);
 }
