@@ -19,6 +19,7 @@ public:
 	void Load(const FString& Name);
 
 	void Spawn(EPrimitiveType Type, uint32 Count);
+	void DestroySelectedPrimitive();
 
 	TMap<uint32, UPrimitiveComponent*>& GetPrimitives() { return UUIDToPrimitive; }
 	UPrimitiveComponent* GetSelectedPrimitive() { return SelectedPrimitive; }
