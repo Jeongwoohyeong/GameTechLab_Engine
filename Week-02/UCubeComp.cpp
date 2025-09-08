@@ -6,8 +6,8 @@
 UCubeComp::UCubeComp()
 	:Type(EPrimitiveType::Cube)
 {
-	/*UPrimitiveComponent::VertexBuffer = URenderer::CubeVertexBuffer;
-	UPrimitiveComponent::IndexBuffer = URenderer::CubeIndexBuffer;*/
+	UPrimitiveComponent::VertexBuffer = URenderer::CubeVertexBuffer;
+	UPrimitiveComponent::IndexBuffer = URenderer::CubeIndexBuffer;
 	UPrimitiveComponent::Offset = 0;
 	UPrimitiveComponent::Stride = sizeof(FVertexSimple);
 	UPrimitiveComponent::Vertices = &GCubeVertices;

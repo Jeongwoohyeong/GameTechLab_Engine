@@ -58,6 +58,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// 씬 초기화
 	CScene::GetInstance().New();
+	// 큐브 하나 생성
+	CScene::GetInstance().Spawn(EPrimitiveType::Cube, 1);
 
 	if (renderer.Initialize(hWnd))
 	{

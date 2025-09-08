@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
@@ -31,8 +31,7 @@ public:
 
 private:
 	UD3dDevice* Device = nullptr;
-	UShader* Shader = nullptr;
-	UPrimitiveComponent* Primitives;	
+	UShader* Shader = nullptr;	
 	ID3D11RasterizerState* RasterizerState = nullptr;	
 	UUIManager UI = {};
 

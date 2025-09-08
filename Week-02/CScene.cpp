@@ -1,4 +1,4 @@
-#include "CScene.h"
+﻿#include "CScene.h"
 #include "UObject.h"
 #include "UEngineStatics.h"
 #include "SimpleJSON/json.hpp"
@@ -290,6 +290,20 @@ void CScene::Spawn(EPrimitiveType Type, uint32 Count)
 			NewComp->RelativeScale3D = FVector(1.0f, 1.0f, 1.0f);
 			Primitives.push_back(NewComp);
 			UE_LOG("Spawned %s with UUID %d", PrimitiveTypeToString(Type).c_str(), NewComp->UUID);
+		}
+	}
+}
+
+void CScene::Render(ID3D11DeviceContext* deviceContext)
+{
+	for (UPrimitiveComponent* Primitive : Primitives)
+	{
+		if (Primitive)
+		{
+			FMatrix World = FMatrix::Identity();
+			World = World * Primitive->GetTransform()->GetTransformMatrix();
+			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+			Primitives->RenderPrimitive();
 		}
 	}
 }

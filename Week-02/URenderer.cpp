@@ -4,6 +4,7 @@
 #include "UShader.h"
 #include "UCamera.h"
 #include "UCubeComp.h"
+#include "CScene.h"
 
 ID3D11Buffer* URenderer::CubeVertexBuffer = nullptr;
 ID3D11Buffer* URenderer::CubeIndexBuffer = nullptr;
@@ -27,7 +28,6 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}	
 
-	Primitives = new UCubeComp();
 	if (!this->CreateCubeBuffers())
 	{
 		return false;
@@ -36,7 +36,7 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!this->CreateRasterizerState())
 	{
 		return false;
-	}
+	}	
 
 	/*worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);*/
@@ -52,21 +52,25 @@ void URenderer::Render()
 {
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
-	FMatrix worldMatrix = FMatrix::Identity();
-	worldMatrix = worldMatrix * Primitives->GetTransform()->GetTransformMatrix();
-	
 	Shader->PrepareShader();
 	
-	Primitives->RenderPrimitive(Device->GetDeviceContext());
+	// 씬의 프리미티브 렌더링
+	TArray<UPrimitiveComponent*>& Primitives = CScene::GetInstance().GetPrimitives();
+	for (UPrimitiveComponent* Primitive : Primitives)
+	{
+		if (Primitive)
+		{
+			FMatrix World = FMatrix::Identity();
+			World = World * Primitive->GetTransform()->GetTransformMatrix();
+			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+			Primitive->RenderPrimitive(Device->GetDeviceContext());
+		}
+	}
 
-	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
-	UI.ObjectControlUI(Primitives->GetTransform());
+	// 선택된 프리미티브의 컨트롤 UI 표시
+	UI.ObjectControlUI(CScene::GetInstance().GetSelectedPrimitive()->GetTransform());
 
 	// worldGizmo->Render(this);
-
-	// TODO: 모든 Primitive 렌더링은 Scene의 렌더링 함수 내에서 수행
-
-	// UI.ObjectControlUI(&localCube->Transform);
 
 	Device->EndScene();
 }
@@ -81,12 +85,12 @@ void URenderer::Release()
 		RasterizerState = nullptr;
 	}
 
-	if (Primitives)
+	/*if (Primitives)
 	{
 		Primitives->Release();
 		delete Primitives;
 		Primitives = nullptr;
-	}
+	}*/
 
 	if (Shader)
 	{
@@ -125,13 +129,13 @@ bool URenderer::CreateCubeBuffers()
 	{
 		return false;
 	}
-	Primitives->SetVertexBuffer(CubeVertexBuffer);
+	/*Primitives->SetVertexBuffer(CubeVertexBuffer);*/
 
 	if (!this->CreateIndexBuffer(&CubeIndexBuffer))
 	{
 		return false;
 	}
-	Primitives->SetIndexBuffer(CubeIndexBuffer);
+	/*Primitives->SetIndexBuffer(CubeIndexBuffer);*/
 
 	return true;
 }
