@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "USceneComponent.h"
 #include "Types.h"
 #include "Math.h"
@@ -6,17 +6,21 @@
 #include "FTransform.h"
 #include "IntersectionTest.h"
 #include "FMesh.h"
+#include "LocalGizmo.h"
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
-class LocalGizmo;
+
+class URenderer;
 
 class UPrimitiveComponent :public USceneComponent
 {
 public:
 	UPrimitiveComponent();
-	virtual ~UPrimitiveComponent() {};
+	virtual ~UPrimitiveComponent() = default;
 
+	void Initialize(URenderer* renderer);
+	void Render(URenderer* renderer);
 	void Release();
 
 	inline FTransform* GetTransform() { return &Transform; }
@@ -27,7 +31,7 @@ public:
 	virtual void CreateAABB();
 
 protected:
-	std::unique_ptr<LocalGizmo> Gizmo;
+	LocalGizmo Gizmo;
 	FTransform Transform;
 	FAABB AABB;
 };

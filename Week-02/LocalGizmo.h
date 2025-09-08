@@ -21,6 +21,8 @@ struct axis
     FVector rotate;
 	FVector translate;
 };
+struct ID3D11Buffer;
+struct FVertexSimple;
 
 class LocalGizmo : public Gizmo
 {
@@ -42,9 +44,9 @@ public:
         {COLOR_B, ROTATE_Z, TRANSLATE_Z} // z
     };
 
-    void Initialize(URenderer* renderer);
-    void Render(URenderer* renderer);
-    void Release();
+    void Initialize(class URenderer* renderer, FTransform transform);
+    virtual void Render(class URenderer* renderer) override;
+    virtual void Release() override;
 
 private:
     FTransform UpdateGizmoTranformFromParent(axis a);

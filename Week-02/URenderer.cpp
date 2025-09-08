@@ -1,4 +1,4 @@
-#include <d3d11.h>
+﻿#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -37,6 +37,11 @@ bool URenderer::Initialize(HWND hWnd)
 	{
 		return false;
 	}*/
+	TArray<UPrimitiveComponent*>& Primitives = CScene::GetInstance().GetPrimitives();
+	for (UPrimitiveComponent* Primitive : Primitives)
+	{
+		Primitive->Initialize(this);
+	}
 
 	if (!this->CreateCubeMesh())
 	{
@@ -47,7 +52,7 @@ bool URenderer::Initialize(HWND hWnd)
 	{
 		return false;
 	}	
-
+	
 	/*worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);*/
 
@@ -69,6 +74,7 @@ void URenderer::Render()
 	for (UPrimitiveComponent* Primitive : Primitives)
 	{
 		RenderPrimitive(Primitive);
+		Primitive->Render(this);
 	}
 
 	// 선택된 프리미티브의 컨트롤 UI 표시
@@ -311,8 +317,8 @@ void URenderer::ReleaseAllMesh()
 	{
 		if (CubeMesh->IndexBuffer)
 		{
-			CubeMesh->IndexBuffer = nullptr;
 			CubeMesh->IndexBuffer->Release();
+			CubeMesh->IndexBuffer = nullptr;
 		}
 		if (CubeMesh->VertexBuffer)
 		{
@@ -323,19 +329,18 @@ void URenderer::ReleaseAllMesh()
 		delete CubeMesh;
 	}
 	if (SphereMesh)
-
 	{
 		if (SphereMesh->IndexBuffer)
 		{
 			SphereMesh->IndexBuffer->Release();
 			SphereMesh->IndexBuffer = nullptr;
-		if (SphereMesh->VertexBuffer)
 		}
+		if (SphereMesh->VertexBuffer)
 		{
 			SphereMesh->VertexBuffer->Release();
 			SphereMesh->VertexBuffer = nullptr;
-		delete SphereMesh;
 		}
+		delete SphereMesh;
 		SphereMesh = nullptr;
 	}
 }
