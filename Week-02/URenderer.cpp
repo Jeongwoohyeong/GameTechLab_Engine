@@ -7,10 +7,12 @@
 #include "CScene.h"
 #include "Cube.h"
 #include "Sphere.h"
+#include "Triangle.h"
 #include "WorldGizmo.h"
 
 FMesh* URenderer::CubeMesh = nullptr;
 FMesh* URenderer::SphereMesh = nullptr;
+FMesh* URenderer::TriangleMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -129,6 +131,11 @@ bool URenderer::CreateAllMesh()
 		return false;
 	}
 
+	if (!this->CreateTriangleMesh())
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -174,6 +181,28 @@ bool URenderer::CreateSphereMesh()
 		SphereMesh->bUseIndexBuffer = false;
 
 		if (!this->CreateVertexBuffer(SphereMesh))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool URenderer::CreateTriangleMesh()
+{
+	if (TriangleMesh == nullptr)
+	{
+		TriangleMesh = new FMesh();
+		TriangleMesh->Vertices = GTriangleVertices;
+		TriangleMesh->VertexByteWidth = sizeof(GTriangleVertices);
+		TriangleMesh->Offset = 0;
+		TriangleMesh->Stride = sizeof(FVertexSimple);
+		TriangleMesh->bUseIndexBuffer = false;
+
+		if (!this->CreateVertexBuffer(TriangleMesh))
 		{
 			return false;
 		}
@@ -394,6 +423,7 @@ void URenderer::ReleaseAllMesh()
 		CubeMesh = nullptr;
 		delete CubeMesh;
 	}
+
 	if (SphereMesh)
 	{
 		if (SphereMesh->IndexBuffer)
@@ -408,5 +438,21 @@ void URenderer::ReleaseAllMesh()
 		}
 		delete SphereMesh;
 		SphereMesh = nullptr;
+	}
+
+	if (TriangleMesh)
+	{
+		if (TriangleMesh->IndexBuffer)
+		{
+			TriangleMesh->IndexBuffer->Release();
+			TriangleMesh->IndexBuffer = nullptr;
+		}
+		if (TriangleMesh->VertexBuffer)
+		{
+			TriangleMesh->VertexBuffer->Release();
+			TriangleMesh->VertexBuffer = nullptr;
+		}
+		delete TriangleMesh;
+		TriangleMesh = nullptr;
 	}
 }

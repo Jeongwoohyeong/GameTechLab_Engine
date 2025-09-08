@@ -117,6 +117,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -143,6 +144,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.h" />
     <ClCompile Include="ShapeData.cpp" />
+    <ClCompile Include="Triangle.h" />
     <ClCompile Include="UCamera.cpp" />
     <ClCompile Include="UCubeComp.cpp" />
     <ClCompile Include="UD3dDevice.cpp" />
@@ -152,6 +154,7 @@
     <ClCompile Include="URenderer.cpp" />
     <ClCompile Include="UShader.cpp" />
     <ClCompile Include="USphereComp.cpp" />
+    <ClCompile Include="UTriangleComp.cpp" />
     <ClCompile Include="UUIManager.cpp" />
     <ClCompile Include="WorldGizmo.cpp" />
   </ItemGroup>
@@ -193,6 +196,7 @@
     <ClInclude Include="USceneComponent.h" />
     <ClInclude Include="UShader.h" />
     <ClInclude Include="USphereComp.h" />
+    <ClInclude Include="UTriangleComp.h" />
     <ClInclude Include="UUIManager.h" />
     <ClInclude Include="WorldGizmo.h" />
   </ItemGroup>
