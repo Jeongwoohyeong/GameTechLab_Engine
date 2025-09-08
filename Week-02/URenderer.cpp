@@ -58,18 +58,7 @@ void URenderer::Render()
 
 	worldGizmo->Render(this);
 
-	// 씬 렌더링
-	/*for (UPrimitiveComponent* Primitive : CurrentScene.Primitives)
-	{
-		if (Primitive.Component == nullptr)
-		{
-			continue;
-		}
-		FMatrix world = FMatrix::Identity();
-		world = world * prim.Component->Transform.GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(world));
-		prim.Component->Render(Device->DeviceContext);
-	}*/
+	// TODO: 모든 Primitive 렌더링은 CurrentScene의 렌더링 함수 내에서 수행
 
 	UI.ObjectControlUI(&localCube->Transform);
 
