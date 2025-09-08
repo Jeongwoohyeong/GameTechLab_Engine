@@ -294,6 +294,32 @@ void CScene::Spawn(EPrimitiveType Type, uint32 Count)
 	}
 }
 
+void CScene::DestroySelectedPrimitive()
+{
+	if (SelectedPrimitive)
+	{
+		uint32 UUID = SelectedPrimitive->UUID;
+		auto It = UUIDToPrimitive.find(UUID);
+		if (It != UUIDToPrimitive.end())
+		{
+			It->second->Release();
+			delete It->second;
+			UUIDToPrimitive.erase(It);
+			UE_LOG("Destroyed primitive with UUID %d", UUID);
+		}
+		else
+		{
+			UE_LOG("Warning: Selected primitive with UUID %d not found in scene map.", UUID);
+		}
+
+		SelectedPrimitive = nullptr;
+	}
+	else
+	{
+		UE_LOG("No primitive is currently selected to destroy.");
+	}
+}
+
 void CScene::SetSelectedPrimitiveByUUID(uint32 UUID)
 {
 	for (auto& Pair : UUIDToPrimitive)

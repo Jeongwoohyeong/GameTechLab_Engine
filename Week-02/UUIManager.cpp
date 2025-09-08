@@ -182,6 +182,12 @@ void UUIManager::ControlPanel()
 					ImGui::EndCombo();
 				}
 
+				// 선택된 프리미티브 씬에서 제거
+				if (ImGui::Button("Destroyed Selected"))
+				{
+					Scene.DestroySelectedPrimitive();
+				}
+
 				// 오브젝트 메모리 통계
 				ImGui::Text("Total Allocation Bytes: %llu", UObject::TotalAllocationBytes);
 				ImGui::Text("Total Allocation Count: %llu", UObject::TotalAllocationCount);

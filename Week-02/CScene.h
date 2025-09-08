@@ -20,8 +20,10 @@ public:
 	void Load(const FString& Name);
 
 	void Spawn(EPrimitiveType Type, uint32 Count);
+	void DestroySelectedPrimitive();
+
     UPrimitiveComponent* PickAtMouse(int ClientX, int ClientY, int ClientW, int ClientH, uint32& OutUUID);
-    
+
 	TMap<uint32, UPrimitiveComponent*>& GetPrimitives() { return UUIDToPrimitive; }
 	UPrimitiveComponent* GetSelectedPrimitive() { return SelectedPrimitive; }
 	void SetSelectedPrimitiveByUUID(uint32 UUID);
