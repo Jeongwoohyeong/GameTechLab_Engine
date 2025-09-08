@@ -2,6 +2,7 @@
 #include "UPrimitiveComponent.h"
 #include "Types.h"
 
+struct ID3D11Buffer;
 
 class UCubeComp :public UPrimitiveComponent
 {

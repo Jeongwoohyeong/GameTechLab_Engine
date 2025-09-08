@@ -3,8 +3,10 @@
 #include "UD3dDevice.h"
 #include "UShader.h"
 #include "UCamera.h"
-#include "Cube.h"
 #include "UCubeComp.h"
+
+ID3D11Buffer* URenderer::CubeVertexBuffer = nullptr;
+ID3D11Buffer* URenderer::CubeIndexBuffer = nullptr;
 
 URenderer::URenderer()
 {	
@@ -23,20 +25,10 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!Shader->Initialize(Device->GetDeivce(), Device->GetDeviceContext()))
 	{
 		return false;
-	}
-	
-	/*Mesh = new UMesh(Device->GetDeivce(), Device->GetDeviceContext());
-	if (!Mesh->Initialize(&GCubeVertices, &GCubeIndices, sizeof(GCubeVertices), sizeof(GCubeIndices)))
-	{		
-		return false;
-	}*/
-	Primitives = new UCubeComp();
-	if (!this->CreateVertexBuffer())
-	{
-		return false;
-	}
+	}	
 
-	if (!this->CreateIndexBuffer())
+	Primitives = new UCubeComp();
+	if (!this->CreateCubeBuffers())
 	{
 		return false;
 	}
@@ -59,17 +51,13 @@ void URenderer::Render()
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
 	FMatrix worldMatrix = FMatrix::Identity();
-	/*worldMatrix = worldMatrix * Mesh->GetTransform()->GetTransformMatrix();*/
 	worldMatrix = worldMatrix * Primitives->GetTransform()->GetTransformMatrix();
 	
 	Shader->PrepareShader();
 	
 	Primitives->RenderPrimitive(Device->GetDeviceContext());
 
-	//Mesh->RenderMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
-
 	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
-	/*UI.ObjectControlUI(Mesh->GetTransform());*/
 	UI.ObjectControlUI(Primitives->GetTransform());
 
 	Device->EndScene();
@@ -91,13 +79,6 @@ void URenderer::Release()
 		delete Primitives;
 		Primitives = nullptr;
 	}
-
-	/*if (Mesh)
-	{
-		Mesh->Release();
-		delete Mesh;
-		Mesh = nullptr;
-	}*/
 
 	if (Shader)
 	{
@@ -130,13 +111,30 @@ bool URenderer::CreateRasterizerState()
 	return true;
 }
 
-bool URenderer::CreateVertexBuffer()
+bool URenderer::CreateCubeBuffers()
+{
+	if (!this->CreateVertexBuffer(&CubeVertexBuffer))
+	{
+		return false;
+	}
+	Primitives->SetVertexBuffer(CubeVertexBuffer);
+
+	if (!this->CreateIndexBuffer(&CubeIndexBuffer))
+	{
+		return false;
+	}
+	Primitives->SetIndexBuffer(CubeIndexBuffer);
+
+	return true;
+}
+
+bool URenderer::CreateVertexBuffer(ID3D11Buffer** vertexBuffer)
 {
 	HRESULT result;
 
 	UINT byteWidth = Primitives->GetVertexByteWidth();
 	const void* vertices = Primitives->GetVertices();
-	ID3D11Buffer** vertexBuffer = Primitives->GetVertexBufferAddr();
+	//ID3D11Buffer** vertexBuffer = Primitives->GetVertexBufferAddr();
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.ByteWidth = byteWidth;
@@ -155,13 +153,13 @@ bool URenderer::CreateVertexBuffer()
 
 	return true;
 }
-bool URenderer::CreateIndexBuffer()
+bool URenderer::CreateIndexBuffer(ID3D11Buffer** indexBuffer)
 {
 	HRESULT hr;
 
 	UINT bytewidth = Primitives->GetIndexByteWidth();
 	const void* indices = Primitives->GetIndices();
-	ID3D11Buffer** indexBuffer = Primitives->GetIndexBufferAddr();
+	//ID3D11Buffer** indexBuffer = Primitives->GetIndexBufferAddr();
 
 	D3D11_BUFFER_DESC indexBufferDesc = {};
 	indexBufferDesc.ByteWidth = bytewidth;

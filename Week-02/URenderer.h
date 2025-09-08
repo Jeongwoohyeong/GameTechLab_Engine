@@ -19,16 +19,22 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
+	bool CreateCubeBuffers();
 
 private:
-	bool CreateVertexBuffer();
-	bool CreateIndexBuffer();
+	bool CreateVertexBuffer(ID3D11Buffer**);
+	bool CreateIndexBuffer(ID3D11Buffer**);
+
+public:
+	static ID3D11Buffer* CubeVertexBuffer;
+	static ID3D11Buffer* CubeIndexBuffer;
 
 private:
 	UD3dDevice* Device = nullptr;
 	UShader* Shader = nullptr;
-	UPrimitiveComponent* Primitives;
-	UMesh* Mesh= nullptr;
+	UPrimitiveComponent* Primitives;	
 	ID3D11RasterizerState* RasterizerState = nullptr;	
 	UUIManager UI = {};
+
+	
 };

@@ -5,7 +5,7 @@
 #include <vector>
 
 class URenderer;
-class ID3D11Buffer;
+struct ID3D11Buffer;
 class Gizmo
 {
 public:

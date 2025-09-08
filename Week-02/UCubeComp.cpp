@@ -1,11 +1,13 @@
 ﻿#include "UCubeComp.h"
 #include "d3d11.h"
-
-#include "Cube.h" // 헤더 추가하면 오류 발생, 작성 완료 되면 주석 해제
+#include "URenderer.h"
+#include "Cube.h"
 
 UCubeComp::UCubeComp()
 	:Type(EPrimitiveType::Cube)
 {
+	/*UPrimitiveComponent::VertexBuffer = URenderer::CubeVertexBuffer;
+	UPrimitiveComponent::IndexBuffer = URenderer::CubeIndexBuffer;*/
 	UPrimitiveComponent::Offset = 0;
 	UPrimitiveComponent::Stride = sizeof(FVertexSimple);
 	UPrimitiveComponent::Vertices = &GCubeVertices;

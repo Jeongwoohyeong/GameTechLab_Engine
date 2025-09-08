@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "USceneComponent.h"
 #include "Types.h"
 #include "Math.h"
@@ -25,7 +25,10 @@ public:
 	inline ID3D11Buffer** GetVertexBufferAddr() { return &VertexBuffer; }
 	inline ID3D11Buffer** GetIndexBufferAddr() { return &IndexBuffer; }
 	inline FTransform* GetTransform() { return &Transform; }
-	
+
+	inline void SetVertexBuffer(ID3D11Buffer* vertexBuffer) { VertexBuffer = vertexBuffer; }
+	inline void SetIndexBuffer(ID3D11Buffer* indexBuffer) { IndexBuffer = indexBuffer; }
+
 	virtual EPrimitiveType GetPrimitiveType() = 0;
 	virtual void RenderPrimitive(ID3D11DeviceContext*);
 
