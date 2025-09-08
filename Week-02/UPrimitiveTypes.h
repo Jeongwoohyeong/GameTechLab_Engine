@@ -4,7 +4,8 @@
 enum class EPrimitiveType : uint8
 {
 	Cube,
-	Sphere
+	Sphere,
+	Triangle,
 };
 
 static inline FString PrimitiveTypeToString(EPrimitiveType Type)
@@ -15,6 +16,8 @@ static inline FString PrimitiveTypeToString(EPrimitiveType Type)
 		return "Cube";
 	case EPrimitiveType::Sphere:
 		return "Sphere";
+	case EPrimitiveType::Triangle:
+		return "Triangle";
 	default:
 		return "Unknown";
 	}

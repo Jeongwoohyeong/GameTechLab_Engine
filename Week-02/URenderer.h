@@ -42,14 +42,17 @@ private:
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
 	void RenderUI();
 
+	// Mesh 관련 메서드
 	bool CreateAllMesh();
 	bool CreateCubeMesh();
 	bool CreateSphereMesh();
+	bool CreateTriangleMesh();
 	void ReleaseAllMesh();
 
 public:
 	static FMesh* CubeMesh;
 	static FMesh* SphereMesh;
+	static FMesh* TriangleMesh;
 
 private:
 	WorldGizmo* worldGizmo = nullptr;
@@ -57,8 +60,4 @@ private:
 	UShader* Shader = nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
-
-	// TODO: WorldGizmo 인터페이스 호환되지 않는 문제 해결해야 함
-	// WorldGizmo* worldGizmo = nullptr;
-
 };
