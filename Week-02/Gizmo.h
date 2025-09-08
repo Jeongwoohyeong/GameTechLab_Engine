@@ -3,9 +3,9 @@
 #include "UPrimitiveComponent.h"
 #include "UCamera.h"
 #include <vector>
+#include <d3d11.h> 
 
 class URenderer;
-struct ID3D11Buffer;
 class Gizmo
 {
 public:

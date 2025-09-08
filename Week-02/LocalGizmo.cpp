@@ -1,4 +1,4 @@
-#include "LocalGizmo.h"
+﻿#include "LocalGizmo.h"
 #include "URenderer.h"
 #include "Cone.h"
 #include "Cylinder.h"
@@ -42,20 +42,6 @@ void LocalGizmo::Initialize(URenderer* renderer)
         static_cast<unsigned int>(cylinderIdx.size_bytes())
     );
 }
-
-//
-//FTransform LocalGizmo::AddTranslateToParentTranslate(axis a)
-//{
-//    FTransform temp = Transform;
-//    FVector rot = a.rotate;
-//
-//	
-//    temp.AddRotationDegX(rot.X);
-//    temp.AddRotationDegY(rot.Y);
-//    temp.AddRotationDegZ(rot.Z);
-//
-//    return temp;
-//}
 
 FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {

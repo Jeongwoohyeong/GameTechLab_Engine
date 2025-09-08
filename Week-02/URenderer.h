@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
@@ -21,13 +21,19 @@ public:
 	bool CreateRasterizerState();
 	bool CreateCubeBuffers();
 
-private:
-	bool CreateVertexBuffer(ID3D11Buffer**);
-	bool CreateIndexBuffer(ID3D11Buffer**);
+#pragma region Gizmo 사용, 추후 수정
+	bool CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth);
+	bool CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indices, unsigned int byteWidth);
 
+	void SetTopology(bool isLine);
 	void UpdateConstant(const FMatrix& mvp);
 	void UpdateConstant(const FMatrix& mvp, const FVector& vec);
 	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
+#pragma endregion
+
+private:
+	bool CreateVertexBuffer(ID3D11Buffer**);
+	bool CreateIndexBuffer(ID3D11Buffer**);
 public:
 	static ID3D11Buffer* CubeVertexBuffer;
 	static ID3D11Buffer* CubeIndexBuffer;
