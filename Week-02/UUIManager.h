@@ -8,6 +8,7 @@
 #include "Math.h"
 
 class FTransform;
+class UPrimitiveComponent;
 
 class UUIManager
 {
@@ -16,12 +17,15 @@ public:
 	~UUIManager() {};
 
 	void Initialize(HWND hWnd, ID3D11Device*, ID3D11DeviceContext*);
-	void ObjectControlUI(FTransform* object);
 	void ReleaseUI();
 
+	void PrepareRender();
+	void Render();
+
+	void PropertyWindow(UPrimitiveComponent* Primitive);
+	void ControlPanel();
+	void ConsoleWindow(bool bShowConsoleWindow);
+
 private:
-	void ObjectControl();
-	FTransform* ObjectTransform;
 	FVector offset;
-	bool bShowConsoleWindow;
 };

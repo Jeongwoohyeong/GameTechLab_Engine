@@ -26,6 +26,5 @@ public:
 	virtual void CreateAABB();
 
 protected:
-	FTransform Transform;
 	FAABB AABB;
 };

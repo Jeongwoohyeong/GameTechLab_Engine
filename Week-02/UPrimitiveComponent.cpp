@@ -2,26 +2,11 @@
 #include "d3d11.h"
 
 UPrimitiveComponent::UPrimitiveComponent()
-	:Transform(FTransform())
-{
-}
-
-//void UPrimitiveComponent::RenderPrimitive(ID3D11DeviceContext* deviceContext);
+{}
 
 void UPrimitiveComponent::Release()
-{
-	/*if (IndexBuffer)
-	{
-		IndexBuffer->Release();
-		IndexBuffer = nullptr;
-	}
+{}
 
-	if (VertexBuffer)
-	{
-		VertexBuffer->Release();
-		VertexBuffer = nullptr;
-	}*/
-}
 void UPrimitiveComponent::CreateAABB()
 {
 	FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);

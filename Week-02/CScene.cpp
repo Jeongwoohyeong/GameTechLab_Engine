@@ -13,16 +13,7 @@
 
 void CScene::New()
 {
-	// 기존 씬의 모든 프리미티브 컴포넌트 삭제
-	for (UPrimitiveComponent* Primitive : Primitives)
-	{
-		if (Primitive)
-		{
-			delete Primitive;
-			Primitive = nullptr;
-		}
-	}
-	Primitives.clear();
+	Clear();
 
 	UE_LOG("New scene created.");
 }
@@ -78,8 +69,9 @@ void CScene::Save(const FString& Name)
 
 	JSON PrimitivesObj = Object();
 
-	for (UPrimitiveComponent* Primitive : Primitives)
+	for (const auto& Pair : UUIDToPrimitive)
 	{
+		UPrimitiveComponent* Primitive = Pair.second;
 		uint32 UUID = Primitive->UUID;
 		if (!Primitive) 
 		{
@@ -91,23 +83,23 @@ void CScene::Save(const FString& Name)
 
 		// Location
 		Prim["Location"] = Array(
-			Primitive->RelativeLocation.X,
-			Primitive->RelativeLocation.Y,
-			Primitive->RelativeLocation.Z
+			Primitive->Transform.GetLocation().X,
+			Primitive->Transform.GetLocation().Y,
+			Primitive->Transform.GetLocation().Z
 		);
 
 		// Rotation
 		Prim["Rotation"] = Array(
-			Primitive->RelativeRotation.X,
-			Primitive->RelativeRotation.Y,
-			Primitive->RelativeRotation.Z
+			Primitive->Transform.GetRotationRadians().X,
+			Primitive->Transform.GetRotationRadians().Y,
+			Primitive->Transform.GetRotationRadians().Z
 		);
 
 		// Scale
 		Prim["Scale"] = Array(
-			Primitive->RelativeScale3D.X,
-			Primitive->RelativeScale3D.Y,
-			Primitive->RelativeScale3D.Z
+			Primitive->Transform.GetScale().X,
+			Primitive->Transform.GetScale().Y,
+			Primitive->Transform.GetScale().Z
 		);
 
 		// Type
@@ -182,7 +174,7 @@ void CScene::Load(const FString& Name)
 {
 	using namespace json;
 
-	New();
+	Clear();
 
 	const FString InPath = FString("Scenes/") + Name + ".scene";
 	std::ifstream Ifs(InPath, std::ios::in);
@@ -240,28 +232,30 @@ void CScene::Load(const FString& Name)
 			// Transform
 			if (Prim.hasKey("Location")) 
 			{
-				Comp->RelativeLocation = ReadVec3(Prim.at("Location"));
+				Comp->Transform.SetLocation(ReadVec3(Prim.at("Location")));
 			}
 			if (Prim.hasKey("Rotation")) 
 			{
-				Comp->RelativeRotation = ReadVec3(Prim.at("Rotation"));
+				Comp->Transform.SetRotationDeg(ReadVec3(Prim.at("Rotation")));
 			}
 			if (Prim.hasKey("Scale"))    
 			{
-				Comp->RelativeScale3D = ReadVec3(Prim.at("Scale"));
+				Comp->Transform.SetScale(ReadVec3(Prim.at("Scale")));
 			}
 
 			// UUID 설정
 			Comp->UUID = UUID;
 
 			// Scene에 추가
-			Primitives.push_back(Comp);
+			UUIDToPrimitive[UUID] = Comp;
 		}
 	}
 	else
 	{
 		UE_LOG("Warning: No 'Primitives' object in scene file %s.", InPath.c_str());
 	}
+
+	UE_LOG("Scene loaded from %s with %zu primitives.", InPath.c_str(), UUIDToPrimitive.size());
 }
 
 void CScene::Spawn(EPrimitiveType Type, uint32 Count)
@@ -285,11 +279,40 @@ void CScene::Spawn(EPrimitiveType Type, uint32 Count)
 		if (NewComp)
 		{
 			NewComp->UUID = UEngineStatics::GenUUID();
-			NewComp->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
-			NewComp->RelativeRotation = FVector(0.0f, 0.0f, 0.0f);
-			NewComp->RelativeScale3D = FVector(1.0f, 1.0f, 1.0f);
-			Primitives.push_back(NewComp);
+			UUIDToPrimitive[NewComp->UUID] = NewComp;
+
 			UE_LOG("Spawned %s with UUID %d", PrimitiveTypeToString(Type).c_str(), NewComp->UUID);
 		}
 	}
+}
+
+void CScene::SetSelectedPrimitiveByUUID(uint32 UUID)
+{
+	for (auto& Pair : UUIDToPrimitive)
+	{
+		if (Pair.first == UUID)
+		{
+			SelectedPrimitive = Pair.second;
+			UE_LOG("Selected primitive with UUID %d", SelectedPrimitive->UUID);
+			return;
+		}
+	}
+
+	SelectedPrimitive = nullptr;
+	UE_LOG("No primitive found with UUID %d. No primitive selected.", UUID);
+}
+
+void CScene::Clear()
+{
+	for (auto& Pair : UUIDToPrimitive)
+	{
+		if (Pair.second)
+		{
+			Pair.second->Release();
+			delete Pair.second;
+		}
+	}
+
+	UUIDToPrimitive.clear();
+	SelectedPrimitive = nullptr;
 }

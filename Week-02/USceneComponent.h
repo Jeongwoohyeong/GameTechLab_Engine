@@ -1,14 +1,14 @@
-#pragma once
+﻿#pragma once
 #include "UObject.h"
 #include "FTransform.h"
 
 class USceneComponent : public UObject
 {
 public:
-	USceneComponent() {};
+	USceneComponent()
+		:Transform(FTransform())
+	{};
 	virtual ~USceneComponent() {};
 
-	FVector RelativeLocation;
-	FVector RelativeRotation;
-	FVector RelativeScale3D;
+	FTransform Transform;
 };

@@ -20,11 +20,15 @@ public:
 
 	void Spawn(EPrimitiveType Type, uint32 Count);
 
-	TArray<UPrimitiveComponent*>& GetPrimitives() { return Primitives; }
+	TMap<uint32, UPrimitiveComponent*>& GetPrimitives() { return UUIDToPrimitive; }
 	UPrimitiveComponent* GetSelectedPrimitive() { return SelectedPrimitive; }
+	void SetSelectedPrimitiveByUUID(uint32 UUID);
+
+private:
+	void Clear();
 
 private:
 	uint32 Version = 1;
-	TArray<UPrimitiveComponent*> Primitives;
+	TMap<uint32, UPrimitiveComponent*> UUIDToPrimitive;
 	UPrimitiveComponent* SelectedPrimitive = nullptr;
 };

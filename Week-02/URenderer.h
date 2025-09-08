@@ -24,7 +24,10 @@ public:
 private:
 	bool CreateVertexBuffer(FMesh* Mesh);
 	bool CreateIndexBuffer(FMesh* Mesh);
+	
+	void RenderScene();
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
+	void RenderUI();
 
 	bool CreateAllMesh();
 	bool CreateCubeMesh();
