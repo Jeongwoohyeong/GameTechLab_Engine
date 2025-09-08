@@ -7,6 +7,7 @@
 #include "CScene.h"
 #include "Cube.h"
 #include "Sphere.h"
+#include "WorldGizmo.h"
 
 FMesh* URenderer::CubeMesh = nullptr;
 FMesh* URenderer::SphereMesh = nullptr;
@@ -40,8 +41,8 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}	
 
-	/*worldGizmo = new WorldGizmo();
-	worldGizmo->Initialize(this);*/
+	worldGizmo = new WorldGizmo();
+	worldGizmo->Initialize(this);
 
 	UCamera::GetInstance().Init();
 		
@@ -62,10 +63,7 @@ void URenderer::Render()
 	// UI 렌더링
 	RenderUI();
 
-	// 선택된 프리미티브의 컨트롤 UI 표시
-	// UI.ObjectControlUI(Primitives[0]->GetTransform());
-
-	// worldGizmo->Render(this);
+	worldGizmo->Render(this);
 
 	Device->EndScene();
 }
@@ -81,7 +79,12 @@ void URenderer::Release()
 	}
 
 	ReleaseAllMesh();
-
+	if(worldGizmo)
+	{
+		worldGizmo->Release();
+		delete worldGizmo;
+		worldGizmo = nullptr;
+	}
 	if (Shader)
 	{
 		Shader->Release();
@@ -94,7 +97,8 @@ void URenderer::Release()
 		Device->Release();
 		delete Device;
 		Device = nullptr;
-	}	
+	}
+
 }
 
 bool URenderer::CreateRasterizerState()
@@ -178,6 +182,16 @@ bool URenderer::CreateSphereMesh()
 	}
 
 	return false;
+}
+
+void URenderer::Resize(UINT width, UINT height)
+{
+	if (Device == nullptr)
+	{
+		return;
+	}
+
+	Device->Resize(width, height);
 }
 
 bool URenderer::CreateVertexBuffer(FMesh* Mesh)
@@ -264,6 +278,94 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 	return true;
 }
 
+#pragma region Gizmo 사용, 추후 수정
+
+bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth)
+{
+	HRESULT result;
+
+	D3D11_BUFFER_DESC vertexBufferDesc = {};
+	vertexBufferDesc.ByteWidth = byteWidth;
+	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { vertices };
+
+	result = Device->Device->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, verticesBuffer);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+bool URenderer::CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indices, unsigned int byteWidth)
+{
+	HRESULT hr;
+
+	D3D11_BUFFER_DESC indexBufferDesc = {};
+	indexBufferDesc.ByteWidth = byteWidth;
+	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBufferSRD = { indices };
+
+	hr = Device->Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, indicesBuffer);
+	if (FAILED(hr))
+	{
+		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+void URenderer::SetTopology(bool isLine)
+{
+	if (isLine)
+	{
+		Device->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	}
+	else
+	{
+		Device->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
+}
+
+void URenderer::UpdateConstant(const FMatrix& mvp)
+{
+	Shader->UpdateConstant(mvp);
+}
+
+void URenderer::UpdateConstant(const FMatrix& mvp, const FVector& vec)
+{
+	Shader->UpdateConstant(mvp, vec);
+}
+
+void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
+{
+	unsigned int offset = 0; // 버퍼 오프셋 초기화
+	// 정점 버퍼 설정
+	Device->DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
+
+	if (IndexBuffer)
+	{
+		// 인덱스 버퍼 설정
+		Device->DeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		// 드로우 콜 (인덱스 버퍼 사용)
+		Device->DeviceContext->DrawIndexed(IndexCount, 0, 0); // 인덱스 수와 시작 인덱스 설정
+	}
+	else
+	{
+		// 인덱스 버퍼가 없을 때 드로우 콜
+		Device->DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
+	}
+}
+#pragma endregion
 void URenderer::RenderUI()
 {
 	UI.PrepareRender();
@@ -287,12 +389,11 @@ void URenderer::ReleaseAllMesh()
 		if (CubeMesh->VertexBuffer)
 		{
 			CubeMesh->VertexBuffer->Release();
-			CubeMesh->VertexBuffer = nullptr;
 		}
-		delete CubeMesh;
+			CubeMesh->VertexBuffer = nullptr;
 		CubeMesh = nullptr;
+		delete CubeMesh;
 	}
-
 	if (SphereMesh)
 	{
 		if (SphereMesh->IndexBuffer)
@@ -309,71 +410,3 @@ void URenderer::ReleaseAllMesh()
 		SphereMesh = nullptr;
 	}
 }
-
-//bool URenderer::CreateCubeBuffers()
-//{
-//	if (!this->CreateVertexBuffer(&CubeVertexBuffer))
-//	{
-//		return false;
-//	}
-//	/*Primitives->SetVertexBuffer(CubeVertexBuffer);*/
-//
-//	if (!this->CreateIndexBuffer(&CubeIndexBuffer))
-//	{
-//		return false;
-//	}
-//	/*Primitives->SetIndexBuffer(CubeIndexBuffer);*/
-//
-//	return true;
-//}
-
-//bool URenderer::CreateVertexBuffer(ID3D11Buffer** vertexBuffer)
-//{
-//	HRESULT result;
-//
-//	UINT byteWidth = Primitives->GetVertexByteWidth();
-//	const void* vertices = Primitives->GetVertices();
-//	//ID3D11Buffer** vertexBuffer = Primitives->GetVertexBufferAddr();
-//
-//	D3D11_BUFFER_DESC vertexBufferDesc = {};
-//	vertexBufferDesc.ByteWidth = byteWidth;
-//	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-//	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-//	vertexBufferDesc.CPUAccessFlags = 0;
-//
-//	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { vertices };
-//
-//	result = Device->GetDeivce()->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, vertexBuffer);
-//	if (FAILED(result))
-//	{
-//		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
-//		return false;
-//	}
-//
-//	return true;
-//}
-//bool URenderer::CreateIndexBuffer(ID3D11Buffer** indexBuffer)
-//{
-//	HRESULT hr;
-//
-//	UINT bytewidth = Primitives->GetIndexByteWidth();
-//	const void* indices = Primitives->GetIndices();
-//	//ID3D11Buffer** indexBuffer = Primitives->GetIndexBufferAddr();
-//
-//	D3D11_BUFFER_DESC indexBufferDesc = {};
-//	indexBufferDesc.ByteWidth = bytewidth;
-//	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-//	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-//	indexBufferDesc.CPUAccessFlags = 0;
-//
-//	D3D11_SUBRESOURCE_DATA indexBufferSRD = { indices };
-//
-//	hr = Device->GetDeivce()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, indexBuffer);
-//	if (FAILED(hr))
-//	{
-//		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
-//		return false;
-//	}
-//
-//	return true;
-//}

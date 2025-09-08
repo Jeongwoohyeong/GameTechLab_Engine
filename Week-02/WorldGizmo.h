@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Gizmo.h"
-
+#include <vector>
+#include "FVertexStruct.h"
 // 전방 선언
 class URenderer;
 struct ID3D11Buffer;
@@ -39,7 +40,7 @@ private:
     // 색상 프리셋
     FVertexSimple Minor = { 0,0,0,  0.55f,0.55f,0.55f,1.0f };
     FVertexSimple Major = { 0,0,0,  0.30f,0.30f,0.30f,1.0f };
-    FVertexSimple XCol = { 0,0,0,  1.00f,0.20f,0.20f,1.0f };
-    FVertexSimple ZCol = { 0,0,0,  0.20f,0.40f,1.00f };
-    FVertexSimple YCol = { 0,0,0,  0.40f,1.00f,0.40f,1.0f };
+    FVertexSimple XCol = { 0,0,0,  1.0f,0.2f,0.2f,1.0f }; // X: red-ish
+    FVertexSimple YCol = { 0,0,0,  0.4f,1.0f,0.4f,1.0f }; // Y: green-ish
+    FVertexSimple ZCol = { 0,0,0,  0.2f,0.4f,1.0f,1.0f }; // Z: blue-ish
 };

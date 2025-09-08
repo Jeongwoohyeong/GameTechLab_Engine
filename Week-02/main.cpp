@@ -19,12 +19,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		return true;
 	}
-
+	URenderer* renderer = (URenderer*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch (message)
 	{
 	case WM_DESTROY:
 		// 앱 종료 신호
 		PostQuitMessage(0);
+		break;
+	case WM_SIZE:
+		if (renderer)
+		{
+			renderer->Resize(LOWORD(lParam), HIWORD(lParam));
+		}
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -48,8 +54,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hWnd = CreateWindowExW(0, WindowClass, Title, WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, 1024, 1024,
 		nullptr, nullptr, hInstance, nullptr);
-
+	
 	URenderer renderer;
+	
+	//
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)&renderer);
 
 	CameraInputMove* input = nullptr; // 포인터를 nullptr로 초기화하는 것이 좋은 습관입니다.
 	input = new CameraInputMove();   // 객체 생성 및 포인터에 할당

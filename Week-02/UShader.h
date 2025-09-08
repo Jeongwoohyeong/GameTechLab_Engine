@@ -19,6 +19,8 @@ struct ID3D11Buffer;
 struct FConstants
 {
 	FMatrix MVPMatrix;
+	FVector Color;
+	int useUColor;
 };
 
 class UShader
@@ -30,6 +32,7 @@ public:
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*);
 	void PrepareShader();
 	void UpdateConstant(const FMatrix&);
+	void UpdateConstant(const FMatrix& mvpMatrix, const FVector& color);
 	void Release();
 
 private:

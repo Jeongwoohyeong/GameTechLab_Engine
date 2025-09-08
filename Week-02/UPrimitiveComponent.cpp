@@ -1,11 +1,24 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "d3d11.h"
+#include "LocalGizmo.h"
 
 UPrimitiveComponent::UPrimitiveComponent()
 {}
 
+void UPrimitiveComponent::Initialize(URenderer* renderer)
+{
+	Gizmo.Initialize(renderer, &Transform);
+}
+
+void UPrimitiveComponent::Render(URenderer* renderer)
+{
+	Gizmo.Render(renderer);
+}
+
 void UPrimitiveComponent::Release()
-{}
+{
+	Gizmo.Release();
+}
 
 void UPrimitiveComponent::CreateAABB()
 {

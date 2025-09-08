@@ -1,25 +1,23 @@
 ﻿#include "UD3dDevice.h"
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
 
 bool UD3dDevice::Initialize(HWND hWnd)
 {
-	if (!this->CreateDeviceAndSwapChain(hWnd))
-	{
-		return false;
-	}
-	if (!this->CreateFrameBuffer())
-	{
-		return false;
-	}
-	if (!this->CreateRasterizerState())
-	{
-		return false;
-	}
+	if (!this->CreateDeviceAndSwapChain(hWnd))	 return false;
+	if (!this->CreateFrameBuffer())				 return false;
+	if (!this->CreateDepthStencilBuffer())		 return false;
+	if (!this->CreateDepthStates())              return false;
+	if (!this->CreateRasterizerState())			 return false;
 
 	return true;	
 }
 
 void UD3dDevice::Release()
 {
+	if (DepthStateOpaque) { DepthStateOpaque->Release();  DepthStateOpaque = nullptr; }
+	if (DepthStencilView) { DepthStencilView->Release();  DepthStencilView = nullptr; }
+	if (DepthStencilBuffer) { DepthStencilBuffer->Release();DepthStencilBuffer = nullptr; }
 	if (FrameBuffer)
 	{
 		FrameBuffer->Release();
@@ -54,10 +52,14 @@ void UD3dDevice::Release()
 void UD3dDevice::BeginScene(float r, float g, float b, float a)
 {
 	float Color[] = { r,g,b, a };
-	DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, nullptr);
+	DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, DepthStencilView);
 
 	DeviceContext->ClearRenderTargetView(FrameBufferRTV, Color);
+	DeviceContext->ClearDepthStencilView(DepthStencilView,
+		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
+	DeviceContext->RSSetViewports(1, &Viewport);
+	DeviceContext->OMSetDepthStencilState(DepthStateOpaque, 0);
 	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
@@ -71,6 +73,55 @@ void UD3dDevice::SetRSState(ID3D11RasterizerState* rasterizeState)
 {
 	DeviceContext->RSSetViewports(1, &Viewport);
 	DeviceContext->RSSetState(rasterizeState);
+}
+
+void UD3dDevice::Resize(UINT width, UINT height)
+{
+	if (SwapChain == nullptr || DeviceContext == nullptr || Device == nullptr)
+	{
+		MessageBox(nullptr, L"swapchain nullptr", L"error", MB_OK);
+		return;
+	}
+	DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
+	if (FrameBufferRTV)
+	{
+		FrameBufferRTV->Release();
+		FrameBufferRTV = nullptr;
+	}
+
+	if (FrameBuffer)
+	{
+		FrameBuffer->Release();
+		FrameBuffer = nullptr;
+	}
+
+	HRESULT result = SwapChain->ResizeBuffers(2, width, height,	DXGI_FORMAT_B8G8R8A8_UNORM, 0);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"resize fail", L"error", MB_OK);
+		exit(-1);
+	}
+	SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&FrameBuffer);
+
+	D3D11_RENDER_TARGET_VIEW_DESC frameBufferRTVdesc = {};
+	frameBufferRTVdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+	frameBufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	result = Device->CreateRenderTargetView(FrameBuffer, &frameBufferRTVdesc, &FrameBufferRTV);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"RTV create fail,", L"error", MB_OK);
+		return;
+	}
+
+	Viewport.TopLeftX = 0.0f;
+	Viewport.TopLeftY = 0.0f;
+	Viewport.Width = static_cast<float>(width);
+	Viewport.Height = static_cast<float>(height);
+	Viewport.MinDepth = 0.0f;
+	Viewport.MaxDepth = 1.0f;
+
 }
 
 bool UD3dDevice::CreateDeviceAndSwapChain(HWND hWnd)
@@ -100,12 +151,20 @@ bool UD3dDevice::CreateDeviceAndSwapChain(HWND hWnd)
 		return false;
 	}
 
-	SwapChain->GetDesc(&swapChainDesc);
+	ComPtr<ID3D11Texture2D> backBuffer;
+	result = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+		reinterpret_cast<void**>(backBuffer.GetAddressOf()));
+	if (FAILED(result)) return false;
+
+	D3D11_TEXTURE2D_DESC bb{};
+	backBuffer->GetDesc(&bb);
+	BackBufferWidth = (UINT)bb.Width;
+	BackBufferHeight = (UINT)bb.Height;
 
 	Viewport.TopLeftX = 0.0f;
 	Viewport.TopLeftY = 0.0f;
-	Viewport.Width = (float)swapChainDesc.BufferDesc.Width;
-	Viewport.Height = (float)swapChainDesc.BufferDesc.Height;
+	Viewport.Width = static_cast<float>(BackBufferWidth);
+	Viewport.Height = static_cast<float>(BackBufferHeight);
 	Viewport.MinDepth = 0.0f;
 	Viewport.MaxDepth = 1.0f;
 
@@ -137,11 +196,68 @@ bool UD3dDevice::CreateRasterizerState()
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_BACK;
-	result = Device->CreateRasterizerState(&rasterizerDesc, nullptr);
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.DepthBias = 1;
+	rasterizerDesc.SlopeScaledDepthBias = 1.0f;   // 기울기에 따라 추가 보정
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	ID3D11RasterizerState* RSGrid = nullptr;
+	result = Device->CreateRasterizerState(&rasterizerDesc, &RSGrid);
+	
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"rasterizerstate create fail,", L"error", MB_OK);
 		return false;
 	}
+	return true;
+}
+
+bool UD3dDevice::CreateDepthStencilBuffer()
+{
+	if (DepthStencilView) { DepthStencilView->Release();   DepthStencilView = nullptr; }
+	if (DepthStencilBuffer) { DepthStencilBuffer->Release(); DepthStencilBuffer = nullptr; }
+
+	// 백버퍼와 동일 크기/샘플링으로 생성
+	DXGI_SWAP_CHAIN_DESC scd{};
+	SwapChain->GetDesc(&scd);
+
+	D3D11_TEXTURE2D_DESC ds{};
+	ds.Width = BackBufferWidth;
+	ds.Height = BackBufferHeight;
+	ds.MipLevels = 1;
+	ds.ArraySize = 1;
+	ds.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // D32_FLOAT도 가능
+	ds.SampleDesc = scd.SampleDesc;
+	ds.Usage = D3D11_USAGE_DEFAULT;
+	ds.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	HRESULT hr = Device->CreateTexture2D(&ds, nullptr, &DepthStencilBuffer);
+	if (FAILED(hr)) {
+		MessageBox(nullptr, L"depth tex create fail", L"error", MB_OK);
+		return false;
+	}
+
+	hr = Device->CreateDepthStencilView(DepthStencilBuffer, nullptr, &DepthStencilView);
+	if (FAILED(hr)) {
+		MessageBox(nullptr, L"DSV create fail", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+bool UD3dDevice::CreateDepthStates()
+{
+	if (DepthStateOpaque) { DepthStateOpaque->Release();  DepthStateOpaque = nullptr; }
+
+	// 불투명용: 테스트 ON, 쓰기 ON
+	D3D11_DEPTH_STENCIL_DESC dss{};
+	dss.DepthEnable = TRUE;
+	dss.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dss.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	dss.StencilEnable = FALSE;
+
+	HRESULT hr = Device->CreateDepthStencilState(&dss, &DepthStateOpaque);
+	if (FAILED(hr)) return false;
+
 	return true;
 }
