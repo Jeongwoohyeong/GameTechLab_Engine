@@ -29,6 +29,7 @@ public:
 	void SetTopology(bool isLine);
 
 	void UpdateConstant(const FMatrix& mvp);
+	void UpdateConstant(const FMatrix& mvp, const FVector& vec);
 	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
 
 private:

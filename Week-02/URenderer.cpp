@@ -102,6 +102,11 @@ void URenderer::UpdateConstant(const FMatrix& mvp)
 	Shader->UpdateConstant(mvp);
 }
 
+void URenderer::UpdateConstant(const FMatrix& mvp, const FVector& vec)
+{
+	Shader->UpdateConstant(mvp, vec);
+}
+
 void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
 {
 	unsigned int offset = 0; // 버퍼 오프셋 초기화

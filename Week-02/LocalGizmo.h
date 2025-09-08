@@ -1,21 +1,26 @@
 ﻿#pragma once
+#include <span>
 #include "Gizmo.h"
+
+constexpr FVector COLOR_R{ 1.0f, 0.0f, 0.0f };
+constexpr FVector COLOR_G{ 0.0f, 1.0f, 0.0f };
+constexpr FVector COLOR_B{ 0.0f, 0.0f, 1.0f };
 
 class LocalGizmo : public Gizmo
 {
 public:
-	LocalGizmo() = default;
-	~LocalGizmo() = default;
+    
+    std::span<const FVertexSimple> coneVerts;
+    std::span<const unsigned int>  coneIdx;
+    std::span<const FVertexSimple> cylinderVerts;
+    std::span<const unsigned int>  cylinderIdx;
 
-	void Initialize(URenderer* renderer);
-	void Render(URenderer* renderer);
-	void Release();
+    ID3D11Buffer* gizmoConeVerticesBuffer = nullptr;
+    ID3D11Buffer* gizmoConeIndicesBuffer = nullptr;
+    ID3D11Buffer* gizmoCylinderVerticesBuffer = nullptr;
+    ID3D11Buffer* gizmoCylinderIndicesBuffer = nullptr;
 
-public:
-	std::vector<FVertexSimple> GizmoCubeVertices;
-	std::vector<unsigned int>  GizmoCubeIndices;
-
-	ID3D11Buffer* gizmoCubeVerticesBuffer = nullptr;
-	ID3D11Buffer* gizmoCubeIndicesBuffer = nullptr;
+    void Initialize(URenderer* renderer);
+    void Render(URenderer* renderer);
+    void Release();
 };
-
