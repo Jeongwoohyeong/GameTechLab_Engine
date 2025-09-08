@@ -209,6 +209,35 @@ struct FMatrix
 		return MakeRotationZ(RadVec.Z) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.X);
 	}
 
+	static FVector GetRotationFromMatrix(const FMatrix& Mat)
+	{
+		FVector Result;
+		float SinY = Mat.M[2][0];
+		Result.Y = std::asin(SinY);
+		float CosY = std::sqrt(1.0f - SinY * SinY);
+		if(CosY > MATH_EPSILON)
+		{
+			Result.Z = std::atan2(-Mat.M[1][0], Mat.M[0][0]);
+			Result.X = std::atan2(-Mat.M[2][1], Mat.M[2][2]);
+		}
+		else
+		{
+			// 짐벌락 발생
+			Result.X = 0.0f; // 편의상 0으로 설정
+			if (SinY > 0) // +90도
+			{
+				Result.Z = std::atan2(Mat.M[0][1], Mat.M[1][1]);
+			}
+			else // -90도
+			{
+				Result.Z = std::atan2(-Mat.M[0][1], Mat.M[1][1]);
+			}
+		}
+		
+		return Result;
+	}
+
+
 	static FMatrix MakeTranslation(const FVector& T)
 	{
 		return FMatrix{ {

@@ -66,6 +66,16 @@ void FTransform::SetRotationDeg(const FVector& degrees)
 	bIsInverseDirty = true;
 }
 
+void FTransform::SetRotationDegByDrag(const FVector& Degrees)
+{
+	Rotation.X = DegToRad(Degrees.X);
+	Rotation.Y = DegToRad(Degrees.Y);
+	Rotation.Z = DegToRad(Degrees.Z);
+
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
 void FTransform::AddRotationDegX(float degree)
 {
 	Rotation.X += DegToRad(degree);
@@ -183,3 +193,19 @@ FMatrix& FTransform::GetTransformMatrix()
 
 	return Transform;
 }
+
+//TODO: 2단계 회전 구현
+//FMatrix& FTransform::Get2StepRotationMatrix()
+//{
+//	FVector DeltaRot = Rotation - PrevRotation;
+//
+//	FMatrix Rot1 = FMatrix::MakeRotation(PrevRotation);
+//	FMatrix Rot2 = FMatrix::MakeRotation(DeltaRot);
+//
+//	return FMatrix(
+//		{ FVector4(Rot2[0][0], Rot2[0][1], Rot2[0][2], Rot2[0][3]) * Rot1,
+//		  FVector4(Rot2[1][0], Rot2[1][1], Rot2[1][2], Rot2[1][3]) * Rot1,
+//		  FVector4(Rot2[2][0], Rot2[2][1], Rot2[2][2], Rot2[2][3]) * Rot1,
+//		  FVector4(Rot2[3][0], Rot2[3][1], Rot2[3][2], Rot2[3][3]) * Rot1
+//		});
+//}
