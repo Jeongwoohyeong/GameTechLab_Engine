@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "UPrimitiveComponent.h"
 #include "Types.h"
+#include "URenderer.h"
 
 struct ID3D11Buffer;
 
@@ -11,7 +12,7 @@ public:
 	~UCubeComp() override {};
 	
 	virtual EPrimitiveType GetPrimitiveType() override;
-	virtual void RenderPrimitive(ID3D11DeviceContext*) override;
+	virtual FMesh* GetMesh() override { return URenderer::CubeMesh; }
 
 private:
 	EPrimitiveType Type;	

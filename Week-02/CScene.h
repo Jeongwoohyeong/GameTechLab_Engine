@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Types.h"
 #include "Containers.h"
@@ -17,7 +17,11 @@ public:
 	void New();
 	void Save(const FString& Name);
 	void Load(const FString& Name);
+
 	void Spawn(EPrimitiveType Type, uint32 Count);
+
+	TArray<UPrimitiveComponent*>& GetPrimitives() { return Primitives; }
+	UPrimitiveComponent* GetSelectedPrimitive() { return SelectedPrimitive; }
 
 private:
 	uint32 Version = 1;
