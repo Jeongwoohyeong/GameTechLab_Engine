@@ -128,6 +128,7 @@
     <ClCompile Include="CScene.cpp" />
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />
+    <ClCompile Include="FMesh.h" />
     <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
