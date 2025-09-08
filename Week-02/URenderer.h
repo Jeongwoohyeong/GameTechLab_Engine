@@ -6,7 +6,7 @@
 
 class UD3dDevice;
 class UShader;
-class ID3D11RasterizerState;
+struct ID3D11RasterizerState;
 class UCamera;
 
 class ShapeData;
