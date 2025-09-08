@@ -5,6 +5,7 @@
 #include "UUIManager.h"
 #include "UCubeComp.h"
 #include "USphereComp.h"
+#include "UTriangleComp.h"
 #include <fstream>
 
 #if defined(_WIN32)
@@ -110,7 +111,7 @@ void CScene::Save(const FString& Name)
 
 	Root["Primitives"] = PrimitivesObj;
 
-	const FString OutPath = FString("Scenes/") + Name + ".scene";
+	const FString OutPath = FString("Scenes/") + Name + ".Scene";
 	std::ofstream Ofs(OutPath, std::ios::out | std::ios::trunc);
 	if (!Ofs.is_open())
 	{
@@ -163,6 +164,10 @@ inline UPrimitiveComponent* CreatePrimitiveFromType(const FString& TypeStr)
 	{
 		return new USphereComp();
 	}
+	else if (TypeStr == "Triangle")
+	{
+		return new UTriangleComp();
+	}
 	else
 	{
 		UE_LOG("Warning: Unknown primitive type '%s'. Skipping.", TypeStr.c_str());
@@ -176,7 +181,7 @@ void CScene::Load(const FString& Name)
 
 	Clear();
 
-	const FString InPath = FString("Scenes/") + Name + ".scene";
+	const FString InPath = FString("Scenes/") + Name + ".Scene";
 	std::ifstream Ifs(InPath, std::ios::in);
 	if (!Ifs.is_open())
 	{
@@ -270,6 +275,9 @@ void CScene::Spawn(EPrimitiveType Type, uint32 Count)
 			break;
 		case EPrimitiveType::Sphere:
 			NewComp = new USphereComp();
+			break;
+		case EPrimitiveType::Triangle:
+			NewComp = new UTriangleComp();
 			break;
 		default:
 			UE_LOG("Warning: Unknown primitive type enum value %d. Skipping spawn.", static_cast<uint8>(Type));

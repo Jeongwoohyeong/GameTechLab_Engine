@@ -22,9 +22,9 @@
 
 namespace Math
 {
-	constexpr float Pi = 3.14159274f;
-	constexpr float DegToRad = Pi / 180.0f;
-	constexpr float RadToDeg = 180.0f / Pi;
+	inline constexpr float Pi = 3.14159274f;
+	inline constexpr float DegToRad = Pi / 180.0f;
+	inline constexpr float RadToDeg = 180.0f / Pi;
 }
 
  // ============================================================================
