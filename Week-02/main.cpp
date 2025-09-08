@@ -9,6 +9,7 @@
 #include "CameraInputMove.h"
 #include "UCamera.h"
 #include "CScene.h"
+#include "CInputManager.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -60,6 +61,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)&renderer);
 
+	CInputManager::GetInstance().SetHWnd(&hWnd);
 	CameraInputMove* input = nullptr; // 포인터를 nullptr로 초기화하는 것이 좋은 습관입니다.
 	input = new CameraInputMove();   // 객체 생성 및 포인터에 할당
 	input->Initialize(&hWnd);
@@ -91,7 +93,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			input->UpdateInputToCamera();
+			input->UpdateInputToCamera(); // CameraInputMove -> TODO: 나중에 InputManager에 의해 가공된 입력 처리용으로 수정
+			CInputManager::GetInstance().Update(); // InputManager 업데이트
+
+			// --- Picking ---
+			// TODO: Scene에 Update() 함수 만들어서 그 안에서 처리하기 (더 좋은 구조 있으면 그 쪽으로)
+			if (CInputManager::GetInstance().IsMouseBtnPressed(0)) // 왼쪽 버튼 클릭 시
+			{
+				uint32 PickedUUID = -1;
+				uint32 ClientW = CInputManager::GetInstance().GetClientW();
+				uint32 ClientH = CInputManager::GetInstance().GetClientH();
+				POINT MousePos = CInputManager::GetInstance().GetMouseClientPos();
+				UPrimitiveComponent* PickedPrim = CScene::GetInstance().PickAtMouse(MousePos.x, MousePos.y, ClientW, ClientH, PickedUUID);
+				if (PickedUUID != -1 && PickedPrim)
+				{
+					UE_LOG("Picked primitive UUID: %d", PickedUUID);
+					CScene::GetInstance().SetSelectedPrimitiveByUUID(PickedUUID);
+				}
+				else
+				{
+					UE_LOG("No primitive picked.");
+				}
+				
+			}
+
 
 			renderer.Render();
 		}

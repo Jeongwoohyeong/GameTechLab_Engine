@@ -29,6 +29,7 @@ public:
 	virtual FMesh* GetMesh() = 0;
 
 	virtual void CreateAABB();
+	FAABB GetAABB();
 
 protected:
 	LocalGizmo Gizmo;

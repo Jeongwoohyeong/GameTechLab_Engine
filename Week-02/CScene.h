@@ -4,6 +4,7 @@
 #include "Containers.h"
 #include "UPrimitiveComponent.h"
 #include "UPrimitiveTypes.h"
+#include "UCamera.h"
 
 class CScene
 {
@@ -19,7 +20,8 @@ public:
 	void Load(const FString& Name);
 
 	void Spawn(EPrimitiveType Type, uint32 Count);
-
+    UPrimitiveComponent* PickAtMouse(int ClientX, int ClientY, int ClientW, int ClientH, uint32& OutUUID);
+    
 	TMap<uint32, UPrimitiveComponent*>& GetPrimitives() { return UUIDToPrimitive; }
 	UPrimitiveComponent* GetSelectedPrimitive() { return SelectedPrimitive; }
 	void SetSelectedPrimitiveByUUID(uint32 UUID);

@@ -46,3 +46,8 @@ void UPrimitiveComponent::CreateAABB()
 	AABB.Min = Min;
 	AABB.Max = Max;
 }
+
+FAABB UPrimitiveComponent::GetAABB()
+{
+	return AABB;
+}
