@@ -47,6 +47,7 @@ struct FVector
 	// Operators
 	constexpr FVector operator+() const noexcept { return *this; }
 	constexpr FVector operator-() const noexcept { return FVector(-X, -Y, -Z); }
+	constexpr FVector operator*(const FVector& V) const { return FVector(X * V.X, Y * V.Y, Z * V.Z); } // Hadamard product
 
 	constexpr FVector operator+(const FVector& V) const { return FVector(X + V.X, Y + V.Y, Z + V.Z); }
 	constexpr FVector operator-(const FVector& V) const { return FVector(X - V.X, Y - V.Y, Z - V.Z); }
@@ -206,7 +207,8 @@ struct FMatrix
 
 	static FMatrix MakeRotation(const FVector& RadVec) // R: in Radian
 	{
-		return MakeRotationZ(RadVec.Z) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.X);
+		// return MakeRotationZ(RadVec.Z) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.X);
+		return MakeRotationZ(RadVec.X) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.Z);
 	}
 
 	static FMatrix MakeTranslation(const FVector& T)

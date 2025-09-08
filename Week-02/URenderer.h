@@ -25,6 +25,9 @@ private:
 	bool CreateVertexBuffer(ID3D11Buffer**);
 	bool CreateIndexBuffer(ID3D11Buffer**);
 
+	void UpdateConstant(const FMatrix& mvp);
+	void UpdateConstant(const FMatrix& mvp, const FVector& vec);
+	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
 public:
 	static ID3D11Buffer* CubeVertexBuffer;
 	static ID3D11Buffer* CubeIndexBuffer;

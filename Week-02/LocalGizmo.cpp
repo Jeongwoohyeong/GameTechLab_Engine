@@ -1,71 +1,121 @@
-//#include "LocalGizmo.h"
-//#include "URenderer.h"
+#include "LocalGizmo.h"
+#include "URenderer.h"
+#include "Cone.h"
+#include "Cylinder.h"
+#include "Cube.h"
+
+void LocalGizmo::Initialize(URenderer* renderer)
+{
+    Transform.SetLocation({ 0,0,0 });
+    Transform.SetScale({ 0.1,0.1,0.1 });
+    Transform.SetRotationDeg({ 0,0,0 });
+    Transform.SetRotationDeg({ -90,0,0 });
+    Transform.SetRotationDeg({ 0, 0,90 });
+
+    // C 배열 → span으로 자동 래핑
+    coneVerts = std::span<FVertexSimple>(GConeVertices);
+    coneIdx = std::span<unsigned int>(GConeIndices);
+    cylinderVerts = std::span<FVertexSimple>(GCylinderVertices);
+    cylinderIdx = std::span<unsigned int>(GCylinderIndices);
+
+    renderer->CreateVertexBuffer(
+        &gizmoConeVerticesBuffer,
+        coneVerts.data(),
+        static_cast<unsigned int>(coneVerts.size_bytes())
+    );
+
+    renderer->CreateIndexBuffer(
+        &gizmoConeIndicesBuffer,
+        coneIdx.data(),
+        static_cast<unsigned int>(coneIdx.size_bytes())
+    );
+
+    renderer->CreateVertexBuffer(
+        &gizmoCylinderVerticesBuffer,
+        cylinderVerts.data(),
+        static_cast<unsigned int>(cylinderVerts.size_bytes())
+    );
+
+    renderer->CreateIndexBuffer(
+        &gizmoCylinderIndicesBuffer,
+        cylinderIdx.data(),
+        static_cast<unsigned int>(cylinderIdx.size_bytes())
+    );
+}
+
 //
-//void LocalGizmo::Initialize(URenderer* renderer)
+//FTransform LocalGizmo::AddTranslateToParentTranslate(axis a)
 //{
-//	Transform.SetLocation(FVector(0.0f, 0.0f, 0.0f));
-//	Transform.SetScale(FVector(1.0f, 1.0f, 1.0f));
-//	Transform.SetRotationDeg(FVector(0.0f, 0.0f, 0.0f));
+//    FTransform temp = Transform;
+//    FVector rot = a.rotate;
+//
 //	
-//	GizmoCubeVertices = {
-//		{ -0.5f, -0.5f, -0.5f, 1,0,0,1 }, // v0
-//		{ 0.5f, -0.5f, -0.5f, 0,1,0,1 }, // v1
-//		{ 0.5f, 0.5f, -0.5f, 0,0,1,1 }, // v2
-//		{ -0.5f, 0.5f, -0.5f, 1,1,0,1 }, // v3
-//		{ -0.5f, -0.5f, 0.5f, 1,0,1,1 }, // v4
-//		{ 0.5f, -0.5f, 0.5f, 0,1,1,1 }, // v5
-//		{ 0.5f, 0.5f, 0.5f, 1,1,1,1 }, // v6
-//		{ -0.5f, 0.5f, 0.5f, 0,0,0,1 }, // v7
-//	};
+//    temp.AddRotationDegX(rot.X);
+//    temp.AddRotationDegY(rot.Y);
+//    temp.AddRotationDegZ(rot.Z);
 //
-//	GizmoCubeIndices = {
-//			// Front (+Z)
-//			4, 5, 6, 4, 6, 7,
-//			// Back (-Z)
-//			1, 0, 3, 1, 3, 2,
-//			// Left (-X)
-//			0, 4, 7, 0, 7, 3,
-//			// Right (+X)
-//			5, 1, 2, 5, 2, 6,
-//			// Top (+Y)
-//			3, 7, 6, 3, 6, 2,
-//			// Bottom (-Y)
-//			0, 1, 5, 0, 5, 4
-//	};
-//
-//    gizmoCubeVerticesBuffer = nullptr;
-//    gizmoCubeIndicesBuffer = nullptr;
-//
-//    renderer->CreateVertexBuffer(&gizmoCubeVerticesBuffer,
-//        GizmoCubeVertices.data(),
-//        static_cast<unsigned int>(GizmoCubeVertices.size() * sizeof(FVertexSimple)));
-//
-//    renderer->CreateIndexBuffer(&gizmoCubeIndicesBuffer,
-//        GizmoCubeIndices.data(),
-//        static_cast<unsigned int>(GizmoCubeIndices.size() * sizeof(unsigned int)));
+//    return temp;
 //}
-//
-//void LocalGizmo::Render(URenderer* renderer)
-//{
-//	renderer->SetTopology(false); // 선으로 렌더링
-//	renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
-//	renderer->RenderMesh(gizmoCubeVerticesBuffer,
-//		static_cast<unsigned int>(GizmoCubeVertices.size()),
-//		gizmoCubeIndicesBuffer,
-//		static_cast<unsigned int>(GizmoCubeIndices.size()),
-//		sizeof(FVertexSimple));
-//}
-//
-//void LocalGizmo::Release()
-//{
-//	if (gizmoCubeVerticesBuffer)
-//	{
-//		gizmoCubeVerticesBuffer->Release();
-//		gizmoCubeVerticesBuffer = nullptr;
-//	}
-//	if (gizmoCubeIndicesBuffer)
-//	{
-//		gizmoCubeIndicesBuffer->Release();
-//		gizmoCubeIndicesBuffer = nullptr;
-//	}
-//}
+
+FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
+{
+    FTransform temp = Transform;
+    FVector rot = a.rotate;
+
+    temp.SetScale(0.1f, 0.2f, 0.1f);
+
+    FVector resizedLocation = Transform.GetLocation() + (a.translate) * Transform.GetScale();
+    temp.SetLocation(resizedLocation);
+
+    temp.AddRotationDegX(rot.X);
+    temp.AddRotationDegY(rot.Y);
+    temp.AddRotationDegZ(rot.Z);
+
+   return temp;
+}
+void LocalGizmo::Render(URenderer* renderer){
+    renderer->SetTopology(false);
+
+    FTransform temp;
+   
+    for (auto& a : axisInfo)
+    {
+		temp = UpdateGizmoTranformFromParent(a); // x, y, z축 회전 적용
+        
+        renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(temp.GetTransformMatrix()), a.color);
+        renderer->RenderMesh(
+            gizmoConeVerticesBuffer, static_cast<unsigned int>(coneVerts.size()),
+            gizmoConeIndicesBuffer, static_cast<unsigned int>(coneIdx.size()),
+            sizeof(FVertexSimple)
+        );
+        renderer->RenderMesh(
+            gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
+            gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
+            sizeof(FVertexSimple)
+        );
+    }
+}
+
+void LocalGizmo::Release()
+{
+    if (gizmoConeVerticesBuffer)
+    {
+        gizmoConeVerticesBuffer->Release();
+        gizmoConeVerticesBuffer = nullptr;
+    }
+    if (gizmoConeIndicesBuffer)
+    {
+        gizmoConeIndicesBuffer->Release();
+        gizmoConeIndicesBuffer = nullptr;
+    }
+    if (gizmoCylinderVerticesBuffer)
+    {
+        gizmoCylinderVerticesBuffer->Release();
+        gizmoCylinderVerticesBuffer = nullptr;
+    }
+    if (gizmoCylinderIndicesBuffer)
+    {
+        gizmoCylinderIndicesBuffer->Release();
+        gizmoCylinderIndicesBuffer = nullptr;
+    }
+}

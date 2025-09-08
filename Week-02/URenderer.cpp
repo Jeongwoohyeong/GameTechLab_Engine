@@ -1,4 +1,4 @@
-﻿#include <d3d11.h>
+#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -119,7 +119,12 @@ bool URenderer::CreateRasterizerState()
 	return true;
 }
 
-bool URenderer::CreateCubeBuffers()
+void URenderer::UpdateConstant(const FMatrix& mvp, const FVector& vec)
+{
+	Shader->UpdateConstant(mvp, vec);
+}
+
+void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
 {
 	if (!this->CreateVertexBuffer(&CubeVertexBuffer))
 	{
