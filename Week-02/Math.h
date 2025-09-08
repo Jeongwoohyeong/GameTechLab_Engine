@@ -211,6 +211,35 @@ struct FMatrix
 		return MakeRotationZ(RadVec.X) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.Z);
 	}
 
+	static FVector GetRotationFromMatrix(const FMatrix& Mat)
+	{
+		FVector Result;
+		float SinY = Mat.M[2][0];
+		Result.Y = std::asin(SinY);
+		float CosY = std::sqrt(1.0f - SinY * SinY);
+		if(CosY > MATH_EPSILON)
+		{
+			Result.Z = std::atan2(-Mat.M[1][0], Mat.M[0][0]);
+			Result.X = std::atan2(-Mat.M[2][1], Mat.M[2][2]);
+		}
+		else
+		{
+			// 짐벌락 발생
+			Result.X = 0.0f; // 편의상 0으로 설정
+			if (SinY > 0) // +90도
+			{
+				Result.Z = std::atan2(Mat.M[0][1], Mat.M[1][1]);
+			}
+			else // -90도
+			{
+				Result.Z = std::atan2(-Mat.M[0][1], Mat.M[1][1]);
+			}
+		}
+		
+		return Result;
+	}
+
+
 	static FMatrix MakeTranslation(const FVector& T)
 	{
 		return FMatrix{ {
@@ -371,3 +400,74 @@ inline FVector4 operator*(const FVector4& V, const FMatrix& M)
 	Result.W = V.X * M.M[0][3] + V.Y * M.M[1][3] + V.Z * M.M[2][3] + V.W * M.M[3][3];
 	return Result;
 }
+
+struct FQuaternion
+{
+	float X, Y, Z, W; // W + Xi + Yj + Zk
+	constexpr FQuaternion() noexcept : X(0), Y(0), Z(0), W(1) {}
+	constexpr FQuaternion(float _X, float _Y, float _Z, float _W) noexcept : X(_X), Y(_Y), Z(_Z), W(_W) {}
+
+	static FQuaternion FromAxisAngle(const FVector& Axis, float AngleRad)
+	{
+		float HalfAngle = AngleRad * 0.5f;
+		float S = sin(HalfAngle);
+		return FQuaternion(Axis.X * S, Axis.Y * S, Axis.Z * S, cos(HalfAngle));
+	}
+	static FQuaternion FromEuler(const FVector& EulerRad)
+	{
+		float Cy = cos(EulerRad.Z * 0.5f);
+		float Sy = sin(EulerRad.Z * 0.5f);
+		float Cp = cos(EulerRad.Y * 0.5f);
+		float Sp = sin(EulerRad.Y * 0.5f);
+		float Cr = cos(EulerRad.X * 0.5f);
+		float Sr = sin(EulerRad.X * 0.5f);
+		FQuaternion Q;
+		Q.W = Cr * Cp * Cy + Sr * Sp * Sy;
+		Q.X = Sr * Cp * Cy - Cr * Sp * Sy;
+		Q.Y = Cr * Sp * Cy + Sr * Cp * Sy;
+		Q.Z = Cr * Cp * Sy - Sr * Sp * Cy;
+		return Q;
+	}
+
+	constexpr FQuaternion operator*(FQuaternion Other) const noexcept
+	{
+		return FQuaternion(
+			W * Other.X + X * Other.W + Y * Other.Z - Z * Other.Y,
+			W * Other.Y - X * Other.Z + Y * Other.W + Z * Other.X,
+			W * Other.Z + X * Other.Y - Y * Other.X + Z * Other.W,
+			W * Other.W - X * Other.X - Y * Other.Y - Z * Other.Z
+		);
+	}
+
+	// 켤레 쿼터니언을 구합니다.
+	constexpr FQuaternion GetConjugate() const noexcept
+	{
+		return FQuaternion(-X, -Y, -Z, W);
+	}
+
+	inline FMatrix MakeRotationQuaternion() const
+	{
+		// https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
+		// 위키백과의 notation은 colum vector & column-major 기준이므로 전치해서 사용
+		FMatrix Result = FMatrix::Identity();
+		float XX = X * X;
+		float YY = Y * Y;
+		float ZZ = Z * Z;
+		float XY = X * Y;
+		float XZ = X * Z;
+		float YZ = Y * Z;
+		float WX = W * X;
+		float WY = W * Y;
+		float WZ = W * Z;
+		Result.M[0][0] = 1.0f - 2.0f * (YY + ZZ);
+		Result.M[0][1] = 2.0f * (XY + WZ);
+		Result.M[0][2] = 2.0f * (XZ - WY);
+		Result.M[1][0] = 2.0f * (XY - WZ);
+		Result.M[1][1] = 1.0f - 2.0f * (XX + ZZ);
+		Result.M[1][2] = 2.0f * (YZ + WX);
+		Result.M[2][0] = 2.0f * (XZ + WY);
+		Result.M[2][1] = 2.0f * (YZ - WX);
+		Result.M[2][2] = 1.0f - 2.0f * (XX + YY);
+		return Result;
+	}
+};
