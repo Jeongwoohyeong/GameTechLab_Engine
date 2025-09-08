@@ -293,17 +293,3 @@ void CScene::Spawn(EPrimitiveType Type, uint32 Count)
 		}
 	}
 }
-
-void CScene::Render(ID3D11DeviceContext* deviceContext)
-{
-	for (UPrimitiveComponent* Primitive : Primitives)
-	{
-		if (Primitive)
-		{
-			FMatrix World = FMatrix::Identity();
-			World = World * Primitive->GetTransform()->GetTransformMatrix();
-			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
-			Primitives->RenderPrimitive();
-		}
-	}
-}

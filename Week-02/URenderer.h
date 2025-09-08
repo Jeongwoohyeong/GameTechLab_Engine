@@ -2,6 +2,7 @@
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
+#include "FMesh.h"
 
 class UD3dDevice;
 class UShader;
@@ -19,15 +20,19 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
-	bool CreateCubeBuffers();
+	bool CreateCubeMesh();
+	// TODO: bool CreateSphereMesh();
 
 private:
-	bool CreateVertexBuffer(ID3D11Buffer**);
-	bool CreateIndexBuffer(ID3D11Buffer**);
+	bool CreateVertexBuffer(FMesh* Mesh);
+	bool CreateIndexBuffer(FMesh* Mesh);
+	bool RenderPrimitive(UPrimitiveComponent* Primitive);
+
+	void ReleaseAllMesh();
 
 public:
-	static ID3D11Buffer* CubeVertexBuffer;
-	static ID3D11Buffer* CubeIndexBuffer;
+	static FMesh* CubeMesh;
+	static FMesh* SphereMesh;
 
 private:
 	UD3dDevice* Device = nullptr;
