@@ -21,8 +21,6 @@ public:
 	void Render();
 	void Release();
 	bool CreateRasterizerState();
-	bool CreateCubeMesh();
-	// TODO: bool CreateSphereMesh();
 
 	void Resize(UINT, UINT);
 
@@ -39,8 +37,14 @@ public:
 private:
 	bool CreateVertexBuffer(FMesh* Mesh);
 	bool CreateIndexBuffer(FMesh* Mesh);
+	
+	void RenderScene();
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
+	void RenderUI();
 
+	bool CreateAllMesh();
+	bool CreateCubeMesh();
+	bool CreateSphereMesh();
 	void ReleaseAllMesh();
 
 public:

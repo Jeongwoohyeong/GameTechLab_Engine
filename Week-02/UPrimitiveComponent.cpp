@@ -3,9 +3,7 @@
 #include "LocalGizmo.h"
 
 UPrimitiveComponent::UPrimitiveComponent()
-	:Transform(FTransform())
-{
-}
+{}
 
 void UPrimitiveComponent::Initialize(URenderer* renderer)
 {

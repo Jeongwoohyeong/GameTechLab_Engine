@@ -9,9 +9,6 @@
 #include "Sphere.h"
 #include "WorldGizmo.h"
 
-//ID3D11Buffer* URenderer::CubeVertexBuffer = nullptr;
-//ID3D11Buffer* URenderer::CubeIndexBuffer = nullptr;
-
 FMesh* URenderer::CubeMesh = nullptr;
 FMesh* URenderer::SphereMesh = nullptr;
 
@@ -32,19 +29,9 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!Shader->Initialize(Device->GetDeivce(), Device->GetDeviceContext()))
 	{
 		return false;
-	}	
-
-	/*if (!this->CreateCubeBuffers())
-	{
-		return false;
-	}*/
-	TArray<UPrimitiveComponent*>& Primitives = CScene::GetInstance().GetPrimitives();
-	for (UPrimitiveComponent* Primitive : Primitives)
-	{
-		Primitive->Initialize(this);
 	}
 
-	if (!this->CreateCubeMesh())
+	if (!this->CreateAllMesh())
 	{
 		return false;
 	}
@@ -69,19 +56,14 @@ void URenderer::Render()
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
 	Shader->PrepareShader();
-	
-	// 씬의 프리미티브 렌더링
-	TArray<UPrimitiveComponent*>& Primitives = CScene::GetInstance().GetPrimitives();
-	for (UPrimitiveComponent* Primitive : Primitives)
-	{
-		RenderPrimitive(Primitive);
-		Primitive->Render(this);
-	}
-	worldGizmo->Render(this);
-	// 선택된 프리미티브의 컨트롤 UI 표시
-	UI.ObjectControlUI(Primitives[0]->GetTransform());
 
-	// worldGizmo->Render(this);
+	// 씬 렌더링
+	RenderScene();
+
+	// UI 렌더링
+	RenderUI();
+
+	worldGizmo->Render(this);
 
 	Device->EndScene();
 }
@@ -135,6 +117,21 @@ bool URenderer::CreateRasterizerState()
 	return true;
 }
 
+bool URenderer::CreateAllMesh()
+{
+	if (!this->CreateCubeMesh())
+	{
+		return false;
+	}
+
+	if (!this->CreateSphereMesh())
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool URenderer::CreateCubeMesh()
 {
 	if (CubeMesh == nullptr)
@@ -155,6 +152,28 @@ bool URenderer::CreateCubeMesh()
 		}
 
 		if (!this->CreateIndexBuffer(CubeMesh))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+bool URenderer::CreateSphereMesh()
+{
+	if (SphereMesh == nullptr)
+	{
+		SphereMesh = new FMesh();
+		SphereMesh->Vertices = GSphereVertices;
+		SphereMesh->VertexByteWidth = sizeof(GSphereVertices);
+		SphereMesh->Offset = 0;
+		SphereMesh->Stride = sizeof(FVertexSimple);
+		SphereMesh->bUseIndexBuffer = false;
+
+		if (!this->CreateVertexBuffer(SphereMesh))
 		{
 			return false;
 		}
@@ -218,6 +237,16 @@ bool URenderer::CreateIndexBuffer(FMesh* Mesh)
 	return true;
 }
 
+void URenderer::RenderScene()
+{
+	// 씬의 프리미티브 렌더링
+	TMap<uint32, UPrimitiveComponent*>& Primitives = CScene::GetInstance().GetPrimitives();
+	for (const auto& Pair : Primitives)
+	{
+		RenderPrimitive(Pair.second);
+	}
+}
+
 bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 {
 	if (!Primitive)
@@ -233,9 +262,18 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	// 드로우 콜
 	FMesh* Mesh = Primitive->GetMesh();
-	DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
-	DeviceContext->IASetIndexBuffer(Mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	DeviceContext->DrawIndexed(Mesh->IndexCount, 0, 0);
+
+	if (Mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
+		DeviceContext->IASetIndexBuffer(Mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(Mesh->IndexCount, 0, 0);
+	}
+	else
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
+		DeviceContext->Draw(Mesh->VertexByteWidth / Mesh->Stride, 0);
+	}
 
 	return true;
 }
@@ -328,6 +366,17 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 	}
 }
 #pragma endregion
+void URenderer::RenderUI()
+{
+	UI.PrepareRender();
+
+	UI.PropertyWindow(CScene::GetInstance().GetSelectedPrimitive());
+	UI.ControlPanel();
+	UI.ConsoleWindow(true);
+
+	UI.Render();
+}
+
 void URenderer::ReleaseAllMesh()
 {
 	if (CubeMesh)

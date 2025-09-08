@@ -32,6 +32,5 @@ public:
 
 protected:
 	LocalGizmo Gizmo;
-	FTransform Transform;
 	FAABB AABB;
 };
