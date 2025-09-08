@@ -12,5 +12,5 @@ public:
 	virtual void Render(URenderer* renderer) {};
 	virtual void Release() {};
 
-	FTransform Transform;
+	FTransform* Transform;
 };

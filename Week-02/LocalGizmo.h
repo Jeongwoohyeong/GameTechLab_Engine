@@ -44,7 +44,7 @@ public:
         {COLOR_B, ROTATE_Z, TRANSLATE_Z} // z
     };
 
-    void Initialize(class URenderer* renderer, FTransform transform);
+    void Initialize(class URenderer* renderer, FTransform* transform);
     virtual void Render(class URenderer* renderer) override;
     virtual void Release() override;
 

@@ -9,7 +9,7 @@ UPrimitiveComponent::UPrimitiveComponent()
 
 void UPrimitiveComponent::Initialize(URenderer* renderer)
 {
-	Gizmo.Initialize(renderer, Transform);
+	Gizmo.Initialize(renderer, &Transform);
 }
 
 void UPrimitiveComponent::Render(URenderer* renderer)

@@ -5,7 +5,7 @@
 #include "Cube.h"
 #include "UCamera.h"
 
- void LocalGizmo::Initialize(URenderer* renderer, FTransform transform)
+ void LocalGizmo::Initialize(URenderer* renderer, FTransform* transform)
 {
     Transform = transform;
 
@@ -42,12 +42,12 @@
 
 FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
-    FTransform temp = Transform;
+    FTransform temp = *Transform;
     FVector rot = a.rotate;
 
     temp.SetScale(0.2f, 0.4f, 0.2f);
 
-    FVector resizedLocation = Transform.GetLocation() + (a.translate) * Transform.GetScale()*0.5f;
+    FVector resizedLocation = Transform->GetLocation() + (a.translate) * Transform->GetScale()*0.5f;
     temp.SetLocation(resizedLocation);
 
     temp.AddRotationDegX(rot.X);
