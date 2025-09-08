@@ -1,27 +1,27 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "d3d11.h"
+#include "LocalGizmo.h"
 
 UPrimitiveComponent::UPrimitiveComponent()
 	:Transform(FTransform())
 {
 }
 
-//void UPrimitiveComponent::RenderPrimitive(ID3D11DeviceContext* deviceContext);
+void UPrimitiveComponent::Initialize(URenderer* renderer)
+{
+	Gizmo.Initialize(renderer, Transform);
+}
+
+void UPrimitiveComponent::Render(URenderer* renderer)
+{
+	Gizmo.Render(renderer);
+}
 
 void UPrimitiveComponent::Release()
 {
-	/*if (IndexBuffer)
-	{
-		IndexBuffer->Release();
-		IndexBuffer = nullptr;
-	}
-
-	if (VertexBuffer)
-	{
-		VertexBuffer->Release();
-		VertexBuffer = nullptr;
-	}*/
+	Gizmo.Release();
 }
+
 void UPrimitiveComponent::CreateAABB()
 {
 	FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);

@@ -38,7 +38,27 @@ void UShader::UpdateConstant(const FMatrix& mvpMatrix)
 	DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMSR);
 	FConstants* constants = (FConstants*)constantBufferMSR.pData;
 	constants->MVPMatrix = mvpMatrix;
+	constants->Color = FVector::One();
+	constants->useUColor = 0;	
 	
+	DeviceContext->Unmap(ConstantBuffer, 0);
+}
+
+void UShader::UpdateConstant(const FMatrix& mvpMatrix, const FVector& color)
+{
+	if (!ConstantBuffer)
+	{
+		return;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE constantBufferMSR;
+
+	DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantBufferMSR);
+	FConstants* mappedConstants = (FConstants*)constantBufferMSR.pData;
+	mappedConstants->MVPMatrix = mvpMatrix;
+	mappedConstants->Color = color;
+	mappedConstants->useUColor = 1;
+
 	DeviceContext->Unmap(ConstantBuffer, 0);
 }
 
