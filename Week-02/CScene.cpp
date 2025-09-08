@@ -1,4 +1,6 @@
-﻿#include "CSceneSerializer.h"
+﻿#include "CScene.h"
+#include "UObject.h"
+#include "UEngineStatics.h"
 #include "SimpleJSON/json.hpp"
 #include "UUIManager.h"
 #include "UCubeComp.h"
@@ -9,6 +11,22 @@
 #include <direct.h>   // _mkdir
 #endif
 
+void CScene::New()
+{
+	// 기존 씬의 모든 프리미티브 컴포넌트 삭제
+	for (UPrimitiveComponent* Primitive : Primitives)
+	{
+		if (Primitive)
+		{
+			delete Primitive;
+			Primitive = nullptr;
+		}
+	}
+	Primitives.clear();
+
+	UE_LOG("New scene created.");
+}
+
 static inline void EnsureScenesDirectory()
 {
 #if defined(_WIN32)
@@ -16,19 +34,51 @@ static inline void EnsureScenesDirectory()
 #endif
 }
 
-void CSceneSerializer::SaveScene(const FString& Name, const FScene& Scene)
+// 원하는 키 순서(Version, NextUUID, Primitives)로 루트만 출력
+static FString DumpSceneRootOrdered(const json::JSON& Root)
+{
+	using namespace json;
+
+	TArray<TPair<const char*, const JSON*>> Items;
+	if (Root.hasKey("Version"))    Items.push_back({ "Version",    &Root.at("Version") });
+	if (Root.hasKey("NextUUID"))   Items.push_back({ "NextUUID",   &Root.at("NextUUID") });
+	if (Root.hasKey("Primitives")) Items.push_back({ "Primitives", &Root.at("Primitives") });
+
+	FString Result;
+	Result += "{\n";
+	const FString Indent = "  ";
+
+	for (size_t i = 0; i < Items.size(); ++i)
+	{
+		const bool bIsLast = (i + 1 == Items.size());
+		const bool bIsPrimitives = (std::strcmp(Items[i].first, "Primitives") == 0);
+
+		Result += Indent;
+		Result += "\"";
+		Result += Items[i].first;
+		Result += "\" : ";
+		// Primitives는 중첩 객체이므로 들여쓰기 깊이를 한 단계 더 주어 보기 좋게 출력
+		Result += Items[i].second->dump(bIsPrimitives ? 2 : 1, "  ");
+		Result += bIsLast ? "\n" : ",\n";
+	}
+
+	Result += "}";
+	return Result;
+}
+
+void CScene::Save(const FString& Name)
 {
 	using namespace json;
 
 	EnsureScenesDirectory();
 
 	JSON Root = Object();
-	Root["Version"] = Scene.Version;
-	Root["NextUUID"] = Scene.NextUUID;
+	Root["Version"] = Version;
+	Root["NextUUID"] = UEngineStatics::NextUUID;
 
 	JSON PrimitivesObj = Object();
 
-	for (UPrimitiveComponent* Primitive : Scene.Primitives)
+	for (UPrimitiveComponent* Primitive : Primitives)
 	{
 		uint32 UUID = Primitive->UUID;
 		if (!Primitive) 
@@ -76,8 +126,8 @@ void CSceneSerializer::SaveScene(const FString& Name, const FScene& Scene)
 		return;
 	}
 
-	// 보기 좋은 포맷으로 출력(SimpleJSON의 dump는 기본 2 스페이스 들여쓰기)
-	Ofs << Root.dump();
+	// 루트만 원하는 키 순서로 출력
+	Ofs << DumpSceneRootOrdered(Root);
 	Ofs.close();
 
 	UE_LOG("Scene saved to %s", OutPath.c_str());
@@ -128,21 +178,17 @@ inline UPrimitiveComponent* CreatePrimitiveFromType(const FString& TypeStr)
 	}
 }
 
-FScene CSceneSerializer::LoadScene(const FString& Name)
+void CScene::Load(const FString& Name)
 {
 	using namespace json;
 
-	FScene Scene;
-	Scene.Version = 1;
-	Scene.NextUUID = 0;
-	Scene.Primitives.clear();
+	New();
 
 	const FString InPath = FString("Scenes/") + Name + ".scene";
 	std::ifstream Ifs(InPath, std::ios::in);
 	if (!Ifs.is_open())
 	{
 		UE_LOG("Error: Could not open file %s for reading.", InPath.c_str());
-		return Scene;
 	}
 
 	// 파일 전체를 문자열로 로드
@@ -153,17 +199,16 @@ FScene CSceneSerializer::LoadScene(const FString& Name)
 	if (Root.JSONType() != JSON::Class::Object)
 	{
 		UE_LOG("Error: Invalid scene format in %s.", InPath.c_str());
-		return Scene;
 	}
 
 	// Version / NextUUID
 	if (Root.hasKey("Version"))  
 	{
-		Scene.Version = static_cast<int32>(Root.at("Version").ToInt());
+		Version = static_cast<int32>(Root.at("Version").ToInt());
 	}
 	if (Root.hasKey("NextUUID")) 
 	{
-		Scene.NextUUID = static_cast<uint32>(Root.at("NextUUID").ToInt());
+		UEngineStatics::NextUUID = static_cast<uint32>(Root.at("NextUUID").ToInt());
 	}
 
 	// Primitives
@@ -210,13 +255,11 @@ FScene CSceneSerializer::LoadScene(const FString& Name)
 			Comp->UUID = UUID;
 
 			// Scene에 추가
-			Scene.Primitives.push_back(Comp);
+			Primitives.push_back(Comp);
 		}
 	}
 	else
 	{
 		UE_LOG("Warning: No 'Primitives' object in scene file %s.", InPath.c_str());
 	}
-
-	return Scene;
 }

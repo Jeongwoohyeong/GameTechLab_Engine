@@ -47,7 +47,7 @@ void LocalGizmo::Initialize(URenderer* renderer)
 
 void LocalGizmo::Render(URenderer* renderer)
 {
-	renderer->SetTopology(false); // 선으로 렌더링
+	renderer->SetTopology(false);
 	renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform.GetTransformMatrix()));
 	renderer->RenderMesh(gizmoCubeVerticesBuffer,
 		static_cast<unsigned int>(GizmoCubeVertices.size()),

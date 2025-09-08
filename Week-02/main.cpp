@@ -8,6 +8,7 @@
 #include "UPrimitiveComponent.h"
 #include "CameraInputMove.h"
 #include "UCamera.h"
+#include "CScene.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -54,7 +55,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	input = new CameraInputMove();   // 객체 생성 및 포인터에 할당
 	input->Initialize(&hWnd);
 	// UPrimitiveComponent* Cube = new UPrimitiveComponent();
-	
+
+	// 씬 초기화
+	CScene::GetInstance().New();
 
 	if (renderer.Initialize(hWnd))
 	{

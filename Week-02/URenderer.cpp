@@ -58,6 +58,8 @@ void URenderer::Render()
 
 	worldGizmo->Render(this);
 
+	// TODO: 모든 Primitive 렌더링은 Scene의 렌더링 함수 내에서 수행
+
 	UI.ObjectControlUI(&localCube->Transform);
 
 	Device->EndScene();
