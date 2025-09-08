@@ -1,4 +1,6 @@
 ﻿#include "CScene.h"
+#include "UObject.h"
+#include "UEngineStatics.h"
 #include "SimpleJSON/json.hpp"
 #include "UUIManager.h"
 #include "UCubeComp.h"
@@ -9,21 +11,18 @@
 #include <direct.h>   // _mkdir
 #endif
 
-void CScene::Initialize()
+void CScene::New()
 {
-	Version = 1;
-	NextUUID = 0;
+	// 기존 씬의 모든 프리미티브 컴포넌트 삭제
+	for (UPrimitiveComponent* Primitive : Primitives)
+	{
+		if (Primitive)
+		{
+			delete Primitive;
+			Primitive = nullptr;
+		}
+	}
 	Primitives.clear();
-}
-
-void CScene::Save(const FString& Name)
-{
-	Serialize(Name);
-}
-
-void CScene::Load(const FString& Name)
-{
-	Parse(Name);
 }
 
 static inline void EnsureScenesDirectory()
@@ -65,7 +64,7 @@ static FString DumpSceneRootOrdered(const json::JSON& Root)
 	return Result;
 }
 
-void CScene::Serialize(const FString& Name)
+void CScene::Save(const FString& Name)
 {
 	using namespace json;
 
@@ -73,7 +72,7 @@ void CScene::Serialize(const FString& Name)
 
 	JSON Root = Object();
 	Root["Version"] = Version;
-	Root["NextUUID"] = NextUUID;
+	Root["NextUUID"] = UEngineStatics::NextUUID;
 
 	JSON PrimitivesObj = Object();
 
@@ -177,11 +176,11 @@ inline UPrimitiveComponent* CreatePrimitiveFromType(const FString& TypeStr)
 	}
 }
 
-void CScene::Parse(const FString& Name)
+void CScene::Load(const FString& Name)
 {
 	using namespace json;
 
-	Initialize();
+	New();
 
 	const FString InPath = FString("Scenes/") + Name + ".scene";
 	std::ifstream Ifs(InPath, std::ios::in);
@@ -207,7 +206,7 @@ void CScene::Parse(const FString& Name)
 	}
 	if (Root.hasKey("NextUUID")) 
 	{
-		NextUUID = static_cast<uint32>(Root.at("NextUUID").ToInt());
+		UEngineStatics::NextUUID = static_cast<uint32>(Root.at("NextUUID").ToInt());
 	}
 
 	// Primitives

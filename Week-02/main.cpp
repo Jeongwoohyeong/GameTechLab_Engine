@@ -60,9 +60,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (renderer.Initialize(hWnd))
 	{
 		CScene scene;
-		scene.Initialize();
 		scene.Load("Default");
 		scene.Save("AutoSave");
+		scene.New();
 
 		bool bIsExit = false;
 		while (bIsExit == false)

@@ -7,16 +7,11 @@
 class CScene
 {
 public:
-	void Initialize();
+	void New();
 	void Save(const FString& Name);
 	void Load(const FString& Name);
 
 private:
-	void Serialize(const FString& Name);
-	void Parse(const FString& Name);
-
-private:
-	int32 Version;
-	uint32 NextUUID;
+	uint32 Version = 1;
 	TArray<UPrimitiveComponent*> Primitives;
 };
