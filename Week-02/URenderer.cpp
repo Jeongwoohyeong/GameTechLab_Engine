@@ -1,13 +1,17 @@
-﻿#include "URenderer.h"
+#include <d3d11.h>
+#include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
 #include "UCamera.h"
+#include "UCubeComp.h"
 
-#include "ShapeData.h"
-#include "LocalGizmo.h"
-#include "WorldGizmo.h"
+ID3D11Buffer* URenderer::CubeVertexBuffer = nullptr;
+ID3D11Buffer* URenderer::CubeIndexBuffer = nullptr;
 
-URenderer::URenderer() {}
+URenderer::URenderer()
+{	
+	
+}
 
 bool URenderer::Initialize(HWND hWnd)
 {
@@ -21,18 +25,21 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!Shader->Initialize(Device->GetDeivce(), Device->GetDeviceContext()))
 	{
 		return false;
-	}
-	
-	// TODO 
-	//Shape = new ShapeData();
-	//Shape->Initialize(*Mesh);
-	
-	// TODO 
-	localCube = new LocalGizmo();
-	localCube->Initialize(this);
+	}	
 
-	worldGizmo = new WorldGizmo();
-	worldGizmo->Initialize(this);
+	Primitives = new UCubeComp();
+	if (!this->CreateCubeBuffers())
+	{
+		return false;
+	}
+
+	if (!this->CreateRasterizerState())
+	{
+		return false;
+	}
+
+	/*worldGizmo = new WorldGizmo();
+	worldGizmo->Initialize(this);*/
 
 	UCamera::GetInstance().Init();
 		
@@ -45,18 +52,17 @@ void URenderer::Render()
 {
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
+	FMatrix worldMatrix = FMatrix::Identity();
+	worldMatrix = worldMatrix * Primitives->GetTransform()->GetTransformMatrix();
 	
 	Shader->PrepareShader();
-
-	// Mesh->PrepareMesh(sizeof(FVertexSimple), sizeof(GCubeIndices) / sizeof(UINT), DXGI_FORMAT_R32_UINT);
-
-	FMatrix worldMatrix = FMatrix::Identity();
-	worldMatrix = worldMatrix * localCube->Transform.GetTransformMatrix();
 	
-	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
-	localCube->Render(this);
+	Primitives->RenderPrimitive(Device->GetDeviceContext());
 
-	worldGizmo->Render(this);
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(worldMatrix));
+	UI.ObjectControlUI(Primitives->GetTransform());
+
+	// worldGizmo->Render(this);
 
 	// TODO: 모든 Primitive 렌더링은 Scene의 렌더링 함수 내에서 수행
 
@@ -75,18 +81,18 @@ void URenderer::Release()
 		RasterizerState = nullptr;
 	}
 
+	if (Primitives)
+	{
+		Primitives->Release();
+		delete Primitives;
+		Primitives = nullptr;
+	}
+
 	if (Shader)
 	{
 		Shader->Release();
 		delete Shader;
 		Shader = nullptr;
-	}
-
-	if (worldGizmo)
-	{
-		worldGizmo->Release();
-		delete worldGizmo;
-		worldGizmo = nullptr;
 	}
 
 	if (Device)
@@ -97,34 +103,46 @@ void URenderer::Release()
 	}	
 }
 
-void URenderer::UpdateConstant(const FMatrix& mvp)
-{
-	Shader->UpdateConstant(mvp);
-}
-
-void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
-{
-	unsigned int offset = 0; // 버퍼 오프셋 초기화
-	// 정점 버퍼 설정
-	Device->DeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &offset);
-
-	if (IndexBuffer)
-	{
-		// 인덱스 버퍼 설정
-		Device->DeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		// 드로우 콜 (인덱스 버퍼 사용)
-		Device->DeviceContext->DrawIndexed(IndexCount, 0, 0); // 인덱스 수와 시작 인덱스 설정
-	}
-	else
-	{
-		// 인덱스 버퍼가 없을 때 드로우 콜
-		Device->DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
-	}
-}
-
-bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth)
+bool URenderer::CreateRasterizerState()
 {
 	HRESULT result;
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"rasterizerstate create fail,", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+bool URenderer::CreateCubeBuffers()
+{
+	if (!this->CreateVertexBuffer(&CubeVertexBuffer))
+	{
+		return false;
+	}
+	Primitives->SetVertexBuffer(CubeVertexBuffer);
+
+	if (!this->CreateIndexBuffer(&CubeIndexBuffer))
+	{
+		return false;
+	}
+	Primitives->SetIndexBuffer(CubeIndexBuffer);
+
+	return true;
+}
+
+bool URenderer::CreateVertexBuffer(ID3D11Buffer** vertexBuffer)
+{
+	HRESULT result;
+
+	UINT byteWidth = Primitives->GetVertexByteWidth();
+	const void* vertices = Primitives->GetVertices();
+	//ID3D11Buffer** vertexBuffer = Primitives->GetVertexBufferAddr();
 
 	D3D11_BUFFER_DESC vertexBufferDesc = {};
 	vertexBufferDesc.ByteWidth = byteWidth;
@@ -134,7 +152,7 @@ bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* ve
 
 	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { vertices };
 
-	result = Device->Device->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, verticesBuffer);
+	result = Device->GetDeivce()->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, vertexBuffer);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
@@ -143,20 +161,23 @@ bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* ve
 
 	return true;
 }
-
-bool URenderer::CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indices, unsigned int byteWidth)
+bool URenderer::CreateIndexBuffer(ID3D11Buffer** indexBuffer)
 {
 	HRESULT hr;
 
+	UINT bytewidth = Primitives->GetIndexByteWidth();
+	const void* indices = Primitives->GetIndices();
+	//ID3D11Buffer** indexBuffer = Primitives->GetIndexBufferAddr();
+
 	D3D11_BUFFER_DESC indexBufferDesc = {};
-	indexBufferDesc.ByteWidth = byteWidth;
+	indexBufferDesc.ByteWidth = bytewidth;
 	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA indexBufferSRD = { indices };
 
-	hr = Device->Device->CreateBuffer(&indexBufferDesc, &indexBufferSRD, indicesBuffer);
+	hr = Device->GetDeivce()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, indexBuffer);
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
@@ -164,17 +185,4 @@ bool URenderer::CreateIndexBuffer(ID3D11Buffer** indicesBuffer, const void* indi
 	}
 
 	return true;
-}
-
-
-void URenderer::SetTopology(bool isLine)
-{
-	if (isLine)
-	{
-		Device->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-	}
-	else
-	{
-		Device->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	}
 }

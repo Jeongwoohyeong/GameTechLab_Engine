@@ -25,6 +25,7 @@ void FTransform::SetScale(float x, float y, float z)
 
 void FTransform::SetScale(const FVector& scale)
 {
+
 	Scale = FVector(scale.X, scale.Y, scale.Z);
 
 	bIsTransformDirty = true;

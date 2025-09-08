@@ -1,4 +1,4 @@
-﻿#include "CScene.h"
+#include "CScene.h"
 #include "UObject.h"
 #include "UEngineStatics.h"
 #include "SimpleJSON/json.hpp"
@@ -261,5 +261,35 @@ void CScene::Load(const FString& Name)
 	else
 	{
 		UE_LOG("Warning: No 'Primitives' object in scene file %s.", InPath.c_str());
+	}
+}
+
+void CScene::Spawn(EPrimitiveType Type, uint32 Count)
+{
+	for (uint32 i = 0; i < Count; ++i)
+	{
+		UPrimitiveComponent* NewComp = nullptr;
+		switch (Type)
+		{
+		case EPrimitiveType::Cube:
+			NewComp = new UCubeComp();
+			break;
+		case EPrimitiveType::Sphere:
+			NewComp = new USphereComp();
+			break;
+		default:
+			UE_LOG("Warning: Unknown primitive type enum value %d. Skipping spawn.", static_cast<uint8>(Type));
+			continue;
+		}
+
+		if (NewComp)
+		{
+			NewComp->UUID = UEngineStatics::GenUUID();
+			NewComp->RelativeLocation = FVector(0.0f, 0.0f, 0.0f);
+			NewComp->RelativeRotation = FVector(0.0f, 0.0f, 0.0f);
+			NewComp->RelativeScale3D = FVector(1.0f, 1.0f, 1.0f);
+			Primitives.push_back(NewComp);
+			UE_LOG("Spawned %s with UUID %d", PrimitiveTypeToString(Type).c_str(), NewComp->UUID);
+		}
 	}
 }

@@ -2,6 +2,7 @@
 #include "UPrimitiveComponent.h"
 #include "Types.h"
 
+struct ID3D11Buffer;
 
 class UCubeComp :public UPrimitiveComponent
 {
@@ -13,8 +14,5 @@ public:
 	virtual void RenderPrimitive(ID3D11DeviceContext*) override;
 
 private:
-	EPrimitiveType Type;
-	uint32 IndexCount;
-	uint32 Offset;
-	uint32 Stride;
+	EPrimitiveType Type;	
 };
