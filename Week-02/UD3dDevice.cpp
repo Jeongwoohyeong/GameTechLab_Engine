@@ -1,4 +1,4 @@
-#include "UD3dDevice.h"
+﻿#include "UD3dDevice.h"
 #include <wrl/client.h>
 using Microsoft::WRL::ComPtr;
 
