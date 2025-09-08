@@ -96,9 +96,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			input->UpdateInputToCamera(); // CameraInputMove -> TODO: 나중에 InputManager에 의해 가공된 입력 처리용으로 수정
 			CInputManager::GetInstance().Update(); // InputManager 업데이트
 
+			// ImGui가 마우스를 잡고 있거나 마우스가 ImGui 위에 있을 때는 피킹하지 않음
+			ImGuiIO& io = ImGui::GetIO();
+			const bool OverImgui = io.WantCaptureMouse
+				|| ImGui::IsAnyItemHovered()
+				|| ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+
 			// --- Picking ---
 			// TODO: Scene에 Update() 함수 만들어서 그 안에서 처리하기 (더 좋은 구조 있으면 그 쪽으로)
-			if (CInputManager::GetInstance().IsMouseBtnPressed(0)) // 왼쪽 버튼 클릭 시
+			if (!OverImgui && CInputManager::GetInstance().IsMouseBtnPressed(0)) // 왼쪽 버튼 클릭 시
 			{
 				uint32 PickedUUID = -2;
 				int32 ClientW = CInputManager::GetInstance().GetClientW();
