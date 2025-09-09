@@ -58,14 +58,16 @@ void FTransform::SetRotationDegZ(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationDeg(const FVector& degrees)
+void FTransform::SetRotationDeg(const FVector& Degree)
 {
-	this->SetRotationDegX(degrees.X);
-	this->SetRotationDegY(degrees.Y);
-	this->SetRotationDegZ(degrees.Z);
+	PrevRotation = Rotation;
 
-	Quaternion = FQuaternion();
-	UpdateQuaternion(Rotation);
+	Rotation.X = DegToRad(Degree.X);
+	Rotation.Y = DegToRad(Degree.Y);
+	Rotation.Z = DegToRad(Degree.Z);
+
+	FVector DeltaRot = Rotation - PrevRotation;
+	UpdateQuaternion(DeltaRot);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
@@ -118,8 +120,8 @@ void FTransform::AddRotationDeg(const FVector& Degree)
 	Rotation.Y += DegToRad(Degree.Y);
 	Rotation.Z += DegToRad(Degree.Z);
 
-	FVector deltaRot = Rotation - PrevRotation;
-	UpdateQuaternion(deltaRot);
+	FVector DeltaRot = Rotation - PrevRotation;
+	UpdateQuaternion(DeltaRot);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;

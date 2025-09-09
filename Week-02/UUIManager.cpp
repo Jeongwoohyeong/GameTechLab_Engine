@@ -267,16 +267,16 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 			}
 		}
 
-		// 4) Gizmo Mode
-		ImGui::Separator();
-		{
-			LocalGizmo* Gizmo = Primitive->GetGizmo();
-			bool bIsLocalMode = Gizmo->bIsLocalMode;
-			if (ImGui::Checkbox("Local Mode", &bIsLocalMode))
-			{
-				Gizmo->bIsLocalMode = bIsLocalMode;
-			}
-		}
+		//// 4) Gizmo Mode
+		//ImGui::Separator();
+		//{
+		//	LocalGizmo* Gizmo = Primitive->GetGizmo();
+		//	bool bIsLocalMode = Gizmo->bIsLocalMode;
+		//	if (ImGui::Checkbox("Local Mode", &bIsLocalMode))
+		//	{
+		//		Gizmo->bIsLocalMode = bIsLocalMode;
+		//	}
+		//}
 	}
 	ImGui::End();
 }

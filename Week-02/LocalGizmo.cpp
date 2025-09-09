@@ -1,4 +1,4 @@
-#include "LocalGizmo.h"
+﻿#include "LocalGizmo.h"
 #include "Gizmo.h"
 #include "URenderer.h"
 #include "Cone.h"
@@ -38,16 +38,20 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
     FVector resizedLocation = ParentTransform->GetLocation();
     Transform.SetLocation(resizedLocation);
     
-    if (bIsLocalMode)
-    {
-        // 로컬 좌표계 모드
-        Transform.AddRotationDeg(AxisRotation);
-    }
-    else
-    {
-        // 월드 좌표계 모드
-        Transform.SetRotationDeg(AxisRotation);
-    }
+    // 로컬 좌표계 회전
+    Transform.AddRotationDeg(AxisRotation);
+
+	// TODO: 월드 좌표계 모드 구현
+
+    //if (bIsLocalMode)
+    //{
+    //    
+    //}
+    //else
+    //{
+    //    // 월드 좌표계 모드
+    //    Transform.SetRotationDeg(AxisRotation);
+    //}
 
     return Transform;
 }
