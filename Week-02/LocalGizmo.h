@@ -39,9 +39,9 @@ public:
 
     axis axisInfo[3] =
     {
-        {COLOR_R, ROTATE_X, TRANSLATE_X}, // x
-        {COLOR_B, ROTATE_Y, TRANSLATE_Y}, // y
-        {COLOR_G, ROTATE_Z, TRANSLATE_Z} // z
+        {COLOR_G, ROTATE_X, TRANSLATE_X}, // Y
+        {COLOR_B, ROTATE_Y, TRANSLATE_Y}, // Z
+        {COLOR_R, ROTATE_Z, TRANSLATE_Z} // X
     };
 
     void Initialize(class URenderer* renderer, FTransform* transform);
