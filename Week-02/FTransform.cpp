@@ -58,7 +58,7 @@ void FTransform::SetRotationDegZ(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationDeg(const FVector& Degree)
+void FTransform::SetRotationDeg(const FVector& Degree, bool bIsLocal)
 {
 	PrevRotation = Rotation;
 
@@ -67,22 +67,22 @@ void FTransform::SetRotationDeg(const FVector& Degree)
 	Rotation.Z = DegToRad(Degree.Z);
 
 	FVector DeltaRot = Rotation - PrevRotation;
-	UpdateQuaternion(DeltaRot);
+	UpdateQuaternion(DeltaRot, bIsLocal);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationDegByDrag(const FVector& Degrees)
+void FTransform::SetRotationDegByDrag(const FVector& Degree, bool bIsLocal)
 {
 	PrevRotation = Rotation;
 
-	Rotation.X = DegToRad(Degrees.X);
-	Rotation.Y = DegToRad(Degrees.Y);
-	Rotation.Z = DegToRad(Degrees.Z);
+	Rotation.X = DegToRad(Degree.X);
+	Rotation.Y = DegToRad(Degree.Y);
+	Rotation.Z = DegToRad(Degree.Z);
 
-	FVector deltaRot = Rotation - PrevRotation;
-	UpdateQuaternion(deltaRot);
+	FVector DeltaRot = Rotation - PrevRotation;
+	UpdateQuaternion(DeltaRot, bIsLocal);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
@@ -112,7 +112,7 @@ void FTransform::AddRotationDegZ(float degree)
 	bIsInverseDirty = true;
 }
 
-void FTransform::AddRotationDeg(const FVector& Degree)
+void FTransform::AddRotationDeg(const FVector& Degree, bool bIsLocal)
 {
 	PrevRotation = Rotation;
 
@@ -121,8 +121,23 @@ void FTransform::AddRotationDeg(const FVector& Degree)
 	Rotation.Z += DegToRad(Degree.Z);
 
 	FVector DeltaRot = Rotation - PrevRotation;
-	UpdateQuaternion(DeltaRot);
+	UpdateQuaternion(DeltaRot, bIsLocal);
 
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
+void FTransform::LoadRotaion(const FVector& Rotation)
+{
+	this->Rotation = Rotation;
+	PrevRotation = Rotation;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
+void FTransform::LoadQuaternion(const FQuaternion& Quat)
+{
+	this->Quaternion = Quat;
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
@@ -246,7 +261,7 @@ FMatrix& FTransform::GetTransformMatrix()
 	return Transform;
 }
 
-void FTransform::UpdateQuaternion(const FVector& DeltaRotation)
+void FTransform::UpdateQuaternion(const FVector& DeltaRotation, bool bIsLocal)
 {
 	if (DeltaRotation.IsNearlyZero())
 	{
@@ -258,7 +273,16 @@ void FTransform::UpdateQuaternion(const FVector& DeltaRotation)
 	FQuaternion DeltaQuaternion = FQuaternion::CreateFromEulerAngles(DeltaRotation);
 
 	// 2. 현재 회전에 델타 회전을 곱하여 누적
-	Quaternion = FQuaternion::Multiply(Quaternion, DeltaQuaternion);
+	if (bIsLocal)
+	{
+		// 로컬 기준
+		Quaternion = FQuaternion::Multiply(Quaternion, DeltaQuaternion);
+	}
+	else
+	{
+		// 월드 기준
+		Quaternion = FQuaternion::Multiply(DeltaQuaternion, Quaternion);
+	}
 
 	// 3. 정규화
 	Quaternion.Normalize();
