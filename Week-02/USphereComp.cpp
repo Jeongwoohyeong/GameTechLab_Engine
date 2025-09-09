@@ -10,7 +10,7 @@ EPrimitiveType USphereComp::GetPrimitiveType()
 	return Type;
 }
 
-void USphereComp::IsA()
+void USphereComp::TypeCheck()
 {
 	UE_LOG(PrimitiveTypeToString(Type).c_str());
 }

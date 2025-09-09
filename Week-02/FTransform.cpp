@@ -207,7 +207,7 @@ FMatrix& FTransform::GetTransformMatrix()
 		FMatrix rotationMatrix = FMatrix::MakeRotationFromQuaternion(Quaternion);
 		FMatrix translationMatrix = FMatrix::MakeTranslation(Location);
 
-		Transform = scaleMatrix * rotationMatrix * translationMatrix;
+		Transform = scaleMatrix * rotationMatrix * translationMatrix;		
 
 		bIsTransformDirty = false;
 	}

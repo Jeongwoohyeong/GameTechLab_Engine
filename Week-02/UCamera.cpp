@@ -32,46 +32,50 @@ FMatrix UCamera::MakeMVP(const FMatrix& World)
 // 클라이언트 화면 상에서의 커서 좌표를 이용해 3D 공간상의 레이를 만든다
 FRay UCamera::CastRay(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight)
 {
-	return CastRay(ClientX, ClientY, ClientWidth, ClientHeight, nullptr);
-}
+	FVector DeprojPoint = DeprojectScreenPoint(ClientX, ClientY, ClientWidth, ClientHeight, 1.0f, false); // View Space 기준
+	FVector RayDir = DeprojPoint.GetNormalized();
 
-//@param ProjPlaneHitPoint: Depth가 1인 projection plane과의 교차점 좌표 반환 (World Space 기준)
-FRay UCamera::CastRay(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight, FVector* ProjPlaneHitPointWorld)
-{
-	// Note:
-	// Projective Camera 기준
-	// Projection 행렬의 역행렬을 사용하는 방법은 NearPlane, FarPlane에 점을 잡지만
-	// 해당 방식은 d = 1 위치상의 Projection 평면과 카메라 위치(원점) 사용
-
-	// 클라이언트 좌표계: 좌상단 (0,0) ~ 우하단 (width,height)
-	// NCD: 좌하단 (-1,-1) ~ 우상단 (1,1)
-
-	// 1. 클라이언트 좌표 -> NDC 좌표 변환
-	float NDCX = (2.0f * ClientX) / ClientWidth - 1.0f;
-	float NDCY = (2.0f * ClientY) / ClientHeight - 1.0f;
-	NDCY = -NDCY;
-
-	// 2. NDC -> 카메라 공간 상에서 Ray 방향 벡터 계산
-	float TanFovY = tan(0.5f * FovY);
-	// projection plane이 z = 1 평면에 있다고 가정
-	float CameraX = NDCX * AspectRatio * TanFovY;
-	float CameraY = NDCY * TanFovY;
-	FVector RayDirCameraSpace = FVector(CameraX, CameraY, 1.0f).GetNormalized();
-
-	// 3. 카메라 공간 -> 월드 공간 상에서 Ray 방향 벡터 계산
+	// 카메라 공간 -> 월드 공간 상에서 Ray 방향 벡터 계산
 	FMatrix CamRotMat = FMatrix::MakeRotation(Rotation);
-	FMatrix CamPosMat = FMatrix::MakeTranslation(Location);
-	FMatrix RayToWorldMat = FMatrix::Identity() * CamRotMat * CamPosMat;
-	FVector4 RayDirCameraSpace4(RayDirCameraSpace, 0.0f);
-	FVector4 RayDirWorldSpace4 = RayDirCameraSpace4 * RayToWorldMat;
+	FVector4 RayDirCameraSpace4(RayDir, 0.0f);
+	FVector4 RayDirWorldSpace4 = RayDirCameraSpace4 * CamRotMat; // 순수 vector이므로 회전 변환만 수행
 	FVector RayDirWorldSpace(RayDirWorldSpace4.X, RayDirWorldSpace4.Y, RayDirWorldSpace4.Z);
 	RayDirWorldSpace.Normalize();
 
-	if (ProjPlaneHitPointWorld)
+	return FRay(Location, RayDirWorldSpace);
+}
+
+// 마우스 포인터 위치에 해당하는 Projection Plane 상의 월드 좌표 반환
+// @param Depth: 카메라로부터의 거리 (Projection Plane이 View Space에서 z = Depth 평면에 있다고 가정)
+// @param bWorld: 월드 좌표계로 반환할지 여부 (true: 월드 좌표, false: 카메라 공간 좌표)
+FVector UCamera::DeprojectScreenPoint(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight, float Depth, bool bWorld)
+{
+	// Note:
+	// Perspective Camera 기준
+	// Projection 행렬의 역행렬을 사용하는 방법은 NearPlane, FarPlane에 점을 잡지만
+	// 현 프로젝트에서는 Eye와 Deproject Point 하나를 사용
+
+	// 클라이언트 좌표 -> NDC 좌표 변환
+	float NDCX = (2.0f * ClientX) / ClientWidth - 1.0f;
+	float NDCY = (2.0f * ClientY) / ClientHeight - 1.0f;
+	NDCY = -NDCY;
+	
+	float TanFovY = tan(0.5f * FovY);
+	// projection plane이 z = Depth 평면에 있다고 가정
+	float CameraX = NDCX * AspectRatio * TanFovY * Depth;
+	float CameraY = NDCY * TanFovY * Depth;
+	FVector DeprojectedPoint = FVector(CameraX, CameraY, Depth);
+
+	if(bWorld)
 	{
-		FVector4 ProjPlaneHitPoint4 = FVector4(CameraX, CameraY, 1.0f, 1.0f) * RayToWorldMat;
-		*ProjPlaneHitPointWorld = FVector(ProjPlaneHitPoint4.X, ProjPlaneHitPoint4.Y, ProjPlaneHitPoint4.Z); // World Space 기준
+		// 월드 좌표계로 변환
+		FMatrix CamRotMat = FMatrix::MakeRotation(Rotation);
+		FMatrix CamPosMat = FMatrix::MakeTranslation(Location);
+		FMatrix CamWorldTransformMat = FMatrix::Identity() * CamRotMat * CamPosMat;
+		FVector4 DeprojectedPoint4 = FVector4(DeprojectedPoint, 1.0f);
+		DeprojectedPoint4 = DeprojectedPoint4 * CamWorldTransformMat;
+		DeprojectedPoint = FVector(DeprojectedPoint4.X, DeprojectedPoint4.Y, DeprojectedPoint4.Z);
 	}
 
-	return FRay(Location, RayDirWorldSpace);
+	return DeprojectedPoint;
 }

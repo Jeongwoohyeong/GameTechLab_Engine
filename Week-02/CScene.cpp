@@ -351,7 +351,8 @@ void CScene::Clear()
 	SelectedPrimitive = nullptr;
 }
 
-// 마우스로 기즈모를 피킹합니다(-1: 피킹된 기즈모 없음, 0: X축, 1: Y축, 2: Z축)
+// 마우스로 기즈모를 피킹합니다 (-1: 피킹된 기즈모 없음, 0: X축, 1: Y축, 2: Z축)
+// DeprojectedPoint를 계산해 InputManager의 MousePressPosWorld도 설정합니다.
 int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int ClientH)
 {
 	// 1. 현재 씬에서 선택된 프리미티브가 유효한지 확인
@@ -366,8 +367,8 @@ int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int Client
 	}
 
 	// 2. 카메라로부터 월드 레이 생성
-	FVector RayHitPointOnProjectionPlane; // 월드 기준
-	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH, &RayHitPointOnProjectionPlane);
+	FVector DeprojectedPoint = UCamera::GetInstance().DeprojectScreenPoint(ClientX, ClientY, ClientW, ClientH, 1.0f, true);
+	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH);
 
 	// 3. 모든 축에 대해 로컬 AABB 월드변환 후 Intersection Test
 	float BestT = FLT_MAX;
@@ -388,7 +389,7 @@ int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int Client
 		}
 	}
 	Giz->SelectedAxis = BestAxis;
-	CInputManager::GetInstance().MousePressPosWorld = RayHitPointOnProjectionPlane;
+	CInputManager::GetInstance().MousePressPosWorld = DeprojectedPoint;
 	return BestAxis;
 }
 

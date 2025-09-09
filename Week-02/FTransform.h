@@ -36,7 +36,8 @@ public:
 	const FVector& GetLocation() const { return Location; }
 	bool TryGetInverseMatrix(FMatrix& Out);
 	FMatrix& GetTransformMatrix();
-	
+
+
 	FMatrix& Get2StepRotationMatrix(); 
 
 	void UpdateQuaternion(const FVector& DeltaRotation);

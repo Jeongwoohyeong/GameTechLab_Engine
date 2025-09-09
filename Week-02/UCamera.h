@@ -12,7 +12,7 @@ public:
 	//FVector Up; // 카메라 업 벡터
 	float FovY; // 시야각 (Field of View)
 	float AspectRatio; // 종횡비 (화면 너비 / 높이)
-	float NearPlane; // 근평면
+	float NearPlane = 0.01f; // 근평면
 	float FarPlane; // 원평면
 	bool bIsOrthogonal = false;
 
@@ -28,7 +28,10 @@ public:
 	// MVP 행렬 계산
 	FMatrix MakeMVP(const FMatrix& World);
 
-	FRay CastRay(int32 screenX, int32 screenY, int32 screenWidth, int32 screenHeight);
+	// 마우스 포인터 위치에 해당하는 Projection Plane 상의 월드 좌표 반환
+	// @param Depth: 카메라로부터의 거리 (Projection Plane이 View Space에서 z = Depth 평면에 있다고 가정)
+	// @param bWorld: 월드 좌표계로 반환할지 여부 (true: 월드 좌표, false: 카메라 공간 좌표)
+	FVector DeprojectScreenPoint(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight, float Depth = 1.0f, bool bWorld = false);
 
-	FRay CastRay(int32 screenX, int32 screenY, int32 screenWidth, int32 screenHeight, FVector* ProjPlaneHitPointWorld);
+	FRay CastRay(int32 screenX, int32 screenY, int32 screenWidth, int32 screenHeight); // Ray만 필요한 경우
 };

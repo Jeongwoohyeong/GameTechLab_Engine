@@ -13,6 +13,10 @@ void UUIManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext
 	ImGui_ImplWin32_Init((void*)hWnd);
 	ImGui_ImplDX11_Init(device, deviceContext);
 
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.Colors[ImGuiCol_WindowBg].x = 0.0f; // 배경 색상 설정 (RGB)
+	style.Colors[ImGuiCol_WindowBg].w = 0.7f; // 배경 투명
+
 	// bShowConsoleWindow = true;
 	UE_LOG("UI Manager Initialized");
 }
@@ -244,7 +248,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		if (ImGui::Button("Primitive Type Check"))
 		{
-			Primitive->IsA();
+			Primitive->TypeCheck();
 		}
 	}
 	ImGui::End();
