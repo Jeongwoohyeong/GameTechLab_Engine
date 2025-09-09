@@ -5,17 +5,14 @@
 #include "Cylinder.h"
 #include "Cube.h"
 #include "UCamera.h"
-#include "CInputManager.h"
 
  void LocalGizmo::Initialize(FTransform* transform)
 {
     ParentTransform = transform;
 
-    inputManager = &CInputManager::GetInstance();
-    inputManager->RegisterMouseClickCallback([this]() { this->OnLMouseClick(); });
-    inputManager->RegisterMouseReleaseCallback([this]() { this->OnLMouseUnclick();});
+    CreateAABB();
 
-	CreateAABB();
+    Bind();
 }
 
 FTransform* LocalGizmo::GetGizmoTransform()
@@ -28,6 +25,7 @@ FTransform* LocalGizmo::GetGizmoTransform()
     }
     return gizmoTransform;
 }
+
 FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
     FTransform Transform = *ParentTransform;
@@ -46,20 +44,6 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
     Transform.AddRotationDeg(AxisRotation);
 
     return Transform;
-}
-void LocalGizmo::CalculateTranslationOffSet()
-{
-    if (SelectedAxis == -1)
-        return;
-
-    FVector currentMousePos = CInputManager::GetInstance().MouseCurrentPosWorld;
-    FVector mouseDelta = currentMousePos - previousMousePos;
-    
-    float offset = Dot(axisInfo[SelectedAxis].direction, mouseDelta);
-
-    FVector primitiveTranslateOffset = axisInfo[SelectedAxis].direction * offset;
-    ParentTransform->AddLocation(primitiveTranslateOffset);
-    previousMousePos = currentMousePos;
 }
 
 void LocalGizmo::CreateAABB()
@@ -97,13 +81,91 @@ void LocalGizmo::CreateAABB()
     bIsAABBCreated = true;
 }
 
-void LocalGizmo::OnLMouseClick()
+void LocalGizmo::Bind()
 {
-    previousMousePos = CInputManager::GetInstance().MousePressPosWorld;
-    startMoving = true;
+    CInputManager::GetInstance().RegisterMouseClickCallback([this](FDragMouseData ClickInfo) -> void {
+        this->OnLMouseClick(ClickInfo);
+        });
+    CInputManager::GetInstance().RegisterMouseDragCallback([this](FDragMouseData DragInfo) -> void {
+        this->OnLMouseDrag(DragInfo);
+        });
+    CInputManager::GetInstance().RegisterMouseReleaseCallback([this]()->void { 
+        this->OnLMouseRelease();
+        });
 }
-void LocalGizmo::OnLMouseUnclick()
+
+
+void LocalGizmo::CalculateTranslationOffSet()
 {
+    if (SelectedAxis == -1)
+        return;
+
+    FVector currentMousePos = CInputManager::GetInstance().MouseCurrentPosWorld;
+    FVector mouseDelta = currentMousePos - previousMousePos;
+
+    float offset = Dot(axisInfo[SelectedAxis].direction, mouseDelta);
+
+    FVector primitiveTranslateOffset = axisInfo[SelectedAxis].direction * offset;
+    ParentTransform->AddLocation(primitiveTranslateOffset);
+    previousMousePos = currentMousePos;
+}
+
+void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
+{
+    // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
+    float distance = std::abs(ParentTransform->GetLocation().Z - UCamera::GetInstance().Location.Z);
+    previousMousePos = UCamera::GetInstance().DeprojectScreenPoint(
+        firstClickInfo.mouseX,
+        firstClickInfo.mouseY,
+        firstClickInfo.W,
+        firstClickInfo.H,
+        distance, //1.0,  //ParentTransform->GetLocation().Z,
+        true
+    );
+}
+
+void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
+{
+    if (SelectedAxis == -1)
+        return;
+    float distance = std::abs(ParentTransform->GetLocation().Z - UCamera::GetInstance().Location.Z);
+    // UE_LOG("%d // %f %f %f , draged", SelectedAxis, dragPos.X, dragPos.Y, dragPos.Z);
+    currentMousePos = UCamera::GetInstance().DeprojectScreenPoint(
+        dragInfo.mouseX,
+        dragInfo.mouseY,
+        dragInfo.W,
+        dragInfo.H ,
+        distance, //1.0, //ParentTransform->GetLocation().Z,
+        true
+    );
+    FVector newDelta = currentMousePos - previousMousePos;
+    previousMousePos = currentMousePos;
+
+    // 월드 이동
+    FVector selectedVector;
+    switch (SelectedAxis)
+    {
+    case 0 : // z축
+        selectedVector = { 0, 0, 1 };
+        break;
+    case 1: // y축
+        selectedVector = { 0, 1, 0 };
+        break;
+    case 2: // x축
+        selectedVector = { 1, 0, 0 };
+        break;
+    }
+    // UE_LOG("%f %f %f , draged", selectedVector.X, selectedVector.Y, selectedVector.Z);
+    selectedVector.Normalize();
+    float offset = Dot(newDelta, selectedVector);
+
+    FVector resultVector = offset * selectedVector;
+    ParentTransform->AddLocation(resultVector);
+}
+void LocalGizmo::OnLMouseRelease()
+{
+    // UE_LOG("release");
     SelectedAxis = -1;
-    startMoving = false;
+    previousMousePos = { 0, 0, 0 };
+    currentMousePos = { 0, 0, 0 };
 }

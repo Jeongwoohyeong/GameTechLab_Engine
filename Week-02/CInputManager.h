@@ -6,9 +6,18 @@
 
 #define MAX_KEYS 256
 
+
+struct FDragMouseData{
+	float mouseX;
+	float mouseY;
+	float W;
+	float H;
+};
+
 // 클릭/드래그/떼기 이벤트에 대한 콜백 함수 타입 정의
 // 콜백 함수는 마우스 위치를 인자로 받을 수 있습니다.
-using MouseCallback = std::function<void()>;
+using MouseCallback = std::function<void(FDragMouseData)>;
+using MouseReleaseCallback = std::function<void()>;
 
 class CInputManager
 {
@@ -49,12 +58,12 @@ public:
 	// 이벤트 등록 함수
 	void RegisterMouseClickCallback(MouseCallback callback);
 	void RegisterMouseDragCallback(MouseCallback callback);
-	void RegisterMouseReleaseCallback(MouseCallback callback);
+	void RegisterMouseReleaseCallback(MouseReleaseCallback callback);
 
 	// 등록된 콜백 함수들을 저장할 리스트
 	std::vector<MouseCallback> OnClickCallbacks;
 	std::vector<MouseCallback> OnDragCallbacks;
-	std::vector<MouseCallback> OnReleaseCallbacks;
+	std::vector<MouseReleaseCallback> OnReleaseCallbacks;
 public:
 	FVector MousePressPosWorld{0.0f, 0.0f, 0.0f}; // 마우스 클릭 시점의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
 	FVector MouseCurrentPosWorld{0.0f, 0.0f, 0.0f}; // 현재의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
