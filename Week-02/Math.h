@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
  * <Coordinate System>
  * - Left-Handed
@@ -212,7 +212,7 @@ struct FMatrix
 
 	static FMatrix MakeRotation(const FVector& RadVec) // R: in Radian
 	{
-		// Yaw -> Pitch -> Roll (Z -> X -> Y) 순서 바꾸는 거 위험!
+		// (Z -> X -> Y) 순서 바꾸는 거 위험!
 		return MakeRotationZ(RadVec.Z) * MakeRotationX(RadVec.X) * MakeRotationY(RadVec.Y);
 	}
 
