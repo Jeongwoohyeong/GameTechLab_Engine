@@ -38,7 +38,7 @@ public:
 	bool TryGetInverseMatrix(FMatrix& Out);
 	FMatrix& GetTransformMatrix();
 	
-	FMatrix& Get2StepRotationMatrix();
+	FMatrix& Get2StepRotationMatrix(); 
 
 private:
 
