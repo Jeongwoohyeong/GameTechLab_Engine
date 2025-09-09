@@ -2,6 +2,7 @@
 #include <span>
 #include "Gizmo.h"
 #include "Math.h"
+#include "UUIManager.h"
 
 constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
 constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
@@ -18,7 +19,6 @@ struct axis
 };
 struct ID3D11Buffer;
 struct FVertexSimple;
-class CInputManager;
 
 class LocalGizmo : public Gizmo
 {
@@ -32,6 +32,7 @@ public:
 
     void Initialize(FTransform* transform);
 	virtual void CreateAABB() override;
+    void Bind();
 
     FTransform* GetGizmoTransform();
     void CalculateTranslationOffSet();
@@ -49,6 +50,5 @@ public:
     bool startMoving = false;
 	bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
 
-    CInputManager* inputManager;
     FTransform gizmoTransform[3];
 };

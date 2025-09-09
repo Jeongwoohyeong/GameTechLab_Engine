@@ -1,4 +1,4 @@
-#include "LocalGizmo.h"
+﻿#include "LocalGizmo.h"
 #include "Gizmo.h"
 #include "URenderer.h"
 #include "Cone.h"
@@ -11,11 +11,9 @@
 {
     ParentTransform = transform;
 
-    inputManager = &CInputManager::GetInstance();
-    inputManager->RegisterMouseClickCallback([this]() { this->OnLMouseClick(); });
-    inputManager->RegisterMouseReleaseCallback([this]() { this->OnLMouseUnclick();});
+    CreateAABB();
 
-	CreateAABB();
+    Bind();
 }
 
 FTransform* LocalGizmo::GetGizmoTransform()
@@ -99,6 +97,13 @@ void LocalGizmo::CreateAABB()
     AABB.Min = Min;
     AABB.Max = Max;
     bIsAABBCreated = true;
+}
+
+void LocalGizmo::Bind()
+{
+    CInputManager::GetInstance().RegisterMouseClickCallback( [this]()->void { UE_LOG("clicked"); });
+    CInputManager::GetInstance().RegisterMouseDragCallback([this]()->void { UE_LOG("drag"); });
+    CInputManager::GetInstance().RegisterMouseReleaseCallback([this]()->void { UE_LOG("release"); });
 }
 
 void LocalGizmo::OnLMouseClick()
