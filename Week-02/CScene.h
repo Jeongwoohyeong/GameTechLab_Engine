@@ -2,6 +2,7 @@
 
 #include "Types.h"
 #include "Containers.h"
+#include "CInputManager.h"
 #include "UPrimitiveComponent.h"
 #include "UPrimitiveTypes.h"
 #include "UCamera.h"

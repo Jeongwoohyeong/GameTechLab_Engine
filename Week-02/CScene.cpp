@@ -366,7 +366,8 @@ int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int Client
 	}
 
 	// 2. 카메라로부터 월드 레이 생성
-	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH);
+	FVector RayHitPointOnProjectionPlane; // 월드 기준
+	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH, &RayHitPointOnProjectionPlane);
 
 	// 3. 모든 축에 대해 로컬 AABB 월드변환 후 Intersection Test
 	float BestT = FLT_MAX;
@@ -387,6 +388,7 @@ int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int Client
 		}
 	}
 	Giz->SelectedAxis = BestAxis;
+	CInputManager::GetInstance().MousePressPosWorld = RayHitPointOnProjectionPlane;
 	return BestAxis;
 }
 

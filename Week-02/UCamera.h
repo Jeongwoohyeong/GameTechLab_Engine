@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Types.h"
 #include "Math.h"
 #include "FRay.h"
 
@@ -27,5 +28,7 @@ public:
 	// MVP 행렬 계산
 	FMatrix MakeMVP(const FMatrix& World);
 
-	FRay CastRay(int screenX, int screenY, int screenWidth, int screenHeight);
+	FRay CastRay(int32 screenX, int32 screenY, int32 screenWidth, int32 screenHeight);
+
+	FRay CastRay(int32 screenX, int32 screenY, int32 screenWidth, int32 screenHeight, FVector* ProjPlaneHitPointWorld);
 };
