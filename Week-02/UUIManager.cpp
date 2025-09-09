@@ -219,6 +219,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 	if (Primitive)
 	{
 		FTransform* Transform = Primitive->GetTransform();
+		bool bIsLocalMode = Primitive->GetGizmo()->bIsLocalMode;
 
 		// 1) Scale
 		FVector Scale = SwapYZ(Transform->GetScale());
@@ -230,14 +231,15 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 			Transform->SetScale(s);
 		}
 
+
 		// 2) Rotation (deg)
 		FVector Rotation = SwapYZ(Transform->GetRotationDegree());
 		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(SwapYZ(Rotation));
+			Transform->SetRotationDeg(SwapYZ(Rotation), bIsLocalMode);
 		}
 		if (ImGui::Button("R Reset")) {
 			FVector r0(0.0f, 0.0f, 0.0f);
-			Transform->SetRotationDeg(r0);
+			Transform->SetRotationDeg(r0, bIsLocalMode);
 		}
 
 		// 3) Translation
