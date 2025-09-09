@@ -366,11 +366,15 @@ struct FMatrix
 
 	static FMatrix MakeOrthographic(float left, float right, float bottom, float top, float nearZ, float farZ)
 	{
+		// x축 범위 NDC [-1, 1] 정규화
 		float m00 = (2.0f / (right - left));
+		// y축 범위 NDC [-1, 1] 정규화
 		float m11 = (2.0f / (top - bottom));
+		// z축 범위 NDC [0, 1] 정규화
 		float m22 = (1.0f / (farZ - nearZ));
+		// 뷰 볼륨 중심을 원점 (0, 0, 0)으로 이동
 		float m03 = -(right + left) / (right - left);
-		float m13 = -(top + bottom) / (top - bottom);
+		float m13 = -(top + bottom) / (top - bottom);		
 		float m23 = -nearZ / (farZ - nearZ);
 
 		FMatrix Result{ {

@@ -83,6 +83,18 @@ void UD3dDevice::Resize(UINT width, UINT height)
 		return;
 	}
 	DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+	
+	if (DepthStencilView)
+	{
+		DepthStencilView->Release();
+		DepthStencilView = nullptr;
+	}
+
+	if (DepthStencilBuffer)
+	{
+		DepthStencilBuffer->Release();
+		DepthStencilBuffer = nullptr;
+	}
 
 	if (FrameBufferRTV)
 	{
@@ -94,7 +106,10 @@ void UD3dDevice::Resize(UINT width, UINT height)
 	{
 		FrameBuffer->Release();
 		FrameBuffer = nullptr;
-	}
+	}	
+
+	BackBufferWidth = static_cast<float>(width);
+	BackBufferHeight = static_cast<float>(height);
 
 	HRESULT result = SwapChain->ResizeBuffers(2, width, height,	DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 	if (FAILED(result))
@@ -102,26 +117,25 @@ void UD3dDevice::Resize(UINT width, UINT height)
 		MessageBox(nullptr, L"resize fail", L"error", MB_OK);
 		exit(-1);
 	}
-	SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&FrameBuffer);
 
-	D3D11_RENDER_TARGET_VIEW_DESC frameBufferRTVdesc = {};
-	frameBufferRTVdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-	frameBufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-	result = Device->CreateRenderTargetView(FrameBuffer, &frameBufferRTVdesc, &FrameBufferRTV);
-	if (FAILED(result))
-	{
-		MessageBox(nullptr, L"RTV create fail,", L"error", MB_OK);
+	if (!this->CreateFrameBuffer())
+	{		
 		return;
 	}
 
+	if (!this->CreateDepthStencilBuffer())
+	{
+		return;
+	}
+
+	
+
 	Viewport.TopLeftX = 0.0f;
 	Viewport.TopLeftY = 0.0f;
-	Viewport.Width = static_cast<float>(width);
-	Viewport.Height = static_cast<float>(height);
+	Viewport.Width = BackBufferWidth;
+	Viewport.Height = BackBufferHeight;
 	Viewport.MinDepth = 0.0f;
 	Viewport.MaxDepth = 1.0f;
-
 }
 
 bool UD3dDevice::CreateDeviceAndSwapChain(HWND hWnd)

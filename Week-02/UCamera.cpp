@@ -15,11 +15,11 @@ void UCamera::Init()
 FMatrix UCamera::MakeMVP(const FMatrix& World)
 {
 	FMatrix View = FMatrix::MakeView(Location, Rotation);
-	FMatrix Projection = FMatrix::MakePerspective(FovY, AspectRatio, NearPlane, FarPlane);
+	FMatrix Projection = {};
 	if (bIsOrthogonal)
 	{
-		Projection = FMatrix::MakeOrthographic(-15.0f * AspectRatio / 2.0f, 15.0f * AspectRatio / 2.0f,
-			-15.0f / 2.0f, 15.0f / 2.0f, 0.1f, 50.0f);
+		Projection = FMatrix::MakeOrthographic((-15.0f * AspectRatio / 2.0f), (15.0f * AspectRatio / 2.0f),
+			(-15.0f / 2.0f), (15.0f / 2.0f), NearPlane, FarPlane);
 	}
 	else
 	{

@@ -55,10 +55,11 @@ bool URenderer::Initialize(HWND hWnd)
 
 void URenderer::Render()
 {
+	
 	Device->BeginScene();
 	Device->SetRSState(RasterizerState);
 	Shader->PrepareShader();
-
+	
 	// 씬 렌더링
 	RenderScene();
 
