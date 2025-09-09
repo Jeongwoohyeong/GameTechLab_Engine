@@ -31,22 +31,22 @@ FTransform* LocalGizmo::GetGizmoTransform()
 FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
     FTransform Transform = *ParentTransform;
-    FVector rot = a.rotate;
+    FVector AxisRotation = a.rotate;
 
-    Transform.SetScale(0.2f, 1.0f, 0.2f);
+    Transform.SetScale(0.05f, 0.8f, 0.05f);
 
     FVector resizedLocation = ParentTransform->GetLocation();
     Transform.SetLocation(resizedLocation);
-
+    
     if (bIsLocalMode)
     {
         // 로컬 좌표계 모드
-        Transform.AddRotationDeg(rot);
-	}
+        Transform.AddRotationDeg(AxisRotation);
+    }
     else
     {
         // 월드 좌표계 모드
-        Transform.SetRotationDeg(rot);
+        Transform.SetRotationDeg(AxisRotation);
     }
 
     return Transform;

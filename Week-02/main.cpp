@@ -52,8 +52,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	RegisterClassW(&wndclass);
 
 	// 1024 x 1024 크기 윈도우 생성
+	uint32 InitialWidth = 1680;
+	uint32 InitialHeight = 1024;
 	HWND hWnd = CreateWindowExW(0, WindowClass, Title, WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, 1680, 1024,
+		CW_USEDEFAULT, CW_USEDEFAULT, InitialWidth, InitialHeight,
 		nullptr, nullptr, hInstance, nullptr);
 	
 	URenderer renderer;
@@ -71,6 +73,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	if (renderer.Initialize(hWnd))
 	{
+		// --- Renderer 초기화 이후 가능한 설정 수행 ---
+		UCamera::GetInstance().AspectRatio = (float)InitialWidth / (float)InitialHeight;
+
 		bool bIsExit = false;
 		while (bIsExit == false)
 		{
