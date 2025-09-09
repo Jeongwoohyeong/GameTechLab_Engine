@@ -19,10 +19,11 @@ struct axis
 {
     FVector color;
     FVector rotate;
-	FVector translate;
+	FVector direction;
 };
 struct ID3D11Buffer;
 struct FVertexSimple;
+class CInputManager;
 
 class LocalGizmo : public Gizmo
 {
@@ -49,11 +50,20 @@ public:
 	virtual void CreateAABB() override;
     virtual void Release() override;
 
+    void CalculateTranslationOffSet();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
+
+    void OnLMouseClick();
+    void OnLMouseUnclick();
+
     FMatrix worldMatrix{
         1, 0 ,0,
         0, 1, 0,
         0, 0, 1
     };
+    FVector previousMousePos;
+    bool startMoving = false;
+
+    CInputManager* inputManager;
 };
