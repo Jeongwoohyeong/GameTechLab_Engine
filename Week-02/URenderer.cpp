@@ -273,7 +273,22 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 		Render(Mesh, DeviceContext, nullptr);
 	}
 	
+	// 선택된 프리미티브면 로컬 기즈모 렌더링
+	if (CScene::GetInstance().GetSelectedPrimitive() == Primitive)
+	{
+		if (RenderLocalGizmo(Primitive) == false)
+		{
+			return false;
+		}
+	}
 	
+	return true;
+}
+
+bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
+{
+	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
+
 	// color 추가  렌더링
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
 	for (int i = 0; i < 3; i++)
@@ -291,7 +306,7 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 		Render(CylinderMesh, DeviceContext, nullptr);
 		
 	}
-	
+
 	return true;
 }
 
@@ -310,7 +325,7 @@ void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext, FMatrix*
 		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
 	}
     
-#pragma region 외곽선 그리기
+#pragma region draw outline
 	if(World == nullptr)
 	{
 		return; // 외곽선 그리기 패스 건너뜀

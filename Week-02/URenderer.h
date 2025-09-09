@@ -42,6 +42,7 @@ public:
 private:
 	void RenderScene();
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
+	bool RenderLocalGizmo(UPrimitiveComponent* Primitive);
 	void RenderUI();
 	void Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext, FMatrix* World);
 
