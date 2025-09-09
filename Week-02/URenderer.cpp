@@ -226,11 +226,7 @@ bool URenderer::CreateIndexBuffer(FMesh* Mesh)
 	indexBufferDesc.CPUAccessFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA indexBufferSRD = {};
-	
-	
-	
-	
-	= &Mesh->Indices;
+	indexBufferSRD.pSysMem = Mesh->Indices;
 
 	hr = Device->GetDeivce()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &Mesh->IndexBuffer);
 	if (FAILED(hr))
