@@ -132,6 +132,12 @@
     <ClCompile Include="UTriangleComp.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="UClass.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="USceneComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -254,10 +260,19 @@
     <ClInclude Include="UTriangleComp.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="UClass.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RTTIMacros.h">
+      <Filter>헤더 파일\Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ShaderW0.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

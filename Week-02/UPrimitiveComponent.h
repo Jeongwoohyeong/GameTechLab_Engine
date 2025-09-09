@@ -8,6 +8,7 @@
 #include "FMesh.h"
 #include "LocalGizmo.h"
 #include "UUIManager.h"
+#include "RTTIMacros.h"
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
@@ -16,6 +17,7 @@ class URenderer;
 
 class UPrimitiveComponent :public USceneComponent
 {
+	RTTI_DECLARE()
 public:
 	UPrimitiveComponent();
 	virtual ~UPrimitiveComponent() = default;
