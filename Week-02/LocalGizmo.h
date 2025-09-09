@@ -3,6 +3,7 @@
 #include "Gizmo.h"
 #include "Math.h"
 #include "UUIManager.h"
+#include "CInputManager.h"
 
 constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
 constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
@@ -39,8 +40,8 @@ public:
     
     void CalculateTranslationOffSet();
 
-    void OnLMouseClick(FVector firstClick);
-    void OnLMouseDrag(FVector dragPos);
+    void OnLMouseClick(FDragMouseData firstClickInfo);
+    void OnLMouseDrag(FDragMouseData dragInfo);
     void OnLMouseRelease();
 
     FMatrix worldMatrix{

@@ -13,32 +13,30 @@ void CInputManager::Update()
 	// 마우스 클릭 이벤트 감지
 	if (IsMouseBtnPressed(0)) // 왼쪽 버튼이 막 눌렸을 때
 	{
-		FVector firstClickWorld = UCamera::GetInstance().DeprojectScreenPoint(
+		FDragMouseData clickMouseData = {
 			CurrentMouseClientPosPoint.x,
 			CurrentMouseClientPosPoint.y,
 			ClientW,
-			ClientH,
-			1.0f,
-			true
-		);
+			ClientH
+		};
+
 		for (const auto& callback : OnClickCallbacks)
 		{
-			callback(firstClickWorld); // 등록된 모든 함수 호출
+			callback(clickMouseData); // 등록된 모든 함수 호출
 		}
 	}
 	if (IsMouseBtnDown(0)) // 드래그할 때 쓸 거
 	{
-		FVector dragPosWorld = UCamera::GetInstance().DeprojectScreenPoint(
+		FDragMouseData dragMouseData = {
 			CurrentMouseClientPosPoint.x,
 			CurrentMouseClientPosPoint.y,
 			ClientW,
-			ClientH,
-			1.0f,
-			true
-		);
+			ClientH
+		};
+
 		for (const auto& callback : OnDragCallbacks)
 		{
-			callback(dragPosWorld); // 등록된 모든 함수 호출
+			callback(dragMouseData); // 등록된 모든 함수 호출
 		}
 	}
 	// 마우스 떼기 이벤트 감지
