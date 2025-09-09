@@ -262,21 +262,36 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	// 드로우 콜
 	FMesh* Mesh = Primitive->GetMesh();
+	Render(Mesh, DeviceContext);
 
-	if (Mesh->bUseIndexBuffer)
+
+	// color 추가  렌더링
+	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
+	for (int i = 0; i < 3; i++)
 	{
-		DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
-		DeviceContext->IASetIndexBuffer(Mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		DeviceContext->DrawIndexed(Mesh->IndexCount, 0, 0);
+		FMatrix World = FMatrix::Identity();
+		World = World * gizmoTrans[i].GetTransformMatrix();
+		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+		Render(ConeMesh, DeviceContext);
+		Render(CylinderMesh, DeviceContext);
+	}
+	
+	return true;
+}
+
+void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext)
+{
+	if (mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
 	}
 	else
 	{
-		DeviceContext->IASetVertexBuffers(0, 1, &Mesh->VertexBuffer, &Mesh->Stride, &Mesh->Offset);
-		DeviceContext->Draw(Mesh->VertexByteWidth / Mesh->Stride, 0);
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
 	}
-
-	Primitive->RenderGizmo(this);
-	return true;
 }
 
 #pragma region Gizmo 사용, 추후 수정

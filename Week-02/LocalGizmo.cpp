@@ -7,7 +7,7 @@
 #include "UCamera.h"
 #include "CInputManager.h"
 
- void LocalGizmo::Initialize(URenderer* renderer, FTransform* transform)
+ void LocalGizmo::Initialize(FTransform* transform)
 {
     ParentTransform = transform;
 
@@ -21,29 +21,29 @@
     cylinderVerts = std::span<FVertexSimple>(GCylinderVertices);
     cylinderIdx = std::span<unsigned int>(GCylinderIndices);
 
-    renderer->CreateVertexBuffer(
-        &gizmoConeVerticesBuffer,
-        coneVerts.data(),
-        static_cast<unsigned int>(coneVerts.size_bytes())
-    );
+    //renderer->CreateVertexBuffer(
+    //    &gizmoConeVerticesBuffer,
+    //    coneVerts.data(),
+    //    static_cast<unsigned int>(coneVerts.size_bytes())
+    //);
 
-    renderer->CreateIndexBuffer(
-        &gizmoConeIndicesBuffer,
-        coneIdx.data(),
-        static_cast<unsigned int>(coneIdx.size_bytes())
-    );
+    //renderer->CreateIndexBuffer(
+    //    &gizmoConeIndicesBuffer,
+    //    coneIdx.data(),
+    //    static_cast<unsigned int>(coneIdx.size_bytes())
+    //);
 
-    renderer->CreateVertexBuffer(
-        &gizmoCylinderVerticesBuffer,
-        cylinderVerts.data(),
-        static_cast<unsigned int>(cylinderVerts.size_bytes())
-    );
+    //renderer->CreateVertexBuffer(
+    //    &gizmoCylinderVerticesBuffer,
+    //    cylinderVerts.data(),
+    //    static_cast<unsigned int>(cylinderVerts.size_bytes())
+    //);
 
-    renderer->CreateIndexBuffer(
-        &gizmoCylinderIndicesBuffer,
-        cylinderIdx.data(),
-        static_cast<unsigned int>(cylinderIdx.size_bytes())
-    );
+    //renderer->CreateIndexBuffer(
+    //    &gizmoCylinderIndicesBuffer,
+    //    cylinderIdx.data(),
+    //    static_cast<unsigned int>(cylinderIdx.size_bytes())
+    //);
 
 	CreateAABB();
 }
@@ -66,31 +66,29 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 }
 
 void LocalGizmo::Render(URenderer* renderer){
-    renderer->SetTopology(false);
-
-    FTransform temp;
-   
-    for (auto& a : axisInfo)
-    {
-        if (startMoving)
-        {
-            UE_LOG("Moving!");
-            CalculateTranslationOffSet();
-        }
-		temp = UpdateGizmoTranformFromParent(a); // x, y, z축 회전 적용
-        
-        renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(temp.GetTransformMatrix()), a.color);
-        renderer->RenderMesh(
-            gizmoConeVerticesBuffer, static_cast<unsigned int>(coneVerts.size()),
-            gizmoConeIndicesBuffer, static_cast<unsigned int>(coneIdx.size()),
-            sizeof(FVertexSimple)
-        );
-        renderer->RenderMesh(
-            gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
-            gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
-            sizeof(FVertexSimple)
-        );
-    }
+  //  FTransform temp;
+  // 
+  //  for (auto& a : axisInfo)
+  //  {
+  //      if (startMoving)
+  //      {
+  //          UE_LOG("Moving!");
+  //          CalculateTranslationOffSet();
+  //      }
+		//temp = UpdateGizmoTranformFromParent(a); // x, y, z축 회전 적용
+  //      
+  //      renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(temp.GetTransformMatrix()), a.color);
+  //      renderer->RenderMesh(
+  //          gizmoConeVerticesBuffer, static_cast<unsigned int>(coneVerts.size()),
+  //          gizmoConeIndicesBuffer, static_cast<unsigned int>(coneIdx.size()),
+  //          sizeof(FVertexSimple)
+  //      );
+  //      renderer->RenderMesh(
+  //          gizmoCylinderVerticesBuffer, static_cast<unsigned int>(cylinderVerts.size()),
+  //          gizmoCylinderIndicesBuffer, static_cast<unsigned int>(cylinderIdx.size()),
+  //          sizeof(FVertexSimple)
+  //      );
+  //  }
 }
 
 void LocalGizmo::Release()
@@ -115,6 +113,17 @@ void LocalGizmo::Release()
         gizmoCylinderIndicesBuffer->Release();
         gizmoCylinderIndicesBuffer = nullptr;
     }
+}
+
+FTransform* LocalGizmo::GetGizmoTransform()
+{
+    const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
+    gizmoTransform[arraySize];
+    for (int i = 0; i < arraySize; i++)
+    {
+        gizmoTransform[i] = UpdateGizmoTranformFromParent(axisInfo[i]);
+    }
+    return gizmoTransform;
 }
 
 void LocalGizmo::CalculateTranslationOffSet()

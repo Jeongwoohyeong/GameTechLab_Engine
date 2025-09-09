@@ -45,11 +45,12 @@ public:
         {COLOR_R, ROTATE_Z, TRANSLATE_Z} // X
     };
 
-    void Initialize(class URenderer* renderer, FTransform* transform);
+    void Initialize(FTransform* transform);
     virtual void Render(class URenderer* renderer) override;
 	virtual void CreateAABB() override;
     virtual void Release() override;
 
+    FTransform* GetGizmoTransform();
     void CalculateTranslationOffSet();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
@@ -65,4 +66,5 @@ public:
     bool startMoving = false;
 
     CInputManager* inputManager;
+    FTransform gizmoTransform[3];
 };
