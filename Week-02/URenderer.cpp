@@ -270,10 +270,17 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 	for (int i = 0; i < 3; i++)
 	{
 		FMatrix World = FMatrix::Identity();
+		gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f);
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
 		Render(ConeMesh, DeviceContext);
+
+		World = FMatrix::Identity();
+		gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
+		World = World * gizmoTrans[i].GetTransformMatrix();
+		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
 		Render(CylinderMesh, DeviceContext);
+		
 	}
 	
 	return true;

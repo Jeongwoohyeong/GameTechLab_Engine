@@ -33,7 +33,7 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
     FTransform temp = *ParentTransform;
     FVector rot = a.rotate;
 
-    temp.SetScale(0.1f, 0.8f, 0.1f);
+    temp.SetScale(0.05f, 0.8f, 0.05f);
 
     FVector resizedLocation = ParentTransform->GetLocation();
     temp.SetLocation(resizedLocation);
