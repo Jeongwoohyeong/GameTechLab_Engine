@@ -127,6 +127,15 @@ void FTransform::AddRotationDeg(const FVector& Degree)
 	bIsInverseDirty = true;
 }
 
+void FTransform::ClearRotation()
+{
+	Rotation = FVector(0.0f, 0.0f, 0.0f);
+	Quaternion = FQuaternion();
+	PrevRotation = Rotation;
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
 void FTransform::SetLocation(float x, float y, float z)
 {
 	Location = FVector(x, y, z);

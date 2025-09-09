@@ -38,20 +38,12 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
     FVector resizedLocation = ParentTransform->GetLocation();
     Transform.SetLocation(resizedLocation);
     
-    // 로컬 좌표계 회전
+    if (!bIsLocalMode)
+    {
+		// 누적된 회전을 초기화
+        Transform.ClearRotation();
+    }
     Transform.AddRotationDeg(AxisRotation);
-
-	// TODO: 월드 좌표계 모드 구현
-
-    //if (bIsLocalMode)
-    //{
-    //    
-    //}
-    //else
-    //{
-    //    // 월드 좌표계 모드
-    //    Transform.SetRotationDeg(AxisRotation);
-    //}
 
     return Transform;
 }
