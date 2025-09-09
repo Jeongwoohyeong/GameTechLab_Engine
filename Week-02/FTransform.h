@@ -29,6 +29,7 @@ public:
 	void SetLocation(const FVector&);
 
 	void AddLocation(const FVector&);
+	void AddScale(const FVector&);
 
 	void Translate(float dx, float dy, float dz);
 	void Translate(const FVector&);

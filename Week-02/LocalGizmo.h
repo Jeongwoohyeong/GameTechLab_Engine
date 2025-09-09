@@ -44,7 +44,9 @@ public:
     void OnLMouseDrag(FDragMouseData dragInfo);
     void OnLMouseRelease();
 
-    void TranslateLocalOrWord(FVector newDelta);
+    void Scale(FVector newDelta);
+    void RotateLocalOrWorld(FVector newDelta);
+    void TranslateLocalOrWorld(FVector newDelta);
 
     FMatrix worldMatrix{
         1, 1 ,0,

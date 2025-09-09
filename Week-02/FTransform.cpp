@@ -147,7 +147,6 @@ void FTransform::SetLocation(float x, float y, float z)
 void FTransform::SetLocation(const FVector& location)
 {
 	Location = FVector(location.X, location.Y, location.Z);
-
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
@@ -155,6 +154,14 @@ void FTransform::SetLocation(const FVector& location)
 void FTransform::AddLocation(const FVector& location)
 {
 	Location += location;
+
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
+void FTransform::AddScale(const FVector& scale)
+{
+	Scale += scale;
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
