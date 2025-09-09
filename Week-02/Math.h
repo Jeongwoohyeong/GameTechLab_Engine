@@ -66,6 +66,8 @@ struct FVector
 	float Length() const { return sqrt(X * X + Y * Y + Z * Z); }
 	float LengthSquared() const { return X * X + Y * Y + Z * Z; }
 
+	bool IsNearlyZero() const noexcept { return (std::abs(X) < MATH_EPSILON) && (std::abs(Y) < MATH_EPSILON) && (std::abs(Z) < MATH_EPSILON); }
+
 	FVector GetNormalized() const
 	{
 		float Len = Length();
@@ -131,6 +133,57 @@ struct FVector4
 
 	bool IsPoint() const noexcept { return std::abs(W - 1.0f) < MATH_EPSILON; }
 	bool IsVector() const noexcept { return std::abs(W) < MATH_EPSILON; }
+};
+
+struct FQuaternion {
+	float X = 0, Y = 0, Z = 0, W = 1;
+
+	// 두 쿼터니언을 곱한다
+	static FQuaternion Multiply(const FQuaternion& q1, const FQuaternion& q2) {
+		FQuaternion result;
+		result.W = q1.W * q2.W - q1.X * q2.X - q1.Y * q2.Y - q1.Z * q2.Z;
+		result.X = q1.W * q2.X + q1.X * q2.W + q1.Y * q2.Z - q1.Z * q2.Y;
+		result.Y = q1.W * q2.Y - q1.X * q2.Z + q1.Y * q2.W + q1.Z * q2.X;
+		result.Z = q1.W * q2.Z + q1.X * q2.Y - q1.Y * q2.X + q1.Z * q2.W;
+		return result;
+	}
+
+	// 오일러 각도(Z -> X -> Y 순서)로부터 쿼터니언을 생성
+	static FQuaternion CreateFromEulerAngles(FVector Rotation) {
+		float halfZ = Rotation.Z * 0.5f;
+		float halfX = Rotation.X * 0.5f;
+		float halfY = Rotation.Y * 0.5f;
+
+		FQuaternion qZ = { 0, 0, sin(halfZ), cos(halfZ) };
+		FQuaternion qX = { sin(halfX), 0, 0, cos(halfX) };
+		FQuaternion qY = { 0, sin(halfY), 0, cos(halfY) };
+
+		return Multiply(Multiply(qZ, qX), qY);
+	}
+
+	float Magnitude() const {
+		return sqrt(X * X + Y * Y + Z * Z + W * W);
+	}
+
+	// 쿼터니언을 정규화 (크기를 1로 만듦)
+	void Normalize() {
+		float mag = Magnitude();
+
+		// 크기가 0에 매우 가까운 경우 나누기 오류를 방지
+		// (0으로 나누면 안 되므로)
+		if (mag > 0.00001f) {
+			X /= mag;
+			Y /= mag;
+			Z /= mag;
+			W /= mag;
+		}
+		else 
+		{
+			// 크기가 0인 쿼터니언은 유효하지 않으므로,
+			// 안전하게 기본 회전값(Identity)으로 리셋
+			X = 0; Y = 0; Z = 0; W = 1;
+		}
+	}
 };
 
 struct FMatrix
@@ -391,6 +444,43 @@ struct FMatrix
 
 		return Result;
 	}
+
+	// 쿼터니언으로부터 왼손 좌표계 기준 회전 행렬 생성
+	static FMatrix MakeRotationFromQuaternion(const FQuaternion& Q)
+	{
+		FMatrix Result = {};
+		float XX = Q.X * Q.X;
+		float YY = Q.Y * Q.Y;
+		float ZZ = Q.Z * Q.Z;
+		float XY = Q.X * Q.Y;
+		float XZ = Q.X * Q.Z;
+		float YZ = Q.Y * Q.Z;
+		float WX = Q.W * Q.X;
+		float WY = Q.W * Q.Y;
+		float WZ = Q.W * Q.Z;
+
+		Result.M[0][0] = 1.0f - 2.0f * (YY + ZZ);
+		Result.M[0][1] = 2.0f * (XY + WZ);
+		Result.M[0][2] = 2.0f * (XZ - WY);
+		Result.M[0][3] = 0.0f;
+
+		Result.M[1][0] = 2.0f * (XY - WZ);
+		Result.M[1][1] = 1.0f - 2.0f * (XX + ZZ);
+		Result.M[1][2] = 2.0f * (YZ + WX);
+		Result.M[1][3] = 0.0f;
+
+		Result.M[2][0] = 2.0f * (XZ + WY);
+		Result.M[2][1] = 2.0f * (YZ - WX);
+		Result.M[2][2] = 1.0f - 2.0f * (XX + YY);
+		Result.M[2][3] = 0.0f;
+
+		Result.M[3][0] = 0.0f;
+		Result.M[3][1] = 0.0f;
+		Result.M[3][2] = 0.0f;
+		Result.M[3][3] = 1.0f;
+
+		return Result;
+	}
 };
 
 inline float DegToRad(float Degree)
@@ -426,76 +516,77 @@ inline FVector4 operator*(const FVector4& V, const FMatrix& M)
 	Result.Y = V.X * M.M[0][1] + V.Y * M.M[1][1] + V.Z * M.M[2][1] + V.W * M.M[3][1];
 	Result.Z = V.X * M.M[0][2] + V.Y * M.M[1][2] + V.Z * M.M[2][2] + V.W * M.M[3][2];
 	Result.W = V.X * M.M[0][3] + V.Y * M.M[1][3] + V.Z * M.M[2][3] + V.W * M.M[3][3];
+
 	return Result;
 }
 
-struct FQuaternion
-{
-	float X, Y, Z, W; // W + Xi + Yj + Zk
-	constexpr FQuaternion() noexcept : X(0), Y(0), Z(0), W(1) {}
-	constexpr FQuaternion(float _X, float _Y, float _Z, float _W) noexcept : X(_X), Y(_Y), Z(_Z), W(_W) {}
-
-	static FQuaternion FromAxisAngle(const FVector& Axis, float AngleRad)
-	{
-		float HalfAngle = AngleRad * 0.5f;
-		float S = sin(HalfAngle);
-		return FQuaternion(Axis.X * S, Axis.Y * S, Axis.Z * S, cos(HalfAngle));
-	}
-	static FQuaternion FromEuler(const FVector& EulerRad)
-	{
-		float Cy = cos(EulerRad.Z * 0.5f);
-		float Sy = sin(EulerRad.Z * 0.5f);
-		float Cp = cos(EulerRad.Y * 0.5f);
-		float Sp = sin(EulerRad.Y * 0.5f);
-		float Cr = cos(EulerRad.X * 0.5f);
-		float Sr = sin(EulerRad.X * 0.5f);
-		FQuaternion Q;
-		Q.W = Cr * Cp * Cy + Sr * Sp * Sy;
-		Q.X = Sr * Cp * Cy - Cr * Sp * Sy;
-		Q.Y = Cr * Sp * Cy + Sr * Cp * Sy;
-		Q.Z = Cr * Cp * Sy - Sr * Sp * Cy;
-		return Q;
-	}
-
-	constexpr FQuaternion operator*(FQuaternion Other) const noexcept
-	{
-		return FQuaternion(
-			W * Other.X + X * Other.W + Y * Other.Z - Z * Other.Y,
-			W * Other.Y - X * Other.Z + Y * Other.W + Z * Other.X,
-			W * Other.Z + X * Other.Y - Y * Other.X + Z * Other.W,
-			W * Other.W - X * Other.X - Y * Other.Y - Z * Other.Z
-		);
-	}
-
-	// 켤레 쿼터니언을 구합니다.
-	constexpr FQuaternion GetConjugate() const noexcept
-	{
-		return FQuaternion(-X, -Y, -Z, W);
-	}
-
-	inline FMatrix MakeRotationQuaternion() const
-	{
-		// https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
-		// 위키백과의 notation은 colum vector & column-major 기준이므로 전치해서 사용
-		FMatrix Result = FMatrix::Identity();
-		float XX = X * X;
-		float YY = Y * Y;
-		float ZZ = Z * Z;
-		float XY = X * Y;
-		float XZ = X * Z;
-		float YZ = Y * Z;
-		float WX = W * X;
-		float WY = W * Y;
-		float WZ = W * Z;
-		Result.M[0][0] = 1.0f - 2.0f * (YY + ZZ);
-		Result.M[0][1] = 2.0f * (XY + WZ);
-		Result.M[0][2] = 2.0f * (XZ - WY);
-		Result.M[1][0] = 2.0f * (XY - WZ);
-		Result.M[1][1] = 1.0f - 2.0f * (XX + ZZ);
-		Result.M[1][2] = 2.0f * (YZ + WX);
-		Result.M[2][0] = 2.0f * (XZ + WY);
-		Result.M[2][1] = 2.0f * (YZ - WX);
-		Result.M[2][2] = 1.0f - 2.0f * (XX + YY);
-		return Result;
-	}
-};
+//struct FQuaternion
+//{
+//	float X, Y, Z, W; // W + Xi + Yj + Zk
+//	constexpr FQuaternion() noexcept : X(0), Y(0), Z(0), W(1) {}
+//	constexpr FQuaternion(float _X, float _Y, float _Z, float _W) noexcept : X(_X), Y(_Y), Z(_Z), W(_W) {}
+//
+//	static FQuaternion FromAxisAngle(const FVector& Axis, float AngleRad)
+//	{
+//		float HalfAngle = AngleRad * 0.5f;
+//		float S = sin(HalfAngle);
+//		return FQuaternion(Axis.X * S, Axis.Y * S, Axis.Z * S, cos(HalfAngle));
+//	}
+//	static FQuaternion FromEuler(const FVector& EulerRad)
+//	{
+//		float Cy = cos(EulerRad.Z * 0.5f);
+//		float Sy = sin(EulerRad.Z * 0.5f);
+//		float Cp = cos(EulerRad.Y * 0.5f);
+//		float Sp = sin(EulerRad.Y * 0.5f);
+//		float Cr = cos(EulerRad.X * 0.5f);
+//		float Sr = sin(EulerRad.X * 0.5f);
+//		FQuaternion Q;
+//		Q.W = Cr * Cp * Cy + Sr * Sp * Sy;
+//		Q.X = Sr * Cp * Cy - Cr * Sp * Sy;
+//		Q.Y = Cr * Sp * Cy + Sr * Cp * Sy;
+//		Q.Z = Cr * Cp * Sy - Sr * Sp * Cy;
+//		return Q;
+//	}
+//
+//	constexpr FQuaternion operator*(FQuaternion Other) const noexcept
+//	{
+//		return FQuaternion(
+//			W * Other.X + X * Other.W + Y * Other.Z - Z * Other.Y,
+//			W * Other.Y - X * Other.Z + Y * Other.W + Z * Other.X,
+//			W * Other.Z + X * Other.Y - Y * Other.X + Z * Other.W,
+//			W * Other.W - X * Other.X - Y * Other.Y - Z * Other.Z
+//		);
+//	}
+//
+//	// 켤레 쿼터니언을 구합니다.
+//	constexpr FQuaternion GetConjugate() const noexcept
+//	{
+//		return FQuaternion(-X, -Y, -Z, W);
+//	}
+//
+//	inline FMatrix MakeRotationQuaternion() const
+//	{
+//		// https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation#Quaternion-derived_rotation_matrix
+//		// 위키백과의 notation은 colum vector & column-major 기준이므로 전치해서 사용
+//		FMatrix Result = FMatrix::Identity();
+//		float XX = X * X;
+//		float YY = Y * Y;
+//		float ZZ = Z * Z;
+//		float XY = X * Y;
+//		float XZ = X * Z;
+//		float YZ = Y * Z;
+//		float WX = W * X;
+//		float WY = W * Y;
+//		float WZ = W * Z;
+//		Result.M[0][0] = 1.0f - 2.0f * (YY + ZZ);
+//		Result.M[0][1] = 2.0f * (XY + WZ);
+//		Result.M[0][2] = 2.0f * (XZ - WY);
+//		Result.M[1][0] = 2.0f * (XY - WZ);
+//		Result.M[1][1] = 1.0f - 2.0f * (XX + ZZ);
+//		Result.M[1][2] = 2.0f * (YZ + WX);
+//		Result.M[2][0] = 2.0f * (XZ + WY);
+//		Result.M[2][1] = 2.0f * (YZ - WX);
+//		Result.M[2][2] = 1.0f - 2.0f * (XX + YY);
+//		return Result;
+//	}
+//};

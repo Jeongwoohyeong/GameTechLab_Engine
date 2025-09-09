@@ -7,6 +7,8 @@ FTransform::FTransform()
 	Rotation = FVector(0.0f, 0.0f, 0.0f);
 	Location = FVector(0.0f, 0.0f, 0.0f);
 	Inverse = {};
+	Quaternion = FQuaternion();
+	PrevRotation = Rotation;
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
@@ -58,9 +60,14 @@ void FTransform::SetRotationDegZ(float degree)
 
 void FTransform::SetRotationDeg(const FVector& degrees)
 {
+	PrevRotation = Rotation;
+
 	this->SetRotationDegX(degrees.X);
 	this->SetRotationDegY(degrees.Y);
 	this->SetRotationDegZ(degrees.Z);
+
+	FVector DeltaRotation = Rotation - PrevRotation;
+	UpdateQuaternion(DeltaRotation);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
@@ -68,9 +75,14 @@ void FTransform::SetRotationDeg(const FVector& degrees)
 
 void FTransform::SetRotationDegByDrag(const FVector& Degrees)
 {
+	PrevRotation = Rotation;
+
 	Rotation.X = DegToRad(Degrees.X);
 	Rotation.Y = DegToRad(Degrees.Y);
 	Rotation.Z = DegToRad(Degrees.Z);
+
+	FVector deltaRot = Rotation - PrevRotation;
+	UpdateQuaternion(deltaRot);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
@@ -95,6 +107,21 @@ void FTransform::AddRotationDegY(float degree)
 void FTransform::AddRotationDegZ(float degree)
 {
 	Rotation.Z += DegToRad(degree);
+
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
+void FTransform::AddRotationDeg(const FVector& Degree)
+{
+	PrevRotation = Rotation;
+
+	Rotation.X += DegToRad(Degree.X);
+	Rotation.Y += DegToRad(Degree.Y);
+	Rotation.Z += DegToRad(Degree.Z);
+
+	FVector deltaRot = Rotation - PrevRotation;
+	UpdateQuaternion(deltaRot);
 
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
@@ -191,7 +218,8 @@ FMatrix& FTransform::GetTransformMatrix()
 	{
 		// SRT중 하나라도 변경되면 행렬 연산
 		FMatrix scaleMatrix = FMatrix::MakeScale(Scale);
-		FMatrix rotationMatrix = FMatrix::MakeRotation(Rotation);
+		// FMatrix rotationMatrix = FMatrix::MakeRotation(Rotation); // 기존 오일러 각도 방식
+		FMatrix rotationMatrix = FMatrix::MakeRotationFromQuaternion(Quaternion);
 		FMatrix translationMatrix = FMatrix::MakeTranslation(Location);
 
 		Transform = scaleMatrix * rotationMatrix * translationMatrix;		
@@ -202,6 +230,25 @@ FMatrix& FTransform::GetTransformMatrix()
 	return Transform;
 }
 
+void FTransform::UpdateQuaternion(const FVector& DeltaRotation)
+{
+	if (DeltaRotation.IsNearlyZero())
+	{
+		return;
+	}
+
+	// 1. 변화량으로 델타 쿼터니언 생성
+	// (Z -> X -> Y 순서)
+	FQuaternion DeltaQuaternion = FQuaternion::CreateFromEulerAngles(DeltaRotation);
+
+	// 2. 현재 회전에 델타 회전을 곱하여 누적
+	Quaternion = FQuaternion::Multiply(Quaternion, DeltaQuaternion);
+
+	// 3. 정규화
+	Quaternion.Normalize();
+
+	bIsTransformDirty = true;
+}
 
 //TODO: 2단계 회전 구현
 //FMatrix& FTransform::Get2StepRotationMatrix()
