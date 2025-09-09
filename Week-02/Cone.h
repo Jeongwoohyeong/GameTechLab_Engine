@@ -23,7 +23,7 @@ static FVertexSimple GConeVertices[] =
     { 0.0f,  1.0f,  0.0f,  1.0f, 0.0f, 0.0f, 1.0f }
 };
 
-static unsigned int GConeIndices[] =
+static uint32 GConeIndices[] =
 {
     // -------------------- 원뿔 인덱스 (Indices) --------------------
 

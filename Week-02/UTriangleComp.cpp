@@ -1,5 +1,8 @@
 ﻿#include "UTriangleComp.h"
 
+
+RTTI_IMPL(UTriangleComp, UPrimitiveComponent);
+
 UTriangleComp::UTriangleComp()
 	:Type(EPrimitiveType::Triangle)
 {

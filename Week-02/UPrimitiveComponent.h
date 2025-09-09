@@ -8,6 +8,7 @@
 #include "FMesh.h"
 #include "LocalGizmo.h"
 #include "UUIManager.h"
+#include "RTTIMacros.h"
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
@@ -16,14 +17,20 @@ class URenderer;
 
 class UPrimitiveComponent :public USceneComponent
 {
+	RTTI_DECLARE()
 public:
 	UPrimitiveComponent();
 	virtual ~UPrimitiveComponent() = default;
-
-	void RenderGizmo(URenderer* renderer);
 	void Release();
 
 	inline FTransform* GetTransform() { return &Transform; }
+	inline FTransform* GetGizmoTransforms() { 
+		if (Gizmo.ParentTransform == nullptr)
+		{
+			Gizmo.Initialize(&Transform);
+		}
+		return Gizmo.GetGizmoTransform(); 
+	}
 
 	virtual EPrimitiveType GetPrimitiveType() = 0;
 	virtual FMesh* GetMesh() = 0;

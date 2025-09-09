@@ -4,23 +4,26 @@
 #include "UObject.h"
 #include "UEngineStatics.h"
 #include "UUIManager.h"
+#include "RTTIMacros.h"
 
 TArray<UObject*> GUObjectArray;
 uint64 UObject::TotalAllocationBytes = 0;
 uint64 UObject::TotalAllocationCount = 0;
 TMap<void*, size_t> UObject::AllocatedBytesMap = {};
 
+RTTI_IMPL_ROOT(UObject)
+
 UObject::UObject()
 	: UUID(-1), InternalIndex(0)
 {
 	GUObjectArray.push_back(this);
-	InternalIndex = static_cast<uint32>(GUObjectArray.size() - 1);
+	InternalIndex = static_cast<uint32>(GUObjectArray.size() - 1);	
 }
 
 UObject::~UObject()
 {
 	bool bErased = false;
-
+	
 	// GUObjectArray에서 자신을 제거
 	if (InternalIndex < GUObjectArray.size() && GUObjectArray[InternalIndex] == this)
 	{
@@ -58,6 +61,20 @@ UObject::~UObject()
 	}
 }
 
+bool UObject::IsA(const UClass* targetClass) const
+{
+	UE_LOG("call isa");
+	for (UClass* currentClass = this->GetClass(); currentClass != nullptr; currentClass = currentClass->GetParent())
+	{
+		if (currentClass == targetClass)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void* UObject::operator new(size_t size)
 {
 	void* ptr = malloc(size);
@@ -65,12 +82,12 @@ void* UObject::operator new(size_t size)
 	{
 		throw::std::bad_alloc();
 	}
-	
+
 	TotalAllocationBytes = TotalAllocationBytes + size;
 	TotalAllocationCount++;
-
+	
 	AllocatedBytesMap[ptr] = size;
-
+	
 	return ptr;
 }
 
