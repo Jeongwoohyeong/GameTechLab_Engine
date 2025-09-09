@@ -225,14 +225,14 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		// 2) Rotation (deg)
 		// 내부는 rad라고 가정 → UI용으로 deg로 변환해 표기
-		FVector PrevRotation = Transform->GetRotationRadians();
-		FVector CurRotation = SwapYZ(PrevRotation * Math::RadToDeg);
-		if (ImGui::DragFloat3("Rotation", &CurRotation.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(SwapYZ(CurRotation)); // SetRotationDeg는 내부에서 deg→rad 처리
+		FVector Rotation = SwapYZ(Transform->GetRotationRadians());
+		// FVector CurRotation = SwapYZ(PrevRotation * Math::RadToDeg);
+		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
+			Transform->SetRotationDeg(SwapYZ(Rotation)); // SetRotationDeg는 내부에서 deg→rad 처리
 			
 			// 쿼터니언 업데이트
-			FVector DeltaRotation = Transform->GetRotationRadians() - PrevRotation;
-			Transform->UpdateQuaternion(DeltaRotation);
+			/*FVector DeltaRotation = Transform->GetRotationRadians() - PrevRotation;
+			Transform->UpdateQuaternion(DeltaRotation);*/
 		}
 		if (ImGui::Button("R Reset")) {
 			FVector r0(0.0f, 0.0f, 0.0f);
