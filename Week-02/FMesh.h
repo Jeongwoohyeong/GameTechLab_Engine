@@ -2,12 +2,13 @@
 
 #include "Types.h"
 #include <d3d11.h>
+#include <vector>
 #include "FVertexStruct.h"
 
 struct FMesh
 {
-	const FVertexSimple* Vertices = nullptr;
-	const uint32* Indices = nullptr;
+	FVertexSimple* Vertices = {};
+	uint32* Indices = {};
 	ID3D11Buffer* VertexBuffer = nullptr;
 	ID3D11Buffer* IndexBuffer = nullptr;
 	uint32 VertexByteWidth = 0;

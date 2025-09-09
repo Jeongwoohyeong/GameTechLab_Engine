@@ -10,7 +10,6 @@ public:
 	~Gizmo() = default;
 
 	virtual void Initialize(URenderer* renderer) {};
-	virtual void Render(URenderer* renderer) {};
 	virtual void CreateAABB() {};
 	virtual void Release() {};
 	virtual void SelectGizmoAxis(int32 Axis) { SelectedAxis = Axis; } // -1: none, 0: X, 1: Y, 2: Z

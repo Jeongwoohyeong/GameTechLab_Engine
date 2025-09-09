@@ -2,7 +2,6 @@
 
 #include "Math.h"
 
-
 class FTransform
 {
 public:
@@ -22,6 +21,7 @@ public:
 	void AddRotationDegX(float degree);
 	void AddRotationDegY(float degree);
 	void AddRotationDegZ(float degree);
+	void AddRotationDeg(const FVector& degree);
 
 	void SetLocation(float x, float y, float z);
 	void SetLocation(const FVector&);
@@ -36,19 +36,24 @@ public:
 	FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
 	bool TryGetInverseMatrix(FMatrix& Out);
+	
 	FMatrix& GetTransformMatrix();
-
+	FMatrix& GetTransformMatrixFor();
 
 	FMatrix& Get2StepRotationMatrix(); 
 
 private:
+	void UpdateQuaternion(const FVector& DeltaRotation);
 
 private:
 	FMatrix Transform;
 	FMatrix Inverse;
 	FVector Scale;
-	FVector Rotation;
+	FVector Rotation; // 라디안 단위, 오일러 각도 (Z -> X -> Y 순서)
 	FVector Location;
+	
+	FQuaternion Quaternion; // Rotation 바뀔 때마다 업데이트
+	FVector PrevRotation;
 
 	// 트랜스폼 변경 검사
 	bool bIsTransformDirty;

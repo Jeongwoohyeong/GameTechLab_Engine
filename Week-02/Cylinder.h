@@ -29,7 +29,7 @@ static FVertexSimple GCylinderVertices[] =
 { 0.353f,  1.0f, -0.353f, 0.0f, 1.0f, 0.0f, 1.0f }
 };
 
-static unsigned int GCylinderIndices[] =
+static uint32 GCylinderIndices[] =
 {
 	// -------------------- 실린더 인덱스 (Indices) --------------------
 	// 아랫면 (밑면)

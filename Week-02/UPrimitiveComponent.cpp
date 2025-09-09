@@ -6,18 +6,8 @@ RTTI_IMPL(UPrimitiveComponent, USceneComponent)
 
 UPrimitiveComponent::UPrimitiveComponent() { }
 
-void UPrimitiveComponent::RenderGizmo(URenderer* renderer)
-{
-	if(Gizmo.ParentTransform == nullptr)
-	{
-		Gizmo.Initialize(renderer, &Transform);
-	}
-	Gizmo.Render(renderer);
-}
-
 void UPrimitiveComponent::Release()
 {
-	Gizmo.Release();
 }
 
 void UPrimitiveComponent::CreateAABB()
@@ -27,7 +17,7 @@ void UPrimitiveComponent::CreateAABB()
 
 	FMesh* Mesh = GetMesh();
 
-	if(Mesh == nullptr || Mesh->Vertices == nullptr || Mesh->VertexByteWidth == 0 || Mesh->Stride == 0)
+	if (Mesh == nullptr || Mesh->Vertices == nullptr || Mesh->VertexByteWidth == 0 || Mesh->Stride == 0)
 	{
 		UE_LOG("Warning: Cannot create AABB because Mesh or its vertex data is invalid.");
 		AABB.Min = Min;
@@ -38,6 +28,10 @@ void UPrimitiveComponent::CreateAABB()
 	const uint32 VertexCount = Mesh->VertexByteWidth / Mesh->Stride;
 	for (uint32 Offset = 0; Offset < Mesh->VertexByteWidth; Offset += Mesh->Stride)
 	{
+		//Mesh->VertexBuffer[i][0];
+		//Mesh->VertexBuffer[i][1];
+		//Mesh->VertexBuffer[i][2];
+
 		const char* Ptr = reinterpret_cast<const char*>(Mesh->Vertices) + Offset;
 		float X = *reinterpret_cast<const float*>(Ptr);
 		float Y = *reinterpret_cast<const float*>(Ptr + sizeof(float));
