@@ -40,8 +40,8 @@ public:
     axis axisInfo[3] =
     {
         {COLOR_R, ROTATE_X, TRANSLATE_X}, // x
-        {COLOR_G, ROTATE_Y, TRANSLATE_Y}, // y
-        {COLOR_B, ROTATE_Z, TRANSLATE_Z} // z
+        {COLOR_B, ROTATE_Y, TRANSLATE_Y}, // y
+        {COLOR_G, ROTATE_Z, TRANSLATE_Z} // z
     };
 
     void Initialize(class URenderer* renderer, FTransform* transform);
