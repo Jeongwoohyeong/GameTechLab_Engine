@@ -112,6 +112,21 @@ void FTransform::AddRotationDegZ(float degree)
 	bIsInverseDirty = true;
 }
 
+void FTransform::AddRotationDeg(const FVector& Degree)
+{
+	PrevRotation = Rotation;
+
+	Rotation.X += DegToRad(Degree.X);
+	Rotation.Y += DegToRad(Degree.Y);
+	Rotation.Z += DegToRad(Degree.Z);
+
+	FVector deltaRot = Rotation - PrevRotation;
+	UpdateQuaternion(deltaRot);
+
+	bIsTransformDirty = true;
+	bIsInverseDirty = true;
+}
+
 void FTransform::SetLocation(float x, float y, float z)
 {
 	Location = FVector(x, y, z);
@@ -227,7 +242,7 @@ void FTransform::UpdateQuaternion(const FVector& DeltaRotation)
 	FQuaternion DeltaQuaternion = FQuaternion::CreateFromEulerAngles(DeltaRotation);
 
 	// 2. 현재 회전에 델타 회전을 곱하여 누적
-	Quaternion = FQuaternion::Multiply(DeltaQuaternion, Quaternion);
+	Quaternion = FQuaternion::Multiply(Quaternion, DeltaQuaternion);
 
 	// 3. 정규화
 	Quaternion.Normalize();

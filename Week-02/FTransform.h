@@ -21,6 +21,7 @@ public:
 	void AddRotationDegX(float degree);
 	void AddRotationDegY(float degree);
 	void AddRotationDegZ(float degree);
+	void AddRotationDeg(const FVector& degree);
 
 	void SetLocation(float x, float y, float z);
 	void SetLocation(const FVector&);
@@ -35,15 +36,14 @@ public:
 	FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
 	bool TryGetInverseMatrix(FMatrix& Out);
+	
 	FMatrix& GetTransformMatrix();
-
+	FMatrix& GetTransformMatrixFor();
 
 	FMatrix& Get2StepRotationMatrix(); 
 
-	void UpdateQuaternion(const FVector& DeltaRotation);
-
 private:
-	
+	void UpdateQuaternion(const FVector& DeltaRotation);
 
 private:
 	FMatrix Transform;
