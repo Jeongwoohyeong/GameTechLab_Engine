@@ -38,12 +38,16 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
     FVector resizedLocation = ParentTransform->GetLocation();
     Transform.SetLocation(resizedLocation);
     
-    if (!bIsLocalMode)
+    if (bIsLocalMode)
     {
-		// 누적된 회전을 초기화
-        Transform.ClearRotation();
+        Transform.AddRotationDeg(AxisRotation, true);
     }
-    Transform.AddRotationDeg(AxisRotation);
+    else
+    {
+        // 누적된 회전을 초기화
+        Transform.ClearRotation();
+		Transform.AddRotationDeg(AxisRotation, false);
+    }
 
     return Transform;
 }

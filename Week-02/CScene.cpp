@@ -96,6 +96,14 @@ void CScene::Save(const FString& Name)
 			Primitive->Transform.GetRotationRadians().Z
 		);
 
+		// Quaternion
+		Prim["Quaternion"] = Array(
+			Primitive->Transform.GetQuaternion().X,
+			Primitive->Transform.GetQuaternion().Y,
+			Primitive->Transform.GetQuaternion().Z,
+			Primitive->Transform.GetQuaternion().W
+		);
+
 		// Scale
 		Prim["Scale"] = Array(
 			Primitive->Transform.GetScale().X,
@@ -241,7 +249,20 @@ void CScene::Load(const FString& Name)
 			}
 			if (Prim.hasKey("Rotation")) 
 			{
-				Comp->Transform.SetRotationDeg(ReadVec3(Prim.at("Rotation")));
+				Comp->Transform.LoadRotaion(ReadVec3(Prim.at("Rotation")));
+			}
+			if (Prim.hasKey("Quaternion")) 
+			{
+				const JSON& QuatArr = Prim.at("Quaternion");
+				if (QuatArr.JSONType() == JSON::Class::Array && QuatArr.length() >= 4)
+				{
+					FQuaternion Quat;
+					Quat.X = JSONNumberToFloat(QuatArr.at(0));
+					Quat.Y = JSONNumberToFloat(QuatArr.at(1));
+					Quat.Z = JSONNumberToFloat(QuatArr.at(2));
+					Quat.W = JSONNumberToFloat(QuatArr.at(3));
+					Comp->Transform.LoadQuaternion(Quat);
+				}
 			}
 			if (Prim.hasKey("Scale"))    
 			{
