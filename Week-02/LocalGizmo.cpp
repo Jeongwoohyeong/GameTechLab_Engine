@@ -69,7 +69,7 @@ void LocalGizmo::Render(URenderer* renderer){
         // Test 용도
         if (GetAsyncKeyState('Q') & 0x8000)
         {
-            TranslatePrimitive(0, 0.1);
+            TranslatePrimitive(0, 0.1f);
         }
 		temp = UpdateGizmoTranformFromParent(a); // x, y, z축 회전 적용
         
