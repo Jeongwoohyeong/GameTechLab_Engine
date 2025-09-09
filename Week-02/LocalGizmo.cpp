@@ -114,18 +114,48 @@ void LocalGizmo::CalculateTranslationOffSet()
     ParentTransform->AddLocation(primitiveTranslateOffset);
     previousMousePos = currentMousePos;
 }
+
 void LocalGizmo::OnLMouseClick(FVector firstClick)
 {
     UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
+    previousMousePos = firstClick;
 }
 
 void LocalGizmo::OnLMouseDrag(FVector dragPos)
 {
-    UE_LOG("%f %f %f, draged", dragPos.X, dragPos.Y, dragPos.Z);
+    if (SelectedAxis == -1)
+        return;
+    UE_LOG("%d // %f %f %f , draged", SelectedAxis, dragPos.X, dragPos.Y, dragPos.Z);
+
+    currentMousePos = dragPos;
+    FVector newDelta = currentMousePos - previousMousePos;
+    previousMousePos = currentMousePos;
+
+    // 월드 이동
+    FVector selectedVector;
+    switch (SelectedAxis)
+    {
+    case 0 : // z축
+        selectedVector = { 0, 0, 1 };
+        break;
+    case 1: // y축
+        selectedVector = { 0, 1, 0 };
+        break;
+    case 2: // x축
+        selectedVector = { 1, 0, 0 };
+        break;
+    }
+    UE_LOG("%f %f %f , draged", selectedVector.X, selectedVector.Y, selectedVector.Z);
+    selectedVector.Normalize();
+    float offset = Dot(newDelta, selectedVector);
+
+    FVector resultVector = offset * selectedVector;
+    ParentTransform->AddLocation(resultVector);
 }
 void LocalGizmo::OnLMouseRelease()
 {
     UE_LOG("release");
     SelectedAxis = -1;
-    
+    previousMousePos = { 0, 0, 0 };
+    currentMousePos = { 0, 0, 0 };
 }

@@ -44,11 +44,14 @@ public:
     void OnLMouseRelease();
 
     FMatrix worldMatrix{
-        1, 0 ,0,
+        1, 1 ,0,
         0, 1, 0,
         0, 0, 1
     };
+
     FVector previousMousePos;
+    FVector currentMousePos;
+
     bool startMoving = false;
 	bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
 
