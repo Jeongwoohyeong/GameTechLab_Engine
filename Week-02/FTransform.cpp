@@ -194,13 +194,14 @@ FMatrix& FTransform::GetTransformMatrix()
 		FMatrix rotationMatrix = FMatrix::MakeRotation(Rotation);
 		FMatrix translationMatrix = FMatrix::MakeTranslation(Location);
 
-		Transform = scaleMatrix * rotationMatrix * translationMatrix;
+		Transform = scaleMatrix * rotationMatrix * translationMatrix;		
 
 		bIsTransformDirty = false;
 	}
 
 	return Transform;
 }
+
 
 //TODO: 2단계 회전 구현
 //FMatrix& FTransform::Get2StepRotationMatrix()

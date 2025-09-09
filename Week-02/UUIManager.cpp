@@ -247,7 +247,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		if (ImGui::Button("Primitive Type Check"))
 		{
-			Primitive->IsA();
+			Primitive->TypeCheck();
 		}
 	}
 	ImGui::End();

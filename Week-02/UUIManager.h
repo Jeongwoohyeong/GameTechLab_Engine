@@ -28,4 +28,5 @@ public:
 
 private:
 	FVector offset;
+
 };

@@ -28,7 +28,8 @@ public:
 	virtual EPrimitiveType GetPrimitiveType() = 0;
 	virtual FMesh* GetMesh() = 0;
 
-	virtual void IsA() = 0;
+	// RTTI 아님, 단순한 타입체크
+	virtual void TypeCheck() = 0;
 
 	virtual void CreateAABB();
 	FAABB GetAABB();

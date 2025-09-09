@@ -37,7 +37,8 @@ public:
 	const FVector& GetLocation() const { return Location; }
 	bool TryGetInverseMatrix(FMatrix& Out);
 	FMatrix& GetTransformMatrix();
-	
+
+
 	FMatrix& Get2StepRotationMatrix(); 
 
 private:
@@ -48,8 +49,6 @@ private:
 	FVector Scale;
 	FVector Rotation;
 	FVector Location;
-
-	FVector PrevRotation;
 
 	// 트랜스폼 변경 검사
 	bool bIsTransformDirty;
