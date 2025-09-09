@@ -19,8 +19,6 @@ class UPrimitiveComponent :public USceneComponent
 public:
 	UPrimitiveComponent();
 	virtual ~UPrimitiveComponent() = default;
-
-	void RenderGizmo(URenderer* renderer);
 	void Release();
 
 	inline FTransform* GetTransform() { return &Transform; }

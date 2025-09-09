@@ -264,7 +264,6 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 	FMesh* Mesh = Primitive->GetMesh();
 	Render(Mesh, DeviceContext);
 
-
 	// color 추가  렌더링
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
 	for (int i = 0; i < 3; i++)

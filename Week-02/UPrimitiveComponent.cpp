@@ -4,18 +4,8 @@
 
 UPrimitiveComponent::UPrimitiveComponent() { }
 
-void UPrimitiveComponent::RenderGizmo(URenderer* renderer)
-{
-	if(Gizmo.ParentTransform == nullptr)
-	{
-		Gizmo.Initialize(&Transform);
-	}
-	Gizmo.Render(renderer);
-}
-
 void UPrimitiveComponent::Release()
 {
-	Gizmo.Release();
 }
 
 void UPrimitiveComponent::CreateAABB()

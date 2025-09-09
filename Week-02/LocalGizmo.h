@@ -28,16 +28,6 @@ class CInputManager;
 class LocalGizmo : public Gizmo
 {
 public:
-    std::span<const FVertexSimple> coneVerts;
-    std::span<const unsigned int>  coneIdx;
-    std::span<const FVertexSimple> cylinderVerts;
-    std::span<const unsigned int>  cylinderIdx;
-
-    ID3D11Buffer* gizmoConeVerticesBuffer = nullptr;
-    ID3D11Buffer* gizmoConeIndicesBuffer = nullptr;
-    ID3D11Buffer* gizmoCylinderVerticesBuffer = nullptr;
-    ID3D11Buffer* gizmoCylinderIndicesBuffer = nullptr;
-
     axis axisInfo[3] =
     {
         {COLOR_G, ROTATE_X, TRANSLATE_X}, // Y
@@ -46,14 +36,13 @@ public:
     };
 
     void Initialize(FTransform* transform);
-    virtual void Render(class URenderer* renderer) override;
 	virtual void CreateAABB() override;
-    virtual void Release() override;
+    
 
     FTransform* GetGizmoTransform();
     void CalculateTranslationOffSet();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
-    void TranslatePrimitive(int axis, float offSet);
+
     void OnLMouseClick();
     void OnLMouseUnclick();
 
