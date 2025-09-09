@@ -49,7 +49,6 @@ void UD3dDevice::Release()
 	}
 }
 
-// 
 void UD3dDevice::BeginScene(float r, float g, float b, float a)
 {
     // 렌더 타겟/깊이 버퍼/뷰포트/블렌드 상태 설정 및 클리어
@@ -331,7 +330,7 @@ bool UD3dDevice::CreateOutlineDepthStencilState()
 	rs.FillMode = D3D11_FILL_SOLID;
 	rs.CullMode = D3D11_CULL_FRONT;
 	rs.DepthClipEnable = TRUE;
-	dev->CreateRasterizerState(&rs, &RS_CullFront);
+	dev->CreateRasterizerState(&rs, &RS_CullFront); // TODO#3-1: 실패시 return false 처리
 
 	// (선택) 반투명 합성
 	D3D11_BLEND_DESC bd{};
@@ -343,7 +342,7 @@ bool UD3dDevice::CreateOutlineDepthStencilState()
 	bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 	bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	dev->CreateBlendState(&bd, &BS_Alpha);
+	dev->CreateBlendState(&bd, &BS_Alpha); // TODO#3-2: 실패시 return false 처리
 
 	return true;
 }

@@ -16,6 +16,9 @@ inline constexpr FVector GAxisColors[3] = {
 	{ 0.0f, 0.0f, 1.0f },  // Z - B
 	{ 1.0f, 0.0f, 0.0f }, // X - R
 };
+
+// 각종 버퍼와 전체 렌더링 플로우를 관리하는 클래스입니다.
+// 정적 멤버변수로 기본 도형 Mesh를 보유합니다.
 class URenderer
 {
 public:

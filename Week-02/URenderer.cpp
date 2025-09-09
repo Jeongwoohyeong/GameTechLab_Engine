@@ -61,10 +61,10 @@ bool URenderer::Initialize(HWND hWnd)
 	return true;
 }
 
+// 파이프라인 설정 -> 씬 -> 월드 기즈모 -> UI 순으로 렌더링
 void URenderer::Render()
 {
-	
-	Device->BeginScene();
+	Device->BeginScene(); // DeviceContext 설정
 	Device->SetRSState(RasterizerState);
 	Shader->PrepareShader();
 	
@@ -191,7 +191,8 @@ void URenderer::Resize(UINT width, UINT height)
 	}
 
 	Device->Resize(width, height);
-	UCamera::GetInstance().AspectRatio = (float)width / (float)height;
+	// TODO#4: 전체적으로 URenderer와 UCamera의 의존도가 낮은 상태임을 고려, 다른 곳으로 옮길 것
+	UCamera::GetInstance().AspectRatio = (float)width / (float)height; 
 }
 
 bool URenderer::CreateVertexBuffer(FMesh* Mesh)
