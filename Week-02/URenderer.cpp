@@ -294,6 +294,45 @@ void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext)
 	}
 }
 
+void URenderer::RenderUI()
+{
+	UI.PrepareRender();
+
+	UI.PropertyWindow(CScene::GetInstance().GetSelectedPrimitive());
+	UI.ControlPanel();
+	UI.ConsoleWindow(true);
+
+	UI.Render();
+}
+
+void URenderer::ReleaseAllMesh()
+{
+	ReleaseMesh(CubeMesh);
+	ReleaseMesh(SphereMesh);
+	ReleaseMesh(TriangleMesh);
+	ReleaseMesh(ConeMesh);
+	ReleaseMesh(CylinderMesh);
+}
+
+void URenderer::ReleaseMesh(FMesh* mesh)
+{
+	if (mesh)
+	{
+		if (mesh->IndexBuffer)
+		{
+			mesh->IndexBuffer->Release();
+			mesh->IndexBuffer = nullptr;
+		}
+		if (mesh->VertexBuffer)
+		{
+			mesh->VertexBuffer->Release();
+			mesh->VertexBuffer = nullptr;
+		}
+		delete mesh;
+		mesh = nullptr;
+	}
+}
+
 #pragma region World Gizmo 사용, 추후 수정
 
 bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth)
@@ -382,43 +421,3 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 	}
 }
 #pragma endregion
-
-void URenderer::RenderUI()
-{
-	UI.PrepareRender();
-
-	UI.PropertyWindow(CScene::GetInstance().GetSelectedPrimitive());
-	UI.ControlPanel();
-	UI.ConsoleWindow(true);
-
-	UI.Render();
-}
-
-void URenderer::ReleaseAllMesh()
-{
-	ReleaseMesh(CubeMesh);
-	ReleaseMesh(SphereMesh);
-	ReleaseMesh(TriangleMesh);
-	ReleaseMesh(ConeMesh);
-	ReleaseMesh(CylinderMesh);
-}
-
-void URenderer::ReleaseMesh(FMesh* mesh)
-{
-	if (mesh)
-	{
-		if (mesh->IndexBuffer)
-		{
-			mesh->IndexBuffer->Release();
-			mesh->IndexBuffer = nullptr;
-		}
-		if (mesh->VertexBuffer)
-		{
-			mesh->VertexBuffer->Release();
-			mesh->VertexBuffer = nullptr;
-		}
-		delete TriangleMesh;
-		TriangleMesh = nullptr;
-	}
-}
-
