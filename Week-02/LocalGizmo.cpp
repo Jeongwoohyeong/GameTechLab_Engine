@@ -30,17 +30,26 @@ FTransform* LocalGizmo::GetGizmoTransform()
 }
 FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
-    FTransform temp = *ParentTransform;
+    FTransform Transform = *ParentTransform;
     FVector rot = a.rotate;
 
-    temp.SetScale(0.2f, 0.4f, 0.2f);
+    Transform.SetScale(0.2f, 1.0f, 0.2f);
 
-    FVector resizedLocation = ParentTransform->GetLocation() + (a.direction) * ParentTransform->GetScale() * 0.5f;
-    temp.SetLocation(resizedLocation);
-    // temp.SetRotationDeg({ 0.0f, 0.0f,0.0f });
-	temp.AddRotationDeg(rot);
+    FVector resizedLocation = ParentTransform->GetLocation();
+    Transform.SetLocation(resizedLocation);
 
-    return temp;
+    if (bIsLocalMode)
+    {
+        // 로컬 좌표계 모드
+        Transform.AddRotationDeg(rot);
+	}
+    else
+    {
+        // 월드 좌표계 모드
+        Transform.SetRotationDeg(rot);
+    }
+
+    return Transform;
 }
 void LocalGizmo::CalculateTranslationOffSet()
 {

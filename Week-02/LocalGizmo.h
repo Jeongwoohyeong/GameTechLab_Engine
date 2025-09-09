@@ -32,7 +32,6 @@ public:
 
     void Initialize(FTransform* transform);
 	virtual void CreateAABB() override;
-    
 
     FTransform* GetGizmoTransform();
     void CalculateTranslationOffSet();
@@ -48,6 +47,7 @@ public:
     };
     FVector previousMousePos;
     bool startMoving = false;
+	bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
 
     CInputManager* inputManager;
     FTransform gizmoTransform[3];
