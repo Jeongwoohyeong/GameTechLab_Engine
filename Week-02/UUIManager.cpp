@@ -188,7 +188,7 @@ void UUIManager::ControlPanel()
 				}
 
 				// 선택된 프리미티브 씬에서 제거
-				if (ImGui::Button("Destroyed Selected"))
+				if (ImGui::Button("Destroy Selected"))
 				{
 					Scene.DestroySelectedPrimitive();
 				}
@@ -219,9 +219,9 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		FTransform* Transform = Primitive->GetTransform();
 
 		// 1) Scale
-		FVector Scale = Transform->GetScale();
+		FVector Scale = SwapYZ(Transform->GetScale()); // UI용으로 YZ 스왑
 		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f, 0.01f, 100.0f)) {
-			Transform->SetScale(Scale);
+			Transform->SetScale(SwapYZ(Scale));
 		}
 		if (ImGui::Button("S Reset")) {
 			FVector s(1.0f, 1.0f, 1.0f);
@@ -230,9 +230,10 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		// 2) Rotation (deg)
 		// 내부는 rad라고 가정 → UI용으로 deg로 변환해 표기
-		FVector rotDeg = Transform->GetRotationRadians() * Math::RadToDeg;
-		if (ImGui::DragFloat3("Rotation", &rotDeg.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(rotDeg); // SetRotationDeg는 내부에서 deg→rad 처리
+		FVector Rotation = Transform->GetRotationRadians() * Math::RadToDeg;
+		Rotation = SwapYZ(Rotation); // UI용으로 YZ 스왑
+		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
+			Transform->SetRotationDeg(SwapYZ(Rotation)); // SetRotationDeg는 내부에서 deg→rad 처리
 		}
 		if (ImGui::Button("R Reset")) {
 			FVector r0(0.0f, 0.0f, 0.0f);
@@ -240,9 +241,9 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		}
 
 		// 3) Translation
-		FVector pos = Transform->GetLocation();
-		if (ImGui::DragFloat3("Translation", &pos.X, 0.01f, -100.0f, 100.0f)) {
-			Transform->SetLocation(pos);
+		FVector Location = SwapYZ(Transform->GetLocation());
+		if (ImGui::DragFloat3("Translation", &Location.X, 0.01f, -100.0f, 100.0f)) {
+			Transform->SetLocation(SwapYZ(Location));
 		}
 		if (ImGui::Button("T Reset")) {
 			Transform->SetLocation(FVector(0.0f, 0.0f, -10.0f));
@@ -250,7 +251,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		if (ImGui::Button("Primitive Type Check"))
 		{
-			Primitive->IsA();
+			Primitive->TypeCheck();
 		}
 	}
 	ImGui::End();
@@ -262,94 +263,3 @@ void UUIManager::ReleaseUI()
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 }
-//
-//void UUIManager::ObjectControl()
-//{
-//	//// 1) Scale
-//	//ImGui::Text("Scale");
-//	//FVector scale = ObjectTransform->GetScale();
-//	//if (ImGui::DragFloat3("##scale", &scale.X, 0.01f, 0.01f, 100.0f)) {
-//	//	ObjectTransform->SetScale(scale);
-//	//}
-//	//if (ImGui::Button("S Reset")) {
-//	//	FVector s(1.0f, 1.0f, 1.0f);
-//	//	ObjectTransform->SetScale(s);
-//	//}
-//
-//	//// 2) Rotation (deg)
-//	//ImGui::Text("Rotation (Deg)");
-//	//// 내부는 rad라고 가정 → UI용으로 deg로 변환해 표기
-//	//FVector rotDeg = ObjectTransform->GetRotationRadians() * Math::RadToDeg;
-//	//if (ImGui::DragFloat3("rotation (Deg)", &rotDeg.X, 0.1f, -360.0f, 360.0f)) {
-//	//	ObjectTransform->SetRotationDeg(rotDeg); // SetRotationDeg는 내부에서 deg→rad 처리
-//	//}
-//	//if (ImGui::Button("R Reset")) {
-//	//	FVector r0(0.0f, 0.0f, 0.0f);
-//	//	ObjectTransform->SetRotationDeg(r0);
-//	//}
-//
-//	//// 3) Translation
-//	//ImGui::Text("Translation");
-//	//FVector pos = ObjectTransform->GetLocation();
-//	//if (ImGui::DragFloat3("##translation", &pos.X, 0.01f, -100.0f, 100.0f)) {
-//	//	ObjectTransform->SetLocation(pos);
-//	//}
-//	//if (ImGui::Button("T Reset")) {
-//	//	ObjectTransform->SetLocation(FVector(0.0f, 0.0f, -10.0f));
-//	//}
-//	// 카메라 위치 조정
-//	//ImGui::Text("CameraPos");
-//	//FVector cPos = UCamera::GetInstance().Location;
-//	//if (ImGui::DragFloat3("##CameraPos", &cPos.X, 0.01f, -100.0f, 100.0f))
-//	//	UCamera::GetInstance().Location = cPos;
-//
-//	//// 카메라 회전 조정 (오일러 값, float3)
-//	//ImGui::Text("CameraRot(Deg)");
-//	//static FVector CameraRotDeg = FVector(0.0f, 0.0f, 0.0f);
-//	//if (ImGui::DragFloat3("##CameraRot", &CameraRotDeg.X, 0.1f, -360.0f, 360.0f))
-//	//{
-//	//	UCamera::GetInstance().Rotation = FVector(
-//	//		Math::DegToRad * CameraRotDeg.X,
-//	//		Math::DegToRad * CameraRotDeg.Y,
-//	//		Math::DegToRad * CameraRotDeg.Z
-//	//	);
-//	//}
-//
-//	//// 카메라 FovY, Near, Far 조정
-//	//float fovYdeg = UCamera::GetInstance().FovY * Math::RadToDeg;
-//	//if (ImGui::SliderFloat("Fov Y (deg)", &fovYdeg, 1.0f, 120.0f, "%.1f"))
-//	//	UCamera::GetInstance().FovY = fovYdeg * Math::DegToRad;
-//
-//	//float zn = UCamera::GetInstance().NearPlane;
-//	//if (ImGui::DragFloat("Near (zn)", &zn, 0.01f, 0.01f, 10.0f, "%.3f"))
-//	//	UCamera::GetInstance().NearPlane = zn;
-//
-//	//float zf = UCamera::GetInstance().FarPlane;
-//	//if (ImGui::DragFloat("Far  (zf)", &zf, 1.0f, 10.0f, 100000.0f, "%.1f"))
-//	//	UCamera::GetInstance().FarPlane = zf;
-//
-//	//ImGui::Separator();
-//
-//	//// Scene
-//	//CScene& scene = CScene::GetInstance();
-//
-//	//// Scene Name 입력
-//	//static char sceneName[128] = "Default";
-//	//ImGui::InputText("Scene Name", sceneName, IM_ARRAYSIZE(sceneName));
-//
-//	//// New Scene
-//	//if (ImGui::Button("New Scene"))
-//	//{
-//	//	scene.New();
-//	//}
-//	//// Save Scene
-//	//if (ImGui::Button("Save Scene"))
-//	//{
-//	//	scene.Save(sceneName);
-//	//}
-//	//// Load Scene
-//	//if (ImGui::Button("Load Scene"))
-//	//{
-//	//	scene.Load(sceneName);
-//	//}
-//}

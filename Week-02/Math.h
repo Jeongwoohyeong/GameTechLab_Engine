@@ -113,6 +113,11 @@ inline FVector Cross(const FVector& U, const FVector& V)
 	);
 }
 
+inline FVector SwapYZ(const FVector& V)
+{
+	return FVector(V.X, V.Z, V.Y);
+}
+
 struct FVector4
 {
 	float X, Y, Z, W;
@@ -207,7 +212,7 @@ struct FMatrix
 
 	static FMatrix MakeRotation(const FVector& RadVec) // R: in Radian
 	{
-		// Yaw -> Pitch -> Roll (Z -> X -> Y) 순서 바꾸는 거 위험!
+		// (Z -> X -> Y) 순서 바꾸는 거 위험!
 		return MakeRotationZ(RadVec.Z) * MakeRotationX(RadVec.X) * MakeRotationY(RadVec.Y);
 	}
 

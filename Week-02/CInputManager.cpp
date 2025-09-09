@@ -1,12 +1,30 @@
 ﻿#include <Windows.h>
 #include "CInputManager.h"
 
+
 void CInputManager::Update()
 {
 	// 클라이언트 영역 크기 및 마우스 좌표, 버튼 상태 계산
 	UpdateMousePosAndDelta();
 	UpdateClientSize();
 	UpdateKeyStates();
+
+	// 마우스 클릭 이벤트 감지
+	if (IsMouseBtnPressed(0)) // 왼쪽 버튼이 막 눌렸을 때
+	{
+		for (const auto& callback : OnClickCallbacks)
+		{
+			callback(); // 등록된 모든 함수 호출
+		}
+	}
+	// 마우스 떼기 이벤트 감지
+	if (IskeyReleased(VK_LBUTTON)) // 왼쪽 버튼이 막 떼어졌을 때
+	{
+		for (const auto& callback : OnReleaseCallbacks)
+		{
+			callback(); // 등록된 모든 함수 호출
+		}
+	}
 }
 
 void CInputManager::UpdateMousePosAndDelta()
@@ -97,3 +115,18 @@ bool CInputManager::CheckMouseBtnValid(int32 Btn)
 POINT CInputManager::GetMouseClientPos() { return CurrentMouseClientPosPoint; }
 int32 CInputManager::GetClientW() const { return ClientW; }
 int32 CInputManager::GetClientH() const { return ClientH; }
+
+void CInputManager::RegisterMouseClickCallback(MouseCallback callback)
+{
+	OnClickCallbacks.push_back(callback);
+}
+
+void CInputManager::RegisterMouseDragCallback(MouseCallback callback)
+{
+	OnDragCallbacks.push_back(callback);
+}
+
+void CInputManager::RegisterMouseReleaseCallback(MouseCallback callback)
+{
+	OnReleaseCallbacks.push_back(callback);
+}

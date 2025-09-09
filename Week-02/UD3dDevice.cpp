@@ -108,8 +108,8 @@ void UD3dDevice::Resize(UINT width, UINT height)
 		FrameBuffer = nullptr;
 	}	
 
-	BackBufferWidth = static_cast<float>(width);
-	BackBufferHeight = static_cast<float>(height);
+	BackBufferWidth = width;
+	BackBufferHeight = height;
 
 	HRESULT result = SwapChain->ResizeBuffers(2, width, height,	DXGI_FORMAT_B8G8R8A8_UNORM, 0);
 	if (FAILED(result))
@@ -132,8 +132,8 @@ void UD3dDevice::Resize(UINT width, UINT height)
 
 	Viewport.TopLeftX = 0.0f;
 	Viewport.TopLeftY = 0.0f;
-	Viewport.Width = BackBufferWidth;
-	Viewport.Height = BackBufferHeight;
+	Viewport.Width = static_cast<FLOAT>(BackBufferWidth);
+	Viewport.Height = static_cast<FLOAT>(BackBufferHeight);
 	Viewport.MinDepth = 0.0f;
 	Viewport.MaxDepth = 1.0f;
 }

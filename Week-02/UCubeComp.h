@@ -13,7 +13,7 @@ public:
 	
 	virtual EPrimitiveType GetPrimitiveType() override;
 	virtual FMesh* GetMesh() override { return URenderer::CubeMesh; }
-	virtual void IsA() override;
+	virtual void TypeCheck() override;
 
 private:
 	EPrimitiveType Type;	

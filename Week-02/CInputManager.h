@@ -1,9 +1,14 @@
 ﻿#pragma once
 #include <Windows.h>
+#include <functional>
 #include "Types.h"
 #include "Math.h"
 
 #define MAX_KEYS 256
+
+// 클릭/드래그/떼기 이벤트에 대한 콜백 함수 타입 정의
+// 콜백 함수는 마우스 위치를 인자로 받을 수 있습니다.
+using MouseCallback = std::function<void()>;
 
 class CInputManager
 {
@@ -28,17 +33,12 @@ public:
 	// IsReleased: 이번 프레임에 막 떼어진 상태
 
 	bool IsKeyDown(int32 key);
-
 	bool IsPrevKeyDown(int32 key);
-
 	bool IsKeyPressed(int32 key);
-
 	bool IskeyReleased(int32 key);
 
 	bool IsMouseBtnDown(int32 Btn); // 0: left, 1: right
-
 	bool IsPrevMouseBtnDown(int32 Btn);
-
 	bool IsMouseBtnPressed(int32 Btn);
 
 	POINT GetMouseClientPos();
@@ -46,6 +46,15 @@ public:
 	int32 GetClientW() const;
 	int32 GetClientH() const;
 
+	// 이벤트 등록 함수
+	void RegisterMouseClickCallback(MouseCallback callback);
+	void RegisterMouseDragCallback(MouseCallback callback);
+	void RegisterMouseReleaseCallback(MouseCallback callback);
+
+	// 등록된 콜백 함수들을 저장할 리스트
+	std::vector<MouseCallback> OnClickCallbacks;
+	std::vector<MouseCallback> OnDragCallbacks;
+	std::vector<MouseCallback> OnReleaseCallbacks;
 public:
 	FVector MousePressPosWorld{0.0f, 0.0f, 0.0f}; // 마우스 클릭 시점의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
 	FVector MouseCurrentPosWorld{0.0f, 0.0f, 0.0f}; // 현재의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
