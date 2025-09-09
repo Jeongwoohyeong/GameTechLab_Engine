@@ -266,6 +266,22 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 	FMesh* Mesh = Primitive->GetMesh();
 	Render(Mesh, DeviceContext);
 	
+	// 선택된 프리미티브면 로컬 기즈모 렌더링
+	if (CScene::GetInstance().GetSelectedPrimitive() == Primitive)
+	{
+		if (RenderLocalGizmo(Primitive) == false)
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
+{
+	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
+
 	// color 추가  렌더링
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
 	for (int i = 0; i < 3; i++)
@@ -281,9 +297,9 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
 		Render(CylinderMesh, DeviceContext);
-		
+
 	}
-	
+
 	return true;
 }
 
