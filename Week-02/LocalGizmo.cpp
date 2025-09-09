@@ -1,9 +1,11 @@
 ﻿#include "LocalGizmo.h"
+#include "Gizmo.h"
 #include "URenderer.h"
 #include "Cone.h"
 #include "Cylinder.h"
 #include "Cube.h"
 #include "UCamera.h"
+#include "CInputManager.h"
 
  void LocalGizmo::Initialize(URenderer* renderer, FTransform* transform)
 {
@@ -49,7 +51,7 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 
     temp.SetScale(0.2f, 0.4f, 0.2f);
 
-    FVector resizedLocation = ParentTransform->GetLocation() + (a.translate) * ParentTransform->GetScale()*0.5f;
+    FVector resizedLocation = ParentTransform->GetLocation() + (a.direction) * ParentTransform->GetScale()*0.5f;
     temp.SetLocation(resizedLocation);
     temp.SetRotationDeg({ 0.0f, 0.0f,0.0f });
     temp.AddRotationDegX(rot.X);
@@ -67,9 +69,11 @@ void LocalGizmo::Render(URenderer* renderer){
     for (auto& a : axisInfo)
     {
         // Test 용도
-        if (GetAsyncKeyState('Q') & 0x8000)
+        TestInput();
+        if (startMoving)
         {
-            TranslatePrimitive(0, 0.1f);
+            UE_LOG("Moving!");
+            CalculateTranslationOffSet();
         }
 		temp = UpdateGizmoTranformFromParent(a); // x, y, z축 회전 적용
         
@@ -111,10 +115,49 @@ void LocalGizmo::Release()
     }
 }
 
+void LocalGizmo::CalculateTranslationOffSet()
+{
+    if (SelectedAxis == -1)
+        return;
+
+    FVector currentMousePos = CInputManager::GetInstance().MouseCurrentPosWorld;
+    FVector mouseDelta = currentMousePos - previousMousePos;
+    
+    float offset = Dot(axisInfo[SelectedAxis].direction, mouseDelta);
+
+    TranslatePrimitive(SelectedAxis, offset);
+    previousMousePos = currentMousePos;
+}
+
 void LocalGizmo::TranslatePrimitive(int axis, float offSet)
 {
-	FVector primitiveTranslateOffset = axisInfo[axis].translate * offSet;
+	FVector primitiveTranslateOffset = axisInfo[axis].direction * offSet;
     ParentTransform->AddLocation(primitiveTranslateOffset);
+}
+
+void LocalGizmo::TestInput()
+{
+    OnLMouseClick();
+    OnLMouseUnclick();
+}
+
+void LocalGizmo::OnLMouseClick()
+{
+    if (!startMoving && CInputManager::GetInstance().IsMouseBtnPressed(0))
+    {
+        UE_LOG("Clicked!!");
+        previousMousePos = CInputManager::GetInstance().MousePressPosWorld;
+        startMoving = true;
+    }
+}
+
+void LocalGizmo::OnLMouseUnclick()
+{
+    if (startMoving && !CInputManager::GetInstance().IsMouseBtnPressed(0))
+    {
+        UE_LOG("Unclicked!");
+        startMoving = false;
+    }
 }
 
 void LocalGizmo::CreateAABB()
