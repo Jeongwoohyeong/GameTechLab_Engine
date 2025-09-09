@@ -35,11 +35,13 @@ public:
     void Bind();
 
     FTransform* GetGizmoTransform();
-    void CalculateTranslationOffSet();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
+    
+    void CalculateTranslationOffSet();
 
-    void OnLMouseClick();
-    void OnLMouseUnclick();
+    void OnLMouseClick(FVector firstClick);
+    void OnLMouseDrag(FVector dragPos);
+    void OnLMouseRelease();
 
     FMatrix worldMatrix{
         1, 0 ,0,

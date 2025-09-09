@@ -1,6 +1,7 @@
 ﻿#include <Windows.h>
 #include "CInputManager.h"
 #include "UUIManager.h"
+#include "UCamera.h"
 
 void CInputManager::Update()
 {
@@ -12,18 +13,32 @@ void CInputManager::Update()
 	// 마우스 클릭 이벤트 감지
 	if (IsMouseBtnPressed(0)) // 왼쪽 버튼이 막 눌렸을 때
 	{
-		// UE_LOG("Clicked");
+		FVector firstClickWorld = UCamera::GetInstance().DeprojectScreenPoint(
+			CurrentMouseClientPosPoint.x,
+			CurrentMouseClientPosPoint.y,
+			ClientW,
+			ClientH,
+			1.0f,
+			true
+		);
 		for (const auto& callback : OnClickCallbacks)
 		{
-			callback(); // 등록된 모든 함수 호출
+			callback(firstClickWorld); // 등록된 모든 함수 호출
 		}
 	}
 	if (IsMouseBtnDown(0)) // 드래그할 때 쓸 거
 	{
-		//UE_LOG("Drag");
+		FVector dragPosWorld = UCamera::GetInstance().DeprojectScreenPoint(
+			CurrentMouseClientPosPoint.x,
+			CurrentMouseClientPosPoint.y,
+			ClientW,
+			ClientH,
+			1.0f,
+			true
+		);
 		for (const auto& callback : OnDragCallbacks)
 		{
-			callback(); // 등록된 모든 함수 호출
+			callback(dragPosWorld); // 등록된 모든 함수 호출
 		}
 	}
 	// 마우스 떼기 이벤트 감지
@@ -136,7 +151,7 @@ void CInputManager::RegisterMouseDragCallback(MouseCallback callback)
 	OnDragCallbacks.push_back(callback);
 }
 
-void CInputManager::RegisterMouseReleaseCallback(MouseCallback callback)
+void CInputManager::RegisterMouseReleaseCallback(MouseReleaseCallback callback)
 {
 	OnReleaseCallbacks.push_back(callback);
 }
