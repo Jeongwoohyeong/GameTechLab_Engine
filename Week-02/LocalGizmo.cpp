@@ -145,26 +145,46 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
 
 void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다.
 {
-    // 로컬 이동
-    FMatrix srt = ParentTransform->GetTransformMatrix();
+    //// 월드 이동
     FVector selectedVector;
     switch (SelectedAxis)
     {
-    case 0: // z축
-        selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
+    case 0 : // z축
+        selectedVector = { 0, 0, 1 };
         break;
     case 1: // y축
-        selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
+        selectedVector = { 0, 1, 0 };
         break;
     case 2: // x축
-        selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
+        selectedVector = { 1, 0, 0 };
         break;
     }
+    //// 로컬 이동
+    //FMatrix srt = ParentTransform->GetTransformMatrix();
+    //FVector selectedVector;
+    //switch (SelectedAxis)
+    //{
+    //case 0: // z축
+    //    selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
+    //    break;
+    //case 1: // y축
+    //    selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
+    //    break;
+    //case 2: // x축
+    //    selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
+    //    break;
+    //}
     selectedVector.Normalize();
     float offset = Dot(newDelta, selectedVector);
 
     FVector resultVector = offset * selectedVector;
     ParentTransform->AddScale(resultVector);
+    FVector adjustingScale = ParentTransform->GetScale();
+    adjustingScale.X = std::abs(adjustingScale.X);
+    adjustingScale.Y = std::abs(adjustingScale.Y);
+    adjustingScale.Z = std::abs(adjustingScale.Z);
+    ParentTransform->SetScale(adjustingScale);
+
 }
 
 void LocalGizmo::RotateLocalOrWorld(FVector newDelta)
