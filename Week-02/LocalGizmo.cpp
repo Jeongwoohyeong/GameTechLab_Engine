@@ -1,4 +1,4 @@
-﻿#include "LocalGizmo.h"
+#include "LocalGizmo.h"
 #include "Gizmo.h"
 #include "URenderer.h"
 #include "Cone.h"

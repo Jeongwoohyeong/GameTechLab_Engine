@@ -43,7 +43,7 @@ private:
 	void RenderScene();
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
 	void RenderUI();
-	void Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext);
+	void Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext, FMatrix* World);
 
 	// Mesh 관련 메서드
 	bool CreateVertexBuffer(FMesh* Mesh);

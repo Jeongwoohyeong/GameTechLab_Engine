@@ -264,7 +264,15 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	// 드로우 콜
 	FMesh* Mesh = Primitive->GetMesh();
-	Render(Mesh, DeviceContext);
+	if(Primitive == CScene::GetInstance().GetSelectedPrimitive())
+	{
+		Render(Mesh, DeviceContext, &World);
+	}
+	else
+	{
+		Render(Mesh, DeviceContext, nullptr);
+	}
+	
 	
 	// color 추가  렌더링
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
@@ -274,20 +282,21 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 		gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f);
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(ConeMesh, DeviceContext);
+		Render(ConeMesh, DeviceContext, nullptr);
 
 		World = FMatrix::Identity();
 		gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(CylinderMesh, DeviceContext);
+		Render(CylinderMesh, DeviceContext, nullptr);
 		
 	}
 	
 	return true;
 }
 
-void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext)
+// TODO: 하이라이팅을 위해 임시로 World 매개변수를 추가. 리팩토링 필요함
+void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext, FMatrix* World)
 {
 	if (mesh->bUseIndexBuffer)
 	{
@@ -300,6 +309,61 @@ void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext)
 		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
 		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
 	}
+    
+#pragma region 외곽선 그리기
+	if(World == nullptr)
+	{
+		return; // 외곽선 그리기 패스 건너뜀
+	}
+	// --- Pass A: 스텐실 마킹 (컬러 미기록)
+	DeviceContext->OMSetDepthStencilState(Device->GetDS_StencilMark(), 1);
+	DeviceContext->OMSetBlendState(Device->GetBS_ColorOff(), nullptr, 0xffffffff);
+
+	if (mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
+	}
+	else
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
+	}
+
+	// --- Pass B: 외곽선(팽창 + Front면 컬링)
+	DeviceContext->OMSetDepthStencilState(Device->GetDS_Outline(), 1);
+	DeviceContext->OMSetBlendState(Device->GetBS_Alpha(), nullptr, 0xffffffff); // 불투명 원하면 nullptr
+	DeviceContext->RSSetState(Device->GetRS_CullFront());
+
+	const float k = 1.1f; // 두께(씬에 맞춰 1.01~1.1 튜닝)
+	FMatrix Scale = FMatrix::MakeScale(FVector(k, k, k));
+	FMatrix OutlineWorld = Scale * (*World);
+
+	// 단색으로 그리도록 useUColor=1 경로 사용
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(OutlineWorld), FVector(1.0f, 0.3f, 0.1f));
+
+	if (mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
+	}
+	else
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
+	}
+
+	// --- 상태 원복 (다음 오브젝트에 영향 X)
+	DeviceContext->OMSetDepthStencilState(Device->GetDepthStateOpaque(), 0);
+	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+	DeviceContext->RSSetState(nullptr);
+
+	// (선택) 상수 버퍼도 원래 World로 되돌려둠
+	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(*World));
+	
+#pragma endregion
 }
 
 void URenderer::RenderUI()

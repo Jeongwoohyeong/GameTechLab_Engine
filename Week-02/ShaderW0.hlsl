@@ -7,6 +7,13 @@ cbuffer constants : register(b0)
     int useUColor;
 }
 
+cbuffer outlineConstants : register(b1)
+{
+    float4 OutlineColor; // RGBA
+    float OutlineWidthVS; // 뷰 공간에서의 두께(예: 0.01)
+    float3 _pad;
+}
+
 struct VS_INPUT
 {
     float4 position : POSITION; // Input position from vertex buffer

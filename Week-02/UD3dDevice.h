@@ -17,6 +17,14 @@ public:
 	ID3D11Device* GetDeivce() const { return Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }		
 
+	// --- URenderer에서 상태 객체 이용해 외곽선 만들기 때문에 Getter 제공 ---
+	ID3D11DepthStencilState* GetDepthStateOpaque() const { return DepthStateOpaque; }
+	ID3D11DepthStencilState* GetDS_StencilMark()  const { return DS_StencilMark; }
+	ID3D11DepthStencilState* GetDS_Outline()      const { return DS_Outline; }
+	ID3D11BlendState* GetBS_ColorOff()     const { return BS_ColorOff; }
+	ID3D11BlendState* GetBS_Alpha()        const { return BS_Alpha; }
+	ID3D11RasterizerState* GetRS_CullFront()    const { return RS_CullFront; }
+
 private:
 	bool CreateDeviceAndSwapChain(HWND hWnd);
 	bool CreateFrameBuffer();
@@ -25,6 +33,8 @@ private:
 	// depth stencil buffer & view & state
 	bool CreateDepthStencilBuffer();
 	bool CreateDepthStates();
+	bool CreateOutlineDepthStencilState();
+
 public:
 	ID3D11Device* Device = nullptr;
 	ID3D11DeviceContext* DeviceContext = nullptr;
@@ -41,4 +51,11 @@ private:
 
 	UINT BackBufferWidth = 0;
 	UINT BackBufferHeight = 0;
+
+	//--- 하이라이팅 외곽선 생성용 ---
+	ID3D11DepthStencilState* DS_StencilMark = nullptr;
+	ID3D11DepthStencilState* DS_Outline = nullptr;
+	ID3D11BlendState* BS_ColorOff = nullptr;
+	ID3D11BlendState* BS_Alpha = nullptr;
+	ID3D11RasterizerState* RS_CullFront = nullptr;
 };
