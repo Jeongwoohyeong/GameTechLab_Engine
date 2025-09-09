@@ -63,10 +63,10 @@ void URenderer::Render()
 	// 씬 렌더링
 	RenderScene();
 
+	worldGizmo->Render(this);
+
 	// UI 렌더링
 	RenderUI();
-
-	worldGizmo->Render(this);
 
 	Device->EndScene();
 }
@@ -110,6 +110,7 @@ bool URenderer::CreateRasterizerState()
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.DepthClipEnable = TRUE;
 	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
 	if (FAILED(result))
 	{
