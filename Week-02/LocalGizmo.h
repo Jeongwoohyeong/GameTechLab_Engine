@@ -23,6 +23,7 @@ struct axis
 };
 struct ID3D11Buffer;
 struct FVertexSimple;
+class CInputManager;
 
 class LocalGizmo : public Gizmo
 {
@@ -53,7 +54,6 @@ public:
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
 
-    void TestInput();
     void OnLMouseClick();
     void OnLMouseUnclick();
 
@@ -64,4 +64,6 @@ public:
     };
     FVector previousMousePos;
     bool startMoving = false;
+
+    CInputManager* inputManager;
 };

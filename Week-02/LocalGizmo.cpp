@@ -11,6 +11,10 @@
 {
     ParentTransform = transform;
 
+    inputManager = &CInputManager::GetInstance();
+    inputManager->RegisterMouseClickCallback([this]() { this->OnLMouseClick(); });
+    inputManager->RegisterMouseReleaseCallback([this]() { this->OnLMouseUnclick();});
+
     // C 배열 → span으로 자동 래핑
     coneVerts = std::span<FVertexSimple>(GConeVertices);
     coneIdx = std::span<unsigned int>(GConeIndices);
@@ -68,8 +72,6 @@ void LocalGizmo::Render(URenderer* renderer){
    
     for (auto& a : axisInfo)
     {
-        // Test 용도
-        TestInput();
         if (startMoving)
         {
             UE_LOG("Moving!");
@@ -135,29 +137,15 @@ void LocalGizmo::TranslatePrimitive(int axis, float offSet)
     ParentTransform->AddLocation(primitiveTranslateOffset);
 }
 
-void LocalGizmo::TestInput()
-{
-    OnLMouseClick();
-    OnLMouseUnclick();
-}
-
 void LocalGizmo::OnLMouseClick()
 {
-    if (!startMoving && CInputManager::GetInstance().IsMouseBtnPressed(0))
-    {
-        UE_LOG("Clicked!!");
-        previousMousePos = CInputManager::GetInstance().MousePressPosWorld;
-        startMoving = true;
-    }
+    previousMousePos = CInputManager::GetInstance().MousePressPosWorld;
+    startMoving = true;
 }
-
 void LocalGizmo::OnLMouseUnclick()
 {
-    if (startMoving && !CInputManager::GetInstance().IsMouseBtnPressed(0))
-    {
-        UE_LOG("Unclicked!");
-        startMoving = false;
-    }
+    SelectedAxis = -1;
+    startMoving = false;
 }
 
 void LocalGizmo::CreateAABB()
