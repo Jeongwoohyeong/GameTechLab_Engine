@@ -8,8 +8,8 @@ constexpr FVector COLOR_G{ 0.0f, 1.0f, 0.0f };
 constexpr FVector COLOR_B{ 0.0f, 0.0f, 1.0f };
 
 constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
-constexpr FVector ROTATE_X{ 0.0f, 0.0f, 90.0f }; // z축, 파란색
-constexpr FVector ROTATE_Z{ -90.0f, 0.0f, 0.0f }; // x축, 빨간색
+constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
+constexpr FVector ROTATE_X{ 90.0f, 0.0f, 0.0f }; // x축, 빨간색
 
 constexpr FVector TRANSLATE_Y{ 0.0f, 1.0f, 0.0f }; // y축, 초록색
 constexpr FVector TRANSLATE_X{ 0.0f, 0.0f, 1.0f }; // z축, 파란색
@@ -39,16 +39,21 @@ public:
 
     axis axisInfo[3] =
     {
-        {COLOR_R, ROTATE_X, TRANSLATE_X}, // x
-        {COLOR_G, ROTATE_Y, TRANSLATE_Y}, // y
-        {COLOR_B, ROTATE_Z, TRANSLATE_Z} // z
+        {COLOR_G, ROTATE_X, TRANSLATE_X}, // Y
+        {COLOR_B, ROTATE_Y, TRANSLATE_Y}, // Z
+        {COLOR_R, ROTATE_Z, TRANSLATE_Z} // X
     };
 
     void Initialize(class URenderer* renderer, FTransform* transform);
     virtual void Render(class URenderer* renderer) override;
+	virtual void CreateAABB() override;
     virtual void Release() override;
 
+    FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
-private:
-    FTransform UpdateGizmoTranformFromParent(axis a);
+    FMatrix worldMatrix{
+        1, 0 ,0,
+        0, 1, 0,
+        0, 0, 1
+    };
 };

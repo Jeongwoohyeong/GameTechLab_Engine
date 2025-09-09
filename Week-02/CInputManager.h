@@ -1,5 +1,7 @@
 ﻿#pragma once
+#include <Windows.h>
 #include "Types.h"
+#include "Math.h"
 
 #define MAX_KEYS 256
 
@@ -43,6 +45,10 @@ public:
 
 	int32 GetClientW() const;
 	int32 GetClientH() const;
+
+public:
+	FVector MousePressPosWorld{0.0f, 0.0f, 0.0f}; // 마우스 클릭 시점의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
+	FVector MouseCurrentPosWorld{0.0f, 0.0f, 0.0f}; // 현재의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
 
 private:
 	CInputManager() {};

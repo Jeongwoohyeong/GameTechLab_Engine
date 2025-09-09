@@ -30,8 +30,19 @@ FMatrix UCamera::MakeMVP(const FMatrix& World)
 }
 
 // 클라이언트 화면 상에서의 커서 좌표를 이용해 3D 공간상의 레이를 만든다
-FRay UCamera::CastRay(int ClientX, int ClientY, int ClientWidth, int ClientHeight)
+FRay UCamera::CastRay(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight)
 {
+	return CastRay(ClientX, ClientY, ClientWidth, ClientHeight, nullptr);
+}
+
+//@param ProjPlaneHitPoint: Depth가 1인 projection plane과의 교차점 좌표 반환 (World Space 기준)
+FRay UCamera::CastRay(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight, FVector* ProjPlaneHitPointWorld)
+{
+	// Note:
+	// Projective Camera 기준
+	// Projection 행렬의 역행렬을 사용하는 방법은 NearPlane, FarPlane에 점을 잡지만
+	// 해당 방식은 d = 1 위치상의 Projection 평면과 카메라 위치(원점) 사용
+
 	// 클라이언트 좌표계: 좌상단 (0,0) ~ 우하단 (width,height)
 	// NCD: 좌하단 (-1,-1) ~ 우상단 (1,1)
 
@@ -43,7 +54,7 @@ FRay UCamera::CastRay(int ClientX, int ClientY, int ClientWidth, int ClientHeigh
 	// 2. NDC -> 카메라 공간 상에서 Ray 방향 벡터 계산
 	float TanFovY = tan(0.5f * FovY);
 	// projection plane이 z = 1 평면에 있다고 가정
-	float CameraX = NDCX * AspectRatio * TanFovY; 
+	float CameraX = NDCX * AspectRatio * TanFovY;
 	float CameraY = NDCY * TanFovY;
 	FVector RayDirCameraSpace = FVector(CameraX, CameraY, 1.0f).GetNormalized();
 
@@ -54,7 +65,13 @@ FRay UCamera::CastRay(int ClientX, int ClientY, int ClientWidth, int ClientHeigh
 	FVector4 RayDirCameraSpace4(RayDirCameraSpace, 0.0f);
 	FVector4 RayDirWorldSpace4 = RayDirCameraSpace4 * RayToWorldMat;
 	FVector RayDirWorldSpace(RayDirWorldSpace4.X, RayDirWorldSpace4.Y, RayDirWorldSpace4.Z);
-	RayDirCameraSpace.Normalize();
+	RayDirWorldSpace.Normalize();
+
+	if (ProjPlaneHitPointWorld)
+	{
+		FVector4 ProjPlaneHitPoint4 = FVector4(CameraX, CameraY, 1.0f, 1.0f) * RayToWorldMat;
+		*ProjPlaneHitPointWorld = FVector(ProjPlaneHitPoint4.X, ProjPlaneHitPoint4.Y, ProjPlaneHitPoint4.Z); // World Space 기준
+	}
 
 	return FRay(Location, RayDirWorldSpace);
 }

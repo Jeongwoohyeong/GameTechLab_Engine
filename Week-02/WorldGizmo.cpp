@@ -4,10 +4,10 @@
 
 void WorldGizmo::Initialize(URenderer* renderer)
 {
-	Transform = new FTransform();
-	Transform->SetLocation(FVector(0.0f, 0.0f, 0.0f));
-	Transform->SetScale(FVector(1.0f, 1.0f, 1.0f));
-    Transform->SetRotationDeg(FVector(0.0f, 0.0f, 0.0f));
+	ParentTransform = new FTransform();
+	ParentTransform->SetLocation(FVector(0.0f, 0.0f, 0.0f));
+	ParentTransform->SetScale(FVector(1.0f, 1.0f, 1.0f));
+    ParentTransform->SetRotationDeg(FVector(0.0f, 0.0f, 0.0f));
 
     // XZ 평면 그리드 + Y축 기즈모 생성
     BuildGridXZwithYaxis(
@@ -19,9 +19,9 @@ void WorldGizmo::Initialize(URenderer* renderer)
         xzGridIndices,
         Minor,
         Major,
-        XCol,
-        ZCol,
-        YCol);
+        YColor,
+        XColor,
+        ZColor);
 
     gridVerticesBuffer = nullptr;
     gridIndicesBuffer = nullptr;
@@ -38,7 +38,7 @@ void WorldGizmo::Initialize(URenderer* renderer)
 void WorldGizmo::Render(URenderer* renderer)
 {
     renderer->SetTopology(true); // 선으로 렌더링
-    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(Transform->GetTransformMatrix()));
+    renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(ParentTransform->GetTransformMatrix()));
     renderer->RenderMesh(gridVerticesBuffer,
         static_cast<unsigned int>(xzGridVertices.size()),
         gridIndicesBuffer,

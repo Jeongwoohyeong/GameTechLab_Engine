@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 /*
  * <Coordinate System>
  * - Left-Handed
