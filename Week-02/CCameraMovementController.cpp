@@ -1,14 +1,15 @@
-﻿#include "CameraInputMove.h"
+﻿#include "CCameraMovementController.h"
+#include "CInputManager.h"
+CCameraMovementController::CCameraMovementController() : Camera(UCamera::GetInstance()) {}
 
-CameraInputMove::CameraInputMove() : Camera(UCamera::GetInstance()) {}
-
-void CameraInputMove::Initialize(HWND* InHWnd)
+void CCameraMovementController::Initialize(HWND* InHWnd)
 {
 	hWnd = InHWnd;
 	PrevMousePos = { 0, 0 };
+	Input = &CInputManager::GetInstance();
 }
 
-void CameraInputMove::UpdateKeyboardInput()
+void CCameraMovementController::UpdateKeyboardInput()
 {
 	KeyboardMoveDelta = { 0.0f, 0.0f, 0.0f };
 	float moveSpeed = 0.05f;
@@ -31,7 +32,7 @@ void CameraInputMove::UpdateKeyboardInput()
 	}
 }
 
-void CameraInputMove::UpdateMouseDelta()
+void CCameraMovementController::UpdateMouseDelta()
 {
 	POINT CurMousePos = { 0, 0 };
 
@@ -50,7 +51,7 @@ void CameraInputMove::UpdateMouseDelta()
 	PrevMousePos = CurMousePos;
 }
 
-void CameraInputMove::ApplyToCamera()
+void CCameraMovementController::ApplyToCamera()
 {
 	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000) // 오른쪽 마우스 버튼이 눌린 상태라면
 	{
@@ -66,12 +67,22 @@ void CameraInputMove::ApplyToCamera()
 	Camera.Location += Multiply(KeyboardMoveDelta, FMatrix::MakeRotation(Camera.GetInstance().Rotation));
 }
 
-float CameraInputMove::ToRadian(float Degree)
+
+
+void CCameraMovementController::ApplyToGizmo()
+{
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) // 오른쪽 마우스 버튼이 눌린 상태라면
+	{
+		
+	}
+}
+
+float CCameraMovementController::ToRadian(float Degree)
 {
 	return Degree * Math::DegToRad;
 }
 
-FVector CameraInputMove::Multiply(const FVector& v, const FMatrix& M) const
+FVector CCameraMovementController::Multiply(const FVector& v, const FMatrix& M) const
 {
 	return {
 		v.X * M.M[0][0] + v.Y * M.M[1][0] + v.Z * M.M[2][0],

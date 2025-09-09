@@ -1,12 +1,14 @@
 ﻿#pragma once
 #include <Windows.h>
-#include "UCamera.h" 
+#include "UCamera.h"
 
-class CameraInputMove
+class CInputManager;
+
+class CCameraMovementController
 {
 public:
-	CameraInputMove();
-	~CameraInputMove() {};
+	CCameraMovementController();
+	~CCameraMovementController() {};
 
 	void Initialize(HWND* InHWnd);
 	void UpdateInputToCamera()
@@ -18,11 +20,15 @@ public:
 
 	HWND* hWnd = nullptr;
 	POINT CurMouseDelta = { 0, 0 };
+	CInputManager* Input; 
 
 private:
 	void UpdateKeyboardInput();
 	void UpdateMouseDelta();
 	void ApplyToCamera();
+
+	//temp : gizmo 테스트용, 임시로 넣어둠
+	void ApplyToGizmo();
 
 	float ToRadian(float Degree);
 	FVector Multiply(const FVector& vector, const FMatrix& matrix) const;
