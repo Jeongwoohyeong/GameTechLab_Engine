@@ -53,7 +53,6 @@ public:
     void CalculateTranslationOffSet();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
-
     void OnLMouseClick();
     void OnLMouseUnclick();
 

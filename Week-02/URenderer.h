@@ -35,24 +35,26 @@ public:
 #pragma endregion
 
 private:
-	bool CreateVertexBuffer(FMesh* Mesh);
-	bool CreateIndexBuffer(FMesh* Mesh);
-	
 	void RenderScene();
 	bool RenderPrimitive(UPrimitiveComponent* Primitive);
 	void RenderUI();
 
 	// Mesh 관련 메서드
+	bool CreateVertexBuffer(FMesh* Mesh);
+	bool CreateIndexBuffer(FMesh* Mesh);
+
 	bool CreateAllMesh();
-	bool CreateCubeMesh();
-	bool CreateSphereMesh();
-	bool CreateTriangleMesh();
+	bool CreateMesh(FMesh*& mesh, FVertexSimple* vertices, int verticeSize, uint32* indices = nullptr, int indiceSize = 0);
+
 	void ReleaseAllMesh();
+	void ReleaseMesh(FMesh* mesh);
 
 public:
 	static FMesh* CubeMesh;
 	static FMesh* SphereMesh;
 	static FMesh* TriangleMesh;
+	static FMesh* ConeMesh;
+	static FMesh* CylinderMesh;
 
 private:
 	WorldGizmo* worldGizmo = nullptr;

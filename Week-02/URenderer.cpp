@@ -5,14 +5,22 @@
 #include "UCamera.h"
 #include "UCubeComp.h"
 #include "CScene.h"
+
 #include "Cube.h"
 #include "Sphere.h"
 #include "Triangle.h"
+#include "Cone.h"
+#include "Cylinder.h"
+
 #include "WorldGizmo.h"
+
+#include "ShapeData.h"
 
 FMesh* URenderer::CubeMesh = nullptr;
 FMesh* URenderer::SphereMesh = nullptr;
 FMesh* URenderer::TriangleMesh = nullptr;
+FMesh* URenderer::ConeMesh = nullptr;
+FMesh* URenderer::CylinderMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -119,100 +127,60 @@ bool URenderer::CreateRasterizerState()
 
 	return true;
 }
-
 bool URenderer::CreateAllMesh()
 {
-	if (!this->CreateCubeMesh())
-	{
-		return false;
-	}
-
-	if (!this->CreateSphereMesh())
-	{
-		return false;
-	}
-
-	if (!this->CreateTriangleMesh())
-	{
-		return false;
-	}
+	CreateMesh(TriangleMesh, GTriangleVertices, sizeof(GTriangleVertices));
+	CreateMesh(SphereMesh, GSphereVertices, sizeof(GSphereVertices));
+	CreateMesh(CubeMesh, GCubeVertices, sizeof(GCubeVertices), GCubeIndices, sizeof(GCubeIndices));
+	CreateMesh(CylinderMesh, GCylinderVertices, sizeof(GCylinderVertices), GCylinderIndices, sizeof(GCylinderIndices));
+	CreateMesh(ConeMesh, GConeVertices, sizeof(GConeVertices), GConeIndices, sizeof(GConeIndices));
 
 	return true;
 }
 
-bool URenderer::CreateCubeMesh()
+// 함수 정의에서 기본 인수를 제거합니다.
+bool URenderer::CreateMesh(FMesh*& mesh, FVertexSimple* vertices, int verticeSize, uint32* indices, int indiceSize)
 {
-	if (CubeMesh == nullptr)
+	mesh = new FMesh();
+	// 버텍스 데이터 초기화
+	mesh->Vertices = vertices;
+	mesh->VertexByteWidth = verticeSize;
+	mesh->Stride = sizeof(FVertexSimple);
+	mesh->Offset = 0;
+
+	// 인덱스 데이터 초기화
+	if (indices != nullptr)
 	{
-		CubeMesh = new FMesh();
-		CubeMesh->Vertices = GCubeVertices;
-		CubeMesh->Indices = GCubeIndices;
-		CubeMesh->VertexByteWidth = sizeof(GCubeVertices);
-		CubeMesh->IndexByteWidth = sizeof(GCubeIndices);
-		CubeMesh->IndexCount = CubeMesh->IndexByteWidth / sizeof(uint32);
-		CubeMesh->Offset = 0;
-		CubeMesh->Stride = sizeof(FVertexSimple);
-		CubeMesh->bUseIndexBuffer = true;
-
-		if (!this->CreateVertexBuffer(CubeMesh))
-		{
-			return false;
-		}
-
-		if (!this->CreateIndexBuffer(CubeMesh))
-		{
-			return false;
-		}
-
-		return true;
+		mesh->Indices = indices;
+		mesh->IndexByteWidth = indiceSize;
+		mesh->IndexCount = indiceSize / sizeof(uint32);
+		mesh->bUseIndexBuffer = true;
+	}
+	else
+	{
+		mesh->Indices = nullptr;
+		mesh->bUseIndexBuffer = false;
+		mesh->IndexByteWidth = 0;
+		mesh->IndexCount = 0;
 	}
 
-	return false;
-}
-
-bool URenderer::CreateSphereMesh()
-{
-	if (SphereMesh == nullptr)
+	// 버퍼 생성
+	if (!this->CreateVertexBuffer(mesh))
 	{
-		SphereMesh = new FMesh();
-		SphereMesh->Vertices = GSphereVertices;
-		SphereMesh->VertexByteWidth = sizeof(GSphereVertices);
-		SphereMesh->Offset = 0;
-		SphereMesh->Stride = sizeof(FVertexSimple);
-		SphereMesh->bUseIndexBuffer = false;
+		return false;
+	}
 
-		if (!this->CreateVertexBuffer(SphereMesh))
+	if (mesh->bUseIndexBuffer)
+	{
+		if (!this->CreateIndexBuffer(mesh))
 		{
 			return false;
 		}
-
-		return true;
 	}
 
-	return false;
-}
+	return true;
+}   
 
-bool URenderer::CreateTriangleMesh()
-{
-	if (TriangleMesh == nullptr)
-	{
-		TriangleMesh = new FMesh();
-		TriangleMesh->Vertices = GTriangleVertices;
-		TriangleMesh->VertexByteWidth = sizeof(GTriangleVertices);
-		TriangleMesh->Offset = 0;
-		TriangleMesh->Stride = sizeof(FVertexSimple);
-		TriangleMesh->bUseIndexBuffer = false;
-
-		if (!this->CreateVertexBuffer(TriangleMesh))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	return false;
-}
 
 void URenderer::Resize(UINT width, UINT height)
 {
@@ -234,7 +202,7 @@ bool URenderer::CreateVertexBuffer(FMesh* Mesh)
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 
-	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { Mesh->Vertices };
+	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { &Mesh->Vertices };
 
 	result = Device->GetDeivce()->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &Mesh->VertexBuffer);
 	if (FAILED(result))
@@ -256,7 +224,7 @@ bool URenderer::CreateIndexBuffer(FMesh* Mesh)
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 
-	D3D11_SUBRESOURCE_DATA indexBufferSRD = { Mesh->Indices };
+	D3D11_SUBRESOURCE_DATA indexBufferSRD = { &Mesh->Indices };
 
 	hr = Device->GetDeivce()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &Mesh->IndexBuffer);
 	if (FAILED(hr))
@@ -410,51 +378,29 @@ void URenderer::RenderUI()
 
 void URenderer::ReleaseAllMesh()
 {
-	if (CubeMesh)
-	{
-		if (CubeMesh->IndexBuffer)
-		{
-			CubeMesh->IndexBuffer->Release();
-			CubeMesh->IndexBuffer = nullptr;
-		}
-		if (CubeMesh->VertexBuffer)
-		{
-			CubeMesh->VertexBuffer->Release();
-		}
-			CubeMesh->VertexBuffer = nullptr;
-		CubeMesh = nullptr;
-		delete CubeMesh;
-	}
+	ReleaseMesh(CubeMesh);
+	ReleaseMesh(SphereMesh);
+	ReleaseMesh(TriangleMesh);
+	ReleaseMesh(ConeMesh);
+	ReleaseMesh(CylinderMesh);
+}
 
-	if (SphereMesh)
+void URenderer::ReleaseMesh(FMesh* mesh)
+{
+	if (mesh)
 	{
-		if (SphereMesh->IndexBuffer)
+		if (mesh->IndexBuffer)
 		{
-			SphereMesh->IndexBuffer->Release();
-			SphereMesh->IndexBuffer = nullptr;
+			mesh->IndexBuffer->Release();
+			mesh->IndexBuffer = nullptr;
 		}
-		if (SphereMesh->VertexBuffer)
+		if (mesh->VertexBuffer)
 		{
-			SphereMesh->VertexBuffer->Release();
-			SphereMesh->VertexBuffer = nullptr;
-		}
-		delete SphereMesh;
-		SphereMesh = nullptr;
-	}
-
-	if (TriangleMesh)
-	{
-		if (TriangleMesh->IndexBuffer)
-		{
-			TriangleMesh->IndexBuffer->Release();
-			TriangleMesh->IndexBuffer = nullptr;
-		}
-		if (TriangleMesh->VertexBuffer)
-		{
-			TriangleMesh->VertexBuffer->Release();
-			TriangleMesh->VertexBuffer = nullptr;
+			mesh->VertexBuffer->Release();
+			mesh->VertexBuffer = nullptr;
 		}
 		delete TriangleMesh;
 		TriangleMesh = nullptr;
 	}
 }
+
