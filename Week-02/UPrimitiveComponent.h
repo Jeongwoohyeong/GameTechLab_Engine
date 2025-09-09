@@ -28,6 +28,8 @@ public:
 	virtual EPrimitiveType GetPrimitiveType() = 0;
 	virtual FMesh* GetMesh() = 0;
 
+	virtual void IsA() = 0;
+
 	virtual void CreateAABB();
 	FAABB GetAABB();
 

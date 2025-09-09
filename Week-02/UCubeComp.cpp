@@ -12,3 +12,8 @@ EPrimitiveType UCubeComp::GetPrimitiveType()
 {
 	return Type;
 }
+
+void UCubeComp::IsA()
+{
+	UE_LOG(PrimitiveTypeToString(Type).c_str());
+}

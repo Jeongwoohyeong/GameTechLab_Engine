@@ -243,6 +243,11 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		if (ImGui::Button("T Reset")) {
 			Transform->SetLocation(FVector(0.0f, 0.0f, -10.0f));
 		}
+
+		if (ImGui::Button("Primitive Type Check"))
+		{
+			Primitive->IsA();
+		}
 	}
 	ImGui::End();
 }
