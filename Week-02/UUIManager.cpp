@@ -214,7 +214,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		FTransform* Transform = Primitive->GetTransform();
 
 		// 1) Scale
-		FVector Scale = SwapYZ(Transform->GetScale()); // UI용으로 YZ 스왑
+		FVector Scale = SwapYZ(Transform->GetScale());
 		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f, 0.01f, 100.0f)) {
 			Transform->SetScale(SwapYZ(Scale));
 		}
@@ -224,15 +224,9 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		}
 
 		// 2) Rotation (deg)
-		// 내부는 rad라고 가정 → UI용으로 deg로 변환해 표기
-		FVector Rotation = SwapYZ(Transform->GetRotationRadians());
-		// FVector CurRotation = SwapYZ(PrevRotation * Math::RadToDeg);
+		FVector Rotation = SwapYZ(Transform->GetRotationDegree());
 		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(SwapYZ(Rotation)); // SetRotationDeg는 내부에서 deg→rad 처리
-			
-			// 쿼터니언 업데이트
-			/*FVector DeltaRotation = Transform->GetRotationRadians() - PrevRotation;
-			Transform->UpdateQuaternion(DeltaRotation);*/
+			Transform->SetRotationDeg(SwapYZ(Rotation));
 		}
 		if (ImGui::Button("R Reset")) {
 			FVector r0(0.0f, 0.0f, 0.0f);
