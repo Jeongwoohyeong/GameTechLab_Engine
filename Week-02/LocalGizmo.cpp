@@ -141,6 +141,11 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     FVector newDelta = currentMousePos - previousMousePos;
     previousMousePos = currentMousePos;
 
+    
+}
+
+void LocalGizmo::TranslateLocalOrWord(float newDelta)
+{
     //// 월드 이동
     //FVector selectedVector;
     //switch (SelectedAxis)
@@ -179,6 +184,7 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     FVector resultVector = offset * selectedVector;
     ParentTransform->AddLocation(resultVector);
 }
+
 void LocalGizmo::OnLMouseRelease()
 {
     // UE_LOG("release");
