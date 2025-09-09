@@ -263,14 +263,14 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 	// 드로우 콜
 	FMesh* Mesh = Primitive->GetMesh();
 	Render(Mesh, DeviceContext);
-
+	
 	// color 추가  렌더링
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
 	for (int i = 0; i < 3; i++)
 	{
 		FMatrix World = FMatrix::Identity();
 		World = World * gizmoTrans[i].GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
 		Render(ConeMesh, DeviceContext);
 		Render(CylinderMesh, DeviceContext);
 	}
@@ -293,7 +293,7 @@ void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext)
 	}
 }
 
-#pragma region Gizmo 사용, 추후 수정
+#pragma region World Gizmo 사용, 추후 수정
 
 bool URenderer::CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth)
 {
@@ -381,6 +381,7 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 	}
 }
 #pragma endregion
+
 void URenderer::RenderUI()
 {
 	UI.PrepareRender();

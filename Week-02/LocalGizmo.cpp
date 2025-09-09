@@ -18,23 +18,6 @@
 	CreateAABB();
 }
 
-FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
-{
-    FTransform temp = *ParentTransform;
-    FVector rot = a.rotate;
-
-    temp.SetScale(0.2f, 0.4f, 0.2f);
-
-    FVector resizedLocation = ParentTransform->GetLocation() + (a.direction) * ParentTransform->GetScale()*0.5f;
-    temp.SetLocation(resizedLocation);
-    temp.SetRotationDeg({ 0.0f, 0.0f,0.0f });
-    temp.AddRotationDegX(rot.X);
-    temp.AddRotationDegY(rot.Y);
-    temp.AddRotationDegZ(rot.Z);
-
-   return temp;
-}
-
 FTransform* LocalGizmo::GetGizmoTransform()
 {
     const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
@@ -45,7 +28,22 @@ FTransform* LocalGizmo::GetGizmoTransform()
     }
     return gizmoTransform;
 }
+FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
+{
+    FTransform temp = *ParentTransform;
+    FVector rot = a.rotate;
 
+    temp.SetScale(0.2f, 0.4f, 0.2f);
+
+    FVector resizedLocation = ParentTransform->GetLocation() + (a.direction) * ParentTransform->GetScale() * 0.5f;
+    temp.SetLocation(resizedLocation);
+    temp.SetRotationDeg({ 0.0f, 0.0f,0.0f });
+    temp.AddRotationDegX(rot.X);
+    temp.AddRotationDegY(rot.Y);
+    temp.AddRotationDegZ(rot.Z);
+
+    return temp;
+}
 void LocalGizmo::CalculateTranslationOffSet()
 {
     if (SelectedAxis == -1)
@@ -95,6 +93,7 @@ void LocalGizmo::CreateAABB()
     AABB.Max = Max;
     bIsAABBCreated = true;
 }
+
 void LocalGizmo::OnLMouseClick()
 {
     previousMousePos = CInputManager::GetInstance().MousePressPosWorld;

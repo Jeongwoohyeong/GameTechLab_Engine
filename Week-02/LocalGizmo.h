@@ -3,10 +3,6 @@
 #include "Gizmo.h"
 #include "Math.h"
 
-constexpr FVector COLOR_R{ 1.0f, 0.0f, 0.0f };
-constexpr FVector COLOR_G{ 0.0f, 1.0f, 0.0f };
-constexpr FVector COLOR_B{ 0.0f, 0.0f, 1.0f };
-
 constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
 constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
 constexpr FVector ROTATE_X{ 90.0f, 0.0f, 0.0f }; // x축, 빨간색
@@ -17,7 +13,6 @@ constexpr FVector TRANSLATE_Z{ 1.0f, 0.0f, 0.0f }; // x축, 빨간색
 
 struct axis
 {
-    FVector color;
     FVector rotate;
 	FVector direction;
 };
@@ -30,9 +25,9 @@ class LocalGizmo : public Gizmo
 public:
     axis axisInfo[3] =
     {
-        {COLOR_G, ROTATE_X, TRANSLATE_X}, // Y
-        {COLOR_B, ROTATE_Y, TRANSLATE_Y}, // Z
-        {COLOR_R, ROTATE_Z, TRANSLATE_Z} // X
+        {ROTATE_X, TRANSLATE_X}, // Y
+        {ROTATE_Y, TRANSLATE_Y}, // Z
+        {ROTATE_Z, TRANSLATE_Z} // X
     };
 
     void Initialize(FTransform* transform);
