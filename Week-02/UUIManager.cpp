@@ -215,9 +215,9 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		FTransform* Transform = Primitive->GetTransform();
 
 		// 1) Scale
-		FVector Scale = Transform->GetScale();
+		FVector Scale = SwapYZ(Transform->GetScale()); // UI용으로 YZ 스왑
 		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f, 0.01f, 100.0f)) {
-			Transform->SetScale(Scale);
+			Transform->SetScale(SwapYZ(Scale));
 		}
 		if (ImGui::Button("S Reset")) {
 			FVector s(1.0f, 1.0f, 1.0f);
@@ -226,9 +226,10 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		// 2) Rotation (deg)
 		// 내부는 rad라고 가정 → UI용으로 deg로 변환해 표기
-		FVector rotDeg = Transform->GetRotationRadians() * Math::RadToDeg;
-		if (ImGui::DragFloat3("Rotation", &rotDeg.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(rotDeg); // SetRotationDeg는 내부에서 deg→rad 처리
+		FVector Rotation = Transform->GetRotationRadians() * Math::RadToDeg;
+		Rotation = SwapYZ(Rotation); // UI용으로 YZ 스왑
+		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
+			Transform->SetRotationDeg(SwapYZ(Rotation)); // SetRotationDeg는 내부에서 deg→rad 처리
 		}
 		if (ImGui::Button("R Reset")) {
 			FVector r0(0.0f, 0.0f, 0.0f);
@@ -236,9 +237,9 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		}
 
 		// 3) Translation
-		FVector pos = Transform->GetLocation();
-		if (ImGui::DragFloat3("Translation", &pos.X, 0.01f, -100.0f, 100.0f)) {
-			Transform->SetLocation(pos);
+		FVector Location = SwapYZ(Transform->GetLocation());
+		if (ImGui::DragFloat3("Translation", &Location.X, 0.01f, -100.0f, 100.0f)) {
+			Transform->SetLocation(SwapYZ(Location));
 		}
 		if (ImGui::Button("T Reset")) {
 			Transform->SetLocation(FVector(0.0f, 0.0f, -10.0f));
