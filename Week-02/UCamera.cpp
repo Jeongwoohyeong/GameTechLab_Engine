@@ -32,7 +32,7 @@ FMatrix UCamera::MakeMVP(const FMatrix& World)
 // 클라이언트 화면 상에서의 커서 좌표를 이용해 3D 공간상의 레이를 만든다
 FRay UCamera::CastRay(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight)
 {
-	CastRay(ClientX, ClientY, ClientWidth, ClientHeight, nullptr);
+	return CastRay(ClientX, ClientY, ClientWidth, ClientHeight, nullptr);
 }
 
 //@param ProjPlaneHitPoint: Depth가 1인 projection plane과의 교차점 좌표 반환 (World Space 기준)
