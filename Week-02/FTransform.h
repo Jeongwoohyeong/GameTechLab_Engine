@@ -23,6 +23,8 @@ public:
 	void AddRotationDegZ(float degree);
 	void AddRotationDeg(const FVector& degree);
 
+	void ClearRotation();
+
 	void SetLocation(float x, float y, float z);
 	void SetLocation(const FVector&);
 
@@ -38,7 +40,6 @@ public:
 	bool TryGetInverseMatrix(FMatrix& Out);
 	
 	FMatrix& GetTransformMatrix();
-	FMatrix& GetTransformMatrixFor();
 
 	FMatrix& Get2StepRotationMatrix(); 
 
