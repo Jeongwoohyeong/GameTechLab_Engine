@@ -1,12 +1,19 @@
 ﻿#pragma once
 #include "Types.h"
 #include "Containers.h"
+#include "RTTIMacros.h"
+
+class UClass;
 
 class UObject
 {
+	RTTI_DECLARE()
+
 public:
 	UObject();
 	virtual ~UObject();
+
+	bool IsA(const UClass*) const;
 
 	void* operator new(size_t size);
 	void operator delete(void* ptr);

@@ -1,5 +1,7 @@
 ﻿#include "USphereComp.h"
 
+RTTI_IMPL(USphereComp, UPrimitiveComponent)
+
 USphereComp::USphereComp()
 	:Type(EPrimitiveType::Sphere)
 {

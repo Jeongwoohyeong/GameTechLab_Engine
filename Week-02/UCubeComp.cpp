@@ -3,6 +3,8 @@
 #include "URenderer.h"
 #include "Cube.h"
 
+RTTI_IMPL(UCubeComp, UPrimitiveComponent)
+
 UCubeComp::UCubeComp()
 	:Type(EPrimitiveType::Cube)
 {

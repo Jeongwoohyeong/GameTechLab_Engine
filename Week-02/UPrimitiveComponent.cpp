@@ -2,6 +2,8 @@
 #include "d3d11.h"
 #include "LocalGizmo.h"
 
+RTTI_IMPL(UPrimitiveComponent, USceneComponent)
+
 UPrimitiveComponent::UPrimitiveComponent() { }
 
 void UPrimitiveComponent::RenderGizmo(URenderer* renderer)

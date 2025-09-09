@@ -4,6 +4,9 @@
 #include "UCamera.h"
 #include "CScene.h"
 #include "UObject.h"
+#include "UCubeComp.h"
+#include "USphereComp.h"
+#include "UTriangleComp.h"
 
 void UUIManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceContext* deviceContext)
 {
@@ -247,7 +250,20 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		if (ImGui::Button("Primitive Type Check"))
 		{
-			Primitive->TypeCheck();
+			if (Primitive->IsA(UCubeComp::StaticClass()))
+			{
+				UE_LOG("Cube");
+			}
+
+			if (Primitive->IsA(USphereComp::StaticClass()))
+			{
+				UE_LOG("Sphere");
+			}
+
+			if (Primitive->IsA(UTriangleComp::StaticClass()))
+			{
+				UE_LOG("Triangle");
+			}
 		}
 	}
 	ImGui::End();
