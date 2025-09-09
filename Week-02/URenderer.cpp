@@ -129,9 +129,9 @@ bool URenderer::CreateRasterizerState()
 }
 bool URenderer::CreateAllMesh()
 {
+	CreateMesh(CubeMesh, GCubeVertices, sizeof(GCubeVertices), GCubeIndices, sizeof(GCubeIndices));
 	CreateMesh(TriangleMesh, GTriangleVertices, sizeof(GTriangleVertices));
 	CreateMesh(SphereMesh, GSphereVertices, sizeof(GSphereVertices));
-	CreateMesh(CubeMesh, GCubeVertices, sizeof(GCubeVertices), GCubeIndices, sizeof(GCubeIndices));
 	CreateMesh(CylinderMesh, GCylinderVertices, sizeof(GCylinderVertices), GCylinderIndices, sizeof(GCylinderIndices));
 	CreateMesh(ConeMesh, GConeVertices, sizeof(GConeVertices), GConeIndices, sizeof(GConeIndices));
 
@@ -153,7 +153,7 @@ bool URenderer::CreateMesh(FMesh*& mesh, FVertexSimple* vertices, int verticeSiz
 	{
 		mesh->Indices = indices;
 		mesh->IndexByteWidth = indiceSize;
-		mesh->IndexCount = indiceSize / sizeof(uint32);
+		mesh->IndexCount = indiceSize/sizeof(uint32);
 		mesh->bUseIndexBuffer = true;
 	}
 	else
@@ -202,7 +202,8 @@ bool URenderer::CreateVertexBuffer(FMesh* Mesh)
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 
-	D3D11_SUBRESOURCE_DATA vertexBufferSRD = { &Mesh->Vertices };
+	D3D11_SUBRESOURCE_DATA vertexBufferSRD = {};
+	vertexBufferSRD.pSysMem = Mesh->Vertices;
 
 	result = Device->GetDeivce()->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &Mesh->VertexBuffer);
 	if (FAILED(result))
@@ -224,7 +225,12 @@ bool URenderer::CreateIndexBuffer(FMesh* Mesh)
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 
-	D3D11_SUBRESOURCE_DATA indexBufferSRD = { &Mesh->Indices };
+	D3D11_SUBRESOURCE_DATA indexBufferSRD = {};
+	
+	
+	
+	
+	= &Mesh->Indices;
 
 	hr = Device->GetDeivce()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &Mesh->IndexBuffer);
 	if (FAILED(hr))
