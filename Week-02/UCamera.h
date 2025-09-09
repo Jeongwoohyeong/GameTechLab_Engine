@@ -13,6 +13,7 @@ public:
 	float AspectRatio; // 종횡비 (화면 너비 / 높이)
 	float NearPlane; // 근평면
 	float FarPlane; // 원평면
+	bool bIsOrthogonal = false;
 
 	// 싱글톤 인스턴스 접근
 	static UCamera& GetInstance()

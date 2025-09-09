@@ -96,6 +96,7 @@ void UUIManager::ControlPanel()
 		}
 		ImGui::Separator();
 		{
+			ImGui::Checkbox("Orthogonal", &UCamera::GetInstance().bIsOrthogonal);
 			// 카메라 위치 조정 (float3)
 			FVector cPos = UCamera::GetInstance().Location;
 			if (ImGui::DragFloat3("Camera Location", &cPos.X, 0.01f, -100.0f, 100.0f))

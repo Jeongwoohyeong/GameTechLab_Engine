@@ -366,14 +366,19 @@ struct FMatrix
 
 	static FMatrix MakeOrthographic(float left, float right, float bottom, float top, float nearZ, float farZ)
 	{
-		FMatrix Result = {};
-		Result.M[0][0] = (2.0f / (right - left));
-		Result.M[1][1] = (2.0f / (top - bottom));
-		Result.M[2][2] = (1.0f / (farZ - nearZ));
-		Result.M[3][3] = 1.0f;
-		Result.M[0][3] = -(right + left) / (right - left);
-		Result.M[1][3] = -(top + bottom) / (top - bottom);
-		Result.M[2][3] = -nearZ / (farZ - nearZ);
+		float m00 = (2.0f / (right - left));
+		float m11 = (2.0f / (top - bottom));
+		float m22 = (1.0f / (farZ - nearZ));
+		float m03 = -(right + left) / (right - left);
+		float m13 = -(top + bottom) / (top - bottom);
+		float m23 = -nearZ / (farZ - nearZ);
+
+		FMatrix Result{ {
+			{	m00,   0.0f,  0.0f,  m03 },
+			{  0.0f,	m11,  0.0f,  m13 },
+			{  0.0f,   0.0f,   m22,  m23 },
+			{  0.0f,   0.0f,  0.0f,  1.0f }
+		} };
 
 		return Result;
 	}
