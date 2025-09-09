@@ -46,9 +46,9 @@ public:
 
     void Initialize(class URenderer* renderer, FTransform* transform);
     virtual void Render(class URenderer* renderer) override;
+	virtual void CreateAABB() override;
     virtual void Release() override;
 
+    FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
-private:
-    FTransform UpdateGizmoTranformFromParent(axis a);
 };
