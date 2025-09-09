@@ -6,7 +6,7 @@ UPrimitiveComponent::UPrimitiveComponent() { }
 
 void UPrimitiveComponent::RenderGizmo(URenderer* renderer)
 {
-	if(Gizmo.Transform == nullptr)
+	if(Gizmo.ParentTransform == nullptr)
 	{
 		Gizmo.Initialize(renderer, &Transform);
 	}

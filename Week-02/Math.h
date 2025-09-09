@@ -207,8 +207,7 @@ struct FMatrix
 
 	static FMatrix MakeRotation(const FVector& RadVec) // R: in Radian
 	{
-		// return MakeRotationZ(RadVec.Z) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.X);
-		return MakeRotationZ(RadVec.X) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.Z);
+		return MakeRotationZ(RadVec.Z) * MakeRotationY(RadVec.Y) * MakeRotationX(RadVec.X);
 	}
 
 	static FVector GetRotationFromMatrix(const FMatrix& Mat)

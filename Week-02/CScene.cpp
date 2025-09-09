@@ -351,7 +351,46 @@ void CScene::Clear()
 	SelectedPrimitive = nullptr;
 }
 
-UPrimitiveComponent* CScene::PickAtMouse(int ClientX, int ClientY, int ClientW, int ClientH, uint32& OutUUID)
+// 마우스로 기즈모를 피킹합니다(-1: 피킹된 기즈모 없음, 0: X축, 1: Y축, 2: Z축)
+int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int ClientH)
+{
+	// 1. 현재 씬에서 선택된 프리미티브가 유효한지 확인
+	if (!SelectedPrimitive)
+	{
+		return -1;
+	}
+	LocalGizmo* Giz = SelectedPrimitive->GetGizmo();
+	if (!Giz || !Giz->ParentTransform)
+	{
+		return -1;
+	}
+
+	// 2. 카메라로부터 월드 레이 생성
+	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH);
+
+	// 3. 모든 축에 대해 로컬 AABB 월드변환 후 Intersection Test
+	float BestT = FLT_MAX;
+	int32 BestAxis = -1;
+	
+	const FAABB aabbL = Giz->AABB; // 로컬 AABB (버텍스 기반)
+	for (int32 Axis = 0; Axis < 3; ++Axis)
+	{
+		const FTransform Transform = Giz->UpdateGizmoTranformFromParent(Giz->axisInfo[Axis]);
+		FHit hit{};
+		if (CheckIntersectionRayBox(rayW, aabbL, Transform, hit))
+		{
+			if (hit.T >= 0.0f && hit.T < BestT)
+			{
+				BestT = hit.T;
+				BestAxis = Axis;
+			}
+		}
+	}
+	Giz->SelectedAxis = BestAxis;
+	return BestAxis;
+}
+
+UPrimitiveComponent* CScene::PickUObjectAtMouse(int ClientX, int ClientY, int ClientW, int ClientH, uint32& OutUUID)
 {
 	// 1) 카메라로부터 월드 레이 생성
 	FRay rayW = UCamera::GetInstance().CastRay(ClientX, ClientY, ClientW, ClientH);

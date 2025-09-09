@@ -7,7 +7,7 @@
 
  void LocalGizmo::Initialize(URenderer* renderer, FTransform* transform)
 {
-    Transform = transform;
+    ParentTransform = transform;
 
     // C 배열 → span으로 자동 래핑
     coneVerts = std::span<FVertexSimple>(GConeVertices);
@@ -38,16 +38,18 @@
         cylinderIdx.data(),
         static_cast<unsigned int>(cylinderIdx.size_bytes())
     );
+
+	CreateAABB();
 }
 
 FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
-    FTransform temp = *Transform;
+    FTransform temp = *ParentTransform;
     FVector rot = a.rotate;
 
     temp.SetScale(0.2f, 0.4f, 0.2f);
 
-    FVector resizedLocation = Transform->GetLocation() + (a.translate) * Transform->GetScale()*0.5f;
+    FVector resizedLocation = ParentTransform->GetLocation() + (a.translate) * ParentTransform->GetScale()*0.5f;
     temp.SetLocation(resizedLocation);
 
     temp.AddRotationDegX(rot.X);
@@ -56,6 +58,7 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 
    return temp;
 }
+
 void LocalGizmo::Render(URenderer* renderer){
     renderer->SetTopology(false);
 
@@ -111,5 +114,40 @@ void LocalGizmo::Release()
 void LocalGizmo::TranslatePrimitive(int axis, float offSet)
 {
 	FVector primitiveTranslateOffset = axisInfo[axis].translate * offSet;
-    Transform->AddLocation(primitiveTranslateOffset);
+    ParentTransform->AddLocation(primitiveTranslateOffset);
+}
+
+void LocalGizmo::CreateAABB()
+{
+    FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
+    FVector Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+    // coneVerts 순회
+    for (const auto& v : coneVerts)
+    {
+        if (v.x < Min.X) Min.X = v.x;
+        if (v.y < Min.Y) Min.Y = v.y;
+        if (v.z < Min.Z) Min.Z = v.z;
+
+        if (v.x > Max.X) Max.X = v.x;
+        if (v.y > Max.Y) Max.Y = v.y;
+        if (v.z > Max.Z) Max.Z = v.z;
+    }
+
+    // cylinderVerts 순회
+    for (const auto& v : cylinderVerts)
+    {
+        if (v.x < Min.X) Min.X = v.x;
+        if (v.y < Min.Y) Min.Y = v.y;
+        if (v.z < Min.Z) Min.Z = v.z;
+
+        if (v.x > Max.X) Max.X = v.x;
+        if (v.y > Max.Y) Max.Y = v.y;
+        if (v.z > Max.Z) Max.Z = v.z;
+    }
+
+    // 결과 저장
+    AABB.Min = Min;
+    AABB.Max = Max;
+    bIsAABBCreated = true;
 }

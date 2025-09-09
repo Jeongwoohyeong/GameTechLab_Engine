@@ -106,20 +106,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			// TODO: Scene에 Update() 함수 만들어서 그 안에서 처리하기 (더 좋은 구조 있으면 그 쪽으로)
 			if (!OverImgui && CInputManager::GetInstance().IsMouseBtnPressed(0)) // 왼쪽 버튼 클릭 시
 			{
-				uint32 PickedUUID = -2;
 				int32 ClientW = CInputManager::GetInstance().GetClientW();
 				int32 ClientH = CInputManager::GetInstance().GetClientH();
 				POINT MousePos = CInputManager::GetInstance().GetMouseClientPos();
-				UPrimitiveComponent* PickedPrim = CScene::GetInstance().PickAtMouse(MousePos.x, MousePos.y, ClientW, ClientH, PickedUUID);
-				if (PickedUUID != -2 && PickedPrim)
+
+				int32 SelectedAxis = -1;
+				if(CScene::GetInstance().GetSelectedPrimitive())
 				{
-					CScene::GetInstance().SetSelectedPrimitiveByUUID(PickedUUID);
+					Gizmo* Giz = CScene::GetInstance().GetSelectedPrimitive()->GetGizmo();
+					SelectedAxis = CScene::GetInstance().PickGizmoAtMouse(MousePos.x, MousePos.y, ClientW, ClientH);
+					UE_LOG("Picked Gizmo Axis: %d", SelectedAxis);
+					Giz->SelectGizmoAxis(SelectedAxis);
 				}
-				else
+
+				// 기즈모 축이 클릭된 게 아니면 프리미티브 피킹
+				if (SelectedAxis == -1)
 				{
-					UE_LOG("main.cpp: No primitive picked.");
+					uint32 PickedUUID = -2;
+					UPrimitiveComponent* PickedPrim = CScene::GetInstance().PickUObjectAtMouse(MousePos.x, MousePos.y, ClientW, ClientH, PickedUUID);
+					if (PickedUUID != -2 && PickedPrim)
+					{
+						CScene::GetInstance().SetSelectedPrimitiveByUUID(PickedUUID);
+					}
+					else
+					{
+						UE_LOG("main.cpp: No primitive picked.");
+					}
 				}
-				
 			}
 
 

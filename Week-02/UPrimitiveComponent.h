@@ -31,6 +31,8 @@ public:
 	virtual void CreateAABB();
 	FAABB GetAABB();
 
+	LocalGizmo* GetGizmo() { return &Gizmo; }
+
 protected:
 	LocalGizmo Gizmo;
 	FAABB AABB;
