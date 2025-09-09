@@ -8,8 +8,8 @@ constexpr FVector COLOR_G{ 0.0f, 1.0f, 0.0f };
 constexpr FVector COLOR_B{ 0.0f, 0.0f, 1.0f };
 
 constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
-constexpr FVector ROTATE_X{ 0.0f, 0.0f, 90.0f }; // z축, 파란색
-constexpr FVector ROTATE_Z{ -90.0f, 0.0f, 0.0f }; // x축, 빨간색
+constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
+constexpr FVector ROTATE_X{ 90.0f, 0.0f, 0.0f }; // x축, 빨간색
 
 constexpr FVector TRANSLATE_Y{ 0.0f, 1.0f, 0.0f }; // y축, 초록색
 constexpr FVector TRANSLATE_X{ 0.0f, 0.0f, 1.0f }; // z축, 파란색
@@ -51,4 +51,9 @@ public:
 
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
     void TranslatePrimitive(int axis, float offSet);
+    FMatrix worldMatrix{
+        1, 0 ,0,
+        0, 1, 0,
+        0, 0, 1
+    };
 };
