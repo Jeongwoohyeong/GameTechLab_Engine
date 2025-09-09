@@ -48,6 +48,7 @@ public:
     virtual void Render(class URenderer* renderer) override;
     virtual void Release() override;
 
+    void TranslatePrimitive(int axis, float offSet);
 private:
     FTransform UpdateGizmoTranformFromParent(axis a);
 };

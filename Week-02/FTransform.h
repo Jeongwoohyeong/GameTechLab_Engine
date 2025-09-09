@@ -26,6 +26,8 @@ public:
 	void SetLocation(float x, float y, float z);
 	void SetLocation(const FVector&);
 
+	void AddLocation(const FVector&);
+
 	void Translate(float dx, float dy, float dz);
 	void Translate(const FVector&);
 

@@ -63,6 +63,11 @@ void LocalGizmo::Render(URenderer* renderer){
    
     for (auto& a : axisInfo)
     {
+        // Test 용도
+        if (GetAsyncKeyState('Q') & 0x8000)
+        {
+            TranslatePrimitive(0, 0.1);
+        }
 		temp = UpdateGizmoTranformFromParent(a); // x, y, z축 회전 적용
         
         renderer->UpdateConstant(UCamera::GetInstance().MakeMVP(temp.GetTransformMatrix()), a.color);
@@ -101,4 +106,10 @@ void LocalGizmo::Release()
         gizmoCylinderIndicesBuffer->Release();
         gizmoCylinderIndicesBuffer = nullptr;
     }
+}
+
+void LocalGizmo::TranslatePrimitive(int axis, float offSet)
+{
+	FVector primitiveTranslateOffset = axisInfo[axis].translate * offSet;
+    Transform->AddLocation(primitiveTranslateOffset);
 }

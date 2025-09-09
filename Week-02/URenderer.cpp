@@ -304,6 +304,7 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 		DeviceContext->Draw(Mesh->VertexByteWidth / Mesh->Stride, 0);
 	}
 
+	Primitive->RenderGizmo(this);
 	return true;
 }
 
