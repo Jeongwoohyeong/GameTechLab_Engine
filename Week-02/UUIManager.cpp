@@ -98,19 +98,18 @@ void UUIManager::ControlPanel()
 		{
 			ImGui::Checkbox("Orthogonal", &UCamera::GetInstance().bIsOrthogonal);
 			// 카메라 위치 조정 (float3)
-			FVector cPos = UCamera::GetInstance().Location;
-			if (ImGui::DragFloat3("Camera Location", &cPos.X, 0.01f, -100.0f, 100.0f))
-				UCamera::GetInstance().Location = cPos;
+			FVector Location = SwapYZ(UCamera::GetInstance().Location);
+			if (ImGui::DragFloat3("Camera Location", &Location.X, 0.01f, -100.0f, 100.0f))
+			{
+				UCamera::GetInstance().Location = SwapYZ(Location);
+			}
 
 			// 카메라 회전 조정 (오일러 값, float3)
-			static FVector CameraRotDeg = FVector(0.0f, 0.0f, 0.0f);
-			if (ImGui::DragFloat3("Camera Rotation", &CameraRotDeg.X, 0.1f, -360.0f, 360.0f))
+			FVector Rotation = UCamera::GetInstance().Rotation * Math::RadToDeg;
+			Rotation = SwapYZ(Rotation); // UI용으로 YZ 스왑
+			if (ImGui::DragFloat3("Camera Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f))
 			{
-				UCamera::GetInstance().Rotation = FVector(
-					Math::DegToRad * CameraRotDeg.X,
-					Math::DegToRad * CameraRotDeg.Y,
-					Math::DegToRad * CameraRotDeg.Z
-				);
+				UCamera::GetInstance().Rotation = SwapYZ(Rotation) * Math::DegToRad;
 			}
 
 			// 카메라 FovY, Near, Far 조정
@@ -226,10 +225,14 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 
 		// 2) Rotation (deg)
 		// 내부는 rad라고 가정 → UI용으로 deg로 변환해 표기
-		FVector Rotation = Transform->GetRotationRadians() * Math::RadToDeg;
-		Rotation = SwapYZ(Rotation); // UI용으로 YZ 스왑
-		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(SwapYZ(Rotation)); // SetRotationDeg는 내부에서 deg→rad 처리
+		FVector PrevRotation = Transform->GetRotationRadians();
+		FVector CurRotation = SwapYZ(PrevRotation * Math::RadToDeg);
+		if (ImGui::DragFloat3("Rotation", &CurRotation.X, 0.1f, -360.0f, 360.0f)) {
+			Transform->SetRotationDeg(SwapYZ(CurRotation)); // SetRotationDeg는 내부에서 deg→rad 처리
+			
+			// 쿼터니언 업데이트
+			FVector DeltaRotation = Transform->GetRotationRadians() - PrevRotation;
+			Transform->UpdateQuaternion(DeltaRotation);
 		}
 		if (ImGui::Button("R Reset")) {
 			FVector r0(0.0f, 0.0f, 0.0f);
