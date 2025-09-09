@@ -1,6 +1,15 @@
-﻿//#pragma once
+﻿#pragma once
+
+enum EShape {
+	Sphere,
+	Cube,
+	Cone,
+	Cylinder,
+	Line
+};
+
+
 //#include<d3d11.h>
-//
 //#include "FVertexStruct.h"
 //#include "Cube.h"
 //#include "URenderer.h"
@@ -32,4 +41,6 @@
 //		renderer->CreateIndexBuffer(&indexBufferCube, GCubeIndices, sizeof(GCubeIndices));
 //	}
 //};
+//
+
 //
