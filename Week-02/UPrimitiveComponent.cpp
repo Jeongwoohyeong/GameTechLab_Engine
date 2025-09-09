@@ -4,13 +4,12 @@
 
 UPrimitiveComponent::UPrimitiveComponent() { }
 
-void UPrimitiveComponent::Initialize(URenderer* renderer)
+void UPrimitiveComponent::RenderGizmo(URenderer* renderer)
 {
-	Gizmo.Initialize(renderer, &Transform);
-}
-
-void UPrimitiveComponent::Render(URenderer* renderer)
-{
+	if(Gizmo.Transform == nullptr)
+	{
+		Gizmo.Initialize(renderer, &Transform);
+	}
 	Gizmo.Render(renderer);
 }
 

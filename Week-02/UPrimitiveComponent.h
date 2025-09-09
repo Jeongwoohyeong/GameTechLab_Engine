@@ -20,8 +20,7 @@ public:
 	UPrimitiveComponent();
 	virtual ~UPrimitiveComponent() = default;
 
-	void Initialize(URenderer* renderer);
-	void Render(URenderer* renderer);
+	void RenderGizmo(URenderer* renderer);
 	void Release();
 
 	inline FTransform* GetTransform() { return &Transform; }

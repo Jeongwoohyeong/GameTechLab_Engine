@@ -48,6 +48,9 @@ private:
 	CInputManager() {};
 	~CInputManager() {};
 	bool CheckMouseBtnValid(int32 Btn);
+	void UpdateMousePosAndDelta();
+	void UpdateClientSize();
+	void UpdateKeyStates();
 
 	HWND* hWnd = nullptr;
 	int32 ClientW = 0;
@@ -58,4 +61,6 @@ private:
 	bool PreviousMouseBtnStates[2] = { false, false };
 	POINT CurrentMouseClientPosPoint = { 0, 0 };
 	POINT PreviousMouseClientPosPoint = { 0, 0 };
+
+	POINT CurrentMouseDelta = { 0, 0 };
 };

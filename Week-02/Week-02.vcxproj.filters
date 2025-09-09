@@ -114,7 +114,7 @@
     <ClCompile Include="LocalGizmo.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="CameraInputMove.cpp">
+    <ClCompile Include="CCameraMovementController.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="CScene.cpp">
@@ -124,6 +124,12 @@
       <Filter>헤더 파일</Filter>
     </ClCompile>
     <ClCompile Include="IntersectionTest.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.h">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UTriangleComp.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -236,13 +242,16 @@
     <ClInclude Include="LocalGizmo.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="CameraInputMove.h">
+    <ClInclude Include="CCameraMovementController.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="CScene.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="IntersectionTest.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="UTriangleComp.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

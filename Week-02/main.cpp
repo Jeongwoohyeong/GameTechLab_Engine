@@ -6,7 +6,7 @@
 
 #include "URenderer.h"
 #include "UPrimitiveComponent.h"
-#include "CameraInputMove.h"
+#include "CCameraMovementController.h"
 #include "UCamera.h"
 #include "CScene.h"
 #include "CInputManager.h"
@@ -62,8 +62,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)&renderer);
 
 	CInputManager::GetInstance().SetHWnd(&hWnd);
-	CameraInputMove* input = nullptr; // 포인터를 nullptr로 초기화하는 것이 좋은 습관입니다.
-	input = new CameraInputMove();   // 객체 생성 및 포인터에 할당
+	CCameraMovementController* input = nullptr; // 포인터를 nullptr로 초기화하는 것이 좋은 습관입니다.
+	input = new CCameraMovementController();   // 객체 생성 및 포인터에 할당
 	input->Initialize(&hWnd);
 
 	// 씬 초기화
@@ -93,8 +93,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				}
 			}
 
-			input->UpdateInputToCamera(); // CameraInputMove -> TODO: 나중에 InputManager에 의해 가공된 입력 처리용으로 수정
 			CInputManager::GetInstance().Update(); // InputManager 업데이트
+			input->UpdateInputToCamera(); // CameraInputMove -> TODO: 나중에 InputManager에 의해 가공된 입력 처리용으로 수정
 
 			// ImGui가 마우스를 잡고 있거나 마우스가 ImGui 위에 있을 때는 피킹하지 않음
 			ImGuiIO& io = ImGui::GetIO();
