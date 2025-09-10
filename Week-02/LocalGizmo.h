@@ -9,19 +9,17 @@
 struct ID3D11Buffer;
 struct FVertexSimple;
 
-constexpr FVector ROTATE_X{ 90.0f, 0.0f, 0.0f }; // x축, 빨간색
-constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
-constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
+constexpr FVector ROTATE_X{ 90.0f, 0.0f, 0.0f }; // x축
+constexpr FVector ROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축
+constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축
 
-constexpr FVector TRANSLATE_Z{ 1.0f, 0.0f, 0.0f }; // x축, 빨간색
-constexpr FVector TRANSLATE_Y{ 0.0f, 1.0f, 0.0f }; // y축, 초록색
-constexpr FVector TRANSLATE_X{ 0.0f, 0.0f, 1.0f }; // z축, 파란색
+constexpr FVector TRANSLATE_X{ 1.0f, 0.0f, 0.0f }; // x축
+constexpr FVector TRANSLATE_Y{ 0.0f, 1.0f, 0.0f }; // y축
+constexpr FVector TRANSLATE_Z{ 0.0f, 0.0f, 1.0f }; // z축
 
-constexpr FVector RINGROTATE_Z{ 90.0f, 0.0f, 90.0f }; // x축, 빨간색
-constexpr FVector RINGROTATE_Y{ 0.0f, 0.0f, 90.0f }; // y축, 초록색
-constexpr FVector RINGROTATE_X{ 90.0f, 0.0f, 0.0f }; // z축, 파란색
-
-
+constexpr FVector RINGROTATE_X{ 0.0f, 180.0f, 0.0f }; // x축, 초록색!(사실 Z축)
+constexpr FVector RINGROTATE_Y{ 90.0f, 0.0f, 0.0f }; // y축, 파란색!
+constexpr FVector RINGROTATE_Z{ 0.0f, 270.0f, 0.0f }; // z축, 빨간색
 
 struct axis
 {
