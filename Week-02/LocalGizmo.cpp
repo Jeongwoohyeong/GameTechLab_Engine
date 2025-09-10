@@ -177,12 +177,10 @@ void FLocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     switch (GizmoSwitch)
     {
     case 0:
-        //RotateLocalOrWorld(resultInWorld);
         TranslateLocalOrWorld(resultInWorld);
         break;
     case 1:
-        RotateLocalOrWorld(resultInWorld);
-        // Scale(resultInWorld);
+        Scale(resultInWorld);
         break;
 	case 2:
         RotateLocalOrWorld(resultInWorld);
