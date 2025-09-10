@@ -117,7 +117,16 @@ void LocalGizmo::CalculateTranslationOffSet()
 void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
 {
     // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
-    float distance = std::abs(ParentTransform->GetLocation().Z - UCamera::GetInstance().Location.Z);
+    
+    const FVector A = ParentTransform->GetLocation();
+    const FVector B = UCamera::GetInstance().Location;
+
+    const float dx = A.X - B.X;
+    const float dy = A.Y - B.Y;
+    const float dz = A.Z - B.Z;
+
+    const float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
     previousMousePos = UCamera::GetInstance().DeprojectScreenPoint(
         firstClickInfo.mouseX,
         firstClickInfo.mouseY,

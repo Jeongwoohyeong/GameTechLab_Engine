@@ -56,6 +56,7 @@ public:
 	int32 GetClientH() const;
 
 	// 이벤트 등록 함수
+	void ReleaseCallbacks();
 	void RegisterMouseClickCallback(MouseCallback callback);
 	void RegisterMouseDragCallback(MouseCallback callback);
 	void RegisterMouseReleaseCallback(MouseReleaseCallback callback);
@@ -74,7 +75,7 @@ private:
 	bool CheckMouseBtnValid(int32 Btn);
 	void UpdateMousePosAndDelta();
 	void UpdateClientSize();
-	void UpdateKeyStates();
+	void UpdateKeyStates();	
 
 	HWND* hWnd = nullptr;
 	int32 ClientW = 0;

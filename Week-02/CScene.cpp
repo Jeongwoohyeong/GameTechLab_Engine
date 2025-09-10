@@ -6,6 +6,7 @@
 #include "UCubeComp.h"
 #include "USphereComp.h"
 #include "UTriangleComp.h"
+#include "CInputManager.h"
 #include <fstream>
 
 #if defined(_WIN32)
@@ -359,6 +360,7 @@ void CScene::SetSelectedPrimitiveByUUID(uint32 UUID)
 
 void CScene::Clear()
 {
+	CInputManager::GetInstance().ReleaseCallbacks();
 	for (auto& Pair : UUIDToPrimitive)
 	{
 		if (Pair.second)
