@@ -353,7 +353,8 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			LocalGizmoProperty.SelectedGizmo = GizmoCubeMesh;
 			break;
 		case 2:
-			LocalGizmoProperty.SelectedGizmo = RingMesh;
+			LocalGizmoProperty.HeadScale = { 0.1f, 0.8f, 0.1f };
+			LocalGizmoProperty.SelectedGizmo = ConeMesh;
 			break;
 		default:
 			break;
@@ -363,41 +364,40 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 		Primitive->SwitchGizmo(LocalGizmoProperty.GizmoSwitch);
 	}
 	
-	if (LocalGizmoProperty.GizmoSwitch == 2) // rotation일 때
+	//if (LocalGizmoProperty.GizmoSwitch == 2) // rotation일 때
+	//{
+	//	for (int i = 0; i < 3; i++)
+	//	{
+	//		// test ring
+	//		FMatrix World = FMatrix::Identity();
+	//		gizmoTrans->transform[i].SetScale(1.0f, 1.0f, 1.0f);
+	//		World = World * gizmoTrans->transform[i].GetTransformMatrix();
+	//		FVector color = GAxisColors[i];
+	//		if(i == Primitive->GetGizmo()->SelectedAxis)
+	//			color = GAxisColors[3];
+	//		GizmoShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
+	//		Render(RingMesh, DeviceContext, nullptr);
+	//	}
+	//}
+	//else
+	//{
+	for (int i = 0; i < 3; i++)
 	{
-		for (int i = 0; i < 3; i++)
-		{
-			// test ring
-			FMatrix World = FMatrix::Identity();
-			gizmoTrans->transform[i].SetScale(1.0f, 1.0f, 1.0f);
-			World = World * gizmoTrans->transform[i].GetTransformMatrix();
-			FVector color = GAxisColors[i];
-			if(i == Primitive->GetGizmo()->SelectedAxis)
-				color = GAxisColors[3];
-			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
-			Render(RingMesh, DeviceContext, nullptr);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			FVector color = GAxisColors[i];
+		FVector color = GAxisColors[i];
 
-			FMatrix World = FMatrix::Identity();
-			gizmoTrans->transform[i].SetScale(LocalGizmoProperty.HeadScale); // location gizmo
-			World = World * gizmoTrans->transform[i].GetTransformMatrix();
-			if (i == Primitive->GetGizmo()->SelectedAxis)
-				color = GAxisColors[3];
-			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans->transform[i].GetLocation()), color);
-			Render(LocalGizmoProperty.SelectedGizmo, DeviceContext, nullptr);
+		FMatrix World = FMatrix::Identity();
+		gizmoTrans->transform[i].SetScale(LocalGizmoProperty.HeadScale); // location gizmo
+		World = World * gizmoTrans->transform[i].GetTransformMatrix();
+		if (i == Primitive->GetGizmo()->SelectedAxis)
+			color = GAxisColors[3];
+		GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans->transform[i].GetLocation()), color);
+		Render(LocalGizmoProperty.SelectedGizmo, DeviceContext, nullptr);
 
-			World = FMatrix::Identity();
-			gizmoTrans->transform[i].SetScale(0.03f, 0.8f, 0.03f);
-			World = World * gizmoTrans->transform[i].GetTransformMatrix();
-			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans->transform[i].GetLocation()), color);
-			Render(CylinderMesh, DeviceContext, nullptr);
-		}
+		World = FMatrix::Identity();
+		gizmoTrans->transform[i].SetScale(0.03f, 0.8f, 0.03f);
+		World = World * gizmoTrans->transform[i].GetTransformMatrix();
+		GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans->transform[i].GetLocation()), color);
+		Render(CylinderMesh, DeviceContext, nullptr);
 	}
 
 	ColorShader->PrepareShader();
