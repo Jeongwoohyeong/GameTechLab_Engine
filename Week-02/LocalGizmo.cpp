@@ -267,6 +267,57 @@ float FLocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, 
 
 void FLocalGizmo::RotateLocalOrWorld(FVector newDelta)
 {
+    FVector RotationAxis;
+    if (bIsLocalMode)
+    {
+		// 로컬 회전
+        switch (SelectedAxis)
+        {
+        case 0: // z축
+			RotationAxis = ParentTransform->GetForwardVector();
+            break;
+        case 1: // y축
+			RotationAxis = ParentTransform->GetUpVector();
+            break;
+        case 2: // x축
+			RotationAxis = ParentTransform->GetRightVector();
+            break;
+        }
+    }
+    else
+    {
+        // 월드 회전
+        switch (SelectedAxis)
+        {
+        case 0: // z축
+			RotationAxis = FVector::UnitZ();
+            break;
+        case 1: // y축
+			RotationAxis = FVector::UnitY();
+            break;
+        case 2: // x축
+			RotationAxis = FVector::UnitX();
+            break;
+        }
+    }
+
+	// 카메라 위치에서 기즈모 위치로 향하는 벡터
+	FVector CameraToGizmo = ParentTransform->GetLocation() - UCamera::GetInstance().Location;
+	CameraToGizmo.Normalize();
+
+	// 회전축과 카메라-기즈모 벡터의 외적 -> 회전 방향 벡터
+	FVector RotationDirection = Cross(CameraToGizmo, RotationAxis);
+	RotationDirection.Normalize();
+
+    // 회전량
+	float RotationAmount = Dot(newDelta, RotationDirection);
+
+	// 델타 쿼터니언 생성 및 적용
+	const float RotationSpeed = 0.5f; // 회전 속도 조절용 상수
+	FQuaternion DeltaRotation = FQuaternion::CreateFromAxisAngle(RotationAxis, RotationAmount * RotationSpeed);
+
+	// 델타 쿼터니언은 월드 기준이므로 false
+	ParentTransform->MultiplyQuaternion(DeltaRotation, false);
 }
 
 void FLocalGizmo::TranslateLocalOrWorld(FVector newDelta)

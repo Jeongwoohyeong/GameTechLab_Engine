@@ -234,6 +234,9 @@ struct FQuaternion {
 			X = 0; Y = 0; Z = 0; W = 1;
 		}
 	}
+
+	bool operator==(const FQuaternion& Q) const noexcept { return X == Q.X && Y == Q.Y && Z == Q.Z && W == Q.W; }
+	bool operator!=(const FQuaternion& Q) const noexcept { return !(*this == Q); }
 };
 
 struct FMatrix
