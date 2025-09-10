@@ -179,6 +179,9 @@ void FLocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
         RotateLocalOrWorld(resultInWorld);
         // Scale(resultInWorld);
         break;
+	case 2:
+        RotateLocalOrWorld(resultInWorld);
+		break;
     default:
         break;
     }
@@ -261,50 +264,6 @@ float FLocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, 
 
 void FLocalGizmo::RotateLocalOrWorld(FVector newDelta)
 {
-    FMatrix cameraRotation = FMatrix::MakeRotation(UCamera::GetInstance().Rotation);
-    FVector cameraForwardVec = { cameraRotation[2][0], cameraRotation[2][1], cameraRotation[2][2] };
-
-    FVector selectedVector;
-    FMatrix selectedRotation = FMatrix::MakeRotation(ParentTransform->GetRotationRadians());
-    if (bIsLocalMode)
-    {
-        switch (SelectedAxis)
-        {
-        case 0: // z축
-            selectedVector = { selectedRotation.M[2][0], selectedRotation.M[2][1], selectedRotation.M[2][2] }; // 셋째 행
-            break;
-        case 1: // y축
-            selectedVector = { selectedRotation.M[1][0], selectedRotation.M[1][1], selectedRotation.M[1][2] }; // 둘째 행
-            break;
-        case 2: // x축
-            selectedVector = { selectedRotation.M[0][0], selectedRotation.M[0][1], selectedRotation.M[0][2] }; // 첫 행
-            break;
-        }
-        selectedVector.Normalize();
-    }
-    else
-    {
-        switch (SelectedAxis)
-        {
-        case 0: // z축
-            selectedVector = { 0, 0, 1 };
-            break;
-        case 1: // y축
-            selectedVector = { 0, 1, 0 };
-            break;
-        case 2: // x축
-            selectedVector = { 1, 0, 0 };
-            break;
-        }
-    }
-
-    FVector direction = Cross(cameraForwardVec, selectedVector);
-    direction.Normalize();
-
-    float offset = Dot(newDelta, direction);
-    FVector rotatedDir = offset * direction;
-
-    ParentTransform->AddRotationDeg(rotatedDir, bIsLocalMode);
 }
 
 void FLocalGizmo::TranslateLocalOrWorld(FVector newDelta)

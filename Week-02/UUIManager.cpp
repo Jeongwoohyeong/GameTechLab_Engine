@@ -105,18 +105,17 @@ void UUIManager::ControlPanel()
 		{
 			ImGui::Checkbox("Orthogonal", &UCamera::GetInstance().bIsOrthogonal);
 			// 카메라 위치 조정 (float3)
-			FVector Location = SwapYZ(UCamera::GetInstance().Location);
+			FVector Location = UCamera::GetInstance().Location;
 			if (ImGui::DragFloat3("Camera Location", &Location.X, 0.01f, -100.0f, 100.0f))
 			{
-				UCamera::GetInstance().Location = SwapYZ(Location);
+				UCamera::GetInstance().Location = Location;
 			}
 
 			// 카메라 회전 조정 (오일러 값, float3)
 			FVector Rotation = UCamera::GetInstance().Rotation * Math::RadToDeg;
-			Rotation = SwapYZ(Rotation); // UI용으로 YZ 스왑
 			if (ImGui::DragFloat3("Camera Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f))
 			{
-				UCamera::GetInstance().Rotation = SwapYZ(Rotation) * Math::DegToRad;
+				UCamera::GetInstance().Rotation = Rotation * Math::DegToRad;
 			}
 
 			// 카메라 FovY, Near, Far 조정
@@ -213,6 +212,44 @@ void UUIManager::ConsoleWindow(bool bShowConsoleWindow)
 	ImGui::ShowExampleAppConsoleWindow(&bShowConsoleWindow);
 }
 
+void UUIManager::DrawRotationInspector(FTransform& TargetTransform)
+{
+	// 현재 인스펙터에 표시되고 있는 오브젝트의 Transform
+	static FTransform* CurrentTarget = nullptr;
+	// UI에 표시하고 수정할 오일러 각도
+	static FVector EulerAnglesForUI;
+
+	// 1. [선택 변경 감지] 다른 오브젝트가 선택되었다면, UI 값을 새로 동기화합니다.
+	if (&TargetTransform != CurrentTarget) {
+		CurrentTarget = &TargetTransform;
+
+		// 엔진의 쿼터니언을 오일러 각(라디안)으로 변환
+		FVector EulerRad = FQuaternion::ToEulerAngles(TargetTransform.GetQuaternion());
+		// UI에 표시하기 위해 각도(Degree)로 변환
+		EulerAnglesForUI = RadToDeg(EulerRad);
+	}
+
+	// [변경점] 세 개의 DragFloat 위젯을 하나의 DragFloat3으로 변경합니다.
+	// 이 위젯은 EulerAnglesForUI 변수를 직접 수정하며,
+	// X, Y, Z 중 하나라도 값이 바뀌면 true를 반환합니다.
+	bool bValueChanged = ImGui::DragFloat3("Rotation", &EulerAnglesForUI.X, 0.1f);
+
+	// 리셋 버튼
+	bool bIsRest = ImGui::Button("R Reset");
+	if (bIsRest)
+	{
+		EulerAnglesForUI = FVector(0.0f, 0.0f, 0.0f);
+		bValueChanged = true;
+	}
+
+	// 2. [값 변경 감지] 사용자가 UI에서 값을 변경했다면, Transform에 반영합니다. 
+	if (bValueChanged) 
+	{
+		// SetRotationDeg 함수에는 반드시 오일러 각을 전달
+		TargetTransform.SetRotationDeg(EulerAnglesForUI);
+	}
+}
+
 void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 {
 	ImGui::Begin("Jungle Property Window");
@@ -222,29 +259,22 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		bool bIsLocalMode = Primitive->GetGizmo()->bIsLocalMode;
 
 		// 1) Scale
-		FVector Scale = SwapYZ(Transform->GetScale());
+		FVector Scale = Transform->GetScale();
 		if (ImGui::DragFloat3("Scale", &Scale.X, 0.01f, 0.01f, 100.0f)) {
-			Transform->SetScale(SwapYZ(Scale));
+			Transform->SetScale(Scale);
 		}
 		if (ImGui::Button("S Reset")) {
 			FVector s(1.0f, 1.0f, 1.0f);
 			Transform->SetScale(s);
 		}
 
-
-		// 2) Rotation (deg)
-		FVector Rotation = SwapYZ(Transform->GetRotationDegree());
-		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(SwapYZ(Rotation), bIsLocalMode);
-		}
-		if (ImGui::Button("R Reset")) {
-			Transform->ClearRotation();
-		}
+		// 2) Rotation
+		DrawRotationInspector(*Transform);
 
 		// 3) Translation
-		FVector Location = SwapYZ(Transform->GetLocation());
+		FVector Location = Transform->GetLocation();
 		if (ImGui::DragFloat3("Translation", &Location.X, 0.01f, -100.0f, 100.0f)) {
-			Transform->SetLocation(SwapYZ(Location));
+			Transform->SetLocation(Location);
 		}
 		if (ImGui::Button("T Reset")) {
 			Transform->SetLocation(FVector(0.0f, 0.0f, -10.0f));
