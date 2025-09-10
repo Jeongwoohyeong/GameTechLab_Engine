@@ -1,4 +1,4 @@
-#include "LocalGizmo.h"
+﻿#include "LocalGizmo.h"
 #include "URenderer.h"
 #include "Cone.h"
 #include "Cylinder.h"
@@ -172,10 +172,10 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     switch (GizmoSwitch)
     {
     case 0:
-        TranslateLocalOrWorld(newDelta);
+        TranslateLocalOrWorld(resultInWorld);
         break;
     case 1:
-        Scale(newDelta);
+        Scale(resultInWorld);
         break;
     default:
         break;
