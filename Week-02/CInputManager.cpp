@@ -94,6 +94,13 @@ void CInputManager::UpdateKeyStates()
 	CurrentMouseBtnStates[1] = GetAsyncKeyState(VK_RBUTTON) & 0x8000; //오른쪽 버튼
 }
 
+void CInputManager::ReleaseCallbacks()
+{
+	OnClickCallbacks.clear();
+	OnDragCallbacks.clear();
+	OnReleaseCallbacks.clear();
+}
+
 
 bool CInputManager::IsKeyDown(int32 key)
 {
