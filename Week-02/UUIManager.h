@@ -27,6 +27,9 @@ public:
 	void ConsoleWindow(bool bShowConsoleWindow);
 
 private:
+	void DrawTransformInspector(FTransform& Transform);
+
+private:
 	FVector offset;
 
 };

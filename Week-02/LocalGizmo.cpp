@@ -177,6 +177,9 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     case 1:
         Scale(resultInWorld);
         break;
+	case 2:
+        RotateLocalOrWorld(resultInWorld);
+		break;
     default:
         break;
     }
@@ -259,6 +262,45 @@ float LocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, f
 
 void LocalGizmo::RotateLocalOrWorld(FVector newDelta)
 {
+ //   FVector selectedVector;
+ //   if (bIsLocalMode)
+ //   {
+ //       //로컬 회전
+ //       FMatrix srt = ParentTransform->GetTransformMatrix();
+ //       switch (SelectedAxis)
+ //       {
+ //       case 0: // z축
+ //           selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
+ //           break;
+ //       case 1: // y축
+ //           selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
+ //           break;
+ //       case 2: // x축
+ //           selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
+ //           break;
+ //       }
+ //   }
+ //   else
+ //   {
+ //       //// 월드 회전
+ //       switch (SelectedAxis)
+ //       {
+ //       case 0: // z축
+ //           selectedVector = { 0, 0, 1 };
+ //           break;
+ //       case 1: // y축
+ //           selectedVector = { 0, 1, 0 };
+ //           break;
+ //       case 2: // x축
+ //           selectedVector = { 1, 0, 0 };
+ //           break;
+ //       }
+ //   }
+ //   // UE_LOG("%f %f %f , draged", selectedVector.X, selectedVector.Y, selectedVector.Z);
+ //   selectedVector.Normalize();
+ //   float offset = Dot(newDelta, selectedVector);
+ //   FVector resultVector = offset * selectedVector;
+	//ParentTransform->AddRotationDeg(resultVector, bIsLocalMode);
 
 }
 void LocalGizmo::TranslateLocalOrWorld(FVector newDelta)

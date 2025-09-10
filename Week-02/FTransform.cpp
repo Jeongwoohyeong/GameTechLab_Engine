@@ -4,11 +4,11 @@ FTransform::FTransform()
 {
 	Transform = FMatrix::Identity();
 	Scale = FVector(1.0f, 1.0f, 1.0f);
-	Rotation = FVector(0.0f, 0.0f, 0.0f);
+	// Rotation = FVector(0.0f, 0.0f, 0.0f);
 	Location = FVector(0.0f, 0.0f, 0.0f);
 	Inverse = {};
 	Quaternion = FQuaternion();
-	PrevRotation = Rotation;
+	// PrevRotation = Rotation;
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
@@ -34,33 +34,33 @@ void FTransform::SetScale(const FVector& scale)
 	bIsInverseDirty = true;
 }
 
-void FTransform::SetRotationDegX(float degree)
+//void FTransform::SetRotationDegX(float degree)
+//{
+//	Rotation.X = DegToRad(degree);
+//
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
+//
+//void FTransform::SetRotationDegY(float degree)
+//{
+//	Rotation.Y = DegToRad(degree);
+//
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
+//
+//void FTransform::SetRotationDegZ(float degree)
+//{
+//	Rotation.Z = DegToRad(degree);
+//
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
+
+void FTransform::SetRotationDeg(const FVector& Degree)
 {
-	Rotation.X = DegToRad(degree);
-
-	bIsTransformDirty = true;
-	bIsInverseDirty = true;
-}
-
-void FTransform::SetRotationDegY(float degree)
-{
-	Rotation.Y = DegToRad(degree);
-
-	bIsTransformDirty = true;
-	bIsInverseDirty = true;
-}
-
-void FTransform::SetRotationDegZ(float degree)
-{
-	Rotation.Z = DegToRad(degree);
-
-	bIsTransformDirty = true;
-	bIsInverseDirty = true;
-}
-
-void FTransform::SetRotationDeg(const FVector& Degree, bool bIsLocal)
-{
-	PrevRotation = Rotation;
+	/*PrevRotation = Rotation;
 
 	Rotation.X = DegToRad(Degree.X);
 	Rotation.Y = DegToRad(Degree.Y);
@@ -70,12 +70,21 @@ void FTransform::SetRotationDeg(const FVector& Degree, bool bIsLocal)
 	UpdateQuaternion(DeltaRot, bIsLocal);
 
 	bIsTransformDirty = true;
-	bIsInverseDirty = true;
+	bIsInverseDirty = true;*/
+
+	// 입력받은 Degree를 라디안으로 변환
+	FVector RadAngles = DegToRad(Degree);
+
+	// 오일러 각으로부터 새로운 쿼터니언을 '생성'하여 바로 대입
+	this->Quaternion = FQuaternion::CreateFromEulerAngles(RadAngles);
+	this->Quaternion.Normalize();
+
+	bIsTransformDirty = true;
 }
 
 void FTransform::SetRotationDegByDrag(const FVector& Degree, bool bIsLocal)
 {
-	PrevRotation = Rotation;
+	/*PrevRotation = Rotation;
 
 	Rotation.X = DegToRad(Degree.X);
 	Rotation.Y = DegToRad(Degree.Y);
@@ -85,36 +94,45 @@ void FTransform::SetRotationDegByDrag(const FVector& Degree, bool bIsLocal)
 	UpdateQuaternion(DeltaRot, bIsLocal);
 
 	bIsTransformDirty = true;
-	bIsInverseDirty = true;
-}
+	bIsInverseDirty = true;*/
 
-void FTransform::AddRotationDegX(float degree)
-{
-	Rotation.X += DegToRad(degree);
+	// 입력받은 Degree를 라디안으로 변환
+	FVector RadAngles = DegToRad(Degree);
 
-	bIsTransformDirty = true;
-	bIsInverseDirty = true;
-}
-
-void FTransform::AddRotationDegY(float degree)
-{
-	Rotation.Y += DegToRad(degree);
+	// 오일러 각으로부터 새로운 쿼터니언을 '생성'하여 바로 대입
+	this->Quaternion = FQuaternion::CreateFromEulerAngles(RadAngles);
+	this->Quaternion.Normalize();
 
 	bIsTransformDirty = true;
-	bIsInverseDirty = true;
 }
 
-void FTransform::AddRotationDegZ(float degree)
-{
-	Rotation.Z += DegToRad(degree);
+//void FTransform::AddRotationDegX(float degree)
+//{
+//	Rotation.X += DegToRad(degree);
+//
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
+//
+//void FTransform::AddRotationDegY(float degree)
+//{
+//	Rotation.Y += DegToRad(degree);
+//
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
+//
+//void FTransform::AddRotationDegZ(float degree)
+//{
+//	Rotation.Z += DegToRad(degree);
+//
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
 
-	bIsTransformDirty = true;
-	bIsInverseDirty = true;
-}
-
-void FTransform::AddRotationDeg(const FVector& Degree, bool bIsLocal)
+void FTransform::AddRotationDeg(const FVector& DegreeDelta, bool bIsLocal)
 {
-	PrevRotation = Rotation;
+	/*PrevRotation = Rotation;
 
 	Rotation.X += DegToRad(Degree.X);
 	Rotation.Y += DegToRad(Degree.Y);
@@ -124,16 +142,45 @@ void FTransform::AddRotationDeg(const FVector& Degree, bool bIsLocal)
 	UpdateQuaternion(DeltaRot, bIsLocal);
 
 	bIsTransformDirty = true;
-	bIsInverseDirty = true;
+	bIsInverseDirty = true;*/
+
+	// 입력받은 Degree 변화량을 라디안으로 변환
+	FVector RadDelta = DegToRad(DegreeDelta);
+
+	// 오일러 '변화량'으로 델타 쿼터니언을 생성
+	FQuaternion DeltaQuaternion = FQuaternion::CreateFromEulerAngles(RadDelta);
+
+	// 기준 축에 따라 곱셈 순서를 결정하여 현재 회전에 누적
+	if (bIsLocal) {
+		// 로컬 기준
+		this->Quaternion = FQuaternion::Multiply(this->Quaternion, DeltaQuaternion);
+	}
+	else {
+		// 월드 기준
+		this->Quaternion = FQuaternion::Multiply(DeltaQuaternion, this->Quaternion);
+	}
+
+	this->Quaternion.Normalize();
+
+	bIsTransformDirty = true;
 }
 
-void FTransform::LoadRotaion(const FVector& Rotation)
+void FTransform::AddRotationAxis(const FVector& Axis, float AngleRad)
 {
-	this->Rotation = Rotation;
-	PrevRotation = Rotation;
-	bIsTransformDirty = true;
-	bIsInverseDirty = true;
+	FQuaternion delta = FQuaternion::CreateFromAxisAngle(Axis, AngleRad);
+	// 로컬 회전은 큐브의 현재 방향을 기준으로 회전해야 하므로,
+	// 월드 축 기준 곱셈을 사용합니다.
+	this->Quaternion = FQuaternion::Multiply(delta, this->Quaternion);
+	this->Quaternion.Normalize();
 }
+
+//void FTransform::LoadRotaion(const FVector& Rotation)
+//{
+//	this->Rotation = Rotation;
+//	PrevRotation = Rotation;
+//	bIsTransformDirty = true;
+//	bIsInverseDirty = true;
+//}
 
 void FTransform::LoadQuaternion(const FQuaternion& Quat)
 {
@@ -144,9 +191,9 @@ void FTransform::LoadQuaternion(const FQuaternion& Quat)
 
 void FTransform::ClearRotation()
 {
-	Rotation = FVector(0.0f, 0.0f, 0.0f);
+	// Rotation = FVector(0.0f, 0.0f, 0.0f);
 	Quaternion = FQuaternion();
-	PrevRotation = Rotation;
+	// PrevRotation = Rotation;
 	bIsTransformDirty = true;
 	bIsInverseDirty = true;
 }
@@ -198,14 +245,14 @@ void FTransform::Translate(const FVector& offset)
 	bIsInverseDirty = true;
 }
 
-FVector FTransform::GetRotationDegree() const
-{
-	return FVector(
-		RadToDeg(Rotation.X),
-		RadToDeg(Rotation.Y),
-		RadToDeg(Rotation.Z)
-	);
-}
+//FVector FTransform::GetRotationDegree() const
+//{
+//	/*return FVector(
+//		RadToDeg(Rotation.X),
+//		RadToDeg(Rotation.Y),
+//		RadToDeg(Rotation.Z)
+//	);*/
+//}
 
 bool FTransform::TryGetInverseMatrix(FMatrix& Out)
 {
@@ -226,7 +273,7 @@ bool FTransform::TryGetInverseMatrix(FMatrix& Out)
 		InvScaleMatrix[0][0] = 1.0f / Scale.X;
 		InvScaleMatrix[1][1] = 1.0f / Scale.Y;
 		InvScaleMatrix[2][2] = 1.0f / Scale.Z;
-		FMatrix InvRotationMatrix = FMatrix::MakeRotation(Rotation);
+		FMatrix InvRotationMatrix = FMatrix::MakeRotationFromQuaternion(Quaternion);
 		InvRotationMatrix = FMatrix::Transpose(InvRotationMatrix);
 		FMatrix InvTranslationMatrix = FMatrix::Identity();
 		InvTranslationMatrix[3][0] = -Location.X;
@@ -240,6 +287,68 @@ bool FTransform::TryGetInverseMatrix(FMatrix& Out)
 	}
 
 	return true;
+}
+
+/**
+ * @brief 오브젝트의 현재 로컬 X축(오른쪽)이 월드 공간에서 어느 방향을 가리키는지 반환합니다.
+ * @return 월드 공간 기준의 오른쪽 방향 벡터 (정규화됨)
+ */
+FVector FTransform::GetRightVector() const
+{
+	// 1. 로컬 오른쪽 벡터 정의
+	const FVector localRight = FVector(1.0f, 0.0f, 0.0f);
+
+	// 2. 현재 회전 쿼터니언으로 회전 행렬 생성
+	FMatrix rotationMatrix = FMatrix::MakeRotationFromQuaternion(this->Quaternion);
+
+	// 3. 회전 행렬을 로컬 벡터에 적용하여 월드 기준 전방 벡터 계산
+	FVector worldRight = FVector(
+		localRight.X * rotationMatrix[0][0] + localRight.Y * rotationMatrix[1][0] + localRight.Z * rotationMatrix[2][0],
+		localRight.X * rotationMatrix[0][1] + localRight.Y * rotationMatrix[1][1] + localRight.Z * rotationMatrix[2][1],
+		localRight.X * rotationMatrix[0][2] + localRight.Y * rotationMatrix[1][2] + localRight.Z * rotationMatrix[2][2]
+	);
+
+	return worldRight;
+}
+
+/**
+ * @brief 오브젝트의 현재 로컬 Y축(위쪽)이 월드 공간에서 어느 방향을 가리키는지 반환합니다.
+ * @return 월드 공간 기준의 위쪽 방향 벡터 (정규화됨)
+ */
+FVector FTransform::GetUpVector() const
+{
+	// 1. 로컬 위쪽 벡터 정의
+	const FVector localUp = FVector(0.0f, 1.0f, 0.0f);
+	// 2. 현재 회전 쿼터니언으로 회전 행렬 생성
+	FMatrix rotationMatrix = FMatrix::MakeRotationFromQuaternion(this->Quaternion);
+	// 3. 회전 행렬을 로컬 벡터에 적용하여 월드 기준 전방 벡터 계산
+	FVector worldUp = FVector(
+		localUp.X * rotationMatrix[0][0] + localUp.Y * rotationMatrix[1][0] + localUp.Z * rotationMatrix[2][0],
+		localUp.X * rotationMatrix[0][1] + localUp.Y * rotationMatrix[1][1] + localUp.Z * rotationMatrix[2][1],
+		localUp.X * rotationMatrix[0][2] + localUp.Y * rotationMatrix[1][2] + localUp.Z * rotationMatrix[2][2]
+	);
+
+	return worldUp;
+}
+
+/**
+ * @brief 오브젝트의 현재 로컬 Z축(앞쪽)이 월드 공간에서 어느 방향을 가리키는지 반환합니다.
+ * @return 월드 공간 기준의 앞쪽 방향 벡터 (정규화됨)
+ */
+FVector FTransform::GetForwardVector() const
+{
+	// 1. 로컬 전방 벡터 정의
+	const FVector localForward = FVector(0.0f, 0.0f, 1.0f);
+	// 2. 현재 회전 쿼터니언으로 회전 행렬 생성
+	FMatrix rotationMatrix = FMatrix::MakeRotationFromQuaternion(this->Quaternion);
+	// 3. 회전 행렬을 로컬 벡터에 적용하여 월드 기준 전방 벡터 계산
+	FVector worldForward = FVector(
+		localForward.X * rotationMatrix[0][0] + localForward.Y * rotationMatrix[1][0] + localForward.Z * rotationMatrix[2][0],
+		localForward.X * rotationMatrix[0][1] + localForward.Y * rotationMatrix[1][1] + localForward.Z * rotationMatrix[2][1],
+		localForward.X * rotationMatrix[0][2] + localForward.Y * rotationMatrix[1][2] + localForward.Z * rotationMatrix[2][2]
+	);
+
+	return worldForward;
 }
 
 FMatrix& FTransform::GetTransformMatrix()

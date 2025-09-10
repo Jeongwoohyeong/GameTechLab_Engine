@@ -213,6 +213,97 @@ void UUIManager::ConsoleWindow(bool bShowConsoleWindow)
 	ImGui::ShowExampleAppConsoleWindow(&bShowConsoleWindow);
 }
 
+//// 현재 인스펙터에 표시되고 있는 오브젝트의 Transform
+//static FTransform* currentTarget = nullptr;
+//// UI에 표시하고 수정할 오일러 각도 (단위: Degree)
+//static FVector eulerAnglesForUI;
+//// 로컬/월드 모드 선택 플래그
+//static bool bIsLocalMode = true; // 기본값은 로컬 모드
+//
+//void UUIManager::DrawTransformInspector(FTransform& targetTransform)
+//{
+//	// 1. [선택 변경 감지] 다른 오브젝트가 선택되었다면, UI 값을 새로 동기화합니다.
+//	if (&targetTransform != currentTarget) {
+//		currentTarget = &targetTransform;
+//
+//		FVector currentEulerRad = FQuaternion::ToEulerAngles(targetTransform.GetQuaternion());
+//		eulerAnglesForUI.X = RadToDeg(currentEulerRad.X);
+//		eulerAnglesForUI.Z = RadToDeg(currentEulerRad.Y);
+//		eulerAnglesForUI.Y = RadToDeg(currentEulerRad.Z);
+//	}
+//
+//	ImGui::Text("Rotation");
+//
+//	// [모드 선택 UI] 로컬/월드 모드를 선택하는 체크박스
+//	ImGui::Checkbox("Local Mode", &bIsLocalMode);
+//	ImGui::SameLine(); // 같은 줄에 위젯 배치
+//	ImGui::Text(bIsLocalMode ? "(Local)" : "(World)");
+//
+//	// 2. [변화량 계산 준비] DragFloat 위젯을 그리기 직전의 값을 저장해 둡니다.
+//	FVector eulerBeforeDrag = eulerAnglesForUI;
+//
+//	// 3. [ImGui 위젯] 세 개의 DragFloat 위젯을 개별적으로 그립니다.
+//	bool changedX = ImGui::DragFloat("X (Pitch)", &eulerAnglesForUI.X, 0.1f);
+//	bool changedY = ImGui::DragFloat("Y (Roll)", &eulerAnglesForUI.Y, 0.1f);
+//	bool changedZ = ImGui::DragFloat("Z (Yaw)", &eulerAnglesForUI.Z, 0.1f);
+//
+//	// 4. [변화량으로 업데이트] 세 위젯 중 하나라도 값이 변경되었다면,
+//	if (changedX || changedY || changedZ)
+//	{
+//		// 5. '수정 후' 값과 '수정 전' 값의 차이를 계산하여 변화량(delta)을 구합니다.
+//		FVector deltaEulerDeg = eulerAnglesForUI - eulerBeforeDrag;
+//
+//		// 6. bIsLocalMode 플래그에 따라 올바른 함수를 호출합니다.
+//		targetTransform.AddRotationDeg(SwapYZ(deltaEulerDeg), bIsLocalMode);
+//
+//		// 7. 중요: AddRotation 후, 실제 쿼터니언 값을 다시 UI로 피드백합니다.
+//		//    AddRotation은 누적 방식이므로, UI 값이 계속 증가하는 것을 방지하고
+//		//    실제 오브젝트의 최종 각도를 정확히 반영하기 위함입니다.
+//		FVector currentEulerRad = FQuaternion::ToEulerAngles(targetTransform.GetQuaternion());
+//		eulerAnglesForUI.X = RadToDeg(currentEulerRad.X);
+//		eulerAnglesForUI.Y = RadToDeg(currentEulerRad.Z);
+//		eulerAnglesForUI.Z = RadToDeg(currentEulerRad.Y);
+//	}
+//}
+
+// 현재 인스펙터에 표시되고 있는 오브젝트의 Transform
+static FTransform* currentTarget = nullptr;
+// UI에 표시하고 수정할 오일러 각도 (단위: Degree). 이 변수가 '환상'의 중심입니다.
+static FVector eulerAnglesForUI;
+
+void UUIManager::DrawTransformInspector(FTransform& targetTransform)
+{
+	// 1. [선택 변경 감지] 이전 프레임과 다른 오브젝트가 선택되었다면,
+	//    UI 값을 새로 동기화합니다. 이 작업은 선택이 바뀔 때 '단 한 번'만 실행됩니다.
+	if (&targetTransform != currentTarget) {
+		currentTarget = &targetTransform;
+
+		// 선택된 오브젝트의 쿼터니언을 오일러 각으로 변환하여 UI에 표시할 초기값을 설정합니다.
+		FVector currentEulerRad = FQuaternion::ToEulerAngles(targetTransform.GetQuaternion());
+		eulerAnglesForUI.X = RadToDeg(currentEulerRad.X);
+		eulerAnglesForUI.Y = RadToDeg(currentEulerRad.Y); // YZ 순서가 맞는지 확인 필요
+		eulerAnglesForUI.Z = RadToDeg(currentEulerRad.Z);
+	}
+
+	ImGui::Text("Rotation");
+
+	// 월드/로컬 모드 토글은 기즈모(3D 뷰포트 조작)를 위한 것으로 남겨두고,
+	// 인스펙터는 항상 동일한 방식으로 동작하게 합니다.
+	// ImGui::Checkbox("Local Mode", &bIsLocalMode); // 이 부분은 제거하거나 기즈모 로직으로 옮깁니다.
+
+	// 2. [ImGui 위젯] 세 개의 DragFloat 위젯을 개별적으로 그립니다.
+	//    이 위젯들은 eulerAnglesForUI 변수를 직접 수정합니다.
+	bool changedX = ImGui::DragFloat("X (Pitch)", &eulerAnglesForUI.X, 0.1f);
+	bool changedY = ImGui::DragFloat("Y (Roll)", &eulerAnglesForUI.Y, 0.1f);
+	bool changedZ = ImGui::DragFloat("Z (Yaw)", &eulerAnglesForUI.Z, 0.1f);
+
+	// 3. [즉시 업데이트] 세 위젯 중 하나라도 값이 변경되었다면,
+	//    현재 UI에 있는 오일러 각 값 전체를 사용하여 Transform의 쿼터니언을 즉시 덮어씁니다.
+	if (changedX || changedY || changedZ) {
+		targetTransform.SetRotationDeg(eulerAnglesForUI);
+	}
+}
+
 void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 {
 	ImGui::Begin("Jungle Property Window");
@@ -231,15 +322,16 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 			Transform->SetScale(s);
 		}
 
+		DrawTransformInspector(*Transform);
 
-		// 2) Rotation (deg)
-		FVector Rotation = SwapYZ(Transform->GetRotationDegree());
-		if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
-			Transform->SetRotationDeg(SwapYZ(Rotation), bIsLocalMode);
-		}
-		if (ImGui::Button("R Reset")) {
-			Transform->ClearRotation();
-		}
+		//// 2) Rotation (deg)
+		//FVector Rotation = SwapYZ(Transform->GetRotationDegree());
+		//if (ImGui::DragFloat3("Rotation", &Rotation.X, 0.1f, -360.0f, 360.0f)) {
+		//	Transform->SetRotationDeg(SwapYZ(Rotation), bIsLocalMode);
+		//}
+		//if (ImGui::Button("R Reset")) {
+		//	Transform->ClearRotation();
+		//}
 
 		// 3) Translation
 		FVector Location = SwapYZ(Transform->GetLocation());

@@ -8,7 +8,7 @@ void WorldGizmo::Initialize(URenderer* renderer)
 	ParentTransform = new FTransform();
 	ParentTransform->SetLocation(FVector(0.0f, 0.0f, 0.0f));
 	ParentTransform->SetScale(FVector(1.0f, 1.0f, 1.0f));
-    ParentTransform->LoadRotaion(FVector(0.0f, 0.0f, 0.0f));
+    // ParentTransform->LoadRotaion(FVector(0.0f, 0.0f, 0.0f));
 	ParentTransform->LoadQuaternion(FQuaternion());
 
     // XZ 평면 그리드 + Y축 기즈모 생성
