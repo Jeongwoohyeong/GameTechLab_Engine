@@ -11,7 +11,6 @@
 #include "CScene.h"
 #include "CInputManager.h"
 
-
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // 메시지 처리 함수
@@ -45,10 +44,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 bool GlobalInit(HWND* InHWnd, URenderer* R, CCameraMovementController* C, uint32 ClientW, uint32 ClientH)
 {
 	CInputManager::GetInstance().SetHWnd(InHWnd);
-	C = new CCameraMovementController();   // 객체 생성 및 포인터에 할당
 	C->Initialize(InHWnd);
 	CScene::GetInstance().New();
-	if(R->Initialize(*InHWnd)) return false;
+	if(!R->Initialize(*InHWnd)) return false;
 
 	SetLastError(0);
 	LONG_PTR Prev = SetWindowLongPtr(*InHWnd, GWLP_USERDATA, (LONG_PTR)R);
@@ -78,7 +76,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		nullptr, nullptr, hInstance, nullptr);
 
 	URenderer renderer;
-	CCameraMovementController* input = nullptr;
+	CCameraMovementController* input = new CCameraMovementController();
 	bool bInitSuccess = GlobalInit(&hWnd, &renderer, input, InitialWidth, InitialHeight);
 
 	if (bInitSuccess)
