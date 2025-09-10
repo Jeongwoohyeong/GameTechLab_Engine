@@ -14,7 +14,7 @@
 #include "RotationRing.h"
 #include "GizmoCube.h"
 #include "Plane.h"
-
+#include "ReverseCone.h"
 #include "WorldGizmo.h"
 
 #include "ShapeData.h"
@@ -27,6 +27,7 @@ FMesh* URenderer::CylinderMesh = nullptr;
 FMesh* URenderer::RingMesh = nullptr;
 FMesh* URenderer::GizmoCubeMesh = nullptr;
 FMesh* URenderer::PlaneMesh = nullptr;
+FMesh* URenderer::ReverseConeMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -163,6 +164,7 @@ bool URenderer::CreateAllMesh()
 	CreateMesh(RingMesh, GAxisRingVertices, sizeof(GAxisRingVertices), GAxisRingIndices, sizeof(GAxisRingIndices));
 	CreateMesh(GizmoCubeMesh, GGizmoCubeVertices, sizeof(GGizmoCubeVertices), GGizmoCubeIndices, sizeof(GGizmoCubeVertices));
 	CreateMesh(PlaneMesh, GPlaneVertices, sizeof(GPlaneVertices), GPlaneIndices, sizeof(GPlaneIndices));
+	CreateMesh(ReverseConeMesh, GInvertedConeVertices, sizeof(GInvertedConeVertices), GInvertedConeIndices, sizeof(GInvertedConeIndices));
 
 	return true;
 }
@@ -353,8 +355,8 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			LocalGizmoProperty.SelectedGizmo = GizmoCubeMesh;
 			break;
 		case 2:
-			LocalGizmoProperty.HeadScale = { 0.1f, 0.8f, 0.1f };
-			LocalGizmoProperty.SelectedGizmo = ConeMesh;
+			LocalGizmoProperty.HeadScale = { 0.1f, 0.5f, 0.1f };
+			LocalGizmoProperty.SelectedGizmo = ReverseConeMesh;
 			break;
 		default:
 			break;

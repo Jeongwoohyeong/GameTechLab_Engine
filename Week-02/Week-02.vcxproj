@@ -175,6 +175,7 @@
     <ClInclude Include="CCameraMovementController.h" />
     <ClInclude Include="IntersectionTest.h" />
     <ClInclude Include="Plane.h" />
+    <ClInclude Include="ReverseCone.h" />
     <ClInclude Include="RotationRing.h" />
     <ClInclude Include="RTTIMacros.h" />
     <ClInclude Include="SimpleJSON\json.hpp" />
