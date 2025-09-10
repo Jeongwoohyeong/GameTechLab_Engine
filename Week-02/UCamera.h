@@ -28,6 +28,8 @@ public:
 	// MVP 행렬 계산
 	FMatrix MakeMVP(const FMatrix& World);
 
+	FMatrix MakeGizmoMVP(const FMatrix& world, const FVector& gizmoLocation);
+
 	// 마우스 포인터 위치에 해당하는 Projection Plane 상의 월드 좌표 반환
 	// @param Depth: 카메라로부터의 거리 (Projection Plane이 View Space에서 z = Depth 평면에 있다고 가정)
 	// @param bWorld: 월드 좌표계로 반환할지 여부 (true: 월드 좌표, false: 카메라 공간 좌표)

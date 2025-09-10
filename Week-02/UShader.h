@@ -35,10 +35,17 @@ public:
 	void UpdateConstant(const FMatrix& mvpMatrix, const FVector& color);
 	void Release();
 
+	// 기즈모 셰이더
+	bool InitializeGizmoShader(ID3D11Device*, ID3D11DeviceContext*);
+
 private:
 	bool CreateVertexShader();
 	bool CreatePixelShader();
 	bool CreateConstBuffer();	
+
+	// 기즈모 셰이더
+	bool CreateGIzmoVertexShader();
+	bool CreateGIzmoIndexShader();
 
 private:
 	ID3D11Device* Device = nullptr;

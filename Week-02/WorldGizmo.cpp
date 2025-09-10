@@ -46,6 +46,7 @@ void WorldGizmo::Render(URenderer* renderer)
         gridIndicesBuffer,
         static_cast<unsigned int>(xzGridIndices.size()),
         sizeof(FVertexSimple));
+    renderer->SetTopology(false); //삼각형으로 렌더링
 }
 
 void WorldGizmo::Release()
