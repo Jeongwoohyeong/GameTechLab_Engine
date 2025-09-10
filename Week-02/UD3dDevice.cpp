@@ -163,8 +163,7 @@ bool UD3dDevice::CreateGizmoDepthStencilState()
 	D3D11_DEPTH_STENCIL_DESC dss{};
 	dss.DepthEnable = FALSE;
 	dss.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	// dss.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	dss.DepthFunc = D3D11_COMPARISON_ALWAYS;
+	dss.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	dss.StencilEnable = FALSE;	
 
 	HRESULT hr = Device->CreateDepthStencilState(&dss, &GizmoDepthState);

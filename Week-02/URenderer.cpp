@@ -290,7 +290,7 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	FMatrix World = FMatrix::Identity();
 	World = World * Primitive->GetTransform()->GetTransformMatrix();
-	GizmoShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+	ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
 	
 	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
 
