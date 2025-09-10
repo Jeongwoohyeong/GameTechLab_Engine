@@ -75,6 +75,7 @@ public:
 	static FMesh* SphereMesh;
 	static FMesh* TriangleMesh;
 	static FMesh* ConeMesh;
+	static FMesh* ReverseConeMesh;
 	static FMesh* CylinderMesh;
 	static FMesh* GizmoCubeMesh;
 	static FMesh* RingMesh;
