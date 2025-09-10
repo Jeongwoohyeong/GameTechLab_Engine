@@ -165,8 +165,8 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     );
     FVector newDelta = currentMousePos - previousMousePos; // view space delta
     previousMousePos = currentMousePos;
-    TranslateLocalOrWorld(newDelta);
-    // Scale(newDelta);
+    // UE_LOG("%d // %f // %f %f %f, draged", SelectedAxis, distance, newDelta.X, newDelta.Y, newDelta.Z);
+    FVector resultInWorld = MultiplyVecMat(newDelta, FMatrix::MakeRotation(CameraRotation));
 
     // 테스트 코드
     switch (GizmoSwitch)
@@ -216,14 +216,29 @@ void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다
     selectedVector.Normalize();
     float offset = Dot(newDelta, selectedVector);
 
-    FVector resultVector = offset * selectedVector;
-    ParentTransform->AddScale(resultVector);
-    FVector adjustingScale = ParentTransform->GetScale();
-    adjustingScale.X = std::abs(adjustingScale.X);
-    adjustingScale.Y = std::abs(adjustingScale.Y);
-    adjustingScale.Z = std::abs(adjustingScale.Z);
-    ParentTransform->SetScale(adjustingScale);
+    FVector addingScale = offset * selectedVector;
+    FVector parentScale = ParentTransform->GetScale();
+ 
+    FVector resultScale;
+    
+    resultScale.X = CheckAndMarkScaleMinus(bScaleXMinus, addingScale.X, parentScale.X);
+    resultScale.Y = CheckAndMarkScaleMinus(bScaleYMinus, addingScale.Y, parentScale.Y);
+    resultScale.Z = CheckAndMarkScaleMinus(bScaleZMinus, addingScale.Z, parentScale.Z);
 
+    ParentTransform->SetScale(resultScale);
+}
+
+float LocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale)
+{
+    float result;
+    result = parentScale + isScaleMinus*addingScale;
+    if (result < 0)
+    {
+        result *= -1;
+        isScaleMinus *= -1;
+    }
+
+    return result;
 }
 
 void LocalGizmo::RotateLocalOrWorld(FVector newDelta)
