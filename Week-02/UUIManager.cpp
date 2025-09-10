@@ -214,40 +214,120 @@ void UUIManager::ConsoleWindow(bool bShowConsoleWindow)
 
 void UUIManager::DrawRotationInspector(FTransform& TargetTransform)
 {
-	// 현재 인스펙터에 표시되고 있는 오브젝트의 Transform
 	static FTransform* CurrentTarget = nullptr;
-	// UI에 표시하고 수정할 오일러 각도
+
+	// UI 표시에 쓰는 오일러 (Degree)
 	static FVector EulerAnglesForUI;
 
-	// 1. [선택 변경 감지] 다른 오브젝트가 선택되었다면, UI 값을 새로 동기화합니다.
-	if (&TargetTransform != CurrentTarget) {
+	// 외부 변경 감지용 캐시 쿼터니언
+	static FQuaternion CachedQuat;
+
+	// 편집 세션 상태
+	static bool        bUserEditing = false;
+	static bool        bPrevActive = false;
+	static FQuaternion StartQuat;        // 드래그(편집) 시작 시 원본 쿼터니언
+	static FVector     StartEulerDeg;    // 드래그 시작 시 UI 오일러(deg)
+
+	// 선택 변경 시 초기화
+	if (&TargetTransform != CurrentTarget)
+	{
 		CurrentTarget = &TargetTransform;
-
-		// 엔진의 쿼터니언을 오일러 각(라디안)으로 변환
-		FVector EulerRad = FQuaternion::ToEulerAngles(TargetTransform.GetQuaternion());
-		// UI에 표시하기 위해 각도(Degree)로 변환
-		EulerAnglesForUI = RadToDeg(EulerRad);
+		CachedQuat = TargetTransform.GetQuaternion();
+		FVector eulerRad = FQuaternion::ToEulerAngles(CachedQuat);
+		EulerAnglesForUI = RadToDeg(eulerRad);
+		bUserEditing = false;
+		bPrevActive = false;
+		StartQuat = CachedQuat;
+		StartEulerDeg = EulerAnglesForUI;
 	}
 
-	// [변경점] 세 개의 DragFloat 위젯을 하나의 DragFloat3으로 변경합니다.
-	// 이 위젯은 EulerAnglesForUI 변수를 직접 수정하며,
-	// X, Y, Z 중 하나라도 값이 바뀌면 true를 반환합니다.
+	// q vs -q 동일성 처리 포함 근사 비교
+	auto QuatNearlyEqual = [](const FQuaternion& A, const FQuaternion& B, float Eps = 1e-5f)
+		{
+			float dot = A.X * B.X + A.Y * B.Y + A.Z * B.Z + A.W * B.W;
+			FQuaternion BAdj = (dot < 0.0f) ? FQuaternion{ -B.X, -B.Y, -B.Z, -B.W } : B;
+			return (fabs(A.X - BAdj.X) <= Eps &&
+				fabs(A.Y - BAdj.Y) <= Eps &&
+				fabs(A.Z - BAdj.Z) <= Eps &&
+				fabs(A.W - BAdj.W) <= Eps);
+		};
+
+	// 외부에서 회전 변경된 경우 (편집 중이 아닐 때만) UI 재동기화
+	FQuaternion CurrentQuat = TargetTransform.GetQuaternion();
+	if (!bUserEditing && !QuatNearlyEqual(CurrentQuat, CachedQuat))
+	{
+		CachedQuat = CurrentQuat;
+		FVector eulerRad = FQuaternion::ToEulerAngles(CachedQuat);
+		EulerAnglesForUI = RadToDeg(eulerRad);
+		StartQuat = CachedQuat;
+		StartEulerDeg = EulerAnglesForUI;
+	}
+
+	ImGui::PushID("RotationInspector");
+
 	bool bValueChanged = ImGui::DragFloat3("Rotation", &EulerAnglesForUI.X, 0.1f);
+	bool bActiveNow = ImGui::IsItemActive();
 
-	// 리셋 버튼
-	bool bIsRest = ImGui::Button("R Reset");
-	if (bIsRest)
+	// 편집 시작 감지 (이번 프레임 active && 이전 프레임 inactive)
+	if (bActiveNow && !bPrevActive)
 	{
-		EulerAnglesForUI = FVector(0.0f, 0.0f, 0.0f);
-		bValueChanged = true;
+		StartQuat = TargetTransform.GetQuaternion();
+		StartEulerDeg = EulerAnglesForUI; // 현재 UI 값을 기준점으로
 	}
 
-	// 2. [값 변경 감지] 사용자가 UI에서 값을 변경했다면, Transform에 반영합니다. 
-	if (bValueChanged) 
+	// Reset 버튼
+	if (ImGui::Button("R Reset"))
 	{
-		// SetRotationDeg 함수에는 반드시 오일러 각을 전달
-		TargetTransform.SetRotationDeg(EulerAnglesForUI);
+		TargetTransform.ClearRotation();
+		CachedQuat = TargetTransform.GetQuaternion();
+		FVector eulerRad = FQuaternion::ToEulerAngles(CachedQuat);
+		EulerAnglesForUI = RadToDeg(eulerRad);
+		StartQuat = CachedQuat;
+		StartEulerDeg = EulerAnglesForUI;
+		// 편집 중 아님으로 플래그 클리어
+		bUserEditing = false;
+		bPrevActive = false;
 	}
+
+	// 편집 중(Active)일 때는 델타 방식으로 매프레임 적용
+	if (bActiveNow)
+	{
+		// ΔEuler = (현재 UI - 시작 UI)
+		FVector DeltaDeg = EulerAnglesForUI - StartEulerDeg;
+
+		// 각 축별 Wrap (-180~180)
+		auto Wrap = [](float a)->float {
+			while (a > 180.f) a -= 360.f;
+			while (a < -180.f) a += 360.f;
+			return a;
+			};
+		DeltaDeg.X = Wrap(DeltaDeg.X);
+		DeltaDeg.Y = Wrap(DeltaDeg.Y);
+		DeltaDeg.Z = Wrap(DeltaDeg.Z);
+
+		// 델타 쿼터니언 생성 (CreateFromEulerAngles는 (Rad) 입력)
+		FQuaternion DeltaQuat = FQuaternion::CreateFromEulerAngles(DegToRad(DeltaDeg));
+		// 누적: 새 회전 = Delta * Start
+		FQuaternion NewQuat = FQuaternion::Multiply(DeltaQuat, StartQuat);
+		NewQuat.Normalize();
+
+		TargetTransform.LoadQuaternion(NewQuat); // LoadQuaternion: Dirty 플래그 포함
+		CachedQuat = NewQuat;
+	}
+	else if (bPrevActive && !bActiveNow)
+	{
+		// 편집 종료: 최종 쿼터니언 → 안정화 Euler 재계산
+		CachedQuat = TargetTransform.GetQuaternion();
+		FVector eulerRad = FQuaternion::ToEulerAngles(CachedQuat);
+		EulerAnglesForUI = RadToDeg(eulerRad);
+		StartQuat = CachedQuat;
+		StartEulerDeg = EulerAnglesForUI;
+	}
+
+	bUserEditing = bActiveNow;
+	bPrevActive = bActiveNow;
+
+	ImGui::PopID();
 }
 
 void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
