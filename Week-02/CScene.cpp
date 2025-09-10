@@ -391,7 +391,7 @@ int32 CScene::PickGizmoAtMouse(int ClientX, int ClientY, int ClientW, int Client
 	{
 		return -1;
 	}
-	LocalGizmo* Giz = SelectedPrimitive->GetGizmo();
+	FLocalGizmo* Giz = SelectedPrimitive->GetGizmo();
 	if (!Giz || !Giz->ParentTransform)
 	{
 		return -1;

@@ -42,12 +42,12 @@ public:
 	FAABB GetAABB();
 
 
-	LocalGizmo* GetGizmo() { return &LocationGizmo; }
+	FLocalGizmo* GetGizmo() { return &LocationGizmo; }
 	void SwitchGizmo(int gizmoSwitch);
 
 protected:
 	FTransform* GizmoTransform;	
-	LocalGizmo LocationGizmo;
+	FLocalGizmo LocationGizmo;
 	FAABB AABB;
 	bool bIsAABBCreated = false;
 	int GizmoSwitch = 0;

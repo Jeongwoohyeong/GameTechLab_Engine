@@ -301,7 +301,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 		// 4) Gizmo Mode
 		ImGui::Separator();
 		{
-			LocalGizmo* Gizmo = Primitive->GetGizmo();
+			FLocalGizmo* Gizmo = Primitive->GetGizmo();
 			bool bIsLocalMode = Gizmo->bIsLocalMode;
 			if (ImGui::Checkbox("Local Gizmo", &bIsLocalMode))
 			{

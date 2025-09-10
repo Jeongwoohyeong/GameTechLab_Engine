@@ -88,13 +88,37 @@ void UShader::Release()
 	}
 }
 
+bool UShader::InitializeGizmoShader(ID3D11Device* device, ID3D11DeviceContext* deviceContext)
+{
+	Device = device;
+	DeviceContext = deviceContext;
+
+	if (!this->CreateGIzmoVertexShader())
+	{
+		return false;
+	}
+
+	if (!this->CreateGIzmoIndexShader())
+	{
+		return false;
+	}
+
+	if (!this->CreateConstBuffer())
+	{
+		return false;
+	}
+
+
+	return true;
+}
+
 bool UShader::CreateVertexShader()
 {
 	HRESULT result;
 	ID3DBlob* vertexShaderCSO = nullptr;
 	ID3DBlob* errorMessage = nullptr;	
 	
-	result = D3DCompileFromFile(L"ShaderW0.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &vertexShaderCSO, nullptr);
+	result = D3DCompileFromFile(L"ShaderW0.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &vertexShaderCSO, &errorMessage);
 	if (FAILED(result))
 	{
 		if (errorMessage)
@@ -131,7 +155,7 @@ bool UShader::CreatePixelShader()
 	ID3DBlob* pixelShaderCSO = nullptr;
 	ID3DBlob* errorMessage = nullptr;
 
-	result = D3DCompileFromFile(L"ShaderW0.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &pixelShaderCSO, nullptr);
+	result = D3DCompileFromFile(L"ShaderW0.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &pixelShaderCSO, &errorMessage);
 	if (FAILED(result))
 	{
 		if (errorMessage)
@@ -166,5 +190,67 @@ bool UShader::CreateConstBuffer()
 		return false;
 	}
 	
+	return true;
+}
+
+bool UShader::CreateGIzmoVertexShader()
+{
+	HRESULT result;
+	ID3DBlob* vertexShaderCSO = nullptr;
+	ID3DBlob* errorMessage = nullptr;
+
+	result = D3DCompileFromFile(L"GizmoShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0, &vertexShaderCSO, &errorMessage);
+	if (FAILED(result))
+	{
+		if (errorMessage)
+		{
+			MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "VS compile error", MB_OK);
+		}
+		return false;
+	}
+
+	Device->CreateVertexShader(
+		vertexShaderCSO->GetBufferPointer(),
+		vertexShaderCSO->GetBufferSize(),
+		nullptr,
+		&VertexShader
+	);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	Device->CreateInputLayout(layout, ARRAYSIZE(layout), vertexShaderCSO->GetBufferPointer(),
+		vertexShaderCSO->GetBufferSize(), &InputLayout);
+
+	vertexShaderCSO->Release();
+
+	
+	return true;
+}
+
+bool UShader::CreateGIzmoIndexShader()
+{
+	HRESULT result;
+	ID3DBlob* pixelShaderCSO = nullptr;
+	ID3DBlob* errorMessage = nullptr;
+
+	result = D3DCompileFromFile(L"GizmoShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0, &pixelShaderCSO, &errorMessage);
+	if (FAILED(result))
+	{
+		if (errorMessage)
+		{
+			MessageBoxA(nullptr, (char*)errorMessage->GetBufferPointer(), "PS compile error", MB_OK);
+		}
+		return false;
+	}
+
+	Device->CreatePixelShader(pixelShaderCSO->GetBufferPointer(),
+		pixelShaderCSO->GetBufferSize(), nullptr, &PixelShader);
+
+	pixelShaderCSO->Release();
+
 	return true;
 }

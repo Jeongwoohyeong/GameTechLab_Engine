@@ -17,9 +17,9 @@ constexpr FVector TRANSLATE_X{ 1.0f, 0.0f, 0.0f }; // x축
 constexpr FVector TRANSLATE_Y{ 0.0f, 1.0f, 0.0f }; // y축
 constexpr FVector TRANSLATE_Z{ 0.0f, 0.0f, 1.0f }; // z축
 
-constexpr FVector RINGROTATE_X{ 0.0f, 180.0f, 0.0f }; // x축, 초록색!(사실 Z축)
-constexpr FVector RINGROTATE_Y{ 90.0f, 0.0f, 0.0f }; // y축, 파란색!
-constexpr FVector RINGROTATE_Z{ 0.0f, 270.0f, 0.0f }; // z축, 빨간색
+constexpr FVector RINGROTATE_X{ 0.0f, 180.0f, 0.0f }; // forward 축
+constexpr FVector RINGROTATE_Y{ 90.0f, 0.0f, 0.0f }; // up 축
+constexpr FVector RINGROTATE_Z{ 0.0f, 270.0f, 0.0f }; // right 축
 
 struct axis
 {
@@ -28,7 +28,7 @@ struct axis
     FVector ringRotate;
 };
 
-class LocalGizmo
+class FLocalGizmo
 {
 public:
 #pragma region 변수
@@ -61,7 +61,7 @@ public:
     int OnReleaseIdx;
 #pragma endregion
 
-    ~LocalGizmo() { UnBind(); }; // 핸들 소멸자에서 자동 해제됨
+    ~FLocalGizmo() { UnBind(); }; // 핸들 소멸자에서 자동 해제됨
 
     void Initialize(FTransform* transform);
     void CreateAABB();

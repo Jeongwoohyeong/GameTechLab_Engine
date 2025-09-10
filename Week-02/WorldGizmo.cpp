@@ -21,9 +21,9 @@ void WorldGizmo::Initialize(URenderer* renderer)
         xzGridIndices,
         Minor,
         Major,
-        YColor,
-        XColor,
-        ZColor);
+        ForwardColor,
+        RightColor,
+        UpColor);
 
     gridVerticesBuffer = nullptr;
     gridIndicesBuffer = nullptr;
@@ -46,6 +46,7 @@ void WorldGizmo::Render(URenderer* renderer)
         gridIndicesBuffer,
         static_cast<unsigned int>(xzGridIndices.size()),
         sizeof(FVertexSimple));
+    renderer->SetTopology(false); //삼각형으로 렌더링
 }
 
 void WorldGizmo::Release()
@@ -67,8 +68,8 @@ void WorldGizmo::BuildGridXZwithYaxis(
     int   HalfCount,
     int   MajorEvery,
     float YLevel,
-    std::vector<FVertexSimple>& outVertices,
-    std::vector<unsigned int>& outIndices,
+    TArray<FVertexSimple>& outVertices,
+    TArray<unsigned int>& outIndices,
     const FVertexSimple& MinorColor,
     const FVertexSimple& MajorColor,
     const FVertexSimple& AxisXColor,
