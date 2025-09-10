@@ -51,7 +51,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// 윈도우 클래스 등록
 	RegisterClassW(&wndclass);
 
-	// 1024 x 1024 크기 윈도우 생성
+	// 초기 윈도우 크기 설정 (카메라 초기 종횡비 초기화에 재사용)
 	uint32 InitialWidth = 1680;
 	uint32 InitialHeight = 1024;
 	HWND hWnd = CreateWindowExW(0, WindowClass, Title, WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
@@ -71,10 +71,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// 씬 초기화
 	CScene::GetInstance().New();
 
-	if (renderer.Initialize(hWnd))
+	// TODO#1: Renderer 초기화 코드 내부에서 UCamera 초기화 코드 빼기 -> and 연산으로 연달아 진행
+	// UCamera 초기화 코드에 파라미터 전달할 수 있게 수정 (종횡비 전달해야 함)
+	if (renderer.Initialize(hWnd)) 
 	{
 		// --- Renderer 초기화 이후 가능한 설정 수행 ---
-		UCamera::GetInstance().AspectRatio = (float)InitialWidth / (float)InitialHeight;
+		UCamera::GetInstance().AspectRatio = (float)InitialWidth / (float)InitialHeight; // TODO#2: TODO#1 처리 후 제거
 
 		bool bIsExit = false;
 		while (bIsExit == false)
@@ -139,7 +141,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 					}
 				}
 			}
-
 
 			renderer.Render();
 		}

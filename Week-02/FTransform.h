@@ -10,40 +10,46 @@ public:
 
 	void SetScale(float x, float y, float z);
 	void SetScale(const FVector&);
+	
+	void SetRotationDeg(const FVector&, bool bIsLocal);
+	void SetRotationDegByDrag(const FVector&, bool bIsLocal);
+	void AddRotationDeg(const FVector& Degree, bool bIsLocal);
+	
+	void LoadRotaion(const FVector& Rotation);
+	void LoadQuaternion(const FQuaternion& Quat);
 
-	void SetRotationDegX(float degree);
-	void SetRotationDegY(float degree);
-	void SetRotationDegZ(float degree);
-	void SetRotationDeg(const FVector&);
-
-	void SetRotationDegByDrag(const FVector&);
-
-	void AddRotationDegX(float degree);
-	void AddRotationDegY(float degree);
-	void AddRotationDegZ(float degree);
-	void AddRotationDeg(const FVector& degree);
+	void ClearRotation();
 
 	void SetLocation(float x, float y, float z);
 	void SetLocation(const FVector&);
 
 	void AddLocation(const FVector&);
+	void AddScale(const FVector&);
 
 	void Translate(float dx, float dy, float dz);
 	void Translate(const FVector&);
 
 	const FVector& GetScale() const { return Scale; }
 	const FVector& GetRotationRadians() const { return Rotation; }
+	const FQuaternion& GetQuaternion() const { return Quaternion; }
 	FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
 	bool TryGetInverseMatrix(FMatrix& Out);
 	
 	FMatrix& GetTransformMatrix();
-	FMatrix& GetTransformMatrixFor();
 
 	FMatrix& Get2StepRotationMatrix(); 
 
 private:
-	void UpdateQuaternion(const FVector& DeltaRotation);
+	void SetRotationDegX(float degree);
+	void SetRotationDegY(float degree);
+	void SetRotationDegZ(float degree);
+
+	void AddRotationDegX(float degree);
+	void AddRotationDegY(float degree);
+	void AddRotationDegZ(float degree);
+
+	void UpdateQuaternion(const FVector& DeltaRotation, bool bIsLocal);
 
 private:
 	FMatrix Transform;

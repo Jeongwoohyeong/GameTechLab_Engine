@@ -4,12 +4,12 @@ using Microsoft::WRL::ComPtr;
 
 bool UD3dDevice::Initialize(HWND hWnd)
 {
-	if (!this->CreateDeviceAndSwapChain(hWnd))	 return false;
-	if (!this->CreateFrameBuffer())				 return false;
-	if (!this->CreateDepthStencilBuffer())		 return false;
-	if (!this->CreateDepthStates())              return false;
-	if (!this->CreateRasterizerState())			 return false;
-
+	if (!this->CreateDeviceAndSwapChain(hWnd))	  return false;
+	if (!this->CreateFrameBuffer())				  return false;
+	if (!this->CreateDepthStencilBuffer())		  return false;
+	if (!this->CreateDepthStates())               return false;
+	if (!this->CreateRasterizerState())			  return false;
+	if (!this->CreateOutlineDepthStencilState())  return false;
 	return true;	
 }
 
@@ -51,17 +51,26 @@ void UD3dDevice::Release()
 
 void UD3dDevice::BeginScene(float r, float g, float b, float a)
 {
-	float Color[] = { r,g,b, a };
-	DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, DepthStencilView);
+    // 렌더 타겟/깊이 버퍼/뷰포트/블렌드 상태 설정 및 클리어
+    float Color[] = { r,g,b, a };
 
-	DeviceContext->ClearRenderTargetView(FrameBufferRTV, Color);
-	DeviceContext->ClearDepthStencilView(DepthStencilView,
-		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    // 렌더 타겟과 깊이 스텐실 뷰 설정
+    DeviceContext->OMSetRenderTargets(1, &FrameBufferRTV, DepthStencilView);
 
-	DeviceContext->RSSetViewports(1, &Viewport);
-	DeviceContext->OMSetDepthStencilState(DepthStateOpaque, 0);
-	DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    // 렌더 타겟 클리어
+    DeviceContext->ClearRenderTargetView(FrameBufferRTV, Color);
+    // 깊이/스텐실 버퍼 클리어
+    DeviceContext->ClearDepthStencilView(DepthStencilView,
+        D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+    // 뷰포트 설정
+    DeviceContext->RSSetViewports(1, &Viewport);
+    // 깊이 스텐실 상태 설정
+    DeviceContext->OMSetDepthStencilState(DepthStateOpaque, 0);
+    // 프리미티브 토폴로지 설정
+    DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    // 블렌드 상태 설정
+    DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 }
 
 void UD3dDevice::EndScene()
@@ -272,6 +281,68 @@ bool UD3dDevice::CreateDepthStates()
 
 	HRESULT hr = Device->CreateDepthStencilState(&dss, &DepthStateOpaque);
 	if (FAILED(hr)) return false;
+
+	return true;
+}
+
+bool UD3dDevice::CreateOutlineDepthStencilState()
+{
+	ID3D11Device* dev = GetDeivce();
+
+	// A) 스텐실 찍기(깊이 테스트만, 컬러 write OFF)
+	D3D11_DEPTH_STENCIL_DESC dsA{};
+	dsA.DepthEnable = TRUE;
+	dsA.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dsA.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	dsA.StencilEnable = TRUE;
+	dsA.StencilReadMask = 0xFF;
+	dsA.StencilWriteMask = 0xFF;
+	dsA.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	dsA.FrontFace.StencilPassOp = D3D11_STENCIL_OP_REPLACE;
+	dsA.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsA.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	dsA.BackFace = dsA.FrontFace;
+	HRESULT hr = dev->CreateDepthStencilState(&dsA, &DS_StencilMark);
+	if (FAILED(hr)) return false;
+
+	D3D11_BLEND_DESC bdOff{};
+	bdOff.RenderTarget[0].BlendEnable = FALSE;
+	bdOff.RenderTarget[0].RenderTargetWriteMask = 0x00; // 컬러 미기록
+	dev->CreateBlendState(&bdOff, &BS_ColorOff);
+
+	// B) 외곽선 패스(깊이 끄고, 스텐실!=1만 통과)
+	D3D11_DEPTH_STENCIL_DESC dsB{};
+	dsB.DepthEnable = FALSE;
+	dsB.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dsB.StencilEnable = TRUE;
+	dsB.StencilReadMask = 0xFF;
+	dsB.StencilWriteMask = 0x00;
+	dsB.FrontFace.StencilFunc = D3D11_COMPARISON_NOT_EQUAL;
+	dsB.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsB.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsB.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	dsB.BackFace = dsB.FrontFace;
+	HRESULT hr2 = dev->CreateDepthStencilState(&dsB, &DS_Outline);
+	if (FAILED(hr2)) return false;
+
+	// 외곽선용: 프런트면 컬링(백페이스만 남겨 “실루엣”이 도드라짐)
+	D3D11_RASTERIZER_DESC rs{};
+	rs.FillMode = D3D11_FILL_SOLID;
+	rs.CullMode = D3D11_CULL_FRONT;
+	rs.DepthClipEnable = TRUE;
+	dev->CreateRasterizerState(&rs, &RS_CullFront); // TODO#3-1: 실패시 return false 처리
+
+	// (선택) 반투명 합성
+	D3D11_BLEND_DESC bd{};
+	bd.RenderTarget[0].BlendEnable = TRUE;
+	bd.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	bd.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	bd.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	bd.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	bd.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	bd.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	bd.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	dev->CreateBlendState(&bd, &BS_Alpha); // TODO#3-2: 실패시 return false 처리
 
 	return true;
 }
