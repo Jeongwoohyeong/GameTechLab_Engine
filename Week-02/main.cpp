@@ -125,7 +125,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				int32 SelectedAxis = -1;
 				if(CScene::GetInstance().GetSelectedPrimitive())
 				{
-					LocalGizmo* Giz = CScene::GetInstance().GetSelectedPrimitive()->GetGizmo();
+					FLocalGizmo* Giz = CScene::GetInstance().GetSelectedPrimitive()->GetGizmo();
 					SelectedAxis = CScene::GetInstance().PickGizmoAtMouse(MousePos.x, MousePos.y, ClientW, ClientH);
 					UE_LOG("Picked Gizmo Axis: %d", SelectedAxis);
 					Giz->SelectGizmoAxis(SelectedAxis);

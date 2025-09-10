@@ -5,7 +5,7 @@
 #include "Cube.h"
 #include "UCamera.h"
 
- void LocalGizmo::Initialize(FTransform* transform)
+ void FLocalGizmo::Initialize(FTransform* transform)
 {
     ParentTransform = transform;
 
@@ -14,7 +14,7 @@
     Bind();
 }
 
-FTransform* LocalGizmo::GetGizmoTransform()
+FTransform* FLocalGizmo::GetGizmoTransform()
 {
     const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
     // gizmoTransform[arraySize];
@@ -25,7 +25,7 @@ FTransform* LocalGizmo::GetGizmoTransform()
     return gizmoTransform;
 }
 
-FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
+FTransform FLocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
     FTransform Transform = *ParentTransform;
     FVector AxisRotation = a.rotate;
@@ -53,7 +53,7 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
     return Transform;
 }
 
-void LocalGizmo::CreateAABB()
+void FLocalGizmo::CreateAABB()
 {
     FVector Min(FLT_MAX, FLT_MAX, FLT_MAX);
     FVector Max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -89,7 +89,7 @@ void LocalGizmo::CreateAABB()
 }
 
 #pragma region Input Callback Handler
-void LocalGizmo::Bind()
+void FLocalGizmo::Bind()
 {
     OnClickIdx = CInputManager::GetInstance().RegisterMouseClickCallback([this](FDragMouseData ClickInfo) -> void {
         this->OnLMouseClick(ClickInfo);
@@ -102,7 +102,7 @@ void LocalGizmo::Bind()
         });
 }
 
-void LocalGizmo::UnBind()
+void FLocalGizmo::UnBind()
 {
     CInputManager::GetInstance().RemoveMouseClickCallback(OnClickIdx);
     CInputManager::GetInstance().RemoveMouseDragCallback(OnDragIdx);
@@ -113,7 +113,7 @@ void LocalGizmo::UnBind()
 
 #pragma region Receiving MouseInput
 
-void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
+void FLocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
 {
     // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
 
@@ -142,7 +142,7 @@ void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
     );
 }
 
-void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
+void FLocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
 {
     if (SelectedAxis == -1)
         return;
@@ -182,7 +182,7 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     }
 }
 
-void LocalGizmo::OnLMouseRelease()
+void FLocalGizmo::OnLMouseRelease()
 {
     // UE_LOG("release");
     SelectedAxis = -1;
@@ -198,7 +198,7 @@ void LocalGizmo::OnLMouseRelease()
 #pragma endregion
 
 #pragma region Manipulating Primitives
-void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다.
+void FLocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다.
 {
     FVector selectedVector;
 
@@ -244,7 +244,7 @@ void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다
     ParentTransform->SetScale(resultScale);
 }
 
-float LocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale)
+float FLocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale)
 {
     float result;
     result = parentScale + isScaleMinus * addingScale;
@@ -257,11 +257,11 @@ float LocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, f
     return result;
 }
 
-void LocalGizmo::RotateLocalOrWorld(FVector newDelta)
+void FLocalGizmo::RotateLocalOrWorld(FVector newDelta)
 {
 
 }
-void LocalGizmo::TranslateLocalOrWorld(FVector newDelta)
+void FLocalGizmo::TranslateLocalOrWorld(FVector newDelta)
 {
     FVector selectedVector;
     if (bIsLocalMode)
