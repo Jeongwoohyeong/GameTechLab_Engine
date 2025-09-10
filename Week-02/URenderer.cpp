@@ -19,7 +19,6 @@
 
 #include "ShapeData.h"
 
-
 FMesh* URenderer::CubeMesh = nullptr;
 FMesh* URenderer::SphereMesh = nullptr;
 FMesh* URenderer::TriangleMesh = nullptr;
@@ -43,13 +42,13 @@ bool URenderer::Initialize(HWND hWnd)
 	}
 
 	ColorShader = new UShader();
-	if (!ColorShader->Initialize(Device->GetDevice(), Device->GetDeviceContext()))
+	if (!ColorShader->Initialize(Device->GetDeivce(), Device->GetDeviceContext()))
 	{
 		return false;
 	}
 
 	GizmoShader = new UShader();
-	if (!GizmoShader->InitializeGizmoShader(Device->GetDevice(), Device->GetDeviceContext()))
+	if (!GizmoShader->InitializeGizmoShader(Device->GetDeivce(), Device->GetDeviceContext()))
 	{
 		return false;
 	}
@@ -62,17 +61,12 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!this->CreateRasterizerState())
 	{
 		return false;
-	}
-
-	if (!this->CreateGizmoRasterizerState())
-	{
-		return false;
-	}
+	}	
 
 	worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);
 		
-	UI.Initialize(hWnd, Device->GetDevice(), Device->GetDeviceContext());
+	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
 	
 	LocalGizmoProperty.SelectedGizmo = ConeMesh;
 
@@ -87,7 +81,6 @@ void URenderer::Render()
 	ColorShader->PrepareShader();
 	
 	worldGizmo->Render(this);
-
 	// 씬 렌더링
 	RenderScene();
 
@@ -145,7 +138,7 @@ bool URenderer::CreateRasterizerState()
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_BACK;
 	rasterizerDesc.DepthClipEnable = TRUE;
-	result = Device->GetDevice()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
+	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"rasterizerstate create fail,", L"error", MB_OK);
@@ -222,8 +215,7 @@ void URenderer::Resize(UINT width, UINT height)
 
 	Device->Resize(width, height);
 	// TODO#4: 전체적으로 URenderer와 UCamera의 의존도가 낮은 상태임을 고려, 다른 곳으로 옮길 것
-	UCamera::GetInstance().Width = (float)width;
-	UCamera::GetInstance().Height = (float)height;
+	UCamera::GetInstance().AspectRatio = (float)width / (float)height; 
 }
 
 bool URenderer::CreateVertexBuffer(FMesh* Mesh)
@@ -239,7 +231,7 @@ bool URenderer::CreateVertexBuffer(FMesh* Mesh)
 	D3D11_SUBRESOURCE_DATA vertexBufferSRD = {};
 	vertexBufferSRD.pSysMem = Mesh->Vertices;
 
-	result = Device->GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &Mesh->VertexBuffer);
+	result = Device->GetDeivce()->CreateBuffer(&vertexBufferDesc, &vertexBufferSRD, &Mesh->VertexBuffer);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"vertexbuffer create fail,", L"error", MB_OK);
@@ -262,7 +254,7 @@ bool URenderer::CreateIndexBuffer(FMesh* Mesh)
 	D3D11_SUBRESOURCE_DATA indexBufferSRD = {};
 	indexBufferSRD.pSysMem = Mesh->Indices;
 
-	hr = Device->GetDevice()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &Mesh->IndexBuffer);
+	hr = Device->GetDeivce()->CreateBuffer(&indexBufferDesc, &indexBufferSRD, &Mesh->IndexBuffer);
 	if (FAILED(hr))
 	{
 		MessageBox(nullptr, L"indexbuffer create fail,", L"error", MB_OK);
@@ -290,7 +282,7 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	FMatrix World = FMatrix::Identity();
 	World = World * Primitive->GetTransform()->GetTransformMatrix();
-	GizmoShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+	ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
 	
 	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
 
@@ -351,7 +343,7 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			break;
 		}
 		UE_LOG("gizmo swith %d", LocalGizmoProperty.GizmoSwitch);
-		
+
 		Primitive->SwitchGizmo(LocalGizmoProperty.GizmoSwitch);
 	}
 	
@@ -366,7 +358,7 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			FVector color = GAxisColors[i];
 			if(i == Primitive->GetGizmo()->SelectedAxis)
 				color = GAxisColors[3];
-			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans[i].GetLocation()), color);
+			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
 			Render(RingMesh, DeviceContext, nullptr);
 		}
 	}
@@ -602,12 +594,13 @@ bool URenderer::CreateGizmoRasterizerState()
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.DepthClipEnable = TRUE;
-	result = Device->GetDevice()->CreateRasterizerState(&rasterizerDesc, &GizmoRasterizerState);
+	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"gizmo rasterizerstate create fail,", L"error", MB_OK);
 		return false;
 	}
+
 
 	return true;
 }

@@ -14,7 +14,7 @@ public:
 	void SetRSState(ID3D11RasterizerState*);
 	void Resize(UINT, UINT);
 
-	ID3D11Device* GetDevice() const { return Device; }
+	ID3D11Device* GetDeivce() const { return Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceContext; }		
 
 	// --- URenderer에서 상태 객체 이용해 외곽선 만들기 때문에 Getter 제공 ---

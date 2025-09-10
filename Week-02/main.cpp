@@ -52,10 +52,7 @@ bool GlobalInit(HWND* InHWnd, URenderer* R, CCameraMovementController* C, uint32
 	LONG_PTR Prev = SetWindowLongPtr(*InHWnd, GWLP_USERDATA, (LONG_PTR)R);
 	if (Prev == 0 && GetLastError() != 0) return false; // SetWindowLongPtr 실패
 
-	if ((float)ClientH > 1e-6)
-	{
-		UCamera::GetInstance().Init(FVector(0.0f, 0.0f, -5.0f), FVector::Zero(), 60.0f, (float)ClientW, (float)ClientH);
-	}
+	UCamera::GetInstance().Init(FVector(0.0f, 0.0f, -5.0f), FVector::Zero(), 60.0f, (float)ClientW / (float)ClientH);
 
 	return true;
 }
