@@ -238,8 +238,7 @@ void UUIManager::PropertyWindow(UPrimitiveComponent* Primitive)
 			Transform->SetRotationDeg(SwapYZ(Rotation), bIsLocalMode);
 		}
 		if (ImGui::Button("R Reset")) {
-			FVector r0(0.0f, 0.0f, 0.0f);
-			Transform->SetRotationDeg(r0, bIsLocalMode);
+			Transform->ClearRotation();
 		}
 
 		// 3) Translation
