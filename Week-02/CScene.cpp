@@ -6,6 +6,7 @@
 #include "UCubeComp.h"
 #include "USphereComp.h"
 #include "UTriangleComp.h"
+#include "UPlaneComp.h"
 #include "CInputManager.h"
 #include <fstream>
 
@@ -177,6 +178,10 @@ inline UPrimitiveComponent* CreatePrimitiveFromType(const FString& TypeStr)
 	{
 		return new UTriangleComp();
 	}
+	else if (TypeStr == "Plane")
+	{
+		return new UPlaneComp();
+	}
 	else
 	{
 		UE_LOG("Warning: Unknown primitive type '%s'. Skipping.", TypeStr.c_str());
@@ -300,6 +305,9 @@ void CScene::Spawn(EPrimitiveType Type, uint32 Count)
 			break;
 		case EPrimitiveType::Triangle:
 			NewComp = new UTriangleComp();
+			break;
+		case EPrimitiveType::Plane:
+			NewComp = new UPlaneComp();
 			break;
 		default:
 			UE_LOG("Warning: Unknown primitive type enum value %d. Skipping spawn.", static_cast<uint8>(Type));

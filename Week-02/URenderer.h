@@ -74,6 +74,7 @@ public:
 	static FMesh* CylinderMesh;
 	static FMesh* GizmoCubeMesh;
 	static FMesh* RingMesh;
+	static FMesh* PlaneMesh;
 
 private:
 	WorldGizmo* worldGizmo = nullptr;

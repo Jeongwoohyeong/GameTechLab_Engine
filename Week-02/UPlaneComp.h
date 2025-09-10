@@ -6,15 +6,15 @@
 
 struct ID3D11Buffer;
 
-class USphereComp :public UPrimitiveComponent
+class UPlaneComp :public UPrimitiveComponent
 {
 	RTTI_DECLARE()
 public:
-	USphereComp();
-	~USphereComp() override {};
+	UPlaneComp();
+	~UPlaneComp() override {};
 
 	virtual EPrimitiveType GetPrimitiveType() override;
-	virtual FMesh* GetMesh() override { return URenderer::SphereMesh; }
+	virtual FMesh* GetMesh() override { return URenderer::PlaneMesh; }
 	virtual void TypeCheck() override;
 
 private:

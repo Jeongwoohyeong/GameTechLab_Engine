@@ -52,7 +52,7 @@ void UUIManager::ControlPanel()
 			// Primitive type 목록 리스트 중 목록 선택 가능
 			// 목록 리스트 토글 가능 (열고/닫기)
 			static int CurrentType = 0;
-			static const char* Types[] = { "Cube", "Sphere", "Triangle"};
+			static const char* Types[] = { "Cube", "Sphere", "Triangle", "Plane" };
 			ImGui::Combo("Primitive Type", &CurrentType, Types, IM_ARRAYSIZE(Types));
 
 			// SCene에 CurrenyType에 해당하는 프리미티브 추가

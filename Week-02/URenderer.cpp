@@ -13,6 +13,7 @@
 #include "Cylinder.h"
 #include "RotationRing.h"
 #include "GizmoCube.h"
+#include "Plane.h"
 
 #include "WorldGizmo.h"
 
@@ -25,6 +26,7 @@ FMesh* URenderer::ConeMesh = nullptr;
 FMesh* URenderer::CylinderMesh = nullptr;
 FMesh* URenderer::RingMesh = nullptr;
 FMesh* URenderer::GizmoCubeMesh = nullptr;
+FMesh* URenderer::PlaneMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -141,6 +143,7 @@ bool URenderer::CreateAllMesh()
 	CreateMesh(ConeMesh, GConeVertices, sizeof(GConeVertices), GConeIndices, sizeof(GConeIndices));
 	CreateMesh(RingMesh, GAxisRingVertices, sizeof(GAxisRingVertices), GAxisRingIndices, sizeof(GAxisRingIndices));
 	CreateMesh(GizmoCubeMesh, GGizmoCubeVertices, sizeof(GGizmoCubeVertices), GGizmoCubeIndices, sizeof(GGizmoCubeVertices));
+	CreateMesh(PlaneMesh, GPlaneVertices, sizeof(GPlaneVertices), GPlaneIndices, sizeof(GPlaneIndices));
 
 	return true;
 }
