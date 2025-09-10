@@ -168,6 +168,7 @@
     <ClInclude Include="ImGui\imgui_console.h" />
     <ClInclude Include="CCameraMovementController.h" />
     <ClInclude Include="IntersectionTest.h" />
+    <ClInclude Include="RotationRing.h" />
     <ClInclude Include="RTTIMacros.h" />
     <ClInclude Include="SimpleJSON\json.hpp" />
     <ClInclude Include="Cylinder.h" />

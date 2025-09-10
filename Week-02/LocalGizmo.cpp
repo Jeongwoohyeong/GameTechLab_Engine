@@ -1,4 +1,4 @@
-﻿#include "LocalGizmo.h"
+#include "LocalGizmo.h"
 #include "Gizmo.h"
 #include "URenderer.h"
 #include "Cone.h"
@@ -18,7 +18,7 @@
 FTransform* LocalGizmo::GetGizmoTransform()
 {
     const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
-    gizmoTransform[arraySize];
+    // gizmoTransform[arraySize];
     for (int i = 0; i < arraySize; i++)
     {
         gizmoTransform[i] = UpdateGizmoTranformFromParent(axisInfo[i]);

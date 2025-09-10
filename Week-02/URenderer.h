@@ -65,6 +65,7 @@ public:
 	static FMesh* TriangleMesh;
 	static FMesh* ConeMesh;
 	static FMesh* CylinderMesh;
+	static FMesh* RingMesh;
 
 private:
 	WorldGizmo* worldGizmo = nullptr;
