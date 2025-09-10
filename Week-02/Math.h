@@ -115,11 +115,6 @@ inline FVector Cross(const FVector& U, const FVector& V)
 	);
 }
 
-inline FVector SwapYZ(const FVector& V)
-{
-	return FVector(V.X, V.Z, V.Y);
-}
-
 struct FVector4
 {
 	float X, Y, Z, W;
@@ -159,6 +154,61 @@ struct FQuaternion {
 		FQuaternion qY = { 0, sin(halfY), 0, cos(halfY) };
 
 		return Multiply(Multiply(qZ, qX), qY);
+	}
+
+	// 쿼터니언을 Z -> X -> Y 순서의 오일러 각도로 변환
+	static FVector ToEulerAngles(FQuaternion Q) {
+		FVector Angles;
+
+		// 1. Pitch (X축 회전) 계산 및 짐벌 락 확인
+		// sin(pitch) 값을 계산합니다. 이 값이 1 또는 -1에 가까워지면 짐벌 락 상태입니다.
+		float sinp = 2.0f * (Q.W * Q.X - Q.Y * Q.Z);
+
+		// 2. 짐벌 락 상태 처리 (Pitch가 +/- 90도에 가까운 경우)
+		// 부동소수점 오차를 고려해 1.0f보다 약간 작은 값과 비교합니다.
+		if (std::abs(sinp) >= 0.99999f) {
+			// Pitch(X)를 90도 또는 -90도로 고정합니다.
+			Angles.X = std::copysign(Math::Pi / 2.0f, sinp);
+
+			// 짐벌 락 상태에서는 Roll(Y축)을 0으로 고정하고,
+			// 모든 회전을 Yaw(Z축)에 계산합니다.
+			Angles.Z = 2.0f * std::atan2(Q.Z, Q.W);
+			Angles.Y = 0.0f;
+		}
+		// 3. 일반적인 경우 (짐벌 락이 아닐 때)
+		else {
+			// Pitch (X축 회전)
+			Angles.X = std::asin(sinp);
+
+			// Yaw (Z축 회전)
+			float siny_cosp = 2.0f * (Q.W * Q.Z + Q.X * Q.Y);
+			float cosy_cosp = 1.0f - 2.0f * (Q.X * Q.X + Q.Z * Q.Z);
+			Angles.Z = std::atan2(siny_cosp, cosy_cosp);
+
+			// Roll (Y축 회전)
+			float sinr_cosp = 2.0f * (Q.W * Q.Y + Q.X * Q.Z);
+			float cosr_cosp = 1.0f - 2.0f * (Q.X * Q.X + Q.Y * Q.Y);
+			Angles.Y = std::atan2(sinr_cosp, cosr_cosp);
+		}
+
+		return Angles;
+	}
+
+	static FQuaternion CreateFromAxisAngle(const FVector& axis, float angle)
+	{
+		// 1. 각도의 절반과 그 sin 값을 계산합니다.
+		float halfAngle = angle * 0.5f;
+		float s = std::sin(halfAngle);
+
+		FQuaternion result;
+
+		// 2. 공식에 따라 쿼터니언의 각 요소를 계산합니다.
+		result.W = std::cos(halfAngle); // w 요소는 코사인
+		result.X = axis.X * s;         // x, y, z 요소는 축 벡터에 사인값을 곱함
+		result.Y = axis.Y * s;
+		result.Z = axis.Z * s;
+
+		return result;
 	}
 
 	float Magnitude() const {

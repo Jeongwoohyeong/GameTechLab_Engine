@@ -92,14 +92,14 @@ void CScene::Save(const FString& Name)
 		);
 
 		// Rotation
-		Prim["Rotation"] = Array(
+		/*Prim["Rotation"] = Array(
 			Primitive->Transform.GetRotationRadians().X,
 			Primitive->Transform.GetRotationRadians().Y,
 			Primitive->Transform.GetRotationRadians().Z
-		);
+		);*/
 
-		// Quaternion
-		Prim["Quaternion"] = Array(
+		// Rotation
+		Prim["Rotation"] = Array(
 			Primitive->Transform.GetQuaternion().X,
 			Primitive->Transform.GetQuaternion().Y,
 			Primitive->Transform.GetQuaternion().Z,
@@ -253,13 +253,13 @@ void CScene::Load(const FString& Name)
 			{
 				Comp->Transform.SetLocation(ReadVec3(Prim.at("Location")));
 			}
-			if (Prim.hasKey("Rotation")) 
+			/*if (Prim.hasKey("Rotation")) 
 			{
 				Comp->Transform.LoadRotaion(ReadVec3(Prim.at("Rotation")));
-			}
-			if (Prim.hasKey("Quaternion")) 
+			}*/
+			if (Prim.hasKey("Rotation")) 
 			{
-				const JSON& QuatArr = Prim.at("Quaternion");
+				const JSON& QuatArr = Prim.at("Rotation");
 				if (QuatArr.JSONType() == JSON::Class::Array && QuatArr.length() >= 4)
 				{
 					FQuaternion Quat;
