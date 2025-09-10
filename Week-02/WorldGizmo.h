@@ -1,12 +1,13 @@
 ﻿#pragma once
-#include "Gizmo.h"
 #include <vector>
 #include "FVertexStruct.h"
 // 전방 선언
 class URenderer;
+class FTransform;
+
 struct ID3D11Buffer;
 
-class WorldGizmo : public Gizmo
+class WorldGizmo
 {
 public:
     WorldGizmo() = default;
@@ -31,6 +32,8 @@ private:
         const FVertexSimple& AxisYColor);
 
 private:
+    FTransform* ParentTransform;
+
     std::vector<FVertexSimple> xzGridVertices;
     std::vector<unsigned int>  xzGridIndices;
 

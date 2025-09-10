@@ -29,6 +29,7 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
     FTransform Transform = *ParentTransform;
     FVector AxisRotation = a.rotate;
+    // if()
 
     Transform.SetScale(0.05f, 0.8f, 0.05f);
 

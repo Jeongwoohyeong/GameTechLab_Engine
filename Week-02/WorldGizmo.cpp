@@ -1,4 +1,5 @@
 ﻿#include "WorldGizmo.h"
+#include "FTransform.h"
 #include "URenderer.h"
 #include "UCamera.h"
 

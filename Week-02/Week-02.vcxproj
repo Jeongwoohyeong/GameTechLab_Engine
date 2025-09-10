@@ -131,7 +131,6 @@
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="FMesh.h" />
-    <ClCompile Include="Gizmo.cpp" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />
@@ -177,7 +176,6 @@
     <ClInclude Include="RTTIMacros.h" />
     <ClInclude Include="SimpleJSON\json.hpp" />
     <ClInclude Include="Cylinder.h" />
-    <ClInclude Include="Gizmo.h" />
     <ClInclude Include="LocalGizmo.h" />
     <ClInclude Include="ShapeData.h" />
     <ClInclude Include="ShapeType.h" />
