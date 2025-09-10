@@ -1,19 +1,26 @@
 ﻿#include "UCamera.h"
 
-void UCamera::Init(FVector Loc, FVector Rot, float FovDeg, float Ratio)
+void UCamera::Init(FVector Loc, FVector Rot, float FovDeg, float width, float height)
 {
 	Location = Loc;
 	Rotation = Rot;
 	/*Target = { 0.0f, 0.0f, 0.0f };
 	Up = { 0.0f, 1.0f, 0.0f };*/
 	FovY = DegToRad(FovDeg);
-	AspectRatio = Ratio;
+	Width = width;
+	Height = height;
 	NearPlane = 0.1f;
 	FarPlane = 100.0f;
 }
 
 FMatrix UCamera::MakeMVP(const FMatrix& World)
 {
+	if (Height < MATH_EPSILON)
+	{
+		return FMatrix();
+	}
+	float AspectRatio = Width / Height;
+
 	FMatrix View = FMatrix::MakeView(Location, Rotation);
 	FMatrix Projection = {};
 	if (bIsOrthogonal)
@@ -31,6 +38,12 @@ FMatrix UCamera::MakeMVP(const FMatrix& World)
 
 FMatrix UCamera::MakeGizmoMVP(const FMatrix& world, const FVector& gizmoLocation)
 {
+	if (Height < MATH_EPSILON)
+	{
+		return FMatrix();
+	}
+	float AspectRatio = Width / Height;
+
 	float distance = (gizmoLocation - Location).Length();
 	constexpr float GIZMO_SIZE = 0.1f;
 	float scaleFactor = distance * GIZMO_SIZE;
@@ -69,6 +82,13 @@ FVector UCamera::DeprojectScreenPoint(int32 ClientX, int32 ClientY, int32 Client
 	// Perspective Camera 기준
 	// Projection 행렬의 역행렬을 사용하는 방법은 NearPlane, FarPlane에 점을 잡지만
 	// 현 프로젝트에서는 Eye와 Deproject Point 하나를 사용
+
+	if (Height < MATH_EPSILON)
+	{
+		return FVector();
+	}
+
+	float AspectRatio = Width / Height;
 
 	// 클라이언트 좌표 -> NDC 좌표 변환
 	float NDCX = (2.0f * ClientX) / ClientWidth - 1.0f;

@@ -91,6 +91,11 @@ void UD3dDevice::SetRSState(ID3D11RasterizerState* rasterizeState)
 
 void UD3dDevice::Resize(UINT width, UINT height)
 {
+	if (width == 0 || height == 0)
+	{
+		return;
+	}
+
 	if (SwapChain == nullptr || DeviceContext == nullptr || Device == nullptr)
 	{
 		MessageBox(nullptr, L"swapchain nullptr", L"error", MB_OK);
@@ -158,8 +163,9 @@ bool UD3dDevice::CreateGizmoDepthStencilState()
 	D3D11_DEPTH_STENCIL_DESC dss{};
 	dss.DepthEnable = FALSE;
 	dss.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-	dss.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-	dss.StencilEnable = FALSE;
+	// dss.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	dss.DepthFunc = D3D11_COMPARISON_ALWAYS;
+	dss.StencilEnable = FALSE;	
 
 	HRESULT hr = Device->CreateDepthStencilState(&dss, &GizmoDepthState);
 	if (FAILED(hr)) return false;
@@ -360,7 +366,7 @@ bool UD3dDevice::CreateDepthStates()
 
 bool UD3dDevice::CreateOutlineDepthStencilState()
 {
-	ID3D11Device* dev = GetDeivce();
+	ID3D11Device* dev = GetDevice();
 
 	// A) 스텐실 찍기(깊이 테스트만, 컬러 write OFF)
 	D3D11_DEPTH_STENCIL_DESC dsA{};
