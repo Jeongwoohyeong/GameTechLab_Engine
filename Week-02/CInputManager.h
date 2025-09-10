@@ -57,14 +57,22 @@ public:
 
 	// 이벤트 등록 함수
 	void ReleaseCallbacks();
-	void RegisterMouseClickCallback(MouseCallback callback);
-	void RegisterMouseDragCallback(MouseCallback callback);
-	void RegisterMouseReleaseCallback(MouseReleaseCallback callback);
+	int RegisterMouseClickCallback(MouseCallback callback);
+	int RegisterMouseDragCallback(MouseCallback callback);
+	int RegisterMouseReleaseCallback(MouseReleaseCallback callback);
+
+	void RemoveMouseClickCallback(int idx);
+	void RemoveMouseDragCallback(int idx);
+	void RemoveMouseReleaseCallback(int idx);
 
 	// 등록된 콜백 함수들을 저장할 리스트
 	std::vector<MouseCallback> OnClickCallbacks;
 	std::vector<MouseCallback> OnDragCallbacks;
 	std::vector<MouseReleaseCallback> OnReleaseCallbacks;
+	std::vector<bool> IsLiveClickCallbacks;
+	std::vector<bool> IsLiveDragCallbacks;
+	std::vector<bool> IsLiveReleaseCallbacks;
+
 public:
 	FVector MousePressPosWorld{0.0f, 0.0f, 0.0f}; // 마우스 클릭 시점의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)
 	FVector MouseCurrentPosWorld{0.0f, 0.0f, 0.0f}; // 현재의 Ray - 투영 평면 교차점 월드 좌표 (기즈모 드래그용)

@@ -86,17 +86,23 @@ void LocalGizmo::CreateAABB()
 
 void LocalGizmo::Bind()
 {
-    CInputManager::GetInstance().RegisterMouseClickCallback([this](FDragMouseData ClickInfo) -> void {
+    OnClickIdx = CInputManager::GetInstance().RegisterMouseClickCallback([this](FDragMouseData ClickInfo) -> void {
         this->OnLMouseClick(ClickInfo);
         });
-    CInputManager::GetInstance().RegisterMouseDragCallback([this](FDragMouseData DragInfo) -> void {
+    OnDragIdx = CInputManager::GetInstance().RegisterMouseDragCallback([this](FDragMouseData DragInfo) -> void {
         this->OnLMouseDrag(DragInfo);
         });
-    CInputManager::GetInstance().RegisterMouseReleaseCallback([this]()->void { 
+    OnReleaseIdx = CInputManager::GetInstance().RegisterMouseReleaseCallback([this]()->void {
         this->OnLMouseRelease();
         });
 }
 
+void LocalGizmo::UnBind()
+{
+    CInputManager::GetInstance().RemoveMouseClickCallback(OnClickIdx);
+    CInputManager::GetInstance().RemoveMouseDragCallback(OnDragIdx);
+    CInputManager::GetInstance().RemoveMouseReleaseCallback(OnReleaseIdx);
+}
 
 void LocalGizmo::CalculateTranslationOffSet()
 {

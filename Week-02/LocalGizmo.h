@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <span>
 #include "Gizmo.h"
 #include "Math.h"
@@ -19,9 +19,12 @@ public:
         {ROTATE_Z, TRANSLATE_Z} // X
     };
 
+    ~LocalGizmo() { UnBind(); }; // 핸들 소멸자에서 자동 해제됨
+
     void Initialize(FTransform* transform);
 	virtual void CreateAABB() override;
     void Bind();
+    void UnBind();
 
     FTransform* GetGizmoTransform();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
@@ -58,4 +61,8 @@ public:
     int bScaleXMinus = 1;
     int bScaleYMinus = 1;
     int bScaleZMinus = 1;
+
+    int OnClickIdx;
+    int OnDragIdx;
+    int OnReleaseIdx;
 };

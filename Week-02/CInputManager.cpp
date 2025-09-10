@@ -20,9 +20,12 @@ void CInputManager::Update()
 			ClientH
 		};
 
-		for (const auto& callback : OnClickCallbacks)
+		for (int i = 0; i < OnClickCallbacks.size(); i++)
 		{
-			callback(clickMouseData); // 등록된 모든 함수 호출
+			if (!IsLiveClickCallbacks[i] || OnClickCallbacks[i] == nullptr)
+				continue;
+
+			OnClickCallbacks[i](clickMouseData); // 등록된 모든 함수 호출
 		}
 	}
 	if (IsMouseBtnDown(0)) // 드래그할 때 쓸 거
@@ -34,18 +37,24 @@ void CInputManager::Update()
 			ClientH
 		};
 
-		for (const auto& callback : OnDragCallbacks)
+		for (int i = 0; i < OnDragCallbacks.size(); i++)
 		{
-			callback(dragMouseData); // 등록된 모든 함수 호출
+			if (!IsLiveDragCallbacks[i] || OnDragCallbacks[i] == nullptr)
+				continue;
+
+			OnDragCallbacks[i](dragMouseData); // 등록된 모든 함수 호출
 		}
 	}
 	// 마우스 떼기 이벤트 감지
 	if (IskeyReleased(VK_LBUTTON)) // 왼쪽 버튼이 막 떼어졌을 때
 	{
 		// UE_LOG("Release");
-		for (const auto& callback : OnReleaseCallbacks)
+		for (int i = 0; i < OnReleaseCallbacks.size(); i++)
 		{
-			callback(); // 등록된 모든 함수 호출
+			if (!IsLiveReleaseCallbacks[i] || OnReleaseCallbacks[i] == nullptr)
+				continue;
+
+			OnReleaseCallbacks[i](); // 등록된 모든 함수 호출
 		}
 	}
 }
@@ -146,17 +155,67 @@ POINT CInputManager::GetMouseClientPos() { return CurrentMouseClientPosPoint; }
 int32 CInputManager::GetClientW() const { return ClientW; }
 int32 CInputManager::GetClientH() const { return ClientH; }
 
-void CInputManager::RegisterMouseClickCallback(MouseCallback callback)
+int CInputManager::RegisterMouseClickCallback(MouseCallback callback)
 {
 	OnClickCallbacks.push_back(callback);
+	IsLiveClickCallbacks.push_back(true);
+	
+	int idx = OnClickCallbacks.size() - 1;
+	return idx;
 }
 
-void CInputManager::RegisterMouseDragCallback(MouseCallback callback)
+int CInputManager::RegisterMouseDragCallback(MouseCallback callback)
 {
 	OnDragCallbacks.push_back(callback);
+	IsLiveDragCallbacks.push_back(true);
+
+	int idx = OnDragCallbacks.size() - 1;
+	return idx;
 }
 
-void CInputManager::RegisterMouseReleaseCallback(MouseReleaseCallback callback)
+int CInputManager::RegisterMouseReleaseCallback(MouseReleaseCallback callback)
 {
 	OnReleaseCallbacks.push_back(callback);
+	IsLiveReleaseCallbacks.push_back(true);
+
+	int idx = OnReleaseCallbacks.size() - 1;
+	return idx;
 }
+
+void CInputManager::RemoveMouseClickCallback(int idx)
+{
+	if (idx >= OnClickCallbacks.size())
+		return;
+
+	if (IsLiveClickCallbacks[idx])
+	{
+		IsLiveClickCallbacks[idx] = false;
+		OnClickCallbacks[idx] = nullptr;
+	}
+}
+
+void CInputManager::RemoveMouseDragCallback(int idx)
+{
+	if (idx >= OnDragCallbacks.size())
+		return;
+
+	if (IsLiveDragCallbacks[idx])
+	{
+		IsLiveDragCallbacks[idx] = false;
+		OnDragCallbacks[idx] = nullptr;
+	}
+}
+
+void CInputManager::RemoveMouseReleaseCallback(int idx)
+{
+	if (idx >= OnReleaseCallbacks.size())
+		return;
+
+	if (IsLiveReleaseCallbacks[idx])
+	{
+		IsLiveReleaseCallbacks[idx] = false;
+		OnReleaseCallbacks[idx] = nullptr;
+	}
+}
+
+
