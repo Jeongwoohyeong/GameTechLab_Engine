@@ -11,6 +11,7 @@
 #include "Triangle.h"
 #include "Cone.h"
 #include "Cylinder.h"
+#include "GizmoCube.h"
 
 #include "WorldGizmo.h"
 
@@ -21,6 +22,7 @@ FMesh* URenderer::SphereMesh = nullptr;
 FMesh* URenderer::TriangleMesh = nullptr;
 FMesh* URenderer::ConeMesh = nullptr;
 FMesh* URenderer::CylinderMesh = nullptr;
+FMesh* URenderer::GizmoCubeMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -57,6 +59,8 @@ bool URenderer::Initialize(HWND hWnd)
 	UCamera::GetInstance().Init();
 		
 	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
+	
+	
 
 	return true;
 }
@@ -135,6 +139,7 @@ bool URenderer::CreateAllMesh()
 	CreateMesh(SphereMesh, GSphereVertices, sizeof(GSphereVertices));
 	CreateMesh(CylinderMesh, GCylinderVertices, sizeof(GCylinderVertices), GCylinderIndices, sizeof(GCylinderIndices));
 	CreateMesh(ConeMesh, GConeVertices, sizeof(GConeVertices), GConeIndices, sizeof(GConeIndices));
+	CreateMesh(GizmoCubeMesh, GGizmoCubeVertices, sizeof(GGizmoCubeVertices), GGizmoCubeIndices, sizeof(GGizmoCubeIndices));
 
 	return true;
 }
@@ -295,7 +300,7 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 	for (int i = 0; i < 3; i++)
 	{
 		FMatrix World = FMatrix::Identity();
-		gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f);
+		gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f); // location gizmo
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
 		Render(ConeMesh, DeviceContext, nullptr);

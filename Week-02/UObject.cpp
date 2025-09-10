@@ -62,7 +62,7 @@ UObject::~UObject()
 }
 
 bool UObject::IsA(const UClass* targetClass) const
-{
+{	
 	for (UClass* currentClass = this->GetClass(); currentClass != nullptr; currentClass = currentClass->GetParent())
 	{
 		if (currentClass == targetClass)

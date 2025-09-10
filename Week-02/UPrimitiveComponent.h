@@ -9,6 +9,7 @@
 #include "LocalGizmo.h"
 #include "UUIManager.h"
 #include "RTTIMacros.h"
+#include "ScaleGizmo.h"
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
@@ -25,11 +26,11 @@ public:
 
 	inline FTransform* GetTransform() { return &Transform; }
 	inline FTransform* GetGizmoTransforms() { 
-		if (Gizmo.ParentTransform == nullptr)
+		if (LocationGizmo.ParentTransform == nullptr)
 		{
-			Gizmo.Initialize(&Transform);
+			LocationGizmo.Initialize(&Transform);
 		}
-		return Gizmo.GetGizmoTransform(); 
+		return LocationGizmo.GetGizmoTransform();
 	}
 
 	virtual EPrimitiveType GetPrimitiveType() = 0;
@@ -41,10 +42,16 @@ public:
 	virtual void CreateAABB();
 	FAABB GetAABB();
 
-	LocalGizmo* GetGizmo() { return &Gizmo; }
+	//void SwapGizmo();
+
+	LocalGizmo* GetGizmo() { return &LocationGizmo; }
+	//ScaleGizmo* GetScaleGizmo() { return &ObjectScaleGizmo; }
 
 protected:
-	LocalGizmo Gizmo;
+	FTransform* GizmoTransform;	
+	LocalGizmo LocationGizmo;
+	//ScaleGizmo ObjectScaleGizmo;
 	FAABB AABB;
 	bool bIsAABBCreated = false;
+	int GizmoSwitch = 0;
 };

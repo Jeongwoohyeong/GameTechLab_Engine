@@ -7,6 +7,11 @@
 //#define TEXT(str) str
 //#endif // _UNICODE
 
+#define RTTI_ROOT_DECLARE()																\
+	public:																				\
+		static UClass* StaticClass();													\
+		virtual UClass* GetClass() const;												\
+
 #define RTTI_DECLARE()																	\
 	public:																				\
 		static UClass* StaticClass();													\
