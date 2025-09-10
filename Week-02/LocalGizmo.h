@@ -14,13 +14,12 @@ constexpr FVector ROTATE_Z{ 0.0f, 0.0f, -90.0f }; // z축, 파란색
 constexpr FVector ROTATE_X{ 90.0f, 0.0f, 0.0f }; // x축, 빨간색
 
 constexpr FVector TRANSLATE_Y{ 0.0f, 1.0f, 0.0f }; // y축, 초록색
-constexpr FVector TRANSLATE_X{ 0.0f, 0.0f, 1.0f }; // z축, 파란색
-constexpr FVector TRANSLATE_Z{ 1.0f, 0.0f, 0.0f }; // x축, 빨간색
+constexpr FVector TRANSLATE_Z{ 1.0f, 0.0f, 0.0f }; // z축, 파란색
+constexpr FVector TRANSLATE_X{ 0.0f, 0.0f, 1.0f }; // x축, 빨간색
 
-constexpr FVector RINGROTATE_Y{ 0.0f, 0.0f, 0.0f }; // y축, 초록색
-constexpr FVector RINGROTATE_X{ 0.0f, 0.0f, 0.0f }; // z축, 파란색
-constexpr FVector RINGROTATE_Z{ 0.0f, 0.0f, 0.0f }; // x축, 빨간색
-
+constexpr FVector RINGROTATE_Y{ 0.0f, 0.0f, 90.0f }; // y축, 초록색
+constexpr FVector RINGROTATE_Z{ 90.0f, -90.0f, 90.0f }; // z축, 파란색
+constexpr FVector RINGROTATE_X{ 90.0f, 0.0f, 90.0f }; // x축, 빨간색
 
 struct axis
 {
@@ -35,9 +34,9 @@ public:
 #pragma region 변수
     axis axisInfo[3] =
     {
-        {ROTATE_X, TRANSLATE_X, RINGROTATE_X}, // Y
-        {ROTATE_Y, TRANSLATE_Y, RINGROTATE_Y}, // Z
-        {ROTATE_Z, TRANSLATE_Z, RINGROTATE_Z} // X
+        {ROTATE_Y, TRANSLATE_Y, RINGROTATE_Y}, // Y
+        {ROTATE_Z, TRANSLATE_Z, RINGROTATE_Z}, // Z
+        {ROTATE_X, TRANSLATE_X, RINGROTATE_X}, // X
     };
 
     FTransform* ParentTransform; // 부모 UPrimitiveComponent의 Transform 주소
