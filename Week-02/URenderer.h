@@ -12,9 +12,9 @@ class UPrimitiveComponent;
 class WorldGizmo;
 
 inline constexpr FVector GAxisColors[4] = {
-	{ 0.0f, 1.0f, 0.0f },// X - R
-	{ 0.0f, 0.0f, 1.0f }, // Y - B
-	{ 1.0f, 0.0f, 0.0f }, // Z - G
+	{ 0.0f, 0.0f, 1.0f }, // Z축 - 파란색
+	{ 0.0f, 1.0f, 0.0f }, // Y축 - 초록색
+	{ 1.0f, 0.0f, 0.0f }, // X축 - 빨간색
 	{ 1.0f, 1.0f, 0.0f },
 };
 

@@ -32,7 +32,7 @@ public:
 
 	const FVector& GetScale() const { return Scale; }
 	// const FVector& GetRotationRadians() const { return Rotation; }
-	const FQuaternion& GetQuaternion() const { return Quaternion; }
+	const FQuaternion& GetQuaternion() const { return Rotation; }
 	// FVector GetRotationDegree() const;
 	const FVector& GetLocation() const { return Location; }
 	bool TryGetInverseMatrix(FMatrix& Out);
@@ -43,7 +43,7 @@ public:
 	
 	FMatrix& GetTransformMatrix();
 
-	FMatrix& Get2StepRotationMatrix(); 
+	// FMatrix& Get2StepRotationMatrix(); 
 
 private:
 	/*void SetRotationDegX(float degree);
@@ -54,17 +54,14 @@ private:
 	void AddRotationDegY(float degree);
 	void AddRotationDegZ(float degree);*/
 
-	void UpdateQuaternion(const FVector& DeltaRotation, bool bIsLocal);
+	// void UpdateQuaternion(const FVector& DeltaRotation, bool bIsLocal);
 
 private:
 	FMatrix Transform;
 	FMatrix Inverse;
 	FVector Scale;
-	// FVector Rotation; // 라디안 단위, 오일러 각도 (Z -> X -> Y 순서)
-	FQuaternion Quaternion;
+	FQuaternion Rotation;
 	FVector Location;
-	
-	FVector PrevRotation;
 
 	// 트랜스폼 변경 검사
 	bool bIsTransformDirty;

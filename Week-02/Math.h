@@ -115,11 +115,6 @@ inline FVector Cross(const FVector& U, const FVector& V)
 	);
 }
 
-inline FVector SwapYZ(const FVector& V)
-{
-	return FVector(V.X, V.Z, V.Y);
-}
-
 struct FVector4
 {
 	float X, Y, Z, W;
