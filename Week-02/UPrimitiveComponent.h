@@ -24,7 +24,7 @@ public:
 	void Release();
 
 	inline FTransform* GetTransform() { return &Transform; }
-	inline FTransform* GetGizmoTransforms() { 
+	inline GizmoInfo* GetGizmoTransforms() {
 		if (LocationGizmo.ParentTransform == nullptr)
 		{
 			LocationGizmo.Initialize(&Transform);

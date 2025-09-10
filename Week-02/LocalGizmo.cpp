@@ -8,21 +8,26 @@
  void FLocalGizmo::Initialize(FTransform* transform)
 {
     ParentTransform = transform;
+    isNew = true;
 
     CreateAABB();
 
     Bind();
 }
 
-FTransform* FLocalGizmo::GetGizmoTransform()
-{
-    const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
-    // gizmoTransform[arraySize];
-    for (int i = 0; i < arraySize; i++)
-    {
-        gizmoTransform[i] = UpdateGizmoTranformFromParent(axisInfo[i]);
-    }
-    return gizmoTransform;
+ GizmoInfo* FLocalGizmo::GetGizmoTransform()
+ {
+     const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
+     // gizmoTransform[arraySize];
+     for (int i = 0; i < arraySize; i++)
+     {
+         gizmoInfo.transform[i] = UpdateGizmoTranformFromParent(axisInfo[i]);
+     }
+     gizmoInfo.IsNew = isNew;
+
+    isNew = false;
+    
+    return &gizmoInfo;
 }
 
 FTransform FLocalGizmo::UpdateGizmoTranformFromParent(axis a)

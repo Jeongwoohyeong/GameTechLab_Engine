@@ -28,6 +28,11 @@ struct axis
     FVector ringRotate;
 };
 
+struct GizmoInfo {
+    FTransform transform[3];
+    bool IsNew;
+};
+
 class FLocalGizmo
 {
 public:
@@ -49,8 +54,11 @@ public:
     int GizmoSwitch = 0; // gizmo 종류 switch 0 : translate, 1: scale, 2: rotate
     int32 SelectedAxis = -1; // -1: none, 0: X, 1: Y, 2: Z 
     bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
+    
+    bool isNew = true;
 
     FTransform gizmoTransform[3]; // 렌더용 transform
+    GizmoInfo gizmoInfo;
 
     int bScaleXMinus = 1; // scale 음수값 확인용 변수들
     int bScaleYMinus = 1;
@@ -71,7 +79,7 @@ public:
     void SelectGizmo(int gizmoSwitch) { GizmoSwitch = gizmoSwitch; } // 
     void SelectGizmoAxis(int32 Axis) { SelectedAxis = Axis; }
 
-    FTransform* GetGizmoTransform();
+    GizmoInfo* GetGizmoTransform();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
 
     void OnLMouseClick(FDragMouseData firstClickInfo);
