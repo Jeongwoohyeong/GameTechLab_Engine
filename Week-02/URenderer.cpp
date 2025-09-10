@@ -358,7 +358,7 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			FVector color = GAxisColors[i];
 			if(i == Primitive->GetGizmo()->SelectedAxis)
 				color = GAxisColors[3];
-			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
+			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
 			Render(RingMesh, DeviceContext, nullptr);
 		}
 	}
@@ -373,13 +373,13 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			World = World * gizmoTrans[i].GetTransformMatrix();
 			if (i == Primitive->GetGizmo()->SelectedAxis)
 				color = GAxisColors[3];
-			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
+			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans[i].GetLocation()), color);
 			Render(LocalGizmoProperty.SelectedGizmo, DeviceContext, nullptr);
 
 			World = FMatrix::Identity();
 			gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
 			World = World * gizmoTrans[i].GetTransformMatrix();
-			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), color);
+			GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans[i].GetLocation()), color);
 			Render(CylinderMesh, DeviceContext, nullptr);
 		}
 	}
