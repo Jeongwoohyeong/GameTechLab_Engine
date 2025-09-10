@@ -17,7 +17,7 @@
 FTransform* LocalGizmo::GetGizmoTransform()
 {
     const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
-    gizmoTransform[arraySize];
+    // gizmoTransform[arraySize];
     for (int i = 0; i < arraySize; i++)
     {
         gizmoTransform[i] = UpdateGizmoTranformFromParent(axisInfo[i]);
@@ -126,11 +126,11 @@ void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
     const FVector A = ParentTransform->GetLocation();
     const FVector B = UCamera::GetInstance().Location;
 
-    const float dx = A.X - B.X;
-    const float dy = A.Y - B.Y;
-    const float dz = A.Z - B.Z;
+    FVector CameraLocation = UCamera::GetInstance().Location;
+    FVector CameraRocation = UCamera::GetInstance().Rotation;
 
-    const float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+    FVector ViewGizmoPos = MultiplyVecMat(ParentTransform->GetLocation(), FMatrix::MakeView(CameraLocation, CameraRocation));
+    float distance = ViewGizmoPos.Z;
 
     previousMousePos = UCamera::GetInstance().DeprojectScreenPoint(
         firstClickInfo.mouseX,
@@ -138,7 +138,7 @@ void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
         firstClickInfo.W,
         firstClickInfo.H,
         distance, //1.0,  //ParentTransform->GetLocation().Z,
-        true
+        false
     );
 }
 
@@ -146,29 +146,36 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
 {
     if (SelectedAxis == -1)
         return;
-    float distance = std::abs(ParentTransform->GetLocation().Z - UCamera::GetInstance().Location.Z);
-    UE_LOG("%d // %f , draged", SelectedAxis, distance);
+
+    FVector CameraLocation = UCamera::GetInstance().Location;
+    FVector CameraRotation = UCamera::GetInstance().Rotation;
+    // UE_LOG("Location %f %f %f , draged", CameraLocation.X, CameraLocation.Y, CameraLocation.Z);
+    // UE_LOG("Rocation %f %f %f , draged", CameraRotation.X, CameraRotation.Y, CameraRotation.Z);
+
+    FVector ViewGizmoPos = MultiplyVecMat(ParentTransform->GetLocation(), FMatrix::MakeView(CameraLocation, CameraRotation));
+    float distance = ViewGizmoPos.Z;
+
     currentMousePos = UCamera::GetInstance().DeprojectScreenPoint(
         dragInfo.mouseX,
         dragInfo.mouseY,
         dragInfo.W,
         dragInfo.H ,
         distance, //1.0, //ParentTransform->GetLocation().Z,
-        true
+        false
     );
-    FVector newDelta = currentMousePos - previousMousePos;
+    FVector newDelta = currentMousePos - previousMousePos; // view space delta
     previousMousePos = currentMousePos;
-    //TranslateLocalOrWorld(newDelta);
-    // Scale(newDelta);
+    // UE_LOG("%d // %f // %f %f %f, draged", SelectedAxis, distance, newDelta.X, newDelta.Y, newDelta.Z);
+    FVector resultInWorld = MultiplyVecMat(newDelta, FMatrix::MakeRotation(CameraRotation));
 
     // 테스트 코드
     switch (GizmoSwitch)
     {
     case 0:
-        TranslateLocalOrWorld(newDelta);
+        TranslateLocalOrWorld(resultInWorld);
         break;
     case 1:
-        Scale(newDelta);
+        Scale(resultInWorld);
         break;
     default:
         break;
@@ -209,14 +216,29 @@ void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다
     selectedVector.Normalize();
     float offset = Dot(newDelta, selectedVector);
 
-    FVector resultVector = offset * selectedVector;
-    ParentTransform->AddScale(resultVector);
-    FVector adjustingScale = ParentTransform->GetScale();
-    adjustingScale.X = std::abs(adjustingScale.X);
-    adjustingScale.Y = std::abs(adjustingScale.Y);
-    adjustingScale.Z = std::abs(adjustingScale.Z);
-    ParentTransform->SetScale(adjustingScale);
+    FVector addingScale = offset * selectedVector;
+    FVector parentScale = ParentTransform->GetScale();
+ 
+    FVector resultScale;
+    
+    resultScale.X = CheckAndMarkScaleMinus(bScaleXMinus, addingScale.X, parentScale.X);
+    resultScale.Y = CheckAndMarkScaleMinus(bScaleYMinus, addingScale.Y, parentScale.Y);
+    resultScale.Z = CheckAndMarkScaleMinus(bScaleZMinus, addingScale.Z, parentScale.Z);
 
+    ParentTransform->SetScale(resultScale);
+}
+
+float LocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale)
+{
+    float result;
+    result = parentScale + isScaleMinus*addingScale;
+    if (result < 0)
+    {
+        result *= -1;
+        isScaleMinus *= -1;
+    }
+
+    return result;
 }
 
 void LocalGizmo::RotateLocalOrWorld(FVector newDelta)

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
@@ -73,6 +73,7 @@ public:
 	static FMesh* ConeMesh;
 	static FMesh* CylinderMesh;
 	static FMesh* GizmoCubeMesh;
+	static FMesh* RingMesh;
 
 private:
 	WorldGizmo* worldGizmo = nullptr;

@@ -272,13 +272,13 @@
     <ClInclude Include="RTTIMacros.h">
       <Filter>헤더 파일\Util</Filter>
     </ClInclude>
+    <ClInclude Include="GizmoCube.h">
+      <Filter>헤더 파일\Shape</Filter>
+    </ClInclude>
     <ClInclude Include="FObjectFactory.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="ScaleGizmo.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="GizmoCube.h">
+    <ClInclude Include="RotationRing.h">
       <Filter>헤더 파일\Shape</Filter>
     </ClInclude>
   </ItemGroup>

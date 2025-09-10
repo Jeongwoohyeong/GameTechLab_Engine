@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <span>
 #include "Gizmo.h"
 #include "Math.h"
@@ -36,6 +36,7 @@ public:
     void RotateLocalOrWorld(FVector newDelta);
     void TranslateLocalOrWorld(FVector newDelta);
 
+    float CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale);
     void SelectGizmo(int gizmoSwitch);
 
     FMatrix worldMatrix{
@@ -53,4 +54,8 @@ public:
     FTransform gizmoTransform[3];
 
     int GizmoSwitch = 0;
+
+    int bScaleXMinus = 1;
+    int bScaleYMinus = 1;
+    int bScaleZMinus = 1;
 };
