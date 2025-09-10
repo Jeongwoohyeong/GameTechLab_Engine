@@ -17,6 +17,13 @@ inline constexpr FVector GAxisColors[3] = {
 	{ 1.0f, 0.0f, 0.0f }, // X - R
 };
 
+struct FGizmoProperty {
+	FVector HeadScale;
+	FMesh* SelectedGizmo;
+	int GizmoSwitch;
+	FGizmoProperty() :SelectedGizmo(nullptr), GizmoSwitch(0), HeadScale(FVector(0.1f, 0.8f, 0.1f)) {};
+};
+
 // 각종 버퍼와 전체 렌더링 플로우를 관리하는 클래스입니다.
 // 정적 멤버변수로 기본 도형 Mesh를 보유합니다.
 class URenderer
@@ -73,6 +80,5 @@ private:
 	UShader* Shader = nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
-	int GizmoSwitch = 0;
-	FMesh* SelectedGizmo = nullptr;
+	FGizmoProperty LocalGizmoProperty;
 };
