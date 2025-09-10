@@ -319,7 +319,7 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 
 	//// 테스트용	
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
-	constexpr int gizmoCount = 2;	
+	constexpr int gizmoCount = 3;	
 	if (CInputManager::GetInstance().IsKeyPressed(VK_SPACE))
 	{
 		UE_LOG("space pressed");
@@ -327,43 +327,52 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 		switch (LocalGizmoProperty.GizmoSwitch)
 		{
 		case 0:
-			UE_LOG("gizmo swith %d", LocalGizmoProperty.GizmoSwitch);
 			LocalGizmoProperty.HeadScale = { 0.1f, 0.8f, 0.1f };
 			LocalGizmoProperty.SelectedGizmo = ConeMesh;
 			break;
 		case 1:
-			UE_LOG("gizmo swith %d", LocalGizmoProperty.GizmoSwitch);
 			LocalGizmoProperty.HeadScale = { 0.1f, 0.5f, 0.1f };
 			LocalGizmoProperty.SelectedGizmo = GizmoCubeMesh;
 			break;
 		case 2:
+			LocalGizmoProperty.SelectedGizmo = RingMesh;
 			break;
 		default:
 			break;
 		}
+		UE_LOG("gizmo swith %d", LocalGizmoProperty.GizmoSwitch);
+
 		Primitive->SwitchGizmo(LocalGizmoProperty.GizmoSwitch);
 	}
 	
-	for (int i = 0; i < 3; i++)
+	if (LocalGizmoProperty.GizmoSwitch == 2) // rotation일 때
 	{
-		FMatrix World = FMatrix::Identity();
-		gizmoTrans[i].SetScale(LocalGizmoProperty.HeadScale); // location gizmo
-		World = World * gizmoTrans[i].GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(LocalGizmoProperty.SelectedGizmo, DeviceContext, nullptr);
+		for (int i = 0; i < 3; i++)
+		{
+			// test ring
+			FMatrix World = FMatrix::Identity();
+			gizmoTrans[i].SetScale(1.0f, 1.0f, 1.0f);
+			World = World * gizmoTrans[i].GetTransformMatrix();
+			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+			Render(RingMesh, DeviceContext, nullptr);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			FMatrix World = FMatrix::Identity();
+			gizmoTrans[i].SetScale(LocalGizmoProperty.HeadScale); // location gizmo
+			World = World * gizmoTrans[i].GetTransformMatrix();
+			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+			Render(LocalGizmoProperty.SelectedGizmo, DeviceContext, nullptr);
 
-		World = FMatrix::Identity();
-		gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
-		World = World * gizmoTrans[i].GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(CylinderMesh, DeviceContext, nullptr);		
-
-		// test ring
-		World = FMatrix::Identity();
-		gizmoTrans[i].SetScale(1.0f, 1.0f, 1.0f);
-		World = World * gizmoTrans[i].GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(RingMesh, DeviceContext, nullptr);
+			World = FMatrix::Identity();
+			gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
+			World = World * gizmoTrans[i].GetTransformMatrix();
+			Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+			Render(CylinderMesh, DeviceContext, nullptr);
+		}
 	}
 
 	////

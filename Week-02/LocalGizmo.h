@@ -35,20 +35,20 @@ public:
 #pragma region 변수
     axis axisInfo[3] =
     {
-        {ROTATE_X, TRANSLATE_X}, // Y
-        {ROTATE_Y, TRANSLATE_Y}, // Z
-        {ROTATE_Z, TRANSLATE_Z} // X
+        {ROTATE_X, TRANSLATE_X, RINGROTATE_X}, // Y
+        {ROTATE_Y, TRANSLATE_Y, RINGROTATE_Y}, // Z
+        {ROTATE_Z, TRANSLATE_Z, RINGROTATE_Z} // X
     };
 
     FTransform* ParentTransform; // 부모 UPrimitiveComponent의 Transform 주소
     FAABB AABB;
     bool bIsAABBCreated = false;
-    int32 SelectedAxis = -1; // -1: none, 0: X, 1: Y, 2: Z 
 
     FVector previousMousePos; // 기즈모 전용 드래그용 변수
     FVector currentMousePos;
 
-    int GizmoSwitch = 0; // gizmo 종류 switch
+    int GizmoSwitch = 0; // gizmo 종류 switch 0 : translate, 1: scale, 2: rotate
+    int32 SelectedAxis = -1; // -1: none, 0: X, 1: Y, 2: Z 
     bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
 
     FTransform gizmoTransform[3]; // 렌더용 transform
@@ -69,6 +69,7 @@ public:
     void Bind();
     void UnBind();
 
+    void SelectGizmo(int gizmoSwitch) { GizmoSwitch = gizmoSwitch; } // 
     void SelectGizmoAxis(int32 Axis) { SelectedAxis = Axis; }
 
     FTransform* GetGizmoTransform();
@@ -83,6 +84,4 @@ public:
     void TranslateLocalOrWorld(FVector newDelta);
 
     float CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale);
-
-    void SelectGizmo(int gizmoSwitch);
 };

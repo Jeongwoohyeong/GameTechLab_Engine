@@ -29,7 +29,10 @@ FTransform LocalGizmo::UpdateGizmoTranformFromParent(axis a)
 {
     FTransform Transform = *ParentTransform;
     FVector AxisRotation = a.rotate;
-    // if()
+    if (GizmoSwitch == 2)
+    {
+        AxisRotation = a.ringRotate;
+    }
 
     Transform.SetScale(0.05f, 0.8f, 0.05f);
 
@@ -85,6 +88,7 @@ void LocalGizmo::CreateAABB()
     bIsAABBCreated = true;
 }
 
+#pragma region Input Callback Handler
 void LocalGizmo::Bind()
 {
     OnClickIdx = CInputManager::GetInstance().RegisterMouseClickCallback([this](FDragMouseData ClickInfo) -> void {
@@ -105,10 +109,14 @@ void LocalGizmo::UnBind()
     CInputManager::GetInstance().RemoveMouseReleaseCallback(OnReleaseIdx);
 }
 
+#pragma endregion
+
+#pragma region Receiving MouseInput
+
 void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
 {
     // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
-    
+
     if (ParentTransform == nullptr)
     {
         UE_LOG("ParentNull");
@@ -151,7 +159,7 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
         dragInfo.mouseX,
         dragInfo.mouseY,
         dragInfo.W,
-        dragInfo.H ,
+        dragInfo.H,
         distance, //1.0, //ParentTransform->GetLocation().Z,
         false
     );
@@ -174,6 +182,22 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     }
 }
 
+void LocalGizmo::OnLMouseRelease()
+{
+    // UE_LOG("release");
+    SelectedAxis = -1;
+
+    bScaleXMinus = 1;
+    bScaleYMinus = 1;
+    bScaleZMinus = 1;
+
+    previousMousePos = { 0, 0, 0 };
+    currentMousePos = { 0, 0, 0 };
+}
+
+#pragma endregion
+
+#pragma region Manipulating Primitives
 void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다.
 {
     FVector selectedVector;
@@ -210,9 +234,9 @@ void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다
     }
     FVector addingScale = offset * selectedVector;
     FVector parentScale = ParentTransform->GetScale();
- 
+
     FVector resultScale;
-    
+
     resultScale.X = CheckAndMarkScaleMinus(bScaleXMinus, addingScale.X, parentScale.X);
     resultScale.Y = CheckAndMarkScaleMinus(bScaleYMinus, addingScale.Y, parentScale.Y);
     resultScale.Z = CheckAndMarkScaleMinus(bScaleZMinus, addingScale.Z, parentScale.Z);
@@ -223,7 +247,7 @@ void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다
 float LocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale)
 {
     float result;
-    result = parentScale + isScaleMinus*addingScale;
+    result = parentScale + isScaleMinus * addingScale;
     if (result < 0)
     {
         result *= -1;
@@ -282,21 +306,4 @@ void LocalGizmo::TranslateLocalOrWorld(FVector newDelta)
     FVector resultVector = offset * selectedVector;
     ParentTransform->AddLocation(resultVector);
 }
-
-void LocalGizmo::SelectGizmo(int gizmoSwitch)
-{
-    GizmoSwitch = gizmoSwitch;
-}
-
-void LocalGizmo::OnLMouseRelease()
-{
-    // UE_LOG("release");
-    SelectedAxis = -1;
-
-    bScaleXMinus = 1;
-    bScaleYMinus = 1;
-    bScaleZMinus = 1;
-
-    previousMousePos = { 0, 0, 0 };
-    currentMousePos = { 0, 0, 0 };
-}
+#pragma endregion
