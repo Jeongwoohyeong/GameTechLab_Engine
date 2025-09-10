@@ -127,6 +127,7 @@
   <ItemGroup>
     <ClCompile Include="CInputManager.cpp" />
     <ClCompile Include="CScene.cpp" />
+    <ClCompile Include="FObjectFactory.cpp" />
     <ClCompile Include="FRay.h" />
     <ClCompile Include="FTransform.cpp" />
     <ClCompile Include="FMesh.h" />
@@ -165,6 +166,8 @@
     <ClInclude Include="Cone.h" />
     <ClInclude Include="Containers.h" />
     <ClInclude Include="CScene.h" />
+    <ClInclude Include="FObjectFactory.h" />
+    <ClInclude Include="GizmoCube.h" />
     <ClInclude Include="ImGui\imgui_console.h" />
     <ClInclude Include="CCameraMovementController.h" />
     <ClInclude Include="IntersectionTest.h" />
@@ -210,9 +213,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

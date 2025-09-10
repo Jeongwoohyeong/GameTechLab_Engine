@@ -62,8 +62,7 @@ UObject::~UObject()
 }
 
 bool UObject::IsA(const UClass* targetClass) const
-{
-	UE_LOG("call isa");
+{	
 	for (UClass* currentClass = this->GetClass(); currentClass != nullptr; currentClass = currentClass->GetParent())
 	{
 		if (currentClass == targetClass)

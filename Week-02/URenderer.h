@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
@@ -65,6 +65,7 @@ public:
 	static FMesh* TriangleMesh;
 	static FMesh* ConeMesh;
 	static FMesh* CylinderMesh;
+	static FMesh* GizmoCubeMesh;
 	static FMesh* RingMesh;
 
 private:
@@ -73,4 +74,6 @@ private:
 	UShader* Shader = nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
+	int GizmoSwitch = 0;
+	FMesh* SelectedGizmo = nullptr;
 };

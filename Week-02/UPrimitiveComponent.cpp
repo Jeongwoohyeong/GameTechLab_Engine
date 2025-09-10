@@ -1,13 +1,15 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "d3d11.h"
-#include "LocalGizmo.h"
 
 RTTI_IMPL(UPrimitiveComponent, USceneComponent)
 
-UPrimitiveComponent::UPrimitiveComponent() { }
+UPrimitiveComponent::UPrimitiveComponent()
+{
+}
 
 void UPrimitiveComponent::Release()
 {
+	
 }
 
 void UPrimitiveComponent::CreateAABB()
@@ -57,4 +59,9 @@ FAABB UPrimitiveComponent::GetAABB()
 		bIsAABBCreated = true;
 	}
 	return AABB;
+}
+
+void UPrimitiveComponent::SwitchGizmo(int gizmoSwitch)
+{
+	LocationGizmo.SelectGizmo(gizmoSwitch);
 }

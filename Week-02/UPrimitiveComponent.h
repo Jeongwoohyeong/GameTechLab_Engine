@@ -25,11 +25,11 @@ public:
 
 	inline FTransform* GetTransform() { return &Transform; }
 	inline FTransform* GetGizmoTransforms() { 
-		if (Gizmo.ParentTransform == nullptr)
+		if (LocationGizmo.ParentTransform == nullptr)
 		{
-			Gizmo.Initialize(&Transform);
+			LocationGizmo.Initialize(&Transform);
 		}
-		return Gizmo.GetGizmoTransform(); 
+		return LocationGizmo.GetGizmoTransform();
 	}
 
 	virtual EPrimitiveType GetPrimitiveType() = 0;
@@ -41,10 +41,14 @@ public:
 	virtual void CreateAABB();
 	FAABB GetAABB();
 
-	LocalGizmo* GetGizmo() { return &Gizmo; }
+
+	LocalGizmo* GetGizmo() { return &LocationGizmo; }
+	void SwitchGizmo(int gizmoSwitch);
 
 protected:
-	LocalGizmo Gizmo;
+	FTransform* GizmoTransform;	
+	LocalGizmo LocationGizmo;
 	FAABB AABB;
 	bool bIsAABBCreated = false;
+	int GizmoSwitch = 0;
 };

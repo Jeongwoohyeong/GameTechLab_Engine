@@ -1,4 +1,4 @@
-﻿#include <d3d11.h>
+#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -12,6 +12,7 @@
 #include "Cone.h"
 #include "Cylinder.h"
 #include "RotationRing.h"
+#include "GizmoCube.h"
 
 #include "WorldGizmo.h"
 
@@ -23,6 +24,7 @@ FMesh* URenderer::TriangleMesh = nullptr;
 FMesh* URenderer::ConeMesh = nullptr;
 FMesh* URenderer::CylinderMesh = nullptr;
 FMesh* URenderer::RingMesh = nullptr;
+FMesh* URenderer::GizmoCubeMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -59,6 +61,8 @@ bool URenderer::Initialize(HWND hWnd)
 	UCamera::GetInstance().Init();
 		
 	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
+	
+	SelectedGizmo = ConeMesh;
 
 	return true;
 }
@@ -138,6 +142,7 @@ bool URenderer::CreateAllMesh()
 	CreateMesh(CylinderMesh, GCylinderVertices, sizeof(GCylinderVertices), GCylinderIndices, sizeof(GCylinderIndices));
 	CreateMesh(ConeMesh, GConeVertices, sizeof(GConeVertices), GConeIndices, sizeof(GConeIndices));
 	CreateMesh(RingMesh, GAxisRingVertices, sizeof(GAxisRingVertices), GAxisRingIndices, sizeof(GAxisRingIndices));
+	CreateMesh(GizmoCubeMesh, GGizmoCubeVertices, sizeof(GGizmoCubeVertices), GGizmoCubeIndices, sizeof(GGizmoCubeVertices));
 
 	return true;
 }
@@ -294,22 +299,64 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
 
 	// color 추가  렌더링
+	//FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
+
+	//for (int i = 0; i < 3; i++)
+	//{
+	//	FMatrix World = FMatrix::Identity();
+	//	gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f); // location gizmo
+	//	World = World * gizmoTrans[i].GetTransformMatrix();
+	//	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+	//	Render(ConeMesh, DeviceContext, nullptr);		
+
+	//	World = FMatrix::Identity();
+	//	gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
+	//	World = World * gizmoTrans[i].GetTransformMatrix();
+	//	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+	//	Render(CylinderMesh, DeviceContext, nullptr);		
+	//}
+
+	//// 테스트용	
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
+	constexpr int gizmoCount = 2;
+	if (CInputManager::GetInstance().IsKeyPressed(VK_SPACE))
+	{
+		UE_LOG("space pressed");
+		GizmoSwitch = (GizmoSwitch + 1) % gizmoCount;
+		switch (GizmoSwitch)
+		{
+		case 0:
+			UE_LOG("gizmo swith %d", GizmoSwitch);
+			SelectedGizmo = ConeMesh;
+			break;
+		case 1:
+			UE_LOG("gizmo swith %d", GizmoSwitch);
+			SelectedGizmo = GizmoCubeMesh;
+			break;
+		case 2:
+			break;
+		default:
+			break;
+		}
+		Primitive->SwitchGizmo(GizmoSwitch);
+	}
+
 	for (int i = 0; i < 3; i++)
 	{
 		FMatrix World = FMatrix::Identity();
-		gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f);
+		gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f); // location gizmo
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(ConeMesh, DeviceContext, nullptr);
+		Render(SelectedGizmo, DeviceContext, nullptr);
 
 		World = FMatrix::Identity();
 		gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
 		World = World * gizmoTrans[i].GetTransformMatrix();
 		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-		Render(CylinderMesh, DeviceContext, nullptr);
-		
+		Render(CylinderMesh, DeviceContext, nullptr);		
 	}
+
+	////
 
 	return true;
 }
