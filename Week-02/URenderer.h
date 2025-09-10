@@ -11,10 +11,11 @@ class UCamera;
 class UPrimitiveComponent;
 class WorldGizmo;
 
-inline constexpr FVector GAxisColors[3] = {
-	{ 0.0f, 1.0f, 0.0f }, // Y - G
-	{ 0.0f, 0.0f, 1.0f },  // Z - B
-	{ 1.0f, 0.0f, 0.0f }, // X - R
+inline constexpr FVector GAxisColors[4] = {
+	{ 0.0f, 1.0f, 0.0f },// X - R
+	{ 0.0f, 0.0f, 1.0f }, // Y - B
+	{ 1.0f, 0.0f, 0.0f }, // Z - G
+	{ 1.0f, 1.0f, 0.0f },
 };
 
 struct FGizmoProperty {
