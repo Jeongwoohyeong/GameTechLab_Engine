@@ -11,6 +11,7 @@
 #include "CScene.h"
 #include "CInputManager.h"
 
+
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // 메시지 처리 함수
@@ -40,6 +41,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+// URenderer, CCameraMovementController, Scene, UCamera 초기화
+bool GlobalInit(HWND* InHWnd, URenderer* R, CCameraMovementController* C, uint32 ClientW, uint32 ClientH)
+{
+	CInputManager::GetInstance().SetHWnd(InHWnd);
+	C = new CCameraMovementController();   // 객체 생성 및 포인터에 할당
+	C->Initialize(InHWnd);
+	CScene::GetInstance().New();
+	if(R->Initialize(*InHWnd)) return false;
+
+	SetLastError(0);
+	LONG_PTR Prev = SetWindowLongPtr(*InHWnd, GWLP_USERDATA, (LONG_PTR)R);
+	if (Prev == 0 && GetLastError() != 0) return false; // SetWindowLongPtr 실패
+
+	UCamera::GetInstance().Init(FVector(0.0f, 0.0f, -5.0f), FVector::Zero(), 60.0f, (float)ClientW / (float)ClientH);
+
+	return true;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	WCHAR WindowClass[] = L"JungleWindowClass";
@@ -57,28 +76,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HWND hWnd = CreateWindowExW(0, WindowClass, Title, WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, InitialWidth, InitialHeight,
 		nullptr, nullptr, hInstance, nullptr);
-	
+
 	URenderer renderer;
-	
-	//
-	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)&renderer);
+	CCameraMovementController* input = nullptr;
+	bool bInitSuccess = GlobalInit(&hWnd, &renderer, input, InitialWidth, InitialHeight);
 
-	CInputManager::GetInstance().SetHWnd(&hWnd);
-	CCameraMovementController* input = nullptr; // 포인터를 nullptr로 초기화하는 것이 좋은 습관입니다.
-	input = new CCameraMovementController();   // 객체 생성 및 포인터에 할당
-	input->Initialize(&hWnd);
-
-	// 씬 초기화
-	CScene::GetInstance().New();
-
-	// TODO#1: Renderer 초기화 코드 내부에서 UCamera 초기화 코드 빼기 -> and 연산으로 연달아 진행
-	// UCamera 초기화 코드에 파라미터 전달할 수 있게 수정 (종횡비 전달해야 함)
-	if (renderer.Initialize(hWnd)) 
+	if (bInitSuccess)
 	{
-		// --- Renderer 초기화 이후 가능한 설정 수행 ---
-		UCamera::GetInstance().AspectRatio = (float)InitialWidth / (float)InitialHeight; // TODO#2: TODO#1 처리 후 제거
-
 		bool bIsExit = false;
+
+		// --- Main Loop ---
 		while (bIsExit == false)
 		{
 			MSG msg;

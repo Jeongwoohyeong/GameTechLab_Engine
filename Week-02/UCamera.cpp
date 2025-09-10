@@ -1,13 +1,13 @@
 ﻿#include "UCamera.h"
 
-void UCamera::Init()
+void UCamera::Init(FVector Loc, FVector Rot, float FovDeg, float Ratio)
 {
-	Location = { 0.0f, 0.0f, -5.0f };
-	Rotation = { 0.0f, 0.0f, 0.0f };
+	Location = Loc;
+	Rotation = Rot;
 	/*Target = { 0.0f, 0.0f, 0.0f };
 	Up = { 0.0f, 1.0f, 0.0f };*/
-	FovY = DegToRad(60.0f);
-	AspectRatio = 1.0f;
+	FovY = DegToRad(FovDeg);
+	AspectRatio = Ratio;
 	NearPlane = 0.1f;
 	FarPlane = 100.0f;
 }

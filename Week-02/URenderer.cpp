@@ -1,4 +1,4 @@
-#include <d3d11.h>
+﻿#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -57,8 +57,6 @@ bool URenderer::Initialize(HWND hWnd)
 
 	worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);
-
-	UCamera::GetInstance().Init();
 		
 	UI.Initialize(hWnd, Device->GetDeivce(), Device->GetDeviceContext());
 	

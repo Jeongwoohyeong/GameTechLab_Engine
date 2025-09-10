@@ -23,7 +23,7 @@ public:
 		return instance;
 	}
 
-	void Init();
+	void Init(FVector Loc, FVector Rot, float FovDeg, float Ratio);
 
 	// MVP 행렬 계산
 	FMatrix MakeMVP(const FMatrix& World);
