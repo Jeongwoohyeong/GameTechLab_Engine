@@ -61,7 +61,12 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!this->CreateRasterizerState())
 	{
 		return false;
-	}	
+	}
+
+	if (!this->CreateGizmoRasterizerState())
+	{
+		return false;
+	}
 
 	worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);
@@ -594,7 +599,7 @@ bool URenderer::CreateGizmoRasterizerState()
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.DepthClipEnable = TRUE;
-	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
+	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &GizmoRasterizerState);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"gizmo rasterizerstate create fail,", L"error", MB_OK);
