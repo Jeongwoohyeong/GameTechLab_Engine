@@ -61,7 +61,12 @@ bool URenderer::Initialize(HWND hWnd)
 	if (!this->CreateRasterizerState())
 	{
 		return false;
-	}	
+	}
+
+	if (!this->CreateGizmoRasterizerState())
+	{
+		return false;
+	}
 
 	worldGizmo = new WorldGizmo();
 	worldGizmo->Initialize(this);
@@ -212,10 +217,16 @@ void URenderer::Resize(UINT width, UINT height)
 	{
 		return;
 	}
+	if ((float)height < MATH_EPSILON)
+	{
+		return;
+	}
+
 
 	Device->Resize(width, height);
 	// TODO#4: 전체적으로 URenderer와 UCamera의 의존도가 낮은 상태임을 고려, 다른 곳으로 옮길 것
-	UCamera::GetInstance().AspectRatio = (float)width / (float)height; 
+	UCamera::GetInstance().Width = (float)width;
+	UCamera::GetInstance().Height = (float)height;
 }
 
 bool URenderer::CreateVertexBuffer(FMesh* Mesh)
@@ -383,6 +394,8 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 			Render(CylinderMesh, DeviceContext, nullptr);
 		}
 	}
+
+	ColorShader->PrepareShader();
 
 	// 기즈모 셰이더 종료, 컬러셰이더 상태 설정
 	Device->EndGizmo(RasterizerState);	
@@ -594,7 +607,7 @@ bool URenderer::CreateGizmoRasterizerState()
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
 	rasterizerDesc.CullMode = D3D11_CULL_NONE;
 	rasterizerDesc.DepthClipEnable = TRUE;
-	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
+	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &GizmoRasterizerState);
 	if (FAILED(result))
 	{
 		MessageBox(nullptr, L"gizmo rasterizerstate create fail,", L"error", MB_OK);
