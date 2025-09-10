@@ -217,10 +217,16 @@ void URenderer::Resize(UINT width, UINT height)
 	{
 		return;
 	}
+	if ((float)height < MATH_EPSILON)
+	{
+		return;
+	}
+
 
 	Device->Resize(width, height);
 	// TODO#4: 전체적으로 URenderer와 UCamera의 의존도가 낮은 상태임을 고려, 다른 곳으로 옮길 것
-	UCamera::GetInstance().AspectRatio = (float)width / (float)height; 
+	UCamera::GetInstance().Width = (float)width;
+	UCamera::GetInstance().Height = (float)height;
 }
 
 bool URenderer::CreateVertexBuffer(FMesh* Mesh)
