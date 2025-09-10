@@ -395,6 +395,8 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 		}
 	}
 
+	ColorShader->PrepareShader();
+
 	// 기즈모 셰이더 종료, 컬러셰이더 상태 설정
 	Device->EndGizmo(RasterizerState);	
 
