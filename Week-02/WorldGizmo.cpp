@@ -21,9 +21,9 @@ void WorldGizmo::Initialize(URenderer* renderer)
         xzGridIndices,
         Minor,
         Major,
-        YColor,
-        XColor,
-        ZColor);
+        ForwardColor,
+        RightColor,
+        UpColor);
 
     gridVerticesBuffer = nullptr;
     gridIndicesBuffer = nullptr;
