@@ -28,8 +28,6 @@ public:
 
     FTransform* GetGizmoTransform();
     FTransform UpdateGizmoTranformFromParent(axis a); // 기즈모 Transform Getter
-    
-    void CalculateTranslationOffSet();
 
     void OnLMouseClick(FDragMouseData firstClickInfo);
     void OnLMouseDrag(FDragMouseData dragInfo);
@@ -40,29 +38,23 @@ public:
     void TranslateLocalOrWorld(FVector newDelta);
 
     float CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, float parentScale);
+
     void SelectGizmo(int gizmoSwitch);
 
-    FMatrix worldMatrix{
-        1, 1 ,0,
-        0, 1, 0,
-        0, 0, 1
-    };
-
-    FVector previousMousePos;
+    FVector previousMousePos; // 기즈모 전용 드래그용 변수
     FVector currentMousePos;
 
-    bool startMoving = false;
+    int GizmoSwitch = 0; // gizmo 종류 switch
 	bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
 
-    FTransform gizmoTransform[3];
+    FTransform gizmoTransform[3]; // 렌더용 transform
+    FVector rotationTransform[3]; // rotation gizmo 추가
 
-    int GizmoSwitch = 0;
-
-    int bScaleXMinus = 1;
+    int bScaleXMinus = 1; // scale 음수값 확인용 변수들
     int bScaleYMinus = 1;
     int bScaleZMinus = 1;
 
-    int OnClickIdx;
+    int OnClickIdx; // input call back 해제용 인덱스
     int OnDragIdx;
     int OnReleaseIdx;
 };

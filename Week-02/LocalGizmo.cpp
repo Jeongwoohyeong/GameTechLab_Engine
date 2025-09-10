@@ -104,21 +104,6 @@ void LocalGizmo::UnBind()
     CInputManager::GetInstance().RemoveMouseReleaseCallback(OnReleaseIdx);
 }
 
-void LocalGizmo::CalculateTranslationOffSet()
-{
-    if (SelectedAxis == -1)
-        return;
-
-    FVector currentMousePos = CInputManager::GetInstance().MouseCurrentPosWorld;
-    FVector mouseDelta = currentMousePos - previousMousePos;
-
-    float offset = Dot(axisInfo[SelectedAxis].direction, mouseDelta);
-
-    FVector primitiveTranslateOffset = axisInfo[SelectedAxis].direction * offset;
-    ParentTransform->AddLocation(primitiveTranslateOffset);
-    previousMousePos = currentMousePos;
-}
-
 void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
 {
     // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
@@ -190,11 +175,29 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
 
 void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다.
 {
-    //// 월드 이동
     FVector selectedVector;
+
+    //// 1단계 : 로컬 축에 대해 내적, 변화량 구함
+    FMatrix srt = ParentTransform->GetTransformMatrix();
     switch (SelectedAxis)
     {
-    case 0 : // z축
+    case 0: // z축
+        selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
+        break;
+    case 1: // y축
+        selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
+        break;
+    case 2: // x축
+        selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
+        break;
+    }
+    selectedVector.Normalize();
+    float offset = Dot(newDelta, selectedVector);
+
+    // 2단계 : 이후 해당 로컬축의 x, y, z에 올바르게 곱해서 반영
+    switch (SelectedAxis)
+    {
+    case 0: // z축
         selectedVector = { 0, 0, 1 };
         break;
     case 1: // y축
@@ -204,24 +207,6 @@ void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다
         selectedVector = { 1, 0, 0 };
         break;
     }
-    //// 로컬 이동
-    //FMatrix srt = ParentTransform->GetTransformMatrix();
-    //FVector selectedVector;
-    //switch (SelectedAxis)
-    //{
-    //case 0: // z축
-    //    selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
-    //    break;
-    //case 1: // y축
-    //    selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
-    //    break;
-    //case 2: // x축
-    //    selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
-    //    break;
-    //}
-    selectedVector.Normalize();
-    float offset = Dot(newDelta, selectedVector);
-
     FVector addingScale = offset * selectedVector;
     FVector parentScale = ParentTransform->GetScale();
  
@@ -253,36 +238,41 @@ void LocalGizmo::RotateLocalOrWorld(FVector newDelta)
 }
 void LocalGizmo::TranslateLocalOrWorld(FVector newDelta)
 {
-    //// 월드 이동
     FVector selectedVector;
-    switch (SelectedAxis)
+    if (bIsLocalMode)
     {
-    case 0 : // z축
-        selectedVector = { 0, 0, 1 };
-        break;
-    case 1: // y축
-        selectedVector = { 0, 1, 0 };
-        break;
-    case 2: // x축
-        selectedVector = { 1, 0, 0 };
-        break;
-    }
+        //로컬 이동
+        FMatrix srt = ParentTransform->GetTransformMatrix();
+        switch (SelectedAxis)
+        {
+        case 0: // z축
+            selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
+            break;
+        case 1: // y축
+            selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
+            break;
+        case 2: // x축
+            selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
+            break;
+        }
 
-    // 로컬 이동
-    //FMatrix srt = ParentTransform->GetTransformMatrix();
-    //FVector selectedVector;
-    //switch (SelectedAxis)
-    //{
-    //case 0: // z축
-    //    selectedVector = { srt.M[2][0], srt.M[2][1], srt.M[2][2] }; // 셋째 행
-    //    break;
-    //case 1: // y축
-    //    selectedVector = { srt.M[1][0], srt.M[1][1], srt.M[1][2] }; // 둘째 행
-    //    break;
-    //case 2: // x축
-    //    selectedVector = { srt.M[0][0], srt.M[0][1], srt.M[0][2] }; // 첫 행
-    //    break;
-    //}
+    }
+    else
+    {
+        //// 월드 이동
+        switch (SelectedAxis)
+        {
+        case 0: // z축
+            selectedVector = { 0, 0, 1 };
+            break;
+        case 1: // y축
+            selectedVector = { 0, 1, 0 };
+            break;
+        case 2: // x축
+            selectedVector = { 1, 0, 0 };
+            break;
+        }
+    }
 
     // UE_LOG("%f %f %f , draged", selectedVector.X, selectedVector.Y, selectedVector.Z);
     selectedVector.Normalize();
@@ -301,6 +291,11 @@ void LocalGizmo::OnLMouseRelease()
 {
     // UE_LOG("release");
     SelectedAxis = -1;
+
+    bScaleXMinus = 1;
+    bScaleYMinus = 1;
+    bScaleZMinus = 1;
+
     previousMousePos = { 0, 0, 0 };
     currentMousePos = { 0, 0, 0 };
 }
