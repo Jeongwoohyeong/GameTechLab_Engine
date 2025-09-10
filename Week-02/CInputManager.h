@@ -8,10 +8,10 @@
 
 
 struct FDragMouseData{
-	float mouseX;
-	float mouseY;
-	float W;
-	float H;
+	int32 mouseX;
+	int32 mouseY;
+	int32 W;
+	int32 H;
 };
 
 // 클릭/드래그/떼기 이벤트에 대한 콜백 함수 타입 정의

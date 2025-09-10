@@ -160,7 +160,7 @@ int CInputManager::RegisterMouseClickCallback(MouseCallback callback)
 	OnClickCallbacks.push_back(callback);
 	IsLiveClickCallbacks.push_back(true);
 	
-	int idx = OnClickCallbacks.size() - 1;
+	int idx = static_cast<int>(OnClickCallbacks.size() - 1);
 	return idx;
 }
 
@@ -169,7 +169,7 @@ int CInputManager::RegisterMouseDragCallback(MouseCallback callback)
 	OnDragCallbacks.push_back(callback);
 	IsLiveDragCallbacks.push_back(true);
 
-	int idx = OnDragCallbacks.size() - 1;
+	int idx = static_cast<int>(OnDragCallbacks.size() - 1);
 	return idx;
 }
 
@@ -178,7 +178,7 @@ int CInputManager::RegisterMouseReleaseCallback(MouseReleaseCallback callback)
 	OnReleaseCallbacks.push_back(callback);
 	IsLiveReleaseCallbacks.push_back(true);
 
-	int idx = OnReleaseCallbacks.size() - 1;
+	int idx = static_cast<int>(OnReleaseCallbacks.size() - 1);
 	return idx;
 }
 
