@@ -481,6 +481,11 @@ struct FMatrix
 
 		return Result;
 	}
+
+	// 여기에 get x axis, y axis, z axis 넣어줘. 우리 왼손 좌표계임
+	FVector GetAxisX() { return FVector(M[0][0], M[1][0], M[2][0]); }
+	FVector GetAxisY() { return FVector(M[0][1], M[1][1], M[2][1]); }
+	FVector GetAxisZ() { return FVector(M[0][2], M[1][2], M[2][2]); }
 };
 
 inline float DegToRad(float Degree)
@@ -520,6 +525,16 @@ inline FVector4 operator*(const FVector4& V, const FMatrix& M)
 	return Result;
 }
 
+inline FVector MultiplyVecMat(const FVector& v, const FMatrix& M)
+{
+	const float x =v.X, y = v.Y, z = v.Z;
+	const float X = x * M.M[0][0] + y * M.M[1][0] + z * M.M[2][0] + 1.0f * M.M[3][0];
+	const float Y = x * M.M[0][1] + y * M.M[1][1] + z * M.M[2][1] + 1.0f * M.M[3][1];
+	const float Z = x * M.M[0][2] + y * M.M[1][2] + z * M.M[2][2] + 1.0f * M.M[3][2];
+	const float W = x * M.M[0][3] + y * M.M[1][3] + z * M.M[2][3] + 1.0f * M.M[3][3];
+	// 일반 뷰/월드 행렬은 W=1이므로 보통 나눌 필요 없음. (투영행렬은 필요)
+	return FVector(X, Y, Z);
+}
 //struct FQuaternion
 //{
 //	float X, Y, Z, W; // W + Xi + Yj + Zk

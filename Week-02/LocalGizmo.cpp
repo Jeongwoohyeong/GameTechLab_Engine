@@ -117,15 +117,12 @@ void LocalGizmo::CalculateTranslationOffSet()
 void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
 {
     // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
-    
-    const FVector A = ParentTransform->GetLocation();
-    const FVector B = UCamera::GetInstance().Location;
 
-    const float dx = A.X - B.X;
-    const float dy = A.Y - B.Y;
-    const float dz = A.Z - B.Z;
+    FVector CameraLocation = UCamera::GetInstance().Location;
+    FVector CameraRocation = UCamera::GetInstance().Rotation;
 
-    const float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+    FVector ViewGizmoPos = MultiplyVecMat(ParentTransform->GetLocation(), FMatrix::MakeView(CameraLocation, CameraRocation));
+    float distance = ViewGizmoPos.Z;
 
     previousMousePos = UCamera::GetInstance().DeprojectScreenPoint(
         firstClickInfo.mouseX,
@@ -133,7 +130,7 @@ void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
         firstClickInfo.W,
         firstClickInfo.H,
         distance, //1.0,  //ParentTransform->GetLocation().Z,
-        true
+        false
     );
 }
 
@@ -141,19 +138,28 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
 {
     if (SelectedAxis == -1)
         return;
-    float distance = std::abs(ParentTransform->GetLocation().Z - UCamera::GetInstance().Location.Z);
-    UE_LOG("%d // %f , draged", SelectedAxis, distance);
+
+    FVector CameraLocation = UCamera::GetInstance().Location;
+    FVector CameraRotation = UCamera::GetInstance().Rotation;
+    // UE_LOG("Location %f %f %f , draged", CameraLocation.X, CameraLocation.Y, CameraLocation.Z);
+    // UE_LOG("Rocation %f %f %f , draged", CameraRotation.X, CameraRotation.Y, CameraRotation.Z);
+
+    FVector ViewGizmoPos = MultiplyVecMat(ParentTransform->GetLocation(), FMatrix::MakeView(CameraLocation, CameraRotation));
+    float distance = ViewGizmoPos.Z;
+
     currentMousePos = UCamera::GetInstance().DeprojectScreenPoint(
         dragInfo.mouseX,
         dragInfo.mouseY,
         dragInfo.W,
         dragInfo.H ,
         distance, //1.0, //ParentTransform->GetLocation().Z,
-        true
+        false
     );
-    FVector newDelta = currentMousePos - previousMousePos;
+    FVector newDelta = currentMousePos - previousMousePos; // view space delta
     previousMousePos = currentMousePos;
-    TranslateLocalOrWorld(newDelta);
+    // UE_LOG("%d // %f // %f %f %f, draged", SelectedAxis, distance, newDelta.X, newDelta.Y, newDelta.Z);
+    FVector resultInWorld = MultiplyVecMat(newDelta, FMatrix::MakeRotation(CameraRotation));
+    TranslateLocalOrWorld(resultInWorld);
     // Scale(newDelta);
 }
 
