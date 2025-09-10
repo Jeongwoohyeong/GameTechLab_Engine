@@ -25,6 +25,11 @@ public:
 	ID3D11BlendState* GetBS_Alpha()        const { return BS_Alpha; }
 	ID3D11RasterizerState* GetRS_CullFront()    const { return RS_CullFront; }
 
+	// 기즈모 셰이더
+	ID3D11DepthStencilState* GetDS_Gizmo() const { return GizmoDepthState; }
+	void BeginGizmo(ID3D11RasterizerState* gizmoRSState);
+	void EndGizmo(ID3D11RasterizerState* colorRSState);
+
 private:
 	bool CreateDeviceAndSwapChain(HWND hWnd);
 	bool CreateFrameBuffer();
@@ -34,6 +39,10 @@ private:
 	bool CreateDepthStencilBuffer();
 	bool CreateDepthStates();
 	bool CreateOutlineDepthStencilState();
+
+	// 기즈모 셰이더
+	bool CreateGizmoDepthStencilState();
+	bool CreateGizmoDepthStencilBuffer();
 
 public:
 	ID3D11Device* Device = nullptr;
@@ -58,4 +67,9 @@ private:
 	ID3D11BlendState* BS_ColorOff = nullptr;
 	ID3D11BlendState* BS_Alpha = nullptr;
 	ID3D11RasterizerState* RS_CullFront = nullptr;
+
+	// 기즈모 셰이더
+	ID3D11Texture2D* GizmoDepthStencilBuffer = nullptr;
+	ID3D11DepthStencilView* GizmoDepthStencilView = nullptr;
+	ID3D11DepthStencilState* GizmoDepthState = nullptr;
 };

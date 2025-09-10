@@ -1,4 +1,4 @@
-#include <d3d11.h>
+﻿#include <d3d11.h>
 #include "URenderer.h"
 #include "UD3dDevice.h"
 #include "UShader.h"
@@ -39,8 +39,14 @@ bool URenderer::Initialize(HWND hWnd)
 		return false;
 	}
 
-	Shader = new UShader();
-	if (!Shader->Initialize(Device->GetDeivce(), Device->GetDeviceContext()))
+	ColorShader = new UShader();
+	if (!ColorShader->Initialize(Device->GetDeivce(), Device->GetDeviceContext()))
+	{
+		return false;
+	}
+
+	GizmoShader = new UShader();
+	if (!GizmoShader->InitializeGizmoShader(Device->GetDeivce(), Device->GetDeviceContext()))
 	{
 		return false;
 	}
@@ -72,12 +78,11 @@ void URenderer::Render()
 {
 	Device->BeginScene(); // DeviceContext 설정
 	Device->SetRSState(RasterizerState);
-	Shader->PrepareShader();
+	ColorShader->PrepareShader();
 	
+	worldGizmo->Render(this);
 	// 씬 렌더링
 	RenderScene();
-
-	worldGizmo->Render(this);
 
 	// UI 렌더링
 	RenderUI();
@@ -102,11 +107,19 @@ void URenderer::Release()
 		delete worldGizmo;
 		worldGizmo = nullptr;
 	}
-	if (Shader)
+
+	if (GizmoShader)
 	{
-		Shader->Release();
-		delete Shader;
-		Shader = nullptr;
+		GizmoShader->Release();
+		delete GizmoShader;
+		GizmoShader = nullptr;
+	}
+
+	if (ColorShader)
+	{
+		ColorShader->Release();
+		delete ColorShader;
+		ColorShader = nullptr;
 	}
 
 	if (Device)
@@ -134,6 +147,7 @@ bool URenderer::CreateRasterizerState()
 
 	return true;
 }
+
 bool URenderer::CreateAllMesh()
 {
 	CreateMesh(CubeMesh, GCubeVertices, sizeof(GCubeVertices), GCubeIndices, sizeof(GCubeIndices));
@@ -267,7 +281,7 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 
 	FMatrix World = FMatrix::Identity();
 	World = World * Primitive->GetTransform()->GetTransformMatrix();
-	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
+	ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World));
 	
 	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
 
@@ -297,24 +311,12 @@ bool URenderer::RenderPrimitive(UPrimitiveComponent* Primitive)
 bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 {
 	ID3D11DeviceContext* DeviceContext = Device->GetDeviceContext();
+	
+	// 기즈모 상태 설정	
+	Device->BeginGizmo(GizmoRasterizerState);
 
-	// color 추가  렌더링
-	//FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
-
-	//for (int i = 0; i < 3; i++)
-	//{
-	//	FMatrix World = FMatrix::Identity();
-	//	gizmoTrans[i].SetScale(0.1f, 0.8f, 0.1f); // location gizmo
-	//	World = World * gizmoTrans[i].GetTransformMatrix();
-	//	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-	//	Render(ConeMesh, DeviceContext, nullptr);		
-
-	//	World = FMatrix::Identity();
-	//	gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
-	//	World = World * gizmoTrans[i].GetTransformMatrix();
-	//	Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
-	//	Render(CylinderMesh, DeviceContext, nullptr);		
-	//}
+	GizmoShader->PrepareShader();
+	
 
 	//// 테스트용	
 	FTransform* gizmoTrans = Primitive->GetGizmoTransforms();
@@ -348,17 +350,20 @@ bool URenderer::RenderLocalGizmo(UPrimitiveComponent* Primitive)
 		FMatrix World = FMatrix::Identity();
 		gizmoTrans[i].SetScale(LocalGizmoProperty.HeadScale); // location gizmo
 		World = World * gizmoTrans[i].GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+		//ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+		GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans[i].GetLocation()), GAxisColors[i]);
 		Render(LocalGizmoProperty.SelectedGizmo, DeviceContext, nullptr);
 
 		World = FMatrix::Identity();
 		gizmoTrans[i].SetScale(0.03f, 0.8f, 0.03f);
 		World = World * gizmoTrans[i].GetTransformMatrix();
-		Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+		//ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(World), GAxisColors[i]);
+		GizmoShader->UpdateConstant(UCamera::GetInstance().MakeGizmoMVP(World, gizmoTrans[i].GetLocation()), GAxisColors[i]);
 		Render(CylinderMesh, DeviceContext, nullptr);		
 	}
 
-	////
+	// 기즈모 셰이더 종료, 컬러셰이더 상태 설정
+	Device->EndGizmo(RasterizerState);	
 
 	return true;
 }
@@ -379,57 +384,57 @@ void URenderer::Render(FMesh* mesh, ID3D11DeviceContext* DeviceContext, FMatrix*
 	}
     
 #pragma region draw outline
-	//if(World == nullptr)
-	//{
-	//	return; // 외곽선 그리기 패스 건너뜀
-	//}
-	//// --- Pass A: 스텐실 마킹 (컬러 미기록)
-	//DeviceContext->OMSetDepthStencilState(Device->GetDS_StencilMark(), 1);
-	//DeviceContext->OMSetBlendState(Device->GetBS_ColorOff(), nullptr, 0xffffffff);
+	if(World == nullptr)
+	{
+		return; // 외곽선 그리기 패스 건너뜀
+	}
+	// --- Pass A: 스텐실 마킹 (컬러 미기록)
+	DeviceContext->OMSetDepthStencilState(Device->GetDS_StencilMark(), 1);
+	DeviceContext->OMSetBlendState(Device->GetBS_ColorOff(), nullptr, 0xffffffff);
 
-	//if (mesh->bUseIndexBuffer)
-	//{
-	//	DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
-	//	DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	//	DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
-	//}
-	//else
-	//{
-	//	DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
-	//	DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
-	//}
+	if (mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
+	}
+	else
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
+	}
 
-	//// --- Pass B: 외곽선(팽창 + Front면 컬링)
-	//DeviceContext->OMSetDepthStencilState(Device->GetDS_Outline(), 1);
-	//DeviceContext->OMSetBlendState(Device->GetBS_Alpha(), nullptr, 0xffffffff); // 불투명 원하면 nullptr
-	//DeviceContext->RSSetState(Device->GetRS_CullFront());
+	// --- Pass B: 외곽선(팽창 + Front면 컬링)
+	DeviceContext->OMSetDepthStencilState(Device->GetDS_Outline(), 1);
+	DeviceContext->OMSetBlendState(Device->GetBS_Alpha(), nullptr, 0xffffffff); // 불투명 원하면 nullptr
+	DeviceContext->RSSetState(Device->GetRS_CullFront());
 
-	//const float k = 1.1f; // 두께(씬에 맞춰 1.01~1.1 튜닝)
-	//FMatrix Scale = FMatrix::MakeScale(FVector(k, k, k));
-	//FMatrix OutlineWorld = Scale * (*World);
+	const float k = 1.1f; // 두께(씬에 맞춰 1.01~1.1 튜닝)
+	FMatrix Scale = FMatrix::MakeScale(FVector(k, k, k));
+	FMatrix OutlineWorld = Scale * (*World);
 
-	//// 단색으로 그리도록 useUColor=1 경로 사용
-	//Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(OutlineWorld), FVector(1.0f, 0.3f, 0.1f));
+	// 단색으로 그리도록 useUColor=1 경로 사용
+	ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(OutlineWorld), FVector(1.0f, 0.3f, 0.1f));
 
-	//if (mesh->bUseIndexBuffer)
-	//{
-	//	DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
-	//	DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	//	DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
-	//}
-	//else
-	//{
-	//	DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
-	//	DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
-	//}
+	if (mesh->bUseIndexBuffer)
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->IASetIndexBuffer(mesh->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		DeviceContext->DrawIndexed(mesh->IndexCount, 0, 0);
+	}
+	else
+	{
+		DeviceContext->IASetVertexBuffers(0, 1, &mesh->VertexBuffer, &mesh->Stride, &mesh->Offset);
+		DeviceContext->Draw(mesh->VertexByteWidth / mesh->Stride, 0);
+	}
 
-	//// --- 상태 원복 (다음 오브젝트에 영향 X)
-	//DeviceContext->OMSetDepthStencilState(Device->GetDepthStateOpaque(), 0);
-	//DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-	//DeviceContext->RSSetState(nullptr);
+	// --- 상태 원복 (다음 오브젝트에 영향 X)
+	DeviceContext->OMSetDepthStencilState(Device->GetDepthStateOpaque(), 0);
+	DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+	DeviceContext->RSSetState(nullptr);
 
-	//// (선택) 상수 버퍼도 원래 World로 되돌려둠
-	//Shader->UpdateConstant(UCamera::GetInstance().MakeMVP(*World));
+	// (선택) 상수 버퍼도 원래 World로 되돌려둠
+	ColorShader->UpdateConstant(UCamera::GetInstance().MakeMVP(*World));
 	
 #pragma endregion
 }
@@ -533,12 +538,12 @@ void URenderer::SetTopology(bool isLine)
 
 void URenderer::UpdateConstant(const FMatrix& mvp)
 {
-	Shader->UpdateConstant(mvp);
+	ColorShader->UpdateConstant(mvp);
 }
 
 void URenderer::UpdateConstant(const FMatrix& mvp, const FVector& vec)
 {
-	Shader->UpdateConstant(mvp, vec);
+	ColorShader->UpdateConstant(mvp, vec);
 }
 
 void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride)
@@ -559,5 +564,22 @@ void URenderer::RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices,
 		// 인덱스 버퍼가 없을 때 드로우 콜
 		Device->DeviceContext->Draw(NumVertices, 0); // 정점 수와 시작 인덱스 설정
 	}
+}
+bool URenderer::CreateGizmoRasterizerState()
+{
+	HRESULT result;
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_NONE;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	result = Device->GetDeivce()->CreateRasterizerState(&rasterizerDesc, &RasterizerState);
+	if (FAILED(result))
+	{
+		MessageBox(nullptr, L"gizmo rasterizerstate create fail,", L"error", MB_OK);
+		return false;
+	}
+
+
+	return true;
 }
 #pragma endregion

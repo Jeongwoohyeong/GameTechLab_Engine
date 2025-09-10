@@ -29,6 +29,21 @@ FMatrix UCamera::MakeMVP(const FMatrix& World)
 	return World * View * Projection;
 }
 
+FMatrix UCamera::MakeGizmoMVP(const FMatrix& world, const FVector& gizmoLocation)
+{
+	float distance = (gizmoLocation - Location).Length();
+	constexpr float GIZMO_SIZE = 0.1f;
+	float scaleFactor = distance * GIZMO_SIZE;
+
+	FMatrix scale = FMatrix::MakeScale(FVector(scaleFactor, scaleFactor, scaleFactor));
+	FMatrix model = scale * world;
+
+	FMatrix view = FMatrix::MakeView(Location, Rotation);
+	FMatrix projection = FMatrix::MakePerspective(FovY, AspectRatio, NearPlane, FarPlane);
+
+	return model * view * projection;
+}
+
 // 클라이언트 화면 상에서의 커서 좌표를 이용해 3D 공간상의 레이를 만든다
 FRay UCamera::CastRay(int32 ClientX, int32 ClientY, int32 ClientWidth, int32 ClientHeight)
 {

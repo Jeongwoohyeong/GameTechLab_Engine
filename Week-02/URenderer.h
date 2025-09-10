@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "UUIManager.h"
 #include "Math.h"
 #include "CScene.h"
@@ -37,7 +37,7 @@ public:
 	void Release();
 	bool CreateRasterizerState();
 
-	void Resize(UINT, UINT);
+	void Resize(UINT, UINT);	
 
 #pragma region Gizmo 사용, 추후 수정
 	bool CreateVertexBuffer(ID3D11Buffer** verticesBuffer, const void* vertices, unsigned int byteWidth);
@@ -47,6 +47,9 @@ public:
 	void UpdateConstant(const FMatrix& mvp);
 	void UpdateConstant(const FMatrix& mvp, const FVector& vec);
 	void RenderMesh(ID3D11Buffer* VertexBuffer, unsigned int NumVertices, ID3D11Buffer* IndexBuffer, unsigned int IndexCount, unsigned int Stride);
+
+	// 기즈모 셰이더
+	bool CreateGizmoRasterizerState();
 #pragma endregion
 
 private:
@@ -78,8 +81,12 @@ public:
 private:
 	WorldGizmo* worldGizmo = nullptr;
 	UD3dDevice* Device = nullptr;
-	UShader* Shader = nullptr;
+	UShader* ColorShader = nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
 	FGizmoProperty LocalGizmoProperty;
+
+	// 기즈모 셰이더
+	UShader* GizmoShader = nullptr;
+	ID3D11RasterizerState* GizmoRasterizerState = nullptr;
 };

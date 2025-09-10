@@ -168,6 +168,9 @@
     <ClInclude Include="CScene.h" />
     <ClInclude Include="FObjectFactory.h" />
     <ClInclude Include="GizmoCube.h" />
+    <ClInclude Include="GizmoShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="ImGui\imgui_console.h" />
     <ClInclude Include="CCameraMovementController.h" />
     <ClInclude Include="IntersectionTest.h" />

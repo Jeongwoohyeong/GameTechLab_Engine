@@ -10,11 +10,16 @@ bool UD3dDevice::Initialize(HWND hWnd)
 	if (!this->CreateDepthStates())               return false;
 	if (!this->CreateRasterizerState())			  return false;
 	if (!this->CreateOutlineDepthStencilState())  return false;
+	if (!this->CreateGizmoDepthStencilState())	  return false;
+	if (!this->CreateGizmoDepthStencilBuffer())	  return false;
 	return true;	
 }
 
 void UD3dDevice::Release()
 {
+	if (GizmoDepthState) { GizmoDepthState->Release(); GizmoDepthState = nullptr; }
+	if (GizmoDepthStencilView) { GizmoDepthStencilView->Release(); GizmoDepthStencilView = nullptr; }
+	if (GizmoDepthStencilBuffer) { GizmoDepthStencilBuffer->Release(); GizmoDepthStencilBuffer = nullptr; }
 	if (DepthStateOpaque) { DepthStateOpaque->Release();  DepthStateOpaque = nullptr; }
 	if (DepthStencilView) { DepthStencilView->Release();  DepthStencilView = nullptr; }
 	if (DepthStencilBuffer) { DepthStencilBuffer->Release();DepthStencilBuffer = nullptr; }
@@ -137,14 +142,82 @@ void UD3dDevice::Resize(UINT width, UINT height)
 		return;
 	}
 
-	
-
 	Viewport.TopLeftX = 0.0f;
 	Viewport.TopLeftY = 0.0f;
 	Viewport.Width = static_cast<FLOAT>(BackBufferWidth);
 	Viewport.Height = static_cast<FLOAT>(BackBufferHeight);
 	Viewport.MinDepth = 0.0f;
 	Viewport.MaxDepth = 1.0f;
+}
+
+bool UD3dDevice::CreateGizmoDepthStencilState()
+{
+	if (GizmoDepthState) { GizmoDepthState->Release();  GizmoDepthState = nullptr; }
+
+	// 불투명용: 테스트 ON, 쓰기 ON
+	D3D11_DEPTH_STENCIL_DESC dss{};
+	dss.DepthEnable = FALSE;
+	dss.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+	dss.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	dss.StencilEnable = FALSE;
+
+	HRESULT hr = Device->CreateDepthStencilState(&dss, &GizmoDepthState);
+	if (FAILED(hr)) return false;
+
+	return true;
+}
+
+bool UD3dDevice::CreateGizmoDepthStencilBuffer()
+{
+	if (GizmoDepthStencilView) { GizmoDepthStencilView->Release();   GizmoDepthStencilView = nullptr; }
+	if (GizmoDepthStencilBuffer) { GizmoDepthStencilBuffer->Release(); GizmoDepthStencilBuffer = nullptr; }
+
+	// 백버퍼와 동일 크기/샘플링으로 생성
+	DXGI_SWAP_CHAIN_DESC scd{};
+	SwapChain->GetDesc(&scd);
+
+	D3D11_TEXTURE2D_DESC ds{};
+	ds.Width = BackBufferWidth;
+	ds.Height = BackBufferHeight;
+	ds.MipLevels = 1;
+	ds.ArraySize = 1;
+	ds.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // D32_FLOAT도 가능
+	ds.SampleDesc = scd.SampleDesc;
+	ds.Usage = D3D11_USAGE_DEFAULT;
+	ds.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	HRESULT hr = Device->CreateTexture2D(&ds, nullptr, &GizmoDepthStencilBuffer);
+	if (FAILED(hr)) {
+		MessageBox(nullptr, L"Gizmo depth tex create fail", L"error", MB_OK);
+		return false;
+	}
+
+	hr = Device->CreateDepthStencilView(GizmoDepthStencilBuffer, nullptr, &GizmoDepthStencilView);
+	if (FAILED(hr)) {
+		MessageBox(nullptr, L"Gizmo DSV create fail", L"error", MB_OK);
+		return false;
+	}
+
+	return true;
+}
+
+void UD3dDevice::BeginGizmo(ID3D11RasterizerState* gizmoRSState)
+{
+	// 기즈모셰이더 상태 설정
+	DeviceContext->ClearDepthStencilView(DepthStencilView,
+		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	DeviceContext->OMSetDepthStencilState(GizmoDepthState, 0);
+
+	DeviceContext->RSSetState(gizmoRSState);	
+}
+
+void UD3dDevice::EndGizmo(ID3D11RasterizerState* colorRSState)
+{
+	/// 컬러셰이더로 돌아가는 코드
+	DeviceContext->OMSetDepthStencilState(DepthStateOpaque, 0);
+
+	DeviceContext->RSSetState(colorRSState);
 }
 
 bool UD3dDevice::CreateDeviceAndSwapChain(HWND hWnd)
