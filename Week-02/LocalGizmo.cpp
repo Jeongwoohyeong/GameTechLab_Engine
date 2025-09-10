@@ -172,8 +172,8 @@ void FLocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     switch (GizmoSwitch)
     {
     case 0:
-        RotateLocalOrWorld(resultInWorld);
-        // TranslateLocalOrWorld(resultInWorld);
+        //RotateLocalOrWorld(resultInWorld);
+        TranslateLocalOrWorld(resultInWorld);
         break;
     case 1:
         RotateLocalOrWorld(resultInWorld);
@@ -264,50 +264,57 @@ float FLocalGizmo::CheckAndMarkScaleMinus(int& isScaleMinus, float addingScale, 
 
 void FLocalGizmo::RotateLocalOrWorld(FVector newDelta)
 {
-    FMatrix cameraRotation = FMatrix::MakeRotation(UCamera::GetInstance().Rotation);
-    FVector cameraForwardVec = { cameraRotation[2][0], cameraRotation[2][1], cameraRotation[2][2] };
-
-    FVector selectedVector;
-    FMatrix selectedRotation = FMatrix::MakeRotation(ParentTransform->GetRotationRadians());
+    FVector RotationAxis;
     if (bIsLocalMode)
     {
+		// 로컬 회전
         switch (SelectedAxis)
         {
         case 0: // z축
-            selectedVector = { selectedRotation.M[2][0], selectedRotation.M[2][1], selectedRotation.M[2][2] }; // 셋째 행
+			RotationAxis = ParentTransform->GetForwardVector();
             break;
         case 1: // y축
-            selectedVector = { selectedRotation.M[1][0], selectedRotation.M[1][1], selectedRotation.M[1][2] }; // 둘째 행
+			RotationAxis = ParentTransform->GetUpVector();
             break;
         case 2: // x축
-            selectedVector = { selectedRotation.M[0][0], selectedRotation.M[0][1], selectedRotation.M[0][2] }; // 첫 행
+			RotationAxis = ParentTransform->GetRightVector();
             break;
         }
-        selectedVector.Normalize();
     }
     else
     {
+        // 월드 회전
         switch (SelectedAxis)
         {
         case 0: // z축
-            selectedVector = { 0, 0, 1 };
+			RotationAxis = FVector::UnitZ();
             break;
         case 1: // y축
-            selectedVector = { 0, 1, 0 };
+			RotationAxis = FVector::UnitY();
             break;
         case 2: // x축
-            selectedVector = { 1, 0, 0 };
+			RotationAxis = FVector::UnitX();
             break;
         }
     }
 
-    FVector direction = Cross(cameraForwardVec, selectedVector);
-    direction.Normalize();
+	// 카메라 위치에서 기즈모 위치로 향하는 벡터
+	FVector CameraToGizmo = ParentTransform->GetLocation() - UCamera::GetInstance().Location;
+	CameraToGizmo.Normalize();
 
-    float offset = Dot(newDelta, direction);
-    FVector rotatedDir = offset * direction;
+	// 회전축과 카메라-기즈모 벡터의 외적 -> 회전 방향 벡터
+	FVector RotationDirection = Cross(CameraToGizmo, RotationAxis);
+	RotationDirection.Normalize();
 
-    ParentTransform->AddRotationDeg(rotatedDir, bIsLocalMode);
+    // 회전량
+	float RotationAmount = Dot(newDelta, RotationDirection);
+
+	// 델타 쿼터니언 생성 및 적용
+	const float RotationSpeed = 0.5f; // 회전 속도 조절용 상수
+	FQuaternion DeltaRotation = FQuaternion::CreateFromAxisAngle(RotationAxis, RotationAmount * RotationSpeed);
+
+	// 델타 쿼터니언은 월드 기준이므로 false
+	ParentTransform->MultiplyQuaternion(DeltaRotation, false);
 }
 
 void FLocalGizmo::TranslateLocalOrWorld(FVector newDelta)

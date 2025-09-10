@@ -90,6 +90,21 @@ void FTransform::AddRotationAxis(const FVector& Axis, float AngleRad)
 	this->Rotation.Normalize();
 }
 
+void FTransform::MultiplyQuaternion(const FQuaternion& QuatDelta, bool bIsLocal)
+{
+	if (bIsLocal) {
+		// 로컬 기준
+		this->Rotation = FQuaternion::Multiply(this->Rotation, QuatDelta);
+	}
+	else {
+		// 월드 기준
+		this->Rotation = FQuaternion::Multiply(QuatDelta, this->Rotation);
+	}
+
+	this->Rotation.Normalize();
+	bIsTransformDirty = true;
+}
+
 void FTransform::LoadQuaternion(const FQuaternion& Quat)
 {
 	this->Rotation = Quat;

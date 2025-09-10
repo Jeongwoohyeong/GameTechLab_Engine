@@ -15,7 +15,8 @@ public:
 	void SetRotationDegByDrag(const FVector&, bool bIsLocal);
 	void AddRotationDeg(const FVector& DegreeDelta, bool bIsLocal);
 	void AddRotationAxis(const FVector& Axis, float AngleRad);
-	
+	void MultiplyQuaternion(const FQuaternion& QuatDelta, bool bIsLocal);
+
 	// void LoadRotaion(const FVector& Rotation);
 	void LoadQuaternion(const FQuaternion& Quat);
 
