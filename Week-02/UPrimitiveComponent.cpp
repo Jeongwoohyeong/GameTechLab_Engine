@@ -1,6 +1,5 @@
 ﻿#include "UPrimitiveComponent.h"
 #include "d3d11.h"
-#include "LocalGizmo.h"
 
 RTTI_IMPL(UPrimitiveComponent, USceneComponent)
 
@@ -62,27 +61,7 @@ FAABB UPrimitiveComponent::GetAABB()
 	return AABB;
 }
 
-//void UPrimitiveComponent::SwapGizmo()
-//{
-//	constexpr int gizmoCount = 3;
-//	int flag = (GizmoSwitch + 1) % gizmoCount;
-//
-//	switch (flag)
-//	{
-//	case 1:
-//		if (LocationGizmo.ParentTransform == nullptr)
-//			LocationGizmo.Initialize(&Transform);
-//		GizmoTransform = LocationGizmo.GetGizmoTransform();
-//		break;
-//	case 2:
-//		if (ObjectScaleGizmo.ParentTransform == nullptr)
-//			ObjectScaleGizmo.Initialize(&Transform);
-//		GizmoTransform = ObjectScaleGizmo.GetGizmoTransform();
-//		break;
-//	case 3:
-//		break;
-//	default:
-//		break;
-//	}
-//	
-//}
+void UPrimitiveComponent::SwitchGizmo(int gizmoSwitch)
+{
+	LocationGizmo.SelectGizmo(gizmoSwitch);
+}

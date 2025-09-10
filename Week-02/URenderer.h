@@ -73,4 +73,6 @@ private:
 	UShader* Shader = nullptr;
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	UUIManager UI = {};
+	int GizmoSwitch = 0;
+	FMesh* SelectedGizmo = nullptr;
 };

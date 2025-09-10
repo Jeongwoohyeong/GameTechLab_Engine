@@ -117,6 +117,12 @@ void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
 {
     // UE_LOG("%f %f %f, clicked", firstClick.X, firstClick.Y, firstClick.Z);
     
+    if (ParentTransform == nullptr)
+    {
+        UE_LOG("ParentNull");
+        return;
+    }
+
     const FVector A = ParentTransform->GetLocation();
     const FVector B = UCamera::GetInstance().Location;
 
@@ -152,8 +158,21 @@ void LocalGizmo::OnLMouseDrag(FDragMouseData dragInfo)
     );
     FVector newDelta = currentMousePos - previousMousePos;
     previousMousePos = currentMousePos;
-    TranslateLocalOrWorld(newDelta);
+    //TranslateLocalOrWorld(newDelta);
     // Scale(newDelta);
+
+    // 테스트 코드
+    switch (GizmoSwitch)
+    {
+    case 0:
+        TranslateLocalOrWorld(newDelta);
+        break;
+    case 1:
+        Scale(newDelta);
+        break;
+    default:
+        break;
+    }
 }
 
 void LocalGizmo::Scale(FVector newDelta) // scale은 local이나 world가 없다.
@@ -243,6 +262,11 @@ void LocalGizmo::TranslateLocalOrWorld(FVector newDelta)
 
     FVector resultVector = offset * selectedVector;
     ParentTransform->AddLocation(resultVector);
+}
+
+void LocalGizmo::SelectGizmo(int gizmoSwitch)
+{
+    GizmoSwitch = gizmoSwitch;
 }
 
 void LocalGizmo::OnLMouseRelease()

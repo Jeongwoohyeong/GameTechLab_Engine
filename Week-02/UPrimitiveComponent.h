@@ -9,7 +9,6 @@
 #include "LocalGizmo.h"
 #include "UUIManager.h"
 #include "RTTIMacros.h"
-#include "ScaleGizmo.h"
 
 struct ID3D11Buffer;
 struct ID3D11DeviceContext;
@@ -42,15 +41,13 @@ public:
 	virtual void CreateAABB();
 	FAABB GetAABB();
 
-	//void SwapGizmo();
 
 	LocalGizmo* GetGizmo() { return &LocationGizmo; }
-	//ScaleGizmo* GetScaleGizmo() { return &ObjectScaleGizmo; }
+	void SwitchGizmo(int gizmoSwitch);
 
 protected:
 	FTransform* GizmoTransform;	
 	LocalGizmo LocationGizmo;
-	//ScaleGizmo ObjectScaleGizmo;
 	FAABB AABB;
 	bool bIsAABBCreated = false;
 	int GizmoSwitch = 0;

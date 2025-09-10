@@ -36,6 +36,8 @@ public:
     void RotateLocalOrWorld(FVector newDelta);
     void TranslateLocalOrWorld(FVector newDelta);
 
+    void SelectGizmo(int gizmoSwitch);
+
     FMatrix worldMatrix{
         1, 1 ,0,
         0, 1, 0,
@@ -49,4 +51,6 @@ public:
 	bool bIsLocalMode = false; // 로컬 좌표계 모드 여부
 
     FTransform gizmoTransform[3];
+
+    int GizmoSwitch = 0;
 };

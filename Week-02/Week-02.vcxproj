@@ -144,9 +144,6 @@
     <ClCompile Include="LocalGizmo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Math.h" />
-    <ClCompile Include="ScaleGizmo.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="ShapeData.cpp" />
     <ClCompile Include="Triangle.h" />
     <ClCompile Include="UCamera.cpp" />
@@ -175,9 +172,6 @@
     <ClInclude Include="CCameraMovementController.h" />
     <ClInclude Include="IntersectionTest.h" />
     <ClInclude Include="RTTIMacros.h" />
-    <ClInclude Include="ScaleGizmo.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="SimpleJSON\json.hpp" />
     <ClInclude Include="Cylinder.h" />
     <ClInclude Include="Gizmo.h" />
