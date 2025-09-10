@@ -11,6 +11,7 @@
 #include "Triangle.h"
 #include "Cone.h"
 #include "Cylinder.h"
+#include "RotationRing.h"
 
 #include "WorldGizmo.h"
 
@@ -21,6 +22,7 @@ FMesh* URenderer::SphereMesh = nullptr;
 FMesh* URenderer::TriangleMesh = nullptr;
 FMesh* URenderer::ConeMesh = nullptr;
 FMesh* URenderer::CylinderMesh = nullptr;
+FMesh* URenderer::RingMesh = nullptr;
 
 URenderer::URenderer()
 {	
@@ -135,6 +137,7 @@ bool URenderer::CreateAllMesh()
 	CreateMesh(SphereMesh, GSphereVertices, sizeof(GSphereVertices));
 	CreateMesh(CylinderMesh, GCylinderVertices, sizeof(GCylinderVertices), GCylinderIndices, sizeof(GCylinderIndices));
 	CreateMesh(ConeMesh, GConeVertices, sizeof(GConeVertices), GConeIndices, sizeof(GConeIndices));
+	CreateMesh(RingMesh, GAxisRingVertices, sizeof(GAxisRingVertices), GAxisRingIndices, sizeof(GAxisRingIndices));
 
 	return true;
 }

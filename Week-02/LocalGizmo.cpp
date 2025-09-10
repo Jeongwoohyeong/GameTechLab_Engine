@@ -18,7 +18,7 @@
 FTransform* LocalGizmo::GetGizmoTransform()
 {
     const int arraySize = sizeof(axisInfo) / sizeof(axisInfo[0]);
-    gizmoTransform[arraySize];
+    // gizmoTransform[arraySize];
     for (int i = 0; i < arraySize; i++)
     {
         gizmoTransform[i] = UpdateGizmoTranformFromParent(axisInfo[i]);
@@ -132,7 +132,7 @@ void LocalGizmo::OnLMouseClick(FDragMouseData firstClickInfo)
         firstClickInfo.mouseY,
         firstClickInfo.W,
         firstClickInfo.H,
-        distance, //1.0,  //ParentTransform->GetLocation().Z,
+        distance,
         true
     );
 }
