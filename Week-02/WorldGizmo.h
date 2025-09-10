@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <vector>
+#include "Containers.h"
 #include "FVertexStruct.h"
 // 전방 선언
 class URenderer;
@@ -23,8 +23,8 @@ private:
         int   HalfCount,
         int   MajorEvery,
         float YLevel,
-        std::vector<FVertexSimple>& outVertices,
-        std::vector<unsigned int>& outIndices,
+        TArray<FVertexSimple>& outVertices,
+        TArray<unsigned int>& outIndices,
         const FVertexSimple& MinorColor,
         const FVertexSimple& MajorColor,
         const FVertexSimple& AxisXColor,
@@ -34,8 +34,8 @@ private:
 private:
     FTransform* ParentTransform;
 
-    std::vector<FVertexSimple> xzGridVertices;
-    std::vector<unsigned int>  xzGridIndices;
+    TArray<FVertexSimple> xzGridVertices;
+    TArray<unsigned int>  xzGridIndices;
 
     ID3D11Buffer* gridVerticesBuffer = nullptr;
     ID3D11Buffer* gridIndicesBuffer = nullptr;
