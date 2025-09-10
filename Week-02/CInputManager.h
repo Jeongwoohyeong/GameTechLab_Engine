@@ -35,28 +35,23 @@ public:
 
 	void Update();
 
-	// ---판독 함수 공통 설명---
-	// IsDown: 현재 눌려있는 상태
-	// IsPrevDown: 이전 프레임에 눌린 상태
-	// IsPressed: 이번 프레임에 막 눌린 상태
-	// IsReleased: 이번 프레임에 막 떼어진 상태
+	// 키 상태 확인 함수
+	bool IsKeyDown(int32 key);     // 현재 눌려있는지
+	bool IsPrevKeyDown(int32 key); // 이전 프레임에 눌려있었는지
+	bool IsKeyPressed(int32 key);  // 이번 프레임에 막 눌렸는지
+	bool IskeyReleased(int32 key); // 이번 프레임에 막 떼어졌는지
 
-	bool IsKeyDown(int32 key);
-	bool IsPrevKeyDown(int32 key);
-	bool IsKeyPressed(int32 key);
-	bool IskeyReleased(int32 key);
-
-	bool IsMouseBtnDown(int32 Btn); // 0: left, 1: right
-	bool IsPrevMouseBtnDown(int32 Btn);
-	bool IsMouseBtnPressed(int32 Btn);
-
+	// 마우스 위치 관련 함수
 	POINT GetMouseClientPos();
+	POINT GetMouseDelta() const;
 
+	// 클라이언트 영역 크기 관련 함수
 	int32 GetClientW() const;
 	int32 GetClientH() const;
 
 	// 이벤트 등록 함수
 	void ReleaseCallbacks();
+
 	int RegisterMouseClickCallback(MouseCallback callback);
 	int RegisterMouseDragCallback(MouseCallback callback);
 	int RegisterMouseReleaseCallback(MouseReleaseCallback callback);
@@ -80,7 +75,6 @@ public:
 private:
 	CInputManager() {};
 	~CInputManager() {};
-	bool CheckMouseBtnValid(int32 Btn);
 	void UpdateMousePosAndDelta();
 	void UpdateClientSize();
 	void UpdateKeyStates();	
@@ -90,10 +84,6 @@ private:
 	int32 ClientH = 0;
 	bool CurrentKeyStates[MAX_KEYS] = { 0 };
 	bool PreviousKeyStates[MAX_KEYS] = { 0 };
-	bool CurrentMouseBtnStates[2] = { false, false };
-	bool PreviousMouseBtnStates[2] = { false, false };
 	POINT CurrentMouseClientPosPoint = { 0, 0 };
 	POINT PreviousMouseClientPosPoint = { 0, 0 };
-
-	POINT CurrentMouseDelta = { 0, 0 };
 };

@@ -11,7 +11,7 @@ void CInputManager::Update()
 	UpdateKeyStates();
 
 	// 마우스 클릭 이벤트 감지
-	if (IsMouseBtnPressed(0)) // 왼쪽 버튼이 막 눌렸을 때
+	if (IsKeyPressed(VK_LBUTTON)) // 왼쪽 버튼이 막 눌렸을 때
 	{
 		FDragMouseData clickMouseData = {
 			CurrentMouseClientPosPoint.x,
@@ -28,7 +28,7 @@ void CInputManager::Update()
 			OnClickCallbacks[i](clickMouseData); // 등록된 모든 함수 호출
 		}
 	}
-	if (IsMouseBtnDown(0)) // 드래그할 때 쓸 거
+	if (IsKeyDown(VK_LBUTTON)) // 드래그할 때 쓸 거
 	{
 		FDragMouseData dragMouseData = {
 			CurrentMouseClientPosPoint.x,
@@ -61,20 +61,14 @@ void CInputManager::Update()
 
 void CInputManager::UpdateMousePosAndDelta()
 {
+	// 1. 현재 프레임 좌표는 이제 Outdated -> Previous로 이동
+	PreviousMouseClientPosPoint = CurrentMouseClientPosPoint; 
+	
+	// 2. 현재 프레임 좌표 갱신
 	POINT CurMousePos = { 0, 0 };
-
 	GetCursorPos(&CurMousePos); // 현재 마우스 좌표 (화면 좌표)
 	ScreenToClient(*hWnd, &CurMousePos); // 클라이언트 좌표로 변환 (윈도우 내부 좌표)
 	CurrentMouseClientPosPoint = CurMousePos;
-
-	// ΔX, ΔY 계산
-	int deltaX = CurrentMouseClientPosPoint.x - PreviousMouseClientPosPoint.x;
-	int deltaY = CurrentMouseClientPosPoint.y - PreviousMouseClientPosPoint.y;
-
-	CurrentMouseDelta = { deltaX, deltaY };
-
-	// 이번 프레임 좌표를 다음 프레임을 위해 저장
-	PreviousMouseClientPosPoint = CurrentMouseClientPosPoint;
 }
 
 void CInputManager::UpdateClientSize()
@@ -91,16 +85,12 @@ void CInputManager::UpdateKeyStates()
 {
 	// 이전 프레임 상태 저장
 	CopyMemory(PreviousKeyStates, CurrentKeyStates, sizeof(bool) * MAX_KEYS);
-	CopyMemory(PreviousMouseBtnStates, CurrentMouseBtnStates, sizeof(bool) * 2);
-	PreviousMouseClientPosPoint = CurrentMouseClientPosPoint;
 
 	// 현재 프레임 상태 갱신
 	for (int i = 0; i < MAX_KEYS; i++)
 	{
 		CurrentKeyStates[i] = GetAsyncKeyState(i) & 0x8000; //현재 눌려있는지 여부
 	}
-	CurrentMouseBtnStates[0] = GetAsyncKeyState(VK_LBUTTON) & 0x8000; //왼쪽 버튼
-	CurrentMouseBtnStates[1] = GetAsyncKeyState(VK_RBUTTON) & 0x8000; //오른쪽 버튼
 }
 
 void CInputManager::ReleaseCallbacks()
@@ -131,27 +121,16 @@ bool CInputManager::IskeyReleased(int32 key)
 	return IsPrevKeyDown(key) && !IsKeyDown(key);
 }
 
-bool CInputManager::IsMouseBtnDown(int32 Btn) // 0: left, 1: right
+POINT CInputManager::GetMouseClientPos()
 {
-	return CheckMouseBtnValid(Btn) && CurrentMouseBtnStates[Btn];
+	return CurrentMouseClientPosPoint;
 }
 
-bool CInputManager::IsPrevMouseBtnDown(int32 Btn)
+POINT CInputManager:: GetMouseDelta() const
 {
-	return CheckMouseBtnValid(Btn) && PreviousMouseBtnStates[Btn];
+	return { CurrentMouseClientPosPoint.x - PreviousMouseClientPosPoint.x, CurrentMouseClientPosPoint.y - PreviousMouseClientPosPoint.y };
 }
 
-bool CInputManager::IsMouseBtnPressed(int32 Btn)
-{
-	return CheckMouseBtnValid(Btn) && IsMouseBtnDown(Btn) && !IsPrevMouseBtnDown(Btn);
-}
-
-bool CInputManager::CheckMouseBtnValid(int32 Btn)
-{
-	return (Btn == 0 || Btn == 1);
-}
-
-POINT CInputManager::GetMouseClientPos() { return CurrentMouseClientPosPoint; }
 int32 CInputManager::GetClientW() const { return ClientW; }
 int32 CInputManager::GetClientH() const { return ClientH; }
 

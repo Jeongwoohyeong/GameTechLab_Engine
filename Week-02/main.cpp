@@ -116,7 +116,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			// --- Picking ---
 			// TODO: Scene에 Update() 함수 만들어서 그 안에서 처리하기 (더 좋은 구조 있으면 그 쪽으로)
-			if (!OverImgui && CInputManager::GetInstance().IsMouseBtnPressed(0)) // 왼쪽 버튼 클릭 시
+			if (!OverImgui && CInputManager::GetInstance().IsKeyPressed(VK_LBUTTON)) // 왼쪽 버튼 클릭 시
 			{
 				int32 ClientW = CInputManager::GetInstance().GetClientW();
 				int32 ClientH = CInputManager::GetInstance().GetClientH();
