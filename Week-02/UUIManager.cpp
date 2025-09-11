@@ -318,8 +318,9 @@ void UUIManager::DrawRotationInspector(FTransform& TargetTransform)
 	{
 		// 편집 종료: 최종 쿼터니언 → 안정화 Euler 재계산
 		CachedQuat = TargetTransform.GetQuaternion();
-		FVector eulerRad = FQuaternion::ToEulerAngles(CachedQuat);
-		EulerAnglesForUI = RadToDeg(eulerRad);
+		// 오일러 재계산 시 오차 발생 -> 제외
+		// FVector eulerRad = FQuaternion::ToEulerAngles(CachedQuat);
+		// EulerAnglesForUI = RadToDeg(eulerRad);
 		StartQuat = CachedQuat;
 		StartEulerDeg = EulerAnglesForUI;
 	}
