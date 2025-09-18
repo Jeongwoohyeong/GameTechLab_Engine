@@ -67,10 +67,10 @@ public:
 	//void Update();
 	void RenderBegin();
 	void RenderLevel();
-	void RenderTest(const FVector& CameraLocation);
+	void RenderText(const FVector& CameraLocation);
 	void RenderEnd() const;
 	void RenderEditorPrimitive(FEditorPrimitive& InPrimitive, struct FRenderState& InRenderState);
-	void RenderBoundingBox(UPrimitiveComponent* PrimitiveComponent);
+	
 
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);
 	bool GetIsResizing() { return bIsResizing;}
@@ -165,6 +165,7 @@ private:
 	ID3D11Buffer* ConstantBufferPerFrame = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
+	//인스턴싱을 위한 constant buffer(default pass에 대한)
 	ID3D11Buffer* ConstantBufferInstance = nullptr;
 	//////////////////////////////////////
 
@@ -194,7 +195,7 @@ private:
 		ID3D11Buffer* IndexBuffer = nullptr;
 		uint32 IndexCount = 0;
 		FRenderState RenderState = {};
-		bool operator==(const FPrimitiveBatchKey& InRhs) const
+		bool operator==(const FPrimitiveBatchKey& InRhs) const	//위의 모든 멤버가 같아야 같은 키
 		{
 			return VertexBuffer == InRhs.VertexBuffer &&
 				IndexBuffer == InRhs.IndexBuffer &&
@@ -227,10 +228,13 @@ private:
 	struct FInstanceBufferResource
 	{
 		ID3D11Buffer* Buffer = nullptr;
-		ID3D11ShaderResourceView* ShaderResourceView = nullptr;
-		uint32 Capacity = 0;
+		ID3D11ShaderResourceView* ShaderResourceView = nullptr;	//버퍼에 대한 뷰
+		uint32 Capacity = 0;	//스트럭처드 버퍼 크기
 	};
 
+	//Vertex, Index, IndexCount, RenderState가 같은 것들은 같은 배치로 묶음.
+	//위의 요소들로 key를 만들고 Hasher는 키 해시값 결정
+	//FInstanceBufferResource는 스트럭처드 버퍼를 위한 구조체
 	TMap<FPrimitiveBatchKey, FInstanceBufferResource, FPrimitiveBatchKeyHasher> PrimitiveInstanceBuffers;
 
 private:

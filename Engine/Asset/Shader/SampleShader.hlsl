@@ -19,8 +19,8 @@ cbuffer PerDrawColor : register(b2)
 cbuffer InstanceParams : register(b3)
 {
     uint UseInstancing;
-    uint BaseInstanceOffset;
-    uint InstanceCount;
+    uint BaseInstanceOffset;	//baseOffset
+    uint InstanceCount;	//인스턴스 개수
     uint Padding0;
 };
 
@@ -44,6 +44,8 @@ struct PS_INPUT
     float4 Color : COLOR;
 };
 
+//InstanceID는 GPU가 알아서 세팅해줌.(CPU에서 넘긴 인스턴스 버퍼의 데이터 순서대로 0부터 InstanceCount까지 알아서 전달)
+//SV_InstanceID 태그로 식별
 PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 {
     PS_INPUT Output;
@@ -57,7 +59,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
         Position = mul(Position, Instance.World);
         ShadeColor = lerp(ShadeColor, Instance.Color, Instance.Color.a);
     }
-
+	//인스턴싱 하는 경우 어차피 World는 Identity임.
     Position = mul(Position, world);
     Position = mul(Position, ViewMatrix);
     Position = mul(Position, ProjectionMatrix);

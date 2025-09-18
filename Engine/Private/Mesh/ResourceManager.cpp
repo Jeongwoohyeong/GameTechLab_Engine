@@ -288,10 +288,10 @@ void UResourceManager::LoadCharInfoMap()
 		int Row = Index / CellsPerRow;
 
 		FCharacterInfo Info;
-		Info.U = static_cast<float>(Col * CellWidth) / BitMapWidth;
-		Info.V = static_cast<float>(Row * CellHeight) / BitMapHeight;
-		Info.Width = UvWidth;
-		Info.Height = UvHeight;
+		Info.UvOffset.X = static_cast<float>(Col * CellWidth) / BitMapWidth;
+		Info.UvOffset.Y = static_cast<float>(Row * CellHeight) / BitMapHeight;
+		Info.UvSize.X = UvWidth;
+		Info.UvSize.Y = UvHeight;
 
 		CharInfos.Add(Info);
 		CharInfoIdxMap[CharSet[Index]] = Index;
