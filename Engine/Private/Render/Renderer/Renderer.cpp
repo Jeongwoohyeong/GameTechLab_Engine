@@ -541,7 +541,7 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 	TArray<RenderObject> RenderList;
 
-	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
+	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponentsToRender())
 	{
 		RenderObject Object;
 		Object.Component = Component;
@@ -1142,6 +1142,7 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRende
 
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {};
+	// RasterizerDesc.FrontCounterClockwise = TRUE; // CCW를 앞면으로 보겠다! (기본값은 CW)
 	RasterizerDesc.FillMode = FillMode;
 	RasterizerDesc.CullMode = CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)

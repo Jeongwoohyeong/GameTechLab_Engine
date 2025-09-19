@@ -2284,9 +2284,8 @@ TArray<FVertex> VerticesSphere = {
 	{{ -0.000000f, -1.000000f, -0.000000f }, { 0.500000f, 0.000000f, 0.500000f, 1.000000f }},
 };
 
-
 TArray<FVertex> VerticesCube = {
-	// Front face (+Z) - Red
+	// Top face (+Z) - Red
 	{{ -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }},
 	{{ 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }},
 	{{ -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }},
@@ -2294,7 +2293,7 @@ TArray<FVertex> VerticesCube = {
 	{{ 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }},
 	{{ 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }},
 
-	// Back face (-Z) - Cyan
+	// Bottom face (-Z) - Cyan
 	{{ 0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f }},
 	{{ -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f }},
 	{{ 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f }},
@@ -2302,7 +2301,7 @@ TArray<FVertex> VerticesCube = {
 	{{ -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f }},
 	{{ -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f }},
 
-	// Top face (+Y) - Light Green
+	// Right face (+Y) - Light Green
 	{{ -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.5f, 1.0f }},
 	{{ 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.5f, 1.0f }},
 	{{ -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.5f, 1.0f }},
@@ -2310,7 +2309,7 @@ TArray<FVertex> VerticesCube = {
 	{{ 0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f, 0.5f, 1.0f }},
 	{{ 0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f, 0.5f, 1.0f }},
 
-	// Bottom face (-Y) - Brown
+	// Left face (-Y) - Brown
 	{{ -0.5f, -0.5f, -0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
 	{{ 0.5f, -0.5f, 0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
 	{{ -0.5f, -0.5f, 0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
@@ -2318,7 +2317,7 @@ TArray<FVertex> VerticesCube = {
 	{{ 0.5f, -0.5f, -0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
 	{{ 0.5f, -0.5f, 0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }},
 
-	// Right face (+X) - Orange
+	// Front face (+X) - Orange
 	{{ 0.5f, -0.5f, 0.5f }, { 1.0f, 0.5f, 0.0f, 1.0f }},
 	{{ 0.5f, 0.5f, -0.5f }, { 1.0f, 0.5f, 0.0f, 1.0f }},
 	{{ 0.5f, 0.5f, 0.5f }, { 1.0f, 0.5f, 0.0f, 1.0f }},
@@ -2326,7 +2325,7 @@ TArray<FVertex> VerticesCube = {
 	{{ 0.5f, -0.5f, -0.5f }, { 1.0f, 0.5f, 0.0f, 1.0f }},
 	{{ 0.5f, 0.5f, -0.5f }, { 1.0f, 0.5f, 0.0f, 1.0f }},
 
-	// Left face (-X) - Purple
+	// Back face(-X) - Purple
 	{{ -0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }},
 	{{ -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }},
 	{{ -0.5f, 0.5f, -0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }},

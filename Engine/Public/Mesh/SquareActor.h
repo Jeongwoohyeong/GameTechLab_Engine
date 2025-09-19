@@ -2,6 +2,7 @@
 #include "Mesh/Actor.h"
 class UTextComponent;
 
+class USquareComponent;
 class ASquareActor : public AActor
 {
 	DECLARE_CLASS(ASquareActor, AActor)

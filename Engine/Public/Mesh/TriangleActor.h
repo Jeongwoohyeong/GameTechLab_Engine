@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Mesh/Actor.h"
+class UTriangleComponent;
 class UTextComponent;
 class ATriangleActor : public AActor
 {

@@ -3,6 +3,8 @@
 
 #include "Mesh/Actor.h"
 #include "Mesh/TextComponent.h"
+#include "Mesh/PrimitiveComponent.h"
+#include "Mesh/StaticMeshComponent.h"
 
 IMPLEMENT_CLASS(ULevel, UObject)
 
@@ -26,7 +28,7 @@ ULevel::~ULevel()
 	// 	SafeDelete(Actor);
 	// }
 
-	SafeDelete(CameraPtr);
+	//SafeDelete(CameraPtr);
 }
 
 void ULevel::Init()
@@ -43,28 +45,17 @@ void ULevel::Update()
 	uint32 AllocatedCount = GetAllocatedCount();
 
 	LevelPrimitiveComponents.clear();
-	TextComponents.clear();
-	//Deprecated : EditorPrimitive는 에디터에서 처리
-	//EditorPrimitiveComponents.clear();
+	StaticMeshComponentsToRender.clear();
+	TextComponentsToRender.clear();
 
 	for (auto& Actor : LevelActors)
 	{
 		if (Actor)
 		{
 			Actor->Tick();
-			AddLevelPrimitiveComponent(Actor);
+			GatherComponentsToRender(Actor);
 		}
 	}
-
-	//Deprecated : EditorPrimitive는 에디터에서 처리
-	/*for (auto& Actor : EditorActors)
-	{
-		if (Actor)
-		{
-			Actor->Tick();
-			AddEditorPrimitiveComponent(Actor);
-		}
-	}*/
 
 }
 
@@ -76,12 +67,26 @@ void ULevel::Cleanup()
 {
 }
 
-void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
+void ULevel::GatherComponentsToRender(AActor* Actor)
 {
 	if (!Actor) return;
 
 	for (auto& Component : Actor->GetOwnedComponents())
 	{
+		//액터의 컴포넌트를 순회하면서 PrimitiveComponent라면 타입체크 없이 자기가 알아서
+		//레벨의 RenderList에 추가하도록 수정.
+		//StaticMesh가 구현되면 주석 해제(09/19 13:05)
+		/*if (Component->IsA(UPrimitiveComponent::StaticClass()))
+		{
+			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
+			if (PrimitiveComponent->IsVisible())
+			{
+				PrimitiveComponent->AddToRenderList(this);
+			}
+		}*/
+
+
+
 		if (Component->GetComponentType() == EComponentType::Primitive)
 		{
 			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
@@ -94,7 +99,7 @@ void ULevel::AddLevelPrimitiveComponent(AActor* Actor)
 		{
 			UTextComponent* TextComponent = static_cast<UTextComponent*>(Component);
 			if(TextComponent->IsVisible())
-				TextComponents.push_back(TextComponent);
+				TextComponentsToRender.push_back(TextComponent);
 		}
 	}
 }
@@ -151,6 +156,13 @@ void ULevel::SetSelectedActor(AActor* InActor)
 	}
 	//Gizmo->SetTargetActor(SelectedActor);
 }
+
+
+//StaticMesh가 구현되면 주석 해제(09/19 13:05)
+//void ULevel::AddStaticMeshComponentToRender(UStaticMeshComponent* Component)
+//{
+//	StaticMeshComponentsToRender.push_back(Component);
+//}
 
 /**
  * @brief Level에서 Actor 제거하는 함수

@@ -8,6 +8,7 @@ class AGizmo;
 class AGrid;
 class AActor;
 class UPrimitiveComponent;
+class UStaticMeshComponent;
 class UTextComponent;
 
 class ULevel : public UObject
@@ -23,32 +24,34 @@ public:
 	virtual void Render();
 	virtual void Cleanup();
 
+	void GatherComponentsToRender(AActor* Actor);
+
 	TArray<AActor*> GetLevelActors() const { return LevelActors; }
 	TArray<UPrimitiveComponent*> GetLevelPrimitiveComponents() const { return LevelPrimitiveComponents; }
-	TArray<UTextComponent*> GetTextComponents() const { return TextComponents; }
-
-	void AddLevelPrimitiveComponent(AActor* Actor);
+	TArray<UTextComponent*> GetTextComponentsToRender() const { return TextComponentsToRender; }
+	AActor* GetSelectedActor() const { return SelectedActor; }
 
 	template<typename T, typename... Args>
 	T* SpawnActor(const FString& InName = "");
-	// template<typename T, typename... Args>
-	// T* SpawnEditorActor(Args&&... args);
 
 	// Actor 삭제
 	bool DestroyActor(AActor* InActor);
 	void MarkActorForDeletion(AActor* InActor); // 지연 삭제를 위한 마킹
 
 	void SetSelectedActor(AActor* InActor);
-	AActor* GetSelectedActor() const { return SelectedActor; }
-	AGizmo* GetGizmo() const { return Gizmo; }
 
-	void SetCamera(UCamera* InCamera) { CameraPtr = InCamera; }
-	UCamera* GetCamera() const { return CameraPtr; }
+	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
+	//void AddStaticMeshComponentToRender(UStaticMeshComponent* Component);
+	
 
 private:
 	TArray<AActor*> LevelActors;
+
+	//렌더러에게 아래의 것들을 그려달라고 주문할 거임
+
+	TArray<UStaticMeshComponent*> StaticMeshComponentsToRender;
 	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
-	TArray<UTextComponent*> TextComponents;
+	TArray<UTextComponent*> TextComponentsToRender;
 
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> EditorActors;
@@ -58,13 +61,6 @@ private:
 	TArray<AActor*> ActorsToDelete;
 
 	AActor* SelectedActor = nullptr;
-	AGizmo* Gizmo = nullptr;
-	AAxis* Axis = nullptr;
-	AGrid* Grid = nullptr;
-	//////////////////////////////////////////////////////////////////////////
-	// TODO(PYB): Editor 제작되면 해당 클래스에 존재하는 카메라 관련 코드 제거
-	//////////////////////////////////////////////////////////////////////////
-	UCamera* CameraPtr = nullptr;
 
 	// 지연 삭제 처리 함수
 	void ProcessPendingDeletions();
