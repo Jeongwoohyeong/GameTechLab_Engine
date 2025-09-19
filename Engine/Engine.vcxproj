@@ -157,6 +157,7 @@
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Math\AABB.h" />
+    <ClInclude Include="Public\Mesh\PrimitiveComponent.h" />
     <ClInclude Include="Public\Mesh\StaticMesh.h" />
     <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
     <ClInclude Include="Public\Mesh\TextComponent.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
+    <ClCompile Include="Private\Mesh\PrimitiveComponent.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />
     <ClCompile Include="Private\Mesh\TextComponent.cpp" />

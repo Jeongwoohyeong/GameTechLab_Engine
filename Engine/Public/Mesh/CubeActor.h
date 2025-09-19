@@ -2,6 +2,7 @@
 
 #include "Mesh/Actor.h"
 
+class UCubeComponent;
 class UTextComponent;
 class ACubeActor : public AActor
 {

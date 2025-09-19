@@ -2,6 +2,7 @@
 
 #include "Mesh/Actor.h"
 
+class USphereComponent;
 class UTextComponent;
 class ASphereActor : public AActor
 {

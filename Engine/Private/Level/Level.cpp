@@ -3,6 +3,7 @@
 
 #include "Mesh/Actor.h"
 #include "Mesh/TextComponent.h"
+#include "Mesh/PrimitiveComponent.h"
 
 IMPLEMENT_CLASS(ULevel, UObject)
 
