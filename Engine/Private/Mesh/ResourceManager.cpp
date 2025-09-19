@@ -124,7 +124,7 @@ void UResourceManager::Initialize()
 		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
 	}
 
-	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/cube-tex.obj");	
+	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/cube.obj");	
 	for (const auto& e : Mesh->Vertices)
 	{
 		objcube.push_back(FVertex(e.Position, e.Color));

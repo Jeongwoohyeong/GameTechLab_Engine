@@ -7,7 +7,7 @@ class FObjParser
 	DECLARE_SINGLETON(FObjParser);
 
 public:
-	FStaticMesh* LoadObjStaticMesh(const FString& filepath);
+	FStaticMesh* LoadObjStaticMesh(const FString& filePath);
 
 private:
 	static FVector PositionToUEBasis(const FVector& InVector);

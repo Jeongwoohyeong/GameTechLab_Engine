@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ObjParser.h"
-#include <regex>
+#include "Manager/Path/PathManager.h"
 
 IMPLEMENT_SINGLETON(FObjParser)
 
@@ -12,165 +12,144 @@ FObjParser::~FObjParser()
 {
 }
 
-FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filepath)
-{
-	ifstream fileStream(filepath);
+FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filePath)
+{	
+	ifstream objFile(filePath);
 
-	if (!fileStream.is_open())
+	if (!objFile.is_open())
 	{
 		UE_LOG("파일 열기 실패");
 		return nullptr;
 	}
 
-	FObjInfo newObjRawData = {};
-	TArray<FString> faceLines = {};
-
+	FObjInfo newObjRawData = {};	
 	FString line;
-	while (std::getline(fileStream, line))
-	{
-		// # 주석 제외
-		size_t commentPos = line.find('#');
-		if (commentPos != FString::npos)
-		{
-			line = line.substr(0, commentPos);
-		}
 
-		std::stringstream ss(line);
-		FString lineType = {};
-		ss >> lineType;
-
-		if (lineType == "v")
-		{
-			float x, y, z;
-			ss >> x >> y >> z;
-			// obj 파일은 오른손 좌표계, 왼손 좌표계로 변환하기 위해서는 축 하나를 반전 시켜야함
-			//newObjRawData.Position.Emplace(FObjParser::PositionToUEBasis(FVector(x, y, z)));
-			newObjRawData.Position.Emplace(FVector(x, y, z));
-		}
-		else if (lineType == "vt")
-		{
-			float u, v;
-			ss >> u >> v;
-			// obj : 왼쪽 아래 (0, 0)
-			// UE : 왼쪽 위 (0, 0)
-			newObjRawData.Tex.Emplace(FObjParser::UVToBasis(FVector2(u, v)));
-		}
-		else if (lineType == "vn")
-		{
-			float x, y, z;
-			ss >> x >> y >> z;
-			//newObjRawData.Normal.Emplace(FObjParser::PositionToUEBasis(FVector(x, y, z)));
-			newObjRawData.Normal.Emplace(FVector(x, y, z));
-		}
-		else if (lineType == "f")
-		{
-			faceLines.Emplace(FString(line));
-		}
-	}
+	FVector tempVec;
+	FVector2 tempVec2;
 
 	FStaticMesh* newStaticMesh = new FStaticMesh();
-	newStaticMesh->PathFileName = filepath;
+	newStaticMesh->PathFileName = filePath;
 
-	FIndex indices;
-	for (const auto& faceLine : faceLines)
+	while (std::getline(objFile, line))
 	{
-		std::stringstream ss(faceLine);
+		std::stringstream ss(line);
 		FString token;
-		ss >> token;
 
-		for (size_t i = 0; i < 3; i++)
+		// 공백라인이거나 주석 생략
+		if (line.empty() || line[0] == '#')
 		{
-			ss >> token;
-			std::stringstream faceSS(token);
-			FString indexStr;
-
-			int vIndex = -1;
-			int uvIndex = -1;
-			int normIndex = -1;
-
-			std::getline(faceSS, indexStr, '/');
-			vIndex = std::stoi(indexStr) - 1;
-
-			std::getline(faceSS, indexStr, '/');
-			uvIndex = std::stoi(indexStr) - 1;
-
-			std::getline(faceSS, indexStr, '/');
-			normIndex = std::stoi(indexStr) - 1;
-
-			indices.VertexIndices.Emplace(vIndex);
-			indices.UVIndices.Emplace(vIndex);
-			indices.NormalIndices.Emplace(vIndex);
-		}
-	}
-
-	size_t size = 0;
-	if (newObjRawData.Normal.size() < newObjRawData.Position.size())
-	{
-		size = newObjRawData.Position.size() <= newObjRawData.Tex.size() ? newObjRawData.Tex.size() : newObjRawData.Position.size();
-	}
-	else
-	{
-		size = newObjRawData.Normal.size() <= newObjRawData.Tex.size() ? newObjRawData.Tex.size() : newObjRawData.Normal.size();
-	}
-
-	newStaticMesh->Vertices.resize(size);
-
-	for (size_t i = 0;i < size;i++)
-	{
-		FVector vertex{ -9999.9f, -9999.9f, -9999.9f };
-		FVector normal{ -9999.9f, -9999.9f, -9999.9f };
-		FVector2 tex{ -9999.9f, -9999.9f };
-		FVector4 color{ 0.25f, 0.25f, 0.25f, 1.0f };
-		if (i < newObjRawData.Position.size())
-		{
-			vertex = { newObjRawData.Position[i].X, newObjRawData.Position[i].Y, newObjRawData.Position[i].Z };
+			continue;
 		}
 
-		if (i < newObjRawData.Normal.size())
+		// 라인의 첫 두 문자 검사 - vertex
+		if (line.substr(0, 2) == "v ")
 		{
-			normal = { newObjRawData.Normal[i].X, newObjRawData.Normal[i].Y, newObjRawData.Normal[i].Z };
+			FVector4 Color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+			ss >> token >> tempVec.X >> tempVec.Y >> tempVec.Z;
+			newObjRawData.Position.Emplace(tempVec);
+
+			if (ss >> token >> Color.X >> Color.Y >> Color.Z >> Color.W)
+			{
+				newObjRawData.Color.Emplace(Color);
+			}
+			else
+			{
+				newObjRawData.Color.Emplace(Color);
+			}
 		}
 
-		if (i < newObjRawData.Tex.size())
+		// normal
+		if (line.substr(0, 3) == "vn ")
 		{
-			tex = { newObjRawData.Tex[i].X, newObjRawData.Tex[i].Y };
+			FVector norm;
+			ss >> token >> norm.X >> norm.Y >> norm.Z;
+			newObjRawData.Normal.Emplace(norm);
 		}
+		// texture
+		else if (line.substr(0, 3) == "vt ")
+		{
+			FVector2 uv;
+			ss >> token >> uv.X >> uv.Y;
+			uv = UVToBasis(uv);
+			newObjRawData.Tex.Emplace(uv);
+		}
+		// material lib
+		else if (line.substr(0, 7) == "mtllib ")
+		{
+			FString mtlFilename;
+			ss >> token >> mtlFilename;
+			// mtl 파일명 추출
+			FString path = filePath;
+			size_t pathPos = path.find("/");
+			mtlFilename = path.substr(0, pathPos);
+			UE_LOG("%s", mtlFilename.c_str());
+		}
+		// materials
+		else if (line.substr(0, 7) == "usemtl ")
+		{
+			// "usemtl " 이후 모든 문자열 추출
+			FString mtlName = line.substr(7);
+			// TODO : material 
+		}
+		// face
+		else if (line.substr(0, 2) == "f ")
+		{
+			FIndex newFace;
 
-		newStaticMesh->Vertices[i] = FNormalVertex(vertex, normal, color, tex);
-	}
+			std::stringstream faceSS(line);
+			FString faceToken;
 
-	for (const auto& vIdx : indices.VertexIndices)
-	{
-		newStaticMesh->Indices.VertexIndices.Emplace(vIdx);
-	}
-	for (const auto& uvIdx : indices.UVIndices)
-	{
-		newStaticMesh->Indices.UVIndices.Emplace(uvIdx);
-	}
-	for (const auto& normIdx : indices.NormalIndices)
-	{
-		newStaticMesh->Indices.NormalIndices.Emplace(normIdx);
-	}
+			faceSS >> faceToken;
 
-	newStaticMesh->VertexIndexNum = newStaticMesh->Indices.VertexIndices.size();
-	newStaticMesh->UVIndexNum = newStaticMesh->Indices.UVIndices.size();
-	newStaticMesh->NormalIndexNum = newStaticMesh->Indices.NormalIndices.size();
+			while (faceSS >> faceToken)
+			{
+				// face의 정점 집합( v1/vt1/vn1 v2/vt2/vn2 ... )
+				TArray<FString> faceSet;
+				std::stringstream tokenSS(faceToken);
+				// face 정점 집합의 원소 ( v/vt/vn )
+				FString element;
+				while (std::getline(tokenSS, element, '/'))
+				{
+					faceSet.Emplace(element);
+				}
 
-	if(!newStaticMesh)
-	{
-		UE_LOG("dasdsa");
-	}
+				// f v
+				if (faceSet.size() == 1)
+				{
+					newFace.VertexIndices.Emplace(std::stoi(faceSet[0]) - 1);
+				}
+				// f v/vt
+				else if (faceSet.size() == 2)
+				{
+					newFace.VertexIndices.Emplace(std::stoi(faceSet[0]) - 1);
+					newFace.UVIndices.Emplace(std::stoi(faceSet[1]) - 1);
+				}
+				else if (faceSet.size() == 3)
+				{
+					// f v v//vn
+					if (faceSet[1] == "")
+					{
+						newFace.VertexIndices.Emplace(std::stoi(faceSet[0]) - 1);
+						newFace.NormalIndices.Emplace(std::stoi(faceSet[2]) - 1);
+					}
+					// f v/vt/vn
+					else
+					{
+						newFace.VertexIndices.Emplace(std::stoi(faceSet[0]) - 1);
+						newFace.UVIndices.Emplace(std::stoi(faceSet[1]) - 1);
+						newFace.NormalIndices.Emplace(std::stoi(faceSet[2]) - 1);
+					}
+				}
+				newStaticMesh->Indices.VertexIndices = newFace.VertexIndices;
+				newStaticMesh->Indices.UVIndices = newFace.UVIndices;
+				newStaticMesh->Indices.NormalIndices = newFace.NormalIndices;
 
-	UE_LOG("%s", newStaticMesh->PathFileName.c_str());
-
-	/*for (const auto& e : newStaticMesh->Vertices)
-	{
-		UE_LOG("pos %f %f %f", e.Position.X, e.Position.Y, e.Position.Z);
-		UE_LOG("norm %f %f %f", e.Normal.X, e.Normal.Y, e.Normal.Z);
-		UE_LOG("tex %f %f", e.Tex.X, e.Tex.Y);
-		UE_LOG("col %f %f %f %f", e.Color.X, e.Color.Y, e.Color.Z, e.Color.W);
-
-	}*/
+				// TODO : FaceMap
+			}
+		}
+	}	
 
 	return newStaticMesh;
 }

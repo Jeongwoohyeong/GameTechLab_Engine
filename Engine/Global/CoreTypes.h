@@ -100,7 +100,7 @@ struct FObjInfo
 	// Vertex
 	TArray<FVector> Position;
 	TArray<FVector> Normal;
-	TArray<FVector> Color; // Material 사용 시 필요할듯
+	TArray<FVector4> Color; // Material 사용 시 필요할듯
 	TArray<FVector2> Tex;
 
 	FObjInfo()
