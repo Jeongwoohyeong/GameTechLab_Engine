@@ -137,6 +137,9 @@ struct FVector
 
 	/**
 	 * @brief 두 벡터를 외적한 결과의 벡터 값을 반환하는 함수
+	 * 수학 공식처럼 This X other => 결과가 아닙니다
+	 * other X This의 결과가 나옵니다
+	 * 현재 이 외적은 LH 기준의 외적입니다
 	 */
 	inline FVector Cross(const FVector& OtherVector) const
 	{

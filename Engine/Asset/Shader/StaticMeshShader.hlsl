@@ -1,19 +1,19 @@
 cbuffer constants : register(b0)
 {
-    row_major float4x4 world;
+	row_major float4x4 world;
 }
 
 cbuffer PerFrame : register(b1)
 {
-    row_major float4x4 ViewMatrix;
-    row_major float4x4 ProjectionMatrix;
-    uint ViewModeIndex;
-    float3 Padding;
+	row_major float4x4 ViewMatrix;
+	row_major float4x4 ProjectionMatrix;
+	uint ViewModeIndex;
+	float3 Padding;
 };
 
 cbuffer PerDrawColor : register(b2)
 {
-    float4 totalColor;
+	float4 totalColor;
 };
 
 cbuffer InstanceParams : register(b3)
@@ -33,32 +33,38 @@ cbuffer InstanceParams : register(b3)
 
 struct InstanceData
 {
-    row_major float4x4 World;
-    float4 Color;
+	row_major float4x4 World;
+	float4 Color;
 };
 
 StructuredBuffer<InstanceData> InstanceMatrices : register(t0);
 
 struct VS_INPUT
 {
-    float4 Position : POSITION;
-    float4 Color : COLOR;
+	float4 Position : POSITION;
+	float3 Normal : NORMAL;
+	float4 Color : COLOR;
+	float2 BaseUV : TEXTURE;
 };
 
 struct PS_INPUT
 {
-    float4 Position : SV_POSITION;
-    float4 Color : COLOR;
+	float4 Position : SV_POSITION;
+	float4 Color : COLOR;
+	float2 UV : TEXTURE;
 };
+
+Texture2D Texture : register(t1);
+SamplerState Sampler : register(s0);
 
 //InstanceID는 GPU가 알아서 세팅해줌.(CPU에서 넘긴 인스턴스 버퍼의 데이터 순서대로 0부터 InstanceCount까지 알아서 전달)
 //SV_InstanceID 태그로 식별
 PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 {
-    PS_INPUT Output;
+	PS_INPUT Output;
 
-    float4 Position = Input.Position;
-    float4 ShadeColor = Input.Color;
+	float4 Position = Input.Position;
+	float4 ShadeColor = Input.Color;
 
 	
 	//아래 주석은 InstanceParam 확인
@@ -71,24 +77,26 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 	//현재 에디터 라인 배치를 할때 같은 셰이더를 쓰기 때문에 Instancing을 사용하는지 확인이 필요함.
 	//나중에 라인 배치는 다른 셰이더를 사용하고 가독성을 위해 아래 코드를 지우는 게 나을 것 같음.
-	if(UseInstancing != 0)
+	if (UseInstancing != 0)
 	{
 		InstanceData Instance = InstanceMatrices[InstanceId];
 		Position = mul(Position, Instance.World);
 	}
 		
 	//인스턴싱 하는 경우 어차피 World는 Identity임.
-    Position = mul(Position, world);
-    Position = mul(Position, ViewMatrix);
-    Position = mul(Position, ProjectionMatrix);
+	Position = mul(Position, world);
+	Position = mul(Position, ViewMatrix);
+	Position = mul(Position, ProjectionMatrix);
 
-    Output.Position = Position;
-    Output.Color = ShadeColor;
-    return Output;
+	Output.Position = Position;
+	Output.Color = ShadeColor;
+	Output.UV = Input.BaseUV;
+	return Output;
 }
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-    float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
-    return FinalColor;
+	float4 TextureColor = Texture.Sample(Sampler, Input.UV);
+	float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
+	return FinalColor;
 }

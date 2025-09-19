@@ -2,7 +2,7 @@
 #include "Editor/ObjectPicker.h"
 #include "Editor/Camera.h"
 #include "Editor/Gizmo.h"
-#include "Mesh/SceneComponent.h"
+#include "Mesh/PrimitiveComponent.h"
 #include "Mesh/Actor.h"
 #include "Manager/Input/InputManager.h"
 #include "Core/AppWindow.h"

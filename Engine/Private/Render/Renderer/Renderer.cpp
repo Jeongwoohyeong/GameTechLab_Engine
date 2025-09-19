@@ -44,9 +44,12 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateRasterizerState();
 	CreateDepthStencilState();
 	CreateBlendState();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	CreateStaticMeshShader();
 	CreateDefaultShader();
 	CreateTextShader();
 	CreateLineInstancedShader();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	CreateInstanceBuffer();
 
 	CreateConstantBuffer();
@@ -61,10 +64,13 @@ void URenderer::Release()
 	ULineBatchRenderer::GetInstance().Release();
 
 	ReleaseConstantBuffer();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	ReleaseStaticMeshShader();
 	ReleaseDefaultShader();
-	ReleaseResource();
 	ReleaseTextShader();
 	ReleaseLineInstancedShader();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	ReleaseResource();
 	ReleaseInstanceBuffer();
 	ReleaseBlendState();
 
@@ -195,6 +201,41 @@ void URenderer::ReleaseResource()
 	}
 }
 
+
+void URenderer::CreateStaticMeshShader()
+{
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	D3DCompileFromFile(L"Asset/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &StaticMeshVertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &StaticMeshPixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &StaticMeshInputLayout);
+
+	StrideStaticMesh = sizeof(FNormalVertex);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
 /**
  * @brief Shader 기반의 CSO 생성 함수
  */
@@ -296,6 +337,27 @@ void URenderer::CreateLineInstancedShader()
 
 	VertexShaderCSO->Release();
 	PixelShaderCSO->Release();
+}
+
+void URenderer::ReleaseStaticMeshShader()
+{
+	if (StaticMeshInputLayout)
+	{
+		StaticMeshInputLayout->Release();
+		StaticMeshInputLayout = nullptr;
+	}
+
+	if (StaticMeshPixelShader)
+	{
+		StaticMeshPixelShader->Release();
+		StaticMeshPixelShader = nullptr;
+	}
+
+	if (StaticMeshVertexShader)
+	{
+		StaticMeshVertexShader->Release();
+		StaticMeshVertexShader = nullptr;
+	}
 }
 
 /**
@@ -466,16 +528,16 @@ void URenderer::RenderLevel()
 		}
 
 		//키로 리소스 얻어옴(GPU 버퍼, 리소스 뷰)
-		FInstanceBufferResource& Resource = GetOrCreateInstanceBuffer(Key);
+		FStructuredBufferResource& Resource = GetOrCreateStructuredBuffer(Key);
 		//리소스가 없거나 크기가 작으면 새로 만들거나 확장함
-		EnsureInstanceBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
+		EnsureStructuredBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
 		if (!Resource.Buffer || !Resource.ShaderResourceView)
 		{
 			continue;
 		}
 
 		//리소스에 인스턴스 데이터 업데이트함
-		UploadInstanceBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
+		UploadStructuredBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
 
@@ -487,8 +549,10 @@ void URenderer::RenderLevel()
 		UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));
 
 		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-		//baseOffset은 0이고 instance 개수만큼 렌더링 할 것
-		UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
+		UpdateInstanceDrawConstants(true);
+
+		//아래 코드는 헤더파일 참고
+		//UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
 
 		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
 		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
@@ -499,7 +563,10 @@ void URenderer::RenderLevel()
 	//////////////////////////////////////
 
 	//이후에 같은 셰이더를 쓰는 경우 인스턴싱 데이터를 쓰는 경우 예방
-	UpdateInstanceDrawConstants(false, 0, 0);
+	UpdateInstanceDrawConstants(false);
+
+	//아래 코드는 헤더파일 참고
+	//UpdateInstanceDrawConstants(false, 0, 0);
 	ID3D11ShaderResourceView* NullSRV = nullptr;
 	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
 }
@@ -541,7 +608,7 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 	TArray<RenderObject> RenderList;
 
-	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
+	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponentsToRender())
 	{
 		RenderObject Object;
 		Object.Component = Component;
@@ -586,7 +653,9 @@ void URenderer::RenderText(const FVector& CameraLocation)
 	}
 	////////////////////////////////////////////////////////////////////////////////////
 
-	UpdateInstanceDrawConstants(false, 0, 0);
+	UpdateInstanceDrawConstants(false);
+	//아래 코드는 헤더파일 참고
+	//UpdateInstanceDrawConstants(false, 0, 0);
 }
 
 /**
@@ -767,7 +836,9 @@ void URenderer::CreateConstantBuffer()
 	 */
 	{
 		D3D11_BUFFER_DESC ConstantBufferDesc = {};
-		ConstantBufferDesc.ByteWidth = sizeof(FInstanceDrawConstants);
+		//16바이트 정렬을 위해 4곱해줌
+		ConstantBufferDesc.ByteWidth = sizeof(uint32)*4;
+		//ConstantBufferDesc.ByteWidth = sizeof(FInstanceDrawConstants);
 		ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -793,7 +864,7 @@ void URenderer::CreateConstantBuffer()
 		Pipeline->SetConstantBuffer(4, true, ConstantBufferCharTable);
 	}
 
-	UpdateInstanceDrawConstants(false, 0, 0);
+	//UpdateInstanceDrawConstants(false, 0, 0);
 }
 
 /**
@@ -938,7 +1009,7 @@ void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 	}
 }
 
-void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const
+void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing) const
 {
 	if (!ConstantBufferInstance)
 	{
@@ -957,12 +1028,35 @@ void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInst
 
 	auto* Constants = static_cast<FInstanceDrawConstants*>(ConstantBufferMSR.pData);
 	Constants->bUseInstancing = bUseInstancing ? 1u : 0u;
-	Constants->BaseInstanceOffset = BaseInstanceOffset;
-	Constants->InstanceCount = InstanceCount;
-	Constants->Padding = 0;
 
 	GetDeviceContext()->Unmap(ConstantBufferInstance, 0);
 }
+
+//void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const
+//{
+//	if (!ConstantBufferInstance)
+//	{
+//		return;
+//	}
+//
+//	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+//
+//	D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR = {};
+//	HRESULT Hr = GetDeviceContext()->Map(ConstantBufferInstance, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
+//	if (FAILED(Hr))
+//	{
+//		UE_LOG("Failed to map instancing constant buffer");
+//		return;
+//	}
+//
+//	auto* Constants = static_cast<FInstanceDrawConstants*>(ConstantBufferMSR.pData);
+//	Constants->bUseInstancing = bUseInstancing ? 1u : 0u;
+//	Constants->BaseInstanceOffset = BaseInstanceOffset;
+//	Constants->InstanceCount = InstanceCount;
+//	Constants->Padding = 0;
+//
+//	GetDeviceContext()->Unmap(ConstantBufferInstance, 0);
+//}
 
 // TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
 /**
@@ -1017,12 +1111,12 @@ FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderStat
 	};
 }
 
-URenderer::FInstanceBufferResource& URenderer::GetOrCreateInstanceBuffer(const FPrimitiveBatchKey& InKey)
+URenderer::FStructuredBufferResource& URenderer::GetOrCreateStructuredBuffer(const FPrimitiveBatchKey& InKey)
 {
-	return PrimitiveInstanceBuffers[InKey];
+	return PrimitiveStructuredBuffers[InKey];
 }
 
-void URenderer::EnsureInstanceBufferCapacity(FInstanceBufferResource& InResource, uint32 InRequiredInstanceCount)
+void URenderer::EnsureStructuredBufferCapacity(FStructuredBufferResource& InResource, uint32 InRequiredInstanceCount)
 {
 	if (InRequiredInstanceCount == 0)
 	{
@@ -1088,7 +1182,7 @@ void URenderer::EnsureInstanceBufferCapacity(FInstanceBufferResource& InResource
 	InResource.Capacity = NewCapacity;
 }
 
-void URenderer::UploadInstanceBufferData(FInstanceBufferResource& InResource, const void* InData,
+void URenderer::UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData,
                                          uint32 InInstanceCount)
 {
 	if (!InResource.Buffer || InInstanceCount == 0)
@@ -1111,7 +1205,7 @@ void URenderer::UploadInstanceBufferData(FInstanceBufferResource& InResource, co
 
 void URenderer::ReleasePrimitiveInstanceBuffers()
 {
-	for (auto& Pair : PrimitiveInstanceBuffers)
+	for (auto& Pair : PrimitiveStructuredBuffers)
 	{
 		if (Pair.second.ShaderResourceView)
 		{
@@ -1128,7 +1222,7 @@ void URenderer::ReleasePrimitiveInstanceBuffers()
 		Pair.second.Capacity = 0;
 	}
 
-	PrimitiveInstanceBuffers.Empty();
+	PrimitiveStructuredBuffers.Empty();
 }
 
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)
@@ -1142,6 +1236,7 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRende
 
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {};
+	// RasterizerDesc.FrontCounterClockwise = TRUE; // CCW를 앞면으로 보겠다! (기본값은 CW)
 	RasterizerDesc.FillMode = FillMode;
 	RasterizerDesc.CullMode = CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
