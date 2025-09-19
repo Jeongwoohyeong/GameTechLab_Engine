@@ -7,6 +7,7 @@
 class UPipeline;
 class UDeviceResources;
 class UPrimitiveComponent;
+class UStaticMesh;
 class AActor;
 class AGizmo;
 class UEditor;
@@ -48,14 +49,20 @@ public:
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
 	void CreateBlendState();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	void CreateStaticMeshShader();
 	void CreateDefaultShader();
 	void CreateTextShader();
 	void CreateLineInstancedShader();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	void CreateConstantBuffer();
 
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	void ReleaseStaticMeshShader();
 	void ReleaseDefaultShader();
 	void ReleaseTextShader();
 	void ReleaseLineInstancedShader();
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
 	void ReleaseConstantBuffer();
 	void ReleaseRasterizerState();
@@ -119,7 +126,12 @@ public:
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
-	void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
+	//아래 함수는 여러 종류의 매시를 그릴 때 스트럭처드 버퍼를 한번만 업데이트해서 그리기 위해 존재하는 코드임.
+	//지금은 매시 종류가 10가지도 안되므로 오버엔지니어링이라고 생각해서 주석처리함.
+	//void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
+	
+	//인스턴싱을 할지 말지 결정해줌
+	void UpdateInstanceDrawConstants(bool bUseInstancing) const;
 
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
@@ -173,6 +185,8 @@ private:
 	/////////////////////////////////////
 	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};
 
+
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	ID3D11VertexShader* DefaultVertexShader = nullptr;
 	ID3D11PixelShader* DefaultPixelShader = nullptr;
 	ID3D11InputLayout* DefaultInputLayout = nullptr;
@@ -184,6 +198,12 @@ private:
 	ID3D11VertexShader* LineInstancedVertexShader = nullptr;
 	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
 	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
+
+	ID3D11VertexShader* StaticMeshVertexShader = nullptr;
+	ID3D11PixelShader* StaticMeshPixelShader = nullptr;
+	ID3D11InputLayout* StaticMeshInputLayout = nullptr;
+	uint32 StrideStaticMesh = 0;
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 
 	uint32 Stride = 0;
 	uint32 StrideTextVertex = 0;
@@ -225,7 +245,7 @@ private:
 		}
 	};
 
-	struct FInstanceBufferResource
+	struct FStructuredBufferResource
 	{
 		ID3D11Buffer* Buffer = nullptr;
 		ID3D11ShaderResourceView* ShaderResourceView = nullptr;	//버퍼에 대한 뷰
@@ -235,8 +255,36 @@ private:
 	//Vertex, Index, IndexCount, RenderState가 같은 것들은 같은 배치로 묶음.
 	//위의 요소들로 key를 만들고 Hasher는 키 해시값 결정
 	//FInstanceBufferResource는 스트럭처드 버퍼를 위한 구조체
-	TMap<FPrimitiveBatchKey, FInstanceBufferResource, FPrimitiveBatchKeyHasher> PrimitiveInstanceBuffers;
+	TMap<FPrimitiveBatchKey, FStructuredBufferResource, FPrimitiveBatchKeyHasher> PrimitiveStructuredBuffers;
 
+	//StaticMesh가 구현되면 주석 해제(09/19 )
+	/*struct FStaticMeshBatchKey
+	{
+		UStaticMesh* StaticMesh = nullptr;
+
+		bool operator==(const FStaticMeshBatchKey& InKey) const
+		{
+			return StaticMesh == InKey.StaticMesh;
+		}
+	};
+
+	struct FStaticMeshBatchKeyHasher
+	{
+		size_t operator()(const FStaticMeshBatchKey& InKey) const noexcept
+		{
+			auto Mix = [](size_t& H, size_t V)
+				{
+					H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H >> 2);
+				};
+
+			size_t Hash = 0;
+			Mix(Hash, reinterpret_cast<size_t>(InKey.StaticMesh));
+
+
+			return Hash;
+		}
+	};
+	TMap<FStaticMeshBatchKey, FStructuredBufferResource, FStaticMeshBatchKeyHasher> StaticMeshStructuredBuffers;*/
 private:
 	struct FRasterKey
 	{
@@ -270,9 +318,9 @@ private:
 
 	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
 	FPipelineInfo CreateTextPipelineInfo(const FRenderState& InRenderState);
-	FInstanceBufferResource& GetOrCreateInstanceBuffer(const FPrimitiveBatchKey& InKey);
-	void EnsureInstanceBufferCapacity(FInstanceBufferResource& InResource, uint32 InRequiredInstanceCount);
-	void UploadInstanceBufferData(FInstanceBufferResource& InResource, const void* InData, uint32 InInstanceCount);
+	FStructuredBufferResource& GetOrCreateStructuredBuffer(const FPrimitiveBatchKey& InKey);
+	void EnsureStructuredBufferCapacity(FStructuredBufferResource& InResource, uint32 InRequiredInstanceCount);
+	void UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData, uint32 InInstanceCount);
 	void ReleasePrimitiveInstanceBuffers();
 
 	bool bIsResizing = false;
