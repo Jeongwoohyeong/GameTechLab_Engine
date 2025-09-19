@@ -14,6 +14,4 @@ public:
 
 private:
 	FStaticMesh* StaticMeshAsset = nullptr;
-
 };
-
