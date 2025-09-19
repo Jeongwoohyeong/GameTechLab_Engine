@@ -32,7 +32,7 @@ static FQuat QuatFromEulerRadians(const FVector& Radians)
 	FQuat QX(SX, 0, 0, CX);
 	FQuat QY(0, SY, 0, CY);
 	FQuat QZ(0, 0, SZ, CZ);
-	return QX * QY * QZ;
+	return QZ * QY * QX;
 }
 
 FQuat FQuat::FromEulerXYZ(const FVector& Degrees)

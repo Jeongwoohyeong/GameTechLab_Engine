@@ -59,8 +59,7 @@ namespace std
 struct FTextVertex
 {
 	FVector Position;
-	float BaseUvX;
-	float BaseUvY;
+	FVector2 BaseUv;
 };
 
 struct FTextInstance
@@ -72,10 +71,25 @@ struct FTextInstance
 
 struct FCharacterInfo
 {
-	float U;
-	float V;
-	float Width;
-	float Height;
+	FVector2 UvOffset;
+	FVector2 UvSize;
+};
+
+struct FNormalVertex
+{
+	FVector Position;
+	FVector Normal;
+	FVector4 Color;
+	FVector2 Tex;
+};
+
+// Cooked Data
+struct FStaticMesh
+{
+	std::string PathFileName;
+
+	TArray<FNormalVertex> Vertices;
+	TArray<uint32> Indices;
 };
 
 //TMap<char, FCharacterInfo> CharInfoMap;

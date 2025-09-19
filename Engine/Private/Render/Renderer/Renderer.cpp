@@ -374,7 +374,7 @@ void URenderer::Update(UEditor* Editor)
 	RenderLevel();
 	// Editor->RenderEditor();
 	Editor->RenderEditorBatched();
-	RenderTest(Editor->GetCameraLocation());
+	RenderText(Editor->GetCameraLocation());
 	//RenderLines();
 
 	UUIManager::GetInstance().Render();
@@ -413,11 +413,18 @@ void URenderer::RenderLevel()
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
+	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
+	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
 	TMap<FPrimitiveBatchKey, TArray<FInstanceGPUData>, FPrimitiveBatchKeyHasher> InstanceBatches;
 
+
+
+
+
+	//Primitive를 순회하며 Key를 구하고 같은 key를 가진 component의 matrix와 color값들을
+	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨
 	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
-
 	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
 	{
 		if (!PrimitiveComponent) { continue; }
@@ -438,14 +445,16 @@ void URenderer::RenderLevel()
 		InstanceBatches[Key].Emplace(PrimitiveComponent->GetWorldTransformMatrix(), PrimitiveComponent->GetColor());
 	}
 
+	//그릴 인스턴스가 없는 경우 리턴
 	if (InstanceBatches.IsEmpty())
 	{
-		UpdateInstanceDrawConstants(false, 0, 0);
+		/*UpdateInstanceDrawConstants(false, 0, 0);
 		ID3D11ShaderResourceView* NullSRV = nullptr;
-		GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
+		GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);*/
 		return;
 	}
 
+	//저장해놓은 인스턴스 데이터들을 순회하면서 버퍼를 업데이트하고 렌더링함.
 	for (auto& Batch : InstanceBatches)
 	{
 		const FPrimitiveBatchKey& Key = Batch.first;
@@ -456,17 +465,21 @@ void URenderer::RenderLevel()
 			continue;
 		}
 
+		//키로 리소스 얻어옴(GPU 버퍼, 리소스 뷰)
 		FInstanceBufferResource& Resource = GetOrCreateInstanceBuffer(Key);
+		//리소스가 없거나 크기가 작으면 새로 만들거나 확장함
 		EnsureInstanceBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
 		if (!Resource.Buffer || !Resource.ShaderResourceView)
 		{
 			continue;
 		}
 
+		//리소스에 인스턴스 데이터 업데이트함
 		UploadInstanceBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
 
 		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
 
+		//인스턴스가 있으면 스트럭처드 버퍼의 행렬을 쓸 것이므로 identity로 업데이트
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 		UpdateConstant(FMatrix::Identity);
 
@@ -474,6 +487,7 @@ void URenderer::RenderLevel()
 		UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));
 
 		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+		//baseOffset은 0이고 instance 개수만큼 렌더링 할 것
 		UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
 
 		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
@@ -482,30 +496,38 @@ void URenderer::RenderLevel()
 
 		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
+	//////////////////////////////////////
 
+	//이후에 같은 셰이더를 쓰는 경우 인스턴싱 데이터를 쓰는 경우 예방
 	UpdateInstanceDrawConstants(false, 0, 0);
 	ID3D11ShaderResourceView* NullSRV = nullptr;
 	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
 }
 
-void URenderer::RenderTest(const FVector& CameraLocation)
+void URenderer::RenderText(const FVector& CameraLocation)
 {
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
-	//shader, rasterizaer state, depth stencil state, input layout 설정
+	//shader, rasterizaer state, depth stencil state, input layout 설정///////////////////
 	FRenderState State = FRenderState{ECullMode::None, EFillMode::Solid};
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
+	/////////////////////////////////////////////////////////////////////////////////////
 
-	//텍스처, 샘플러 설정
+	/////////////텍스처, 샘플러 설정////////////////////
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	ID3D11ShaderResourceView* Srv = ResourceManager.GetTexture("Asset/Font/Pretendard-Regular.dds");
 	ID3D11SamplerState* SamplerState = ResourceManager.GetSamplerState(ESamplerType::Text);
 
 	Pipeline->SetShaderResourceView(0, false, Srv);
 	Pipeline->SetSamplerState(0, false, SamplerState);
+	////////////텍스처, 샘플러 설정//////////////////////
+
+
+
 
 	//text(외 투명한 물체)들은 블랜딩을 적용하기 위해서 zbuffer에 쓰기를 하지 않음, 그래서 뒤에 있는 물체가 앞에 있는 물체 위에 렌더링되는 현상이 벌어짐
 	//그래서 zbuffer에 쓰지 않으면서 추가로 카메라로부터 거리순으로 정렬을 해서 멀리 있는 물체부터 그려줘야함.
+	///////////////////////////////////Sorting//////////////////////////////////////////
 	struct RenderObject
 	{
 		UTextComponent* Component;
@@ -527,9 +549,11 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 		RenderList.push_back(Object);
 	}
 	std::sort(RenderList.begin(), RenderList.end());
+	/////////////////////////////////////////////////////////////////////////////////////
 
 
-	//정렬된 리스트 순회하면서 렌더링
+
+	/////////////////////////////////정렬된 리스트 순회하면서 렌더링//////////////////////
 	for (RenderObject& Object : RenderList)
 	{
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
@@ -560,6 +584,7 @@ void URenderer::RenderTest(const FVector& CameraLocation)
 
 		Pipeline->DrawInstanced(Object.Component->GetVertexNum(), InstanceData->size(), 0, 0);
 	}
+	////////////////////////////////////////////////////////////////////////////////////
 
 	UpdateInstanceDrawConstants(false, 0, 0);
 }

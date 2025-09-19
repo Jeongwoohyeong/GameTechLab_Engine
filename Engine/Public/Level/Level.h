@@ -26,12 +26,8 @@ public:
 	TArray<AActor*> GetLevelActors() const { return LevelActors; }
 	TArray<UPrimitiveComponent*> GetLevelPrimitiveComponents() const { return LevelPrimitiveComponents; }
 	TArray<UTextComponent*> GetTextComponents() const { return TextComponents; }
-	//Deprecated : EditorPrimitive는 에디터에서 처리
-	//TArray<AActor*> GetEditorActors() const { return EditorActors; }
-	//TArray<UPrimitiveComponent*> GetEditorPrimitiveComponents() const { return EditorPrimitiveComponents; }
 
 	void AddLevelPrimitiveComponent(AActor* Actor);
-	//void AddEditorPrimitiveComponent(AActor* Actor);
 
 	template<typename T, typename... Args>
 	T* SpawnActor(const FString& InName = "");
