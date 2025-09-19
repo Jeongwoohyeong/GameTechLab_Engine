@@ -6,6 +6,63 @@
 
 using json::JSON;
 
+
+// 타입 문자열 얻기 (enum → 문자열). 커스텀 필드가 있으면 그걸 먼저 사용.
+static std::string GetPrimitiveTypeString(const FPrimitiveMetadata& P)
+{
+	// 예) 커스텀 이름이 있다면 우선
+	// if (!P.TypeName.empty()) return P.TypeName;
+
+	return FLevelSerializer::PrimitiveTypeToWideString(P.Type);
+}
+// ===== Helpers: trim / strip / collapse / indent(no blank) =====
+static std::string LTrim(const std::string& S) {
+	size_t I = 0; while (I < S.size() && std::isspace((unsigned char)S[I])) ++I;
+	return S.substr(I);
+}
+static std::string RTrim(const std::string& S) {
+	size_t I = S.size(); while (I > 0 && std::isspace((unsigned char)S[I - 1])) --I;
+	return S.substr(0, I);
+}
+// 양옆 공백 제거
+static std::string Trim(const std::string& S) { return RTrim(LTrim(S)); }
+
+// ===== numeric & vector format helpers =====
+static std::string FormatFloat(float V, int Precision)
+{
+	std::ostringstream Os;
+	Os.setf(std::ios::fixed);
+	Os << std::setprecision(Precision) << V;
+	return Os.str();
+}
+
+// 고정 소수점으로 Precision 자리수까지 숫자를 문자열로 바꿔주는 헬퍼
+static std::string FormatVec3(const FVector& V, int Precision = 6)
+{
+	return "[ " + FormatFloat(V.X, Precision) + ", "
+		+ FormatFloat(V.Y, Precision) + ", "
+		+ FormatFloat(V.Z, Precision) + " ]";
+}
+
+// "  " * BaseIndent 만큼 왼쪽 들여쓰기
+static std::string Indent(int BaseIndent) { return std::string(BaseIndent * 2, ' '); }
+
+// 하나의 Primitive KV를 조립:  "  \"3\": { ... }"
+static std::string FormatPrimitiveKeyValue(uint32 Id, const FPrimitiveMetadata& P, int BaseIndent = 2)
+{
+	const std::string I0 = Indent(BaseIndent);       //   "  "
+	const std::string I1 = Indent(BaseIndent + 1);   //   "    "
+
+	std::ostringstream Os;
+	Os << I0 << "\"" << Id << "\": {\n";
+	Os << I1 << "\"Location\": " << FormatVec3(P.Location, 6) << ",\n";
+	Os << I1 << "\"Rotation\": " << FormatVec3(P.Rotation, 6) << ",\n";
+	Os << I1 << "\"Scale\": " << FormatVec3(P.Scale, 6) << ",\n";
+	Os << I1 << "\"Type\": " << "\"" << GetPrimitiveTypeString(P) << "\"\n";
+	Os << I0 << "}";
+	return Os.str();
+}
+
 /**
  * @brief FVector를 JSON으로 변환
  */
@@ -93,6 +150,7 @@ EPrimitiveType FLevelSerializer::StringToPrimitiveType(const FString& InTypeStri
 JSON FLevelSerializer::PrimitiveMetadataToJson(const FPrimitiveMetadata& InPrimitive)
 {
 	JSON PrimitiveJson;
+	// Maybe TODO(Dongmin) - Ex) "ObjStaticMeshAsset": "Data/Cube.obj"
 	PrimitiveJson["Location"] = VectorToJson(InPrimitive.Location);
 	PrimitiveJson["Rotation"] = VectorToJson(InPrimitive.Rotation);
 	PrimitiveJson["Scale"] = VectorToJson(InPrimitive.Scale);
@@ -150,6 +208,9 @@ JSON FLevelSerializer::LevelToJson(const FLevelMetadata& InLevelData)
 	}
 	LevelJson["Primitives"] = PrimitivesJson;
 
+	// ▼ 카메라 스냅샷 추가
+	LevelJson["PerspectiveCamera"] = CameraToJson(InLevelData.Camera);
+
 	return LevelJson;
 }
 
@@ -194,6 +255,11 @@ FLevelMetadata FLevelSerializer::JsonToLevel(JSON& InJsonData)
 				}
 			}
 		}
+		// ▼ 카메라
+		if (InJsonData.hasKey("PerspectiveCamera"))
+		{
+			LevelData.Camera = JsonToCamera(InJsonData.at("PerspectiveCamera"));
+		}
 	}
 	catch (const exception&)
 	{
@@ -202,29 +268,102 @@ FLevelMetadata FLevelSerializer::JsonToLevel(JSON& InJsonData)
 
 	return LevelData;
 }
+/** @brief FCameraMetadata -> JSON ("PerspectiveCamera") */
+JSON FLevelSerializer::CameraToJson(const FCameraMetadata& InCamera)
+{
+	JSON Cam;
+	Cam["Location"] = VectorToJson(InCamera.Location);
+	Cam["Rotation"] = VectorToJson(InCamera.Rotation);
+	Cam["FOV"] = InCamera.Fov;
+	Cam["NearClip"] = InCamera.NearZ;
+	Cam["FarClip"] = InCamera.FarZ;
+	return Cam;
+}
 
+/** @brief JSON -> FCameraMetadata */
+FCameraMetadata FLevelSerializer::JsonToCamera(const JSON& InJson)
+{
+	FCameraMetadata Cam;
+	try
+	{
+		if (InJson.JSONType() == JSON::Class::Object)
+		{
+			if (InJson.hasKey("Location")) Cam.Location = JsonToVector(InJson.at("Location"));
+			if (InJson.hasKey("Rotation")) Cam.Rotation = JsonToVector(InJson.at("Rotation"));
+
+			if (InJson.hasKey("FOV"))      Cam.Fov = static_cast<float>(InJson.at("FOV").ToFloat());
+			if (InJson.hasKey("NearClip")) Cam.NearZ = static_cast<float>(InJson.at("NearClip").ToFloat());
+			if (InJson.hasKey("FarClip"))  Cam.FarZ = static_cast<float>(InJson.at("FarClip").ToFloat());
+		}
+	}
+	catch (const exception&)
+	{
+		// 파싱 실패 시 기본값 유지
+	}
+	return Cam;
+}
 /**
  * @brief 레벨 데이터를 파일에 저장
  */
 bool FLevelSerializer::SaveLevelToFile(const FLevelMetadata& InLevelData, const FString& InFilePath)
 {
-	try
-	{
-		JSON LevelJson = LevelToJson(InLevelData);
+	try {
+		// 0) 고정 값
+		const std::string VersionStr = std::to_string(InLevelData.Version);
 
-		ofstream File(InFilePath);
-		if (!File.is_open())
+		// 1) 원본 ID 수집 → 정렬
+		std::vector<uint32> OrigIds;
+		OrigIds.reserve(InLevelData.Primitives.size());
+		for (const auto& KeyValue : InLevelData.Primitives) OrigIds.push_back(KeyValue.first);
+		std::sort(OrigIds.begin(), OrigIds.end());
+
+		// 2) NextUUID = N + 1
+		const uint32 NewNextUUID = static_cast<uint32>(OrigIds.size()) + 1;
+		const std::string NextUuidStr = std::to_string(NewNextUUID);
+
+		// 3) Primitives: 1..N 리넘버해서 수동 조립 (빈 줄 없음, 순서 Location→Rotation→Scale→Type)
+		std::ostringstream PrimsOs;
+		PrimsOs << "  \"Primitives\": {\n";
+		for (size_t i = 0; i < OrigIds.size(); ++i)
 		{
-			return false;
+			const uint32 oldId = OrigIds[i];
+			FPrimitiveMetadata P = InLevelData.Primitives.at(oldId); // 복사본
+			const uint32 newId = static_cast<uint32>(i + 1);
+			P.ID = newId;
+
+			PrimsOs << FormatPrimitiveKeyValue(newId, P, /*BaseIndent=*/2);
+			if (i + 1 < OrigIds.size()) PrimsOs << ",\n";
+			else                        PrimsOs << "\n";
 		}
+		PrimsOs << "  }";
 
-		File << setw(2) << LevelJson << "\n";
+		// 4) Camera: 순서 고정(Location→Rotation→FOV→NearClip→FarClip)
+		const FCameraMetadata& C = InLevelData.Camera;
+		std::ostringstream CamOs;
+		CamOs << "  \"PerspectiveCamera\": {\n"
+			<< "    \"Location\": " << FormatVec3(C.Location, 6) << ",\n"
+			<< "    \"Rotation\": " << FormatVec3(C.Rotation, 6) << ",\n"
+			<< "    \"FOV\": " << FormatFloat(C.Fov, 1) << ",\n"
+			<< "    \"NearClip\": " << FormatFloat(C.NearZ, 6) << ",\n"
+			<< "    \"FarClip\": " << FormatFloat(C.FarZ, 6) << "\n"
+			<< "  }";
+
+		// 5) 최종 조립
+		std::ostringstream Os;
+		Os << "{\n";
+		Os << "  \"Version\": " << VersionStr << ",\n";
+		Os << "  \"NextUUID\": " << NextUuidStr << ",\n";
+		Os << PrimsOs.str() << ",\n";
+		Os << CamOs.str() << "\n";
+		Os << "}\n";
+
+		std::ofstream File(InFilePath);
+		if (!File.is_open()) return false;
+		File << Os.str();
 		File.close();
-
 		return true;
 	}
-	catch (const exception&)
-	{
+	catch (...) {
 		return false;
 	}
 }
@@ -425,6 +564,18 @@ void FLevelSerializer::PrintLevelInfo(const FLevelMetadata& InLevelData)
 	cout << "Version: " << InLevelData.Version << "\n";
 	cout << "NextUUID: " << InLevelData.NextUUID << "\n";
 	cout << "Total Primitives: " << InLevelData.Primitives.size() << "\n";
+
+	// ▼ 카메라
+	cout << "\n--- PerspectiveCamera ---\n";
+	cout << "  Location: (" << InLevelData.Camera.Location.X << ", "
+		<< InLevelData.Camera.Location.Y << ", "
+		<< InLevelData.Camera.Location.Z << ")\n";
+	cout << "  Rotation: (" << InLevelData.Camera.Rotation.X << ", "
+		<< InLevelData.Camera.Rotation.Y << ", "
+		<< InLevelData.Camera.Rotation.Z << ")\n";
+	cout << "  FOV: " << InLevelData.Camera.Fov << "\n";
+	cout << "  NearClip: " << InLevelData.Camera.NearZ << "\n";
+	cout << "  FarClip: " << InLevelData.Camera.FarZ << "\n";
 
 	if (!InLevelData.Primitives.empty())
 	{
