@@ -2284,7 +2284,6 @@ TArray<FVertex> VerticesSphere = {
 	{{ -0.000000f, -1.000000f, -0.000000f }, { 0.500000f, 0.000000f, 0.500000f, 1.000000f }},
 };
 
-// 뭐야 왜 CCW 정보야?
 TArray<FVertex> VerticesCube = {
 	// Top face (+Z) - Red
 	{{ -0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }},
@@ -2335,63 +2334,6 @@ TArray<FVertex> VerticesCube = {
 	{{ -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }},
 };
 
-/*
-* TODO - 입학 시험 때 정점인데 걍 거의 안나옵니다.
-* (bottom의 삼각형 하나만 보임)
-* 뭐야 CW네??
-*/
-/*
-TArray<FVertex> VerticesCube =
-{
-	// Front face (Z+)
-	{{ -0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }}, // Bottom-left (red)
-	{{ -0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f, 0.0f, 1.0f }}, // Top-left (yellow)
-	{{  0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f, 1.0f }}, // Bottom-right (green)
-	{{ -0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f, 0.0f, 1.0f }}, // Top-left (yellow)
-	{{  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f, 1.0f, 1.0f }}, // Top-right (blue)
-	{{  0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f, 1.0f }}, // Bottom-right (green)
-
-	// Back face (Z-)
-	{{ -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f, 1.0f, 1.0f }}, // Bottom-left (cyan)
-	{{  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }}, // Bottom-right (magenta)
-	{{ -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 1.0f, 1.0f }}, // Top-left (blue)
-	{{ -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 1.0f, 1.0f }}, // Top-left (blue)
-	{{  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }}, // Bottom-right (magenta)
-	{{  0.5f,  0.5f, -0.5f }, { 1.0f, 1.0f, 0.0f, 1.0f }}, // Top-right (yellow)
-
-	// Left face (X-)
-	{{ -0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f }}, // Bottom-left (purple)
-	{{ -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 1.0f, 1.0f }}, // Top-left (blue)
-	{{ -0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f, 1.0f }}, // Bottom-right (green)
-	{{ -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f, 1.0f, 1.0f }}, // Top-left (blue)
-	{{ -0.5f,  0.5f,  0.5f }, { 1.0f, 1.0f, 0.0f, 1.0f }}, // Top-right (yellow)
-	{{ -0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f, 1.0f }}, // Bottom-right (green)
-
-	// Right face (X+)
-	{{  0.5f, -0.5f, -0.5f }, { 1.0f, 0.5f, 0.0f, 1.0f }}, // Bottom-left (orange)
-	{{  0.5f, -0.5f,  0.5f }, { 0.5f, 0.5f, 0.5f, 1.0f }}, // Bottom-right (gray)
-	{{  0.5f,  0.5f, -0.5f }, { 0.5f, 0.0f, 0.5f, 1.0f }}, // Top-left (purple)
-	{{  0.5f,  0.5f, -0.5f }, { 0.5f, 0.0f, 0.5f, 1.0f }}, // Top-left (purple)
-	{{  0.5f, -0.5f,  0.5f }, { 0.5f, 0.5f, 0.5f, 1.0f }}, // Bottom-right (gray)
-	{{  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f, 0.5f, 1.0f }}, // Top-right (dark blue)
-
-	// Top face (Y+)
-	{{ -0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.5f, 1.0f }}, // Bottom-left (light green)
-	{{ -0.5f,  0.5f,  0.5f }, { 0.0f, 0.5f, 1.0f, 1.0f }}, // Top-left (cyan)
-	{{  0.5f,  0.5f, -0.5f }, { 0.5f, 1.0f, 1.0f, 1.0f }}, // Bottom-right (white)
-	{{ -0.5f,  0.5f,  0.5f }, { 0.0f, 0.5f, 1.0f, 1.0f }}, // Top-left (cyan)
-	{{  0.5f,  0.5f,  0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }}, // Top-right (brown)
-	{{  0.5f,  0.5f, -0.5f }, { 0.5f, 1.0f, 1.0f, 1.0f }}, // Bottom-right (white)
-
-	// Bottom face (Y-)
-	{{ -0.5f, -0.5f, -0.5f }, { 0.5f, 0.5f, 0.0f, 1.0f }}, // Bottom-left (brown)
-	{{ -0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }}, // Top-left (red)
-	{{  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.5f, 1.0f }}, // Bottom-right (purple)
-	{{ -0.5f, -0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f, 1.0f }}, // Top-left (red)
-	{{  0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f, 1.0f }}, // Top-right (green)
-	{{  0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f, 0.5f, 1.0f }}, // Bottom-right (purple)
-};
-*/
 TArray<FVertex> VerticesTriangle = {
 	{{ 0.0f, 1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f }}, // Top vertex (red)
 	{{ 1.0f, -1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }}, // Bottom-right vertex (green)
