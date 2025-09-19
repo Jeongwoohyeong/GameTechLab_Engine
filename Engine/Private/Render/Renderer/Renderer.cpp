@@ -1142,6 +1142,10 @@ ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRende
 
 	ID3D11RasterizerState* RasterizerState = nullptr;
 	D3D11_RASTERIZER_DESC RasterizerDesc = {};
+	// TODO - 현재 FCCW 를 TRUE로 하지 않아도 CCW 정점들이 앞면으로 잘 보인다.
+	// (아마도 뷰행렬과 관련됨)
+	// 나중에 이것과 관련해서 문제가 생기지 않을까?
+	// RasterizerDesc.FrontCounterClockwise = TRUE; // CCW를 앞면으로 보겠다! (기본값은 CW)
 	RasterizerDesc.FillMode = FillMode;
 	RasterizerDesc.CullMode = CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
