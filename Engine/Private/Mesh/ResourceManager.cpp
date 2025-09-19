@@ -2,7 +2,7 @@
 #include "Mesh/ResourceManager.h"
 #include "Mesh/VertexDatas.h"
 #include "Render/Renderer/Renderer.h"
-
+#include "Utility/ObjParser.h"
 #include <ranges>
 
 IMPLEMENT_CLASS(UResourceManager, UObject)
@@ -15,8 +15,11 @@ UResourceManager::~UResourceManager() = default;
 void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
+
+	
+
 	// TMap.Add()
-	VertexData.emplace(EPrimitiveType::Cube, &VerticesCube);
+	//VertexData.emplace(EPrimitiveType::Cube, &VerticesCube);
 	VertexData.emplace(EPrimitiveType::Sphere, &VerticesSphere);
 	VertexData.emplace(EPrimitiveType::Triangle, &VerticesTriangle);
 	VertexData.emplace(EPrimitiveType::Square, &VerticesSquare);
@@ -27,7 +30,7 @@ void UResourceManager::Initialize()
 	VertexData.emplace(EPrimitiveType::Line, &VerticesLine);
 
 	// TArray.GetData(), TArray.Num()*sizeof(FVertexSimple), TArray.GetTypeSize()
-	VertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
+	//VertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
 	VertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(VerticesSphere));
 	VertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(VerticesTriangle));
 	VertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(VerticesSquare));
@@ -37,7 +40,7 @@ void UResourceManager::Initialize()
 	VertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(VerticesRing));
 	VertexBuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(VerticesLine));
 
-	VertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
+	//VertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
 	VertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(VerticesSphere.size()));
 	VertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(VerticesTriangle.size()));
 	VertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(VerticesSquare.size()));
@@ -55,7 +58,7 @@ void UResourceManager::Initialize()
 
 
 	// Create Reduced Vertex Data and Index Data
-	ReducedVertexData.emplace(EPrimitiveType::Cube, &ReducedVerticesCube);
+	//ReducedVertexData.emplace(EPrimitiveType::Cube, &ReducedVerticesCube);
 	ReducedVertexData.emplace(EPrimitiveType::Sphere, &ReducedVerticesSphere);
 	ReducedVertexData.emplace(EPrimitiveType::Triangle, &ReducedVerticesTriangle);
 	ReducedVertexData.emplace(EPrimitiveType::Square, &ReducedVerticesSquare);
@@ -65,7 +68,7 @@ void UResourceManager::Initialize()
 	ReducedVertexData.emplace(EPrimitiveType::Ring, &ReducedVerticesRing);
 	ReducedVertexData.emplace(EPrimitiveType::Line, &ReducedVerticesLine);
 
-	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(ReducedVerticesCube));
+	//ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(ReducedVerticesCube));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(ReducedVerticesSphere));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(ReducedVerticesTriangle));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(ReducedVerticesSquare));
@@ -75,7 +78,7 @@ void UResourceManager::Initialize()
 	ReducedVertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(ReducedVerticesRing));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(ReducedVerticesLine));
 
-	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
+	//ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(ReducedVerticesSphere.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(ReducedVerticesTriangle.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(ReducedVerticesSquare.size()));
@@ -84,6 +87,8 @@ void UResourceManager::Initialize()
 	ReducedVertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(ReducedVerticesCubeArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(ReducedVerticesRing.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Line, static_cast<uint32>(ReducedVerticesLine.size()));
+
+	
 
 
 	// Create Index Data from Vertex Data and Reduced Vertex Data
@@ -118,6 +123,18 @@ void UResourceManager::Initialize()
 		IndexBuffers.emplace(Pair.first, Renderer.CreateIndexBuffer(Pair.second));
 		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
 	}
+
+	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/cube.obj");
+	TArray<FVertex> objcube;
+	for (const auto& e : Mesh->Vertices)
+	{
+		objcube.push_back(FVertex(e.Position, e.Color));
+	}
+	ReducedVertexData.emplace(EPrimitiveType::Cube, &objcube);
+	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(objcube));
+	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(objcube.size()));
+	IndexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateIndexBuffer(Mesh->Indices));
+	IndexNum.Emplace(EPrimitiveType::Cube, Mesh->IndexNum);
 }
 
 void UResourceManager::Release()

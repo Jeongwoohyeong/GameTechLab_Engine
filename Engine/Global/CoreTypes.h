@@ -23,6 +23,10 @@ struct FVertex
     FVector Position;
     FVector4 Color;
 
+	FVertex() : Position{}, Color{} {}
+
+	FVertex(const FVector& pos, const FVector4& col) : Position(pos), Color(col) {}
+
     // 동등 비교 연산자
     bool operator==(const FVertex& Other) const
     {
@@ -81,15 +85,40 @@ struct FNormalVertex
 	FVector Normal;
 	FVector4 Color;
 	FVector2 Tex;
+
+	FNormalVertex()
+		: Position{}, Normal{}, Color{}, Tex{} {}
+};
+
+struct FObjInfo
+{
+	// 당장 필요한 것만 추가함
+
+	// Vertex
+	TArray<FVector> Position;
+	TArray<FVector> Normal;
+	TArray<FVector> Color; // Material 사용 시 필요할듯
+	TArray<FVector2> Tex;
+
+	FObjInfo()
+		: Position{}, Normal{}, Color{}, Tex{} {}		
 };
 
 // Cooked Data
 struct FStaticMesh
 {
-	std::string PathFileName;
+	FString PathFileName;
 
 	TArray<FNormalVertex> Vertices;
 	TArray<uint32> Indices;
+	uint32 IndexNum;
+
+	FStaticMesh()
+		: PathFileName{}, Vertices{}, Indices{}, IndexNum(0){
+	}
+
+	FStaticMesh(const FString name, const TArray<FNormalVertex> vertices, const TArray<uint32> indices)
+		: PathFileName(name), Vertices(vertices), Indices(indices) {}
 };
 
 //TMap<char, FCharacterInfo> CharInfoMap;
