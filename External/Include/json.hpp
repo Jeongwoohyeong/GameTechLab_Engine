@@ -346,21 +346,21 @@ class JSON
                     bool skip = true;
                     for( auto &p : *Internal.Map ) {
                         if( !skip ) s += ",\n";
-                        s += ( pad + "\"" + p.first + "\" : " + p.second.dump( depth + 1, tab ) );
+                        s += ( pad + "\"" + p.first + "\": " + p.second.dump( depth + 1, tab ) );
                         skip = false;
                     }
                     s += ( "\n" + pad.erase( 0, 2 ) + "}" ) ;
                     return s;
                 }
                 case Class::Array: {
-                    string s = "[";
+                    string s = "[ ";
                     bool skip = true;
                     for( auto &p : *Internal.List ) {
                         if( !skip ) s += ", ";
                         s += p.dump( depth + 1, tab );
                         skip = false;
                     }
-                    s += "]";
+                    s += " ]";
                     return s;
                 }
                 case Class::String:
