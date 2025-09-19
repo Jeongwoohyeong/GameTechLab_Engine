@@ -360,10 +360,6 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		case EPrimitiveType::Square:
 			NewActor = InLevel->SpawnActor<ASquareActor>();
 			break;
-		// TODO(KHJ): TriangleActor 지원 예정
-		// case EPrimitiveType::Triangle:
-		// 	NewActor = InLevel->SpawnActor<ATriangleActor>();
-		// 	break;
 		default:
 			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
 			assert(!"고려하지 않은 Actor 타입");

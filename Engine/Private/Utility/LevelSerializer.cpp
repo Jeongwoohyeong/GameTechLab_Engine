@@ -55,6 +55,8 @@ FString FLevelSerializer::PrimitiveTypeToWideString(EPrimitiveType InType)
 		return "Cube";
 	case EPrimitiveType::Triangle:
 		return "Triangle";
+	case EPrimitiveType::Square:
+		return "Square";
 	default:
 		return "Unknown";
 	}
@@ -76,6 +78,10 @@ EPrimitiveType FLevelSerializer::StringToPrimitiveType(const FString& InTypeStri
 	if (InTypeString == "Triangle")
 	{
 		return EPrimitiveType::Triangle;
+	}
+	if (InTypeString == "Square")
+	{
+		return EPrimitiveType::Square;
 	}
 
 	return EPrimitiveType::None;
@@ -106,6 +112,7 @@ FPrimitiveMetadata FLevelSerializer::JsonToPrimitive(const JSON& InJsonData, uin
 	{
 		if (InJsonData.JSONType() == JSON::Class::Object)
 		{
+			// TODO(Dongmin) - ObjStaticMeshAsset 정보도 저장하기
 			const JSON& LocationJson = InJsonData.at("Location");
 			const JSON& RotationJson = InJsonData.at("Rotation");
 			const JSON& ScaleJson = InJsonData.at("Scale");
