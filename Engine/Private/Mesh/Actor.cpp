@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Mesh/Actor.h"
 #include "Mesh/SceneComponent.h"
+#include "Mesh/StaticMeshComponent.h"
+#include "Mesh/StaticMesh.h"
 
 IMPLEMENT_CLASS(AActor, UObject)
 
@@ -106,6 +108,32 @@ const FVector& AActor::GetActorScale3D() const
 {
 	assert(RootComponent);
 	return RootComponent->GetRelativeScale3D();
+}
+
+//테스트용
+const FString& AActor::GetStaticMeshName() const
+{
+	for (auto& Component : GetOwnedComponents())
+	{
+		if (Component->IsA(UStaticMeshComponent::StaticClass()))
+		{
+			UStaticMeshComponent* StaticMeshComponent = static_cast<UStaticMeshComponent*>(Component);
+			return StaticMeshComponent->GetStaticMeshName();
+		}
+	}
+	return FString();
+}
+
+void AActor::SetStaticMesh(UStaticMesh* InStaticMesh)
+{
+	for (auto& Component : GetOwnedComponents())
+	{
+		if (Component->IsA(UStaticMeshComponent::StaticClass()))
+		{
+			UStaticMeshComponent* StaticMeshComponent = static_cast<UStaticMeshComponent*>(Component);
+			StaticMeshComponent->SetStaticMesh(InStaticMesh);
+		}
+	}
 }
 
 void AActor::Tick()
