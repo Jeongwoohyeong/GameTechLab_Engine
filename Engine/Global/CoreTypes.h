@@ -87,7 +87,10 @@ struct FNormalVertex
 	FVector2 Tex;
 
 	FNormalVertex()
-		: Position{}, Normal{}, Color{}, Tex{} {}
+		: Position(FVector(-1.0f,-1.0f,-1.0f)), Normal(FVector(-1.0f, -1.0f, -1.0f)),
+		Color(FVector4(-1.0f, -1.0f, -1.0f, 1.0f)), Tex(FVector2(-1.0f, -1.0f)) { }
+	FNormalVertex(const FVector& v, const FVector& norm, const FVector4& c, const FVector2& uv)
+		: Position(v), Normal(norm), Color(c), Tex(uv) {}
 };
 
 struct FObjInfo
@@ -104,21 +107,36 @@ struct FObjInfo
 		: Position{}, Normal{}, Color{}, Tex{} {}		
 };
 
+struct FIndex
+{
+	TArray<uint32> VertexIndices;
+	TArray<uint32> UVIndices;
+	TArray<uint32> NormalIndices;
+
+	FIndex() : VertexIndices{}, UVIndices{}, NormalIndices{} {}
+
+	FIndex(TArray<uint32> vIndex, TArray<uint32> uvIndex, TArray<uint32> normalIndex)
+		: VertexIndices(vIndex), UVIndices(uvIndex), NormalIndices(normalIndex) { }
+};
+
 // Cooked Data
 struct FStaticMesh
 {
 	FString PathFileName;
 
 	TArray<FNormalVertex> Vertices;
-	TArray<uint32> Indices;
-	uint32 IndexNum;
+	FIndex Indices;
+	uint32 VertexIndexNum;
+	uint32 UVIndexNum;
+	uint32 NormalIndexNum;
 
-	FStaticMesh()
-		: PathFileName{}, Vertices{}, Indices{}, IndexNum(0){
-	}
+	FStaticMesh() : PathFileName{}, Vertices{}, Indices{},
+		VertexIndexNum(0), UVIndexNum(0), NormalIndexNum(0) {}
 
-	FStaticMesh(const FString name, const TArray<FNormalVertex> vertices, const TArray<uint32> indices)
-		: PathFileName(name), Vertices(vertices), Indices(indices) {}
+	FStaticMesh(const FString name, const TArray<FNormalVertex> vertices, const FIndex indices,
+		uint32 vIdxNum = 0, uint32 uvIdxNum = 0, uint32 normIdxNum = 0)
+		: PathFileName(name), Vertices(vertices), Indices(indices),
+		VertexIndexNum(vIdxNum), UVIndexNum(uvIdxNum), NormalIndexNum(normIdxNum) {	}
 };
 
 //TMap<char, FCharacterInfo> CharInfoMap;

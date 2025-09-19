@@ -1,13 +1,16 @@
 #include "pch.h"
 #include "ObjParser.h"
+#include <regex>
 
 IMPLEMENT_SINGLETON(FObjParser)
 
 FObjParser::FObjParser()
-{}
+{
+}
 
 FObjParser::~FObjParser()
-{}
+{
+}
 
 FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filepath)
 {
@@ -20,7 +23,7 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filepath)
 	}
 
 	FObjInfo newObjRawData = {};
-	TArray<FString> faceLines = {};	
+	TArray<FString> faceLines = {};
 
 	FString line;
 	while (std::getline(fileStream, line))
@@ -41,7 +44,8 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filepath)
 			float x, y, z;
 			ss >> x >> y >> z;
 			// obj 파일은 오른손 좌표계, 왼손 좌표계로 변환하기 위해서는 축 하나를 반전 시켜야함
-			newObjRawData.Position.Emplace(FObjParser::PositionToUEBasis(FVector(x, y, z)));
+			//newObjRawData.Position.Emplace(FObjParser::PositionToUEBasis(FVector(x, y, z)));
+			newObjRawData.Position.Emplace(FVector(x, y, z));
 		}
 		else if (lineType == "vt")
 		{
@@ -55,7 +59,8 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filepath)
 		{
 			float x, y, z;
 			ss >> x >> y >> z;
-			newObjRawData.Normal.Emplace(FObjParser::PositionToUEBasis(FVector(x, y, z)));
+			//newObjRawData.Normal.Emplace(FObjParser::PositionToUEBasis(FVector(x, y, z)));
+			newObjRawData.Normal.Emplace(FVector(x, y, z));
 		}
 		else if (lineType == "f")
 		{
@@ -63,103 +68,109 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filepath)
 		}
 	}
 
-	FStaticMesh* newStaticMesh = new FStaticMesh;
+	FStaticMesh* newStaticMesh = new FStaticMesh();
 	newStaticMesh->PathFileName = filepath;
 
+	FIndex indices;
 	for (const auto& faceLine : faceLines)
 	{
 		std::stringstream ss(faceLine);
-		FString lineType;
-		ss >> lineType;
-
-		TArray<FString> tokens;
 		FString token;
-		while (ss >> token)
+		ss >> token;
+
+		for (size_t i = 0; i < 3; i++)
 		{
-			tokens.Emplace(token);
-		}
+			ss >> token;
+			std::stringstream faceSS(token);
+			FString indexStr;
 
-		for (size_t i = 0; i < tokens.size() - 2; i++)
-		{
-			auto faceParser = [](const FString& s) -> TArray<uint32> {
-				std::stringstream ssToken(s);
-				FString token;
-				TArray<uint32> indices;
-				while (std::getline(ssToken, token, '/'))
-				{
-					if (!token.empty())
-					{
-						indices.Emplace(std::stoi(token));
-					}
-					else
-					{
-						indices.Emplace(0);
-					}
-				}
-				while (indices.size() < 3)
-				{
-					indices.Emplace(0);
-				}
+			int vIndex = -1;
+			int uvIndex = -1;
+			int normIndex = -1;
 
-				return indices;
-				};
+			std::getline(faceSS, indexStr, '/');
+			vIndex = std::stoi(indexStr) - 1;
 
-			TArray<uint32> vIndex1 = faceParser(tokens[0]);
-			TArray<uint32> vIndex2 = faceParser(tokens[i]);
-			TArray<uint32> vIndex3 = faceParser(tokens[i + 1]);
+			std::getline(faceSS, indexStr, '/');
+			uvIndex = std::stoi(indexStr) - 1;
 
-			FVector4 Color = { 0.2f, 0.2f, 0.2f, 1.0f };
-			FNormalVertex vertex1, vertex2, vertex3;
+			std::getline(faceSS, indexStr, '/');
+			normIndex = std::stoi(indexStr) - 1;
 
-			vertex1.Position = (vIndex1[0] > 0) ? newObjRawData.Position[vIndex1[0] - 1] : FVector(0.0f, 0.0f, 0.0f);
-			vertex1.Tex = (vIndex1[1] > 0) ? newObjRawData.Tex[vIndex1[1] - 1] : FVector2(0.0f, 0.0f);
-			vertex1.Normal = (vIndex1[2] > 0) ? newObjRawData.Normal[vIndex1[2] - 1] : FVector(0.0f, 0.0f, 0.0f);
-			vertex1.Color = Color;
-
-			vertex2.Position = (vIndex2[0] > 0) ? newObjRawData.Position[vIndex2[0] - 1] : FVector(0.0f, 0.0f, 0.0f);
-			vertex2.Tex = (vIndex2[1] > 0) ? newObjRawData.Tex[vIndex2[1] - 1] : FVector2(0.0f, 0.0f);
-			vertex2.Normal = (vIndex2[2] > 0) ? newObjRawData.Normal[vIndex2[2] - 1] : FVector(0.0f, 0.0f, 0.0f);
-			vertex2.Color = Color;
-
-			vertex3.Position = (vIndex3[0] > 0) ? newObjRawData.Position[vIndex3[0] - 1] : FVector(0.0f, 0.0f, 0.0f);
-			vertex3.Tex = (vIndex3[1] > 0) ? newObjRawData.Tex[vIndex3[1] - 1] : FVector2(0.0f, 0.0f);
-			vertex3.Normal = (vIndex3[2] > 0) ? newObjRawData.Normal[vIndex3[2] - 1] : FVector(0.0f, 0.0f, 0.0f);
-			vertex3.Color = Color;
-
-			// 오른손 좌표계 -> 왼손 좌표계로 winding 변경
-			newStaticMesh->Vertices.Emplace(vertex1);
-			newStaticMesh->Vertices.Emplace(vertex3);
-			newStaticMesh->Vertices.Emplace(vertex2);
-
-			newStaticMesh->Indices.Emplace(newStaticMesh->Vertices.size() - 3);
-			newStaticMesh->Indices.Emplace(newStaticMesh->Vertices.size() - 2);
-			newStaticMesh->Indices.Emplace(newStaticMesh->Vertices.size() - 1);
+			indices.VertexIndices.Emplace(vIndex);
+			indices.UVIndices.Emplace(vIndex);
+			indices.NormalIndices.Emplace(vIndex);
 		}
 	}
 
-	newStaticMesh->IndexNum = newStaticMesh->Indices.size();
+	size_t size = 0;
+	if (newObjRawData.Normal.size() < newObjRawData.Position.size())
+	{
+		size = newObjRawData.Position.size() <= newObjRawData.Tex.size() ? newObjRawData.Tex.size() : newObjRawData.Position.size();
+	}
+	else
+	{
+		size = newObjRawData.Normal.size() <= newObjRawData.Tex.size() ? newObjRawData.Tex.size() : newObjRawData.Normal.size();
+	}
+
+	newStaticMesh->Vertices.resize(size);
+
+	for (size_t i = 0;i < size;i++)
+	{
+		FVector vertex{ -9999.9f, -9999.9f, -9999.9f };
+		FVector normal{ -9999.9f, -9999.9f, -9999.9f };
+		FVector2 tex{ -9999.9f, -9999.9f };
+		FVector4 color{ 0.25f, 0.25f, 0.25f, 1.0f };
+		if (i < newObjRawData.Position.size())
+		{
+			vertex = { newObjRawData.Position[i].X, newObjRawData.Position[i].Y, newObjRawData.Position[i].Z };
+		}
+
+		if (i < newObjRawData.Normal.size())
+		{
+			normal = { newObjRawData.Normal[i].X, newObjRawData.Normal[i].Y, newObjRawData.Normal[i].Z };
+		}
+
+		if (i < newObjRawData.Tex.size())
+		{
+			tex = { newObjRawData.Tex[i].X, newObjRawData.Tex[i].Y };
+		}
+
+		newStaticMesh->Vertices[i] = FNormalVertex(vertex, normal, color, tex);
+	}
+
+	for (const auto& vIdx : indices.VertexIndices)
+	{
+		newStaticMesh->Indices.VertexIndices.Emplace(vIdx);
+	}
+	for (const auto& uvIdx : indices.UVIndices)
+	{
+		newStaticMesh->Indices.UVIndices.Emplace(uvIdx);
+	}
+	for (const auto& normIdx : indices.NormalIndices)
+	{
+		newStaticMesh->Indices.NormalIndices.Emplace(normIdx);
+	}
+
+	newStaticMesh->VertexIndexNum = newStaticMesh->Indices.VertexIndices.size();
+	newStaticMesh->UVIndexNum = newStaticMesh->Indices.UVIndices.size();
+	newStaticMesh->NormalIndexNum = newStaticMesh->Indices.NormalIndices.size();
 
 	if(!newStaticMesh)
 	{
 		UE_LOG("dasdsa");
 	}
 
-	UE_LOG("%s", newStaticMesh->PathFileName);	
+	UE_LOG("%s", newStaticMesh->PathFileName.c_str());
 
-	for (const auto& e : newStaticMesh->Vertices)
+	/*for (const auto& e : newStaticMesh->Vertices)
 	{
 		UE_LOG("pos %f %f %f", e.Position.X, e.Position.Y, e.Position.Z);
 		UE_LOG("norm %f %f %f", e.Normal.X, e.Normal.Y, e.Normal.Z);
 		UE_LOG("tex %f %f", e.Tex.X, e.Tex.Y);
 		UE_LOG("col %f %f %f %f", e.Color.X, e.Color.Y, e.Color.Z, e.Color.W);
 
-	}
-
-	for (const auto& e : newStaticMesh->Indices)
-	{
-		UE_LOG("index %d ", e);
-	}
-	UE_LOG("%d", newStaticMesh->IndexNum);
+	}*/
 
 	return newStaticMesh;
 }

@@ -16,7 +16,7 @@ UUIManager::UUIManager()
 {
 	ImGuiHelper = NewObject<UImGuiHelper>();
 	Initialize();
-	FObjParser::GetInstance().LoadObjStaticMesh("Data/cube-tex.obj");
+	FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
 }
 
 UUIManager::~UUIManager()

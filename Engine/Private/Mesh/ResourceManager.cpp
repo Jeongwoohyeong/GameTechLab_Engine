@@ -124,17 +124,17 @@ void UResourceManager::Initialize()
 		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
 	}
 
-	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/cube.obj");
-	TArray<FVertex> objcube;
+	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/cube-tex.obj");	
 	for (const auto& e : Mesh->Vertices)
 	{
 		objcube.push_back(FVertex(e.Position, e.Color));
 	}
+
 	ReducedVertexData.emplace(EPrimitiveType::Cube, &objcube);
 	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(objcube));
 	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(objcube.size()));
-	IndexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateIndexBuffer(Mesh->Indices));
-	IndexNum.Emplace(EPrimitiveType::Cube, Mesh->IndexNum);
+	IndexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateIndexBuffer(Mesh->Indices.VertexIndices));
+	IndexNum.Emplace(EPrimitiveType::Cube, Mesh->VertexIndexNum);
 }
 
 void UResourceManager::Release()
