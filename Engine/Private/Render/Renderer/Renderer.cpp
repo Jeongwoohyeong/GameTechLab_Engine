@@ -541,7 +541,7 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 	TArray<RenderObject> RenderList;
 
-	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponents())
+	for (UTextComponent* Component : ULevelManager::GetInstance().GetCurrentLevel()->GetTextComponentsToRender())
 	{
 		RenderObject Object;
 		Object.Component = Component;

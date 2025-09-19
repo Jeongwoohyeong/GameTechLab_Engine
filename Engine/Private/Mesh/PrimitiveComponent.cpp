@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+//IMPLEMENT_ABSTRACT_CLASS(UPrimitiveComponent, USceneComponent)
+
 IMPLEMENT_CLASS(UPrimitiveComponent, USceneComponent)
 
 UPrimitiveComponent::UPrimitiveComponent()
