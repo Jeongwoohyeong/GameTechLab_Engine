@@ -2,7 +2,7 @@
 #include "Core/Object.h"
 
 #include "Editor/Camera.h"
-
+#include "Utility/Metadata.h"
 class AAxis;
 class AGizmo;
 class AGrid;
@@ -42,17 +42,27 @@ public:
 
 	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
 	//void AddStaticMeshComponentToRender(UStaticMeshComponent* Component);
-	
+
+	UCamera* GetCamera() const { return Camera; }
+	void SetCamera(UCamera* InCamera) { Camera = InCamera; }
+
+	// ▼ 카메라 스냅샷 저장/적용
+	void SaveCameraSnapshotFromCamera();
+	void ApplySavedCameraSnapshotToCamera();
+	void SetSavedCameraSnapshot(const FCameraMetadata& In) { SavedCamera = In; }
+	const FCameraMetadata& GetSavedCameraSnapshot() const { return SavedCamera; }
 
 private:
 	TArray<AActor*> LevelActors;
+
+	UCamera* Camera = nullptr;          // 비소유
+	FCameraMetadata SavedCamera;        // 직렬화 대상으로 보관
 
 	//렌더러에게 아래의 것들을 그려달라고 주문할 거임
 
 	TArray<UStaticMeshComponent*> StaticMeshComponentsToRender;
 	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
 	TArray<UTextComponent*> TextComponentsToRender;
-
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> EditorActors;
 	//TArray<UPrimitiveComponent*> EditorPrimitiveComponents;

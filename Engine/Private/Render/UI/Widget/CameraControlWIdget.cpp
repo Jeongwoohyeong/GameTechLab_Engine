@@ -24,115 +24,108 @@ void UCameraControlWidget::Update()
 {
 }
 
+
 void UCameraControlWidget::RenderWidget()
 {
-	if (!Camera)
-	{
+	/*
+	* 새 씬 생성시, 카메라 초기 기본 값으로 두기 위하여
+	* 이전의 캐시 값을 활용하는 것을 버리고
+	* 무상태(stateless)로 만듬
+	*/
+	if (!Camera) {
 		ImGui::TextUnformatted("Camera not set.");
 		ImGui::Separator();
 		ImGui::TextUnformatted("Call SetCamera(camera*) after creating this window.");
 		return;
 	}
 
-	/*
-	 * @brief 최초 1회 동기화
-	 */
-	static bool bSyncedOnce = false;
-	if (bSyncedOnce == false)
-	{
-		SyncFromCamera();
-		bSyncedOnce = true;
-	}
-
 	ImGui::TextUnformatted("Camera Transform");
 	ImGui::Spacing();
 
-	// 카메라 이동속도 표시 및 조절
-	float CurrentSpeed = Camera->GetMoveSpeed();
-	if (ImGui::SliderFloat("이동속도", &CurrentSpeed, 0.5f, 50.0f, "%.1f"))
+	// 이동속도
 	{
-		Camera->SetMoveSpeed(CurrentSpeed);
+		float speed = Camera->GetMoveSpeed();
+		if (ImGui::SliderFloat("이동속도", &speed, 0.5f, 50.0f, "%.1f"))
+			Camera->SetMoveSpeed(speed);
 	}
 
-	// 카메라 감도 표시 및 조절
-	float CurrentSensitivity = Camera->GetMouseSensitivity();
-	if (ImGui::SliderFloat("마우스 감도", &CurrentSensitivity, 0.001f, 0.5f, "%.3f"))
+	// 마우스 감도
 	{
-		Camera->SetMouseSensitivity(CurrentSensitivity);
+		float sens = Camera->GetMouseSensitivity();
+		if (ImGui::SliderFloat("마우스 감도", &sens, 0.001f, 0.5f, "%.3f"))
+			Camera->SetMouseSensitivity(sens);
 	}
 
 	ImGui::Spacing();
 
-	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
-	{
-		PushToCamera();
+	// 모드 (매 프레임 읽기)
+	int modeIndex = (Camera->GetCameraType() == ECameraType::ECT_Perspective) ? 0 : 1;
+	if (ImGui::Combo("Mode", &modeIndex, CameraMode, IM_ARRAYSIZE(CameraMode))) {
+		Camera->SetCameraType(modeIndex == 0 ? ECameraType::ECT_Perspective : ECameraType::ECT_Orthographic);
+		(modeIndex == 0) ? Camera->UpdateMatrixByPers() : Camera->UpdateMatrixByOrth();
 	}
 
-	auto& Location = Camera->GetLocation();
-	auto& Rotation = Camera->GetRotation();
-
-	if (ImGui::DragFloat3("Camera Location", &Location.X, 0.05f))
+	// 위치
 	{
-		// 위치 바뀌면 바로 뷰 갱신
-		if (CameraModeIndex == 0)
-		{
-			Camera->UpdateMatrixByPers();
-		}
-		else
-		{
-			Camera->UpdateMatrixByOrth();
+		FVector loc = Camera->GetLocation();
+		if (ImGui::DragFloat3("Camera Location", &loc.X, 0.05f)) {
+			Camera->SetLocation(loc);
+			(modeIndex == 0) ? Camera->UpdateMatrixByPers() : Camera->UpdateMatrixByOrth();
 		}
 	}
 
-    // 회전 입력 및 보정 (degree 단위)
-    bool RotationChanged = false;
-    float rotDisplay[3] = { Rotation.Z, Rotation.X, Rotation.Y }; // 현재 UI 표시 순서 유지
-    RotationChanged |= ImGui::DragFloat3("Camera Rotation", rotDisplay, 0.1f);
-    // UI -> 내부 순서 반영
-    Rotation.Z = rotDisplay[0];
-    Rotation.X = rotDisplay[1];
-    Rotation.Y = rotDisplay[2];
-
-    // Pitch / Yaw 간단 보정
-    Rotation.X = max(-89.0f, Rotation.X);
-    Rotation.X = min(89.0f, Rotation.X);
-    Rotation.Y = max(-180.0f, Rotation.Y);
-    Rotation.Y = min(180.0f, Rotation.Y);
-
-	if (RotationChanged)
+	// 회전 (deg 가정)
 	{
-		if (CameraModeIndex == 0) Camera->UpdateMatrixByPers();
-		else Camera->UpdateMatrixByOrth();
+		FVector rot = Camera->GetRotation();
+		bool changed = ImGui::DragFloat3("Camera Rotation", &rot.X, 0.1f);
+		rot.X = std::max(-89.0f, std::min(89.0f, rot.X));
+		rot.Y = std::max(-180.0f, std::min(180.0f, rot.Y));
+		if (changed) {
+			Camera->SetRotation(rot);
+			(modeIndex == 0) ? Camera->UpdateMatrixByPers() : Camera->UpdateMatrixByOrth();
+		}
 	}
 
 	ImGui::TextUnformatted("Camera Optics");
 	ImGui::Spacing();
 
-	// FOV: 원근에서 주로 사용, 직교에서는 화면 폭에만 영향(너는 Ortho에서도 FovY로 OrthoWidth 계산함)
-	// 카메라 코드에 맞춰 그대로 노출
-	bool bChanged = false;
-	bChanged |= ImGui::SliderFloat("FOV", &UiFovY, 1.0f, 170.0f, "%.1f");
-
-	// Near / Far
-	bChanged |= ImGui::DragFloat("Z Near", &UiNearZ, 0.01f, 0.0001f, 1e6f, "%.4f");
-	bChanged |= ImGui::DragFloat("Z Far", &UiFarZ, 0.1f, 0.001f, 1e7f, "%.3f");
-
-	if (bChanged)
+	// FOV / Near / Far (매 프레임 읽기)
 	{
-		PushToCamera();
+		float fov = Camera->GetFovY();
+		float nearZ = Camera->GetNearZ();
+		float farZ = Camera->GetFarZ();
+
+		bool changed = false;
+		changed |= ImGui::DragFloat("FOV", &fov, 0.1f, 1.0f, 170.0f, "%.1f");
+		changed |= ImGui::DragFloat("Z Near", &nearZ, 0.01f, 0.0001f, 1e6f, "%.4f");
+		changed |= ImGui::DragFloat("Z Far", &farZ, 0.1f, 0.001f, 1e7f, "%.3f");
+
+		// 보정
+		if (changed) {
+			nearZ = std::max(0.0001f, nearZ);
+			farZ = std::max(nearZ + 0.0001f, farZ);
+			fov = std::clamp(fov, 1.0f, 170.0f);
+
+			Camera->SetFovY(fov);
+			Camera->SetNearZ(nearZ);
+			Camera->SetFarZ(farZ);
+
+			(modeIndex == 0) ? Camera->UpdateMatrixByPers() : Camera->UpdateMatrixByOrth();
+		}
 	}
 
-	// 퀵 버튼
-	if (ImGui::Button("Reset Optics"))
-	{
-		UiFovY = 80.0f;
-		UiNearZ = 0.1f;
-		UiFarZ = 1000.0f;
-		PushToCamera();
+	if (ImGui::Button("Reset Optics")) {
+		// 원하는 초기값
+		const float fov = 80.0f, nearZ = 0.1f, farZ = 1000.0f;
+		Camera->SetFovY(fov);
+		Camera->SetNearZ(nearZ);
+		Camera->SetFarZ(farZ);
+		(modeIndex == 0) ? Camera->UpdateMatrixByPers() : Camera->UpdateMatrixByOrth();
 	}
 
 	ImGui::Separator();
 }
+
 
 
 void UCameraControlWidget::SyncFromCamera()

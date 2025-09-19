@@ -93,8 +93,13 @@ bool ULevelManager::SaveCurrentLevel(const FString& InFilePath) const
 	// LevelSerializer를 사용하여 저장
 	try
 	{
-		// 현재 레벨의 메타데이터 생성
+		// 1) 레벨에게 현재 Editor 카메라로부터 스냅샷을 받아오게
+		CurrentLevel->SaveCameraSnapshotFromCamera();
+		// 2) 현재 레벨의 메타데이터 생성
 		FLevelMetadata Metadata = ConvertLevelToMetadata(CurrentLevel);
+		// 3) 스냅샷을 메타데이터에 실어 저장
+		Metadata.Camera = CurrentLevel->GetSavedCameraSnapshot();
+
 
 		bool bSuccess = FLevelSerializer::SaveLevelToFile(Metadata, FilePath.string());
 
@@ -157,6 +162,10 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 			delete NewLevel;
 			return false;
 		}
+		// 카메라 스냅샷은 레벨에 저장만 해둔다.
+		// (에디터가 이 프레임 이후 NewLevel->SetCamera(&Editor.Camera)로 포인터를 주입하면,
+		// 그때 1회 ApplySavedCameraSnapshotToCamera()를 호출)
+		NewLevel->SetSavedCameraSnapshot(Metadata.Camera);
 	}
 	catch (const exception& InException)
 	{
@@ -226,10 +235,14 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 		return false;
 	}
 
-	// 새 레벨 생성
+
+	// 1) 새 레벨 생성
 	ULevel* NewLevel = new ULevel(InLevelName);
 
-	// 레벨 등록 및 활성화
+	// 2) 새 레벨에 기본값 스냅샷 전달 (Editor가 카메라 주입 후 1회 적용)
+	NewLevel->SetSavedCameraSnapshot(GetDefaultCameraSnapshot());
+
+	// 3) 레벨 등록 및 활성화
 	RegisterLevel(InLevelName, NewLevel);
 
 	// 현재 레벨을 새 레벨로 전환
@@ -324,6 +337,9 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 	Metadata.NextUUID = CurrentID;
 
 	UE_LOG("LevelManager: Converted %zu Actors To Metadata", Metadata.Primitives.size());
+
+	Metadata.Camera = InLevel->GetSavedCameraSnapshot();
+
 	return Metadata;
 }
 
@@ -360,10 +376,6 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		case EPrimitiveType::Square:
 			NewActor = InLevel->SpawnActor<ASquareActor>();
 			break;
-		// TODO(KHJ): TriangleActor 지원 예정
-		// case EPrimitiveType::Triangle:
-		// 	NewActor = InLevel->SpawnActor<ATriangleActor>();
-		// 	break;
 		default:
 			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
 			assert(!"고려하지 않은 Actor 타입");

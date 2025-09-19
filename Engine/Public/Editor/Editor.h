@@ -20,12 +20,14 @@ public:
 
 	void Update();
 
-	const FVector& GetCameraLocation();
+	// 카메라의 정보를 저장하기 위해 (카메라를 직접 넘기는 것은 위험)
 
+	const FVector& GetCameraLocation();
+	
 	/** 배칭 렌더링 버전 */
 	// void RenderEditor();
 	void RenderEditorBatched();
-
+	void EnsureLevelHasCamera(ULevel* Level);
 private:
 
 	void ProcessMouseInput(ULevel* InLevel);
