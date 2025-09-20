@@ -14,7 +14,8 @@ IMPLEMENT_SINGLETON(UUIManager)
 UUIManager::UUIManager()
 {
 	ImGuiHelper = NewObject<UImGuiHelper>();
-	Initialize();	
+	Initialize();
+	//FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
 }
 
 UUIManager::~UUIManager()

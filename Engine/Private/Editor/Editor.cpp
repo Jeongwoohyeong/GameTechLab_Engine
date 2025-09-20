@@ -38,13 +38,14 @@ UEditor::~UEditor() = default;
 void UEditor::Update()
 {
 	auto& Renderer = URenderer::GetInstance();
-	Camera.Update();
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+
 	// 현재 레벨에 카메라 주입 보장
-	EnsureLevelHasCamera(ULevelManager::GetInstance().GetCurrentLevel());
-
-	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
+	EnsureLevelHasCamera(Level);
+	// 입력 루틴이 카메라 파라미터를 직접 바꾸므로
+	ProcessMouseInput(Level);
 	ProcessKeyboardInput();
-
+	Camera.Update();
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
 
