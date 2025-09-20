@@ -156,6 +156,7 @@
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
     <ClInclude Include="Global\Quat.h" />
+    <ClInclude Include="Public\Actor\StaticMeshActor.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Components\PrimitiveComponent.h" />
@@ -211,9 +212,6 @@
     <ClInclude Include="Public\Actor\SquareActor.h" />
     <ClInclude Include="Public\Actor\TriangleActor.h" />
     <ClInclude Include="Public\Mesh\VertexDatas.h" />
-    <ClInclude Include="Mesh\Sample\Rectangle.h" />
-    <ClInclude Include="Mesh\Sample\Sphere.h" />
-    <ClInclude Include="Mesh\Sample\Triangle.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Public\\Core\\AppWindow.h" />
     <ClInclude Include="Public\\Core\\ClientApp.h" />
@@ -243,6 +241,7 @@
   <ItemGroup>
     <ClCompile Include="Global\Name.cpp" />
     <ClCompile Include="Global\NameTable.cpp" />
+    <ClCompile Include="Private\Actor\StaticMeshActor.cpp" />
     <ClCompile Include="Private\Core\ObjectIterator.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
     <ClCompile Include="Private\Components\PrimitiveComponent.cpp" />
