@@ -25,7 +25,7 @@ UGizmo::UGizmo()
 	*/
 	const float ScaleT = TranslateCollisionConfig.Scale;
 	Primitives[0].Vertexbuffer = ResourceManager.GetVertexBuffer(EPrimitiveType::Arrow);
-	Primitives[0].NumVertices = ResourceManager.GetIndexNum(EPrimitiveType::Arrow);
+	Primitives[0].NumVertices = ResourceManager.GetVertexNum(EPrimitiveType::Arrow);
 	Primitives[0].Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	Primitives[0].Scale = FVector(ScaleT, ScaleT, ScaleT);
 	Primitives[0].bShouldAlwaysVisible = true;
@@ -34,7 +34,7 @@ UGizmo::UGizmo()
 	* @brief Rotation Setting
 	*/
 	Primitives[1].Vertexbuffer = ResourceManager.GetVertexBuffer(EPrimitiveType::Ring);
-	Primitives[1].NumVertices = ResourceManager.GetIndexNum(EPrimitiveType::Ring);
+	Primitives[1].NumVertices = ResourceManager.GetVertexNum(EPrimitiveType::Ring);
 	Primitives[1].Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	Primitives[1].Scale = FVector(ScaleT, ScaleT, ScaleT);
 	Primitives[1].bShouldAlwaysVisible = true;
@@ -43,7 +43,7 @@ UGizmo::UGizmo()
 	* @brief Scale Setting
 	*/
 	Primitives[2].Vertexbuffer = ResourceManager.GetVertexBuffer(EPrimitiveType::CubeArrow);
-	Primitives[2].NumVertices = ResourceManager.GetIndexNum(EPrimitiveType::CubeArrow);
+	Primitives[2].NumVertices = ResourceManager.GetVertexNum(EPrimitiveType::CubeArrow);
 	Primitives[2].Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	Primitives[2].Scale = FVector(ScaleT, ScaleT, ScaleT);
 	Primitives[2].bShouldAlwaysVisible = true;

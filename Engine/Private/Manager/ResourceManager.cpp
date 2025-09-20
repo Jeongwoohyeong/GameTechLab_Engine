@@ -27,8 +27,11 @@ void UResourceManager::Initialize()
 			continue;
 		StaticMeshes.emplace(Path, StaticMesh);
 	}
-	
 
+
+
+
+	////////////////////////////////////////////For Gizmo////////////////////////////////////
 	VertexData.emplace(EPrimitiveType::Arrow, &VerticesArrow);
 	VertexData.emplace(EPrimitiveType::CubeArrow, &VerticesCubeArrow);
 	VertexData.emplace(EPrimitiveType::Ring, &VerticesRing);
@@ -40,61 +43,16 @@ void UResourceManager::Initialize()
 	VertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(VerticesArrow.size()));
 	VertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(VerticesCubeArrow.size()));
 	VertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(VerticesRing.size()));
+	////////////////////////////////////////////For Gizmo////////////////////////////////////
 
+
+	////////////////////////////////////////////For Text////////////////////////////////////
 	TextVertexData = &VerticesText;
 	TextVertexBuffer = Renderer.CreateVertexBuffer(VerticesText);
 	TexVertexNum = static_cast<uint32>(VerticesText.size());
 
 	CreateTextSampler();
-
-
-	ReducedVertexData.emplace(EPrimitiveType::Arrow, &ReducedVerticesArrow);
-	ReducedVertexData.emplace(EPrimitiveType::CubeArrow, &ReducedVerticesCubeArrow);
-	ReducedVertexData.emplace(EPrimitiveType::Ring, &ReducedVerticesRing);
-
-
-	ReducedVertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(ReducedVerticesArrow));
-	ReducedVertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(ReducedVerticesCubeArrow));
-	ReducedVertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(ReducedVerticesRing));
-
-	ReducedVertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(ReducedVerticesArrow.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(ReducedVerticesCubeArrow.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(ReducedVerticesRing.size()));
-	
-
-
-	// Create Index Data from Vertex Data and Reduced Vertex Data
-	// IndexData = TMap<EPrimitiveType, TArray<uint32>>
-	// Build index buffers by mapping each original vertex to its index in the reduced (unique) vertex list.
-	// Compare by value (FVertex::operator==), not by pointer address.
-	for (const auto& key : VertexData | std::views::keys)
-	{
-		EPrimitiveType Type = key;
-		const TArray<FVertex>& SourceVertices = *VertexData[Type];
-		const TArray<FVertex>& ReducedVertices = *ReducedVertexData[Type];
-
-		IndexData[Type].clear();
-		IndexData[Type].reserve(SourceVertices.size());
-
-		for (const FVertex& Vertex : SourceVertices)
-		{
-			for (uint32 Index = 0; Index < ReducedVertices.size(); ++Index)
-			{
-				if (Vertex == ReducedVertices[Index])
-				{
-					IndexData[Type].push_back(Index);
-					break;
-				}
-			}
-		}
-	}
-
-	// Create Index Buffer from Index Data
-	for (auto& Pair : IndexData)
-	{
-		IndexBuffers.emplace(Pair.first, Renderer.CreateIndexBuffer(Pair.second));
-		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
-	}
+	////////////////////////////////////////////For Text////////////////////////////////////
 
 }
 
@@ -112,14 +70,6 @@ void UResourceManager::Release()
 	}
 	//TMap.Value()
 	for (auto& Pair : VertexBuffers)
-	{
-		Renderer.ReleaseVertexBuffer(Pair.second);
-	}
-	for (auto& Pair : ReducedVertexBuffers)
-	{
-		Renderer.ReleaseVertexBuffer(Pair.second);
-	}
-	for (auto& Pair : IndexBuffers)
 	{
 		Renderer.ReleaseVertexBuffer(Pair.second);
 	}
@@ -174,36 +124,6 @@ ID3D11Buffer* UResourceManager::GetVertexBuffer(EPrimitiveType Type)
 uint32 UResourceManager::GetVertexNum(EPrimitiveType Type)
 {
 	return VertexNum[Type];
-}
-
-TArray<FVertex>* UResourceManager::GetReducedVertexData(EPrimitiveType Type)
-{
-	return ReducedVertexData[Type];
-}
-
-ID3D11Buffer* UResourceManager::GetReducedVertexBuffer(EPrimitiveType Type)
-{
-	return ReducedVertexBuffers[Type];
-}
-
-uint32 UResourceManager::GetReducedVertexNum(EPrimitiveType Type)
-{
-	return ReducedVertexNum[Type];
-}
-
-TArray<uint32>* UResourceManager::GetIndexData(EPrimitiveType Type)
-{
-	return &IndexData[Type];
-}
-
-ID3D11Buffer* UResourceManager::GetIndexBuffer(EPrimitiveType Type)
-{
-	return IndexBuffers[Type];
-}
-
-uint32 UResourceManager::GetIndexNum(EPrimitiveType Type)
-{
-	return IndexNum[Type];
 }
 
 

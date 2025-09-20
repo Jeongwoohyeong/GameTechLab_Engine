@@ -203,7 +203,7 @@ void URenderer::ReleaseResource()
 }
 
 
-void URenderer::CreateStaticMeshShader()
+void URenderer::CreateStaticMeshShader() 
 {
 	ID3DBlob* VertexShaderCSO;
 	ID3DBlob* PixelShaderCSO;
@@ -473,13 +473,11 @@ void URenderer::RenderLevel()
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
-	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
+	FRenderState State = FRenderState{ ECullMode::Back, EFillMode::Solid };
 	Pipeline->UpdatePipeline(CreateStaticMeshPipelineInfo(State));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
 	TMap<FStaticMeshBatchKey, TArray<FInstanceGPUData>, FStaticMeshBatchKeyHasher> InstanceBatches;
-
-
 
 
 
@@ -535,17 +533,7 @@ void URenderer::RenderLevel()
 		//리소스에 인스턴스 데이터 업데이트함
 		UploadStructuredBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
 
-		Pipeline->UpdatePipeline(CreatePipelineInfo(State));
-
-		//인스턴스가 있으면 스트럭처드 버퍼의 행렬을 쓸 것이므로 identity로 업데이트
-		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-		UpdateConstant(FMatrix::Identity);
-
-		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
-		UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));
-
-		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-		UpdateInstanceDrawConstants(true);
+		//Pipeline->UpdatePipeline(CreatePipelineInfo(State));
 
 		//아래 코드는 헤더파일 참고
 		//UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
@@ -556,124 +544,12 @@ void URenderer::RenderLevel()
 
 		Pipeline->DrawIndexedInstanced(Key.StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
-	//////////////////////////////////////
-
-	//이후에 같은 셰이더를 쓰는 경우 인스턴싱 데이터를 쓰는 경우 예방
-	UpdateInstanceDrawConstants(false);
 
 	//아래 코드는 헤더파일 참고
 	//UpdateInstanceDrawConstants(false, 0, 0);
 	ID3D11ShaderResourceView* NullSRV = nullptr;
 	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
 }
-/**
- * @brief Buffer에 데이터 입력 및 Draw
- */
-//void URenderer::RenderLevel()
-//{
-//	//
-//	// 여기에 카메라 VP 업데이트 한 번 싹
-//	//
-//	if (!ULevelManager::GetInstance().GetCurrentLevel()) { return; }
-//
-//	// Check show flags for primitive components
-//	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
-//
-//	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
-//	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
-//	TMap<FPrimitiveBatchKey, TArray<FInstanceGPUData>, FPrimitiveBatchKeyHasher> InstanceBatches;
-//
-//
-//
-//
-//
-//	//Primitive를 순회하며 Key를 구하고 같은 key를 가진 component의 matrix와 color값들을
-//	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨
-//	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
-//		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
-//	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
-//	{
-//		if (!PrimitiveComponent) { continue; }
-//		if (!PrimitiveComponent->IsVisible()) { continue; }
-//
-//		FPrimitiveBatchKey Key;
-//		Key.VertexBuffer = PrimitiveComponent->GetReducedVertexBuffer();
-//		Key.IndexBuffer = PrimitiveComponent->GetIndexBuffer();
-//		Key.IndexCount = PrimitiveComponent->GetIndexNum();
-//		Key.RenderState = PrimitiveComponent->GetRenderState();
-//
-//
-//		if (!Key.VertexBuffer || !Key.IndexBuffer || Key.IndexCount == 0)
-//		{
-//			continue;
-//		}
-//
-//		InstanceBatches[Key].Emplace(PrimitiveComponent->GetWorldTransformMatrix(), PrimitiveComponent->GetColor());
-//	}
-//
-//	//그릴 인스턴스가 없는 경우 리턴
-//	if (InstanceBatches.IsEmpty())
-//	{
-//		/*UpdateInstanceDrawConstants(false, 0, 0);
-//		ID3D11ShaderResourceView* NullSRV = nullptr;
-//		GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);*/
-//		return;
-//	}
-//
-//	//저장해놓은 인스턴스 데이터들을 순회하면서 버퍼를 업데이트하고 렌더링함.
-//	for (auto& Batch : InstanceBatches)
-//	{
-//		const FPrimitiveBatchKey& Key = Batch.first;
-//		TArray<FInstanceGPUData>& Instances = Batch.second;
-//
-//		if (Instances.IsEmpty())
-//		{
-//			continue;
-//		}
-//
-//		//키로 리소스 얻어옴(GPU 버퍼, 리소스 뷰)
-//		FStructuredBufferResource& Resource = GetOrCreateStructuredBuffer(Key);
-//		//리소스가 없거나 크기가 작으면 새로 만들거나 확장함
-//		EnsureStructuredBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
-//		if (!Resource.Buffer || !Resource.ShaderResourceView)
-//		{
-//			continue;
-//		}
-//
-//		//리소스에 인스턴스 데이터 업데이트함
-//		UploadStructuredBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
-//
-//		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
-//
-//		//인스턴스가 있으면 스트럭처드 버퍼의 행렬을 쓸 것이므로 identity로 업데이트
-//		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-//		UpdateConstant(FMatrix::Identity);
-//
-//		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
-//		UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));
-//
-//		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-//		UpdateInstanceDrawConstants(true);
-//
-//		//아래 코드는 헤더파일 참고
-//		//UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
-//
-//		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
-//		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
-//		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
-//
-//		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
-//	}
-//	//////////////////////////////////////
-//
-//	//이후에 같은 셰이더를 쓰는 경우 인스턴싱 데이터를 쓰는 경우 예방
-//	UpdateInstanceDrawConstants(false);
-//
-//	//아래 코드는 헤더파일 참고
-//	//UpdateInstanceDrawConstants(false, 0, 0);
-//	ID3D11ShaderResourceView* NullSRV = nullptr;
-//	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
-//}
 
 void URenderer::RenderText(const FVector& CameraLocation)
 {
@@ -745,6 +621,7 @@ void URenderer::RenderText(const FVector& CameraLocation)
 		{
 			UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 		}
+		UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 
 		Pipeline->SetVertexBuffer(Object.Component->GetVertexBuffer(), StrideTextVertex);
 		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);
@@ -757,9 +634,6 @@ void URenderer::RenderText(const FVector& CameraLocation)
 	}
 	////////////////////////////////////////////////////////////////////////////////////
 
-	UpdateInstanceDrawConstants(false);
-	//아래 코드는 헤더파일 참고
-	//UpdateInstanceDrawConstants(false, 0, 0);
 }
 
 void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
@@ -936,21 +810,6 @@ void URenderer::CreateConstantBuffer()
 	}
 
 	/**
-	 * @brief 인스턴싱 드로우 제어용 상수 버퍼 생성
-	 */
-	{
-		D3D11_BUFFER_DESC ConstantBufferDesc = {};
-		//16바이트 정렬을 위해 4곱해줌
-		ConstantBufferDesc.ByteWidth = sizeof(uint32)*4;
-		//ConstantBufferDesc.ByteWidth = sizeof(FInstanceDrawConstants);
-		ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-		GetDevice()->CreateBuffer(&ConstantBufferDesc, nullptr, &ConstantBufferInstance);
-	}
-
-	/**
 	 * @brief 폰트에 사용될 조회 테이블 상수 버퍼 생성
 	 */
 	{
@@ -992,12 +851,6 @@ void URenderer::ReleaseConstantBuffer()
 	{
 		ConstantBufferPerFrame->Release();
 		ConstantBufferPerFrame = nullptr;
-	}
-
-	if (ConstantBufferInstance)
-	{
-		ConstantBufferInstance->Release();
-		ConstantBufferInstance = nullptr;
 	}
 
 	if (ConstantBufferCharTable)
@@ -1111,29 +964,6 @@ void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 
 		GetDeviceContext()->Unmap(TextInstanceBuffer, 0);
 	}
-}
-
-void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing) const
-{
-	if (!ConstantBufferInstance)
-	{
-		return;
-	}
-
-	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-
-	D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR = {};
-	HRESULT Hr = GetDeviceContext()->Map(ConstantBufferInstance, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
-	if (FAILED(Hr))
-	{
-		UE_LOG("Failed to map instancing constant buffer");
-		return;
-	}
-
-	auto* Constants = static_cast<FInstanceDrawConstants*>(ConstantBufferMSR.pData);
-	Constants->bUseInstancing = bUseInstancing ? 1u : 0u;
-
-	GetDeviceContext()->Unmap(ConstantBufferInstance, 0);
 }
 
 //void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const

@@ -205,12 +205,8 @@
     <ClInclude Include="Public\\Manager\UI\\UIManager.h" />
     <ClInclude Include="Public\Actor\Actor.h" />
     <ClInclude Include="Public\Components\ActorComponent.h" />
-    <ClInclude Include="Public\Actor\CubeActor.h" />
     <ClInclude Include="Public\Manager\ResourceManager.h" />
     <ClInclude Include="Public\Components\SceneComponent.h" />
-    <ClInclude Include="Public\Actor\SphereActor.h" />
-    <ClInclude Include="Public\Actor\SquareActor.h" />
-    <ClInclude Include="Public\Actor\TriangleActor.h" />
     <ClInclude Include="Public\Mesh\VertexDatas.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Public\\Core\\AppWindow.h" />
@@ -280,12 +276,8 @@
     <ClCompile Include="Private\\Manager\UI\\UIManager.cpp" />
     <ClCompile Include="Private\Actor\Actor.cpp" />
     <ClCompile Include="Private\Components\ActorComponent.cpp" />
-    <ClCompile Include="Private\Actor\CubeActor.cpp" />
     <ClCompile Include="Private\Manager\ResourceManager.cpp" />
     <ClCompile Include="Private\Components\SceneComponent.cpp" />
-    <ClCompile Include="Private\Actor\SphereActor.cpp" />
-    <ClCompile Include="Private\Actor\SquareActor.cpp" />
-    <ClCompile Include="Private\Actor\TriangleActor.cpp" />
     <ClCompile Include="Private\Mesh\VertexDatas.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

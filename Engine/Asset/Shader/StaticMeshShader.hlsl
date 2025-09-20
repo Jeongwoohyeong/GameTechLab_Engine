@@ -1,8 +1,3 @@
-cbuffer constants : register(b0)
-{
-	row_major float4x4 world;
-}
-
 cbuffer PerFrame : register(b1)
 {
 	row_major float4x4 ViewMatrix;
@@ -10,16 +5,6 @@ cbuffer PerFrame : register(b1)
 	uint ViewModeIndex;
 	float3 Padding;
 };
-
-cbuffer PerDrawColor : register(b2)
-{
-	float4 totalColor;
-};
-
-cbuffer InstanceParams : register(b3)
-{
-	uint UseInstancing;
-}
 
 //아래의 constantbuffer는 여러 종류의 매시를 그릴 때 스트럭처드 버퍼를 한번만 업데이트해서 그리기 위해 존재함.
 //지금은 매시 종류가 10가지도 안되므로 오버엔지니어링이라고 생각해서 주석처리함.
@@ -77,20 +62,16 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 	//현재 에디터 라인 배치를 할때 같은 셰이더를 쓰기 때문에 Instancing을 사용하는지 확인이 필요함.
 	//나중에 라인 배치는 다른 셰이더를 사용하고 가독성을 위해 아래 코드를 지우는 게 나을 것 같음.
-	if (UseInstancing != 0)
-	{
-		InstanceData Instance = InstanceMatrices[InstanceId];
-		Position = mul(Position, Instance.World);
-		ShadeColor = lerp(ShadeColor, Instance.Color, Instance.Color.a);
-	}
+
+	
+	InstanceData Instance = InstanceMatrices[InstanceId];
+	Position = mul(Position, Instance.World);
 		
-	//인스턴싱 하는 경우 어차피 World는 Identity임.
-	Position = mul(Position, world);
 	Position = mul(Position, ViewMatrix);
 	Position = mul(Position, ProjectionMatrix);
 
 	Output.Position = Position;
-	Output.Color = ShadeColor;
+	Output.Color = lerp(ShadeColor, Instance.Color, Instance.Color.a);
 	Output.UV = Input.BaseUV;
 	return Output;
 }
@@ -98,6 +79,5 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
 	//float4 TextureColor = Texture.Sample(Sampler, Input.UV);
-	float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
-	return FinalColor;
+	return Input.Color;
 }

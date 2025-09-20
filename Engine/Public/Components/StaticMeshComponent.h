@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Components/MeshComponent.h"
 #include "Mesh/StaticMesh.h"
 #include "Global/Name.h"
@@ -14,6 +13,7 @@ public:
 	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
 	//자식 StaticMeshComponent가 본인 타입에 맞는 렌더 리스트에 알아서 추가
 	virtual void AddToRenderList(ULevel* Level) override;
+	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) override;
 	///////////////////////////////////////////////////
 
 	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetName(); else return FString(); }
@@ -27,6 +27,9 @@ public:
 	//void Serialize(bool bIsLoading, json::JSON Handle);
 
 private:
+	bool IsRayTriangleCollided(const FRay& Ray, const FVector& Vertex1, const FVector& Vertex2, const FVector& Vertex3,
+		const FMatrix& ModelMatrix, float* Distance);
+
 	UStaticMesh* StaticMesh = nullptr;
 };
 
