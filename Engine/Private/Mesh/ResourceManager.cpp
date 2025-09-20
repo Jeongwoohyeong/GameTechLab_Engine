@@ -20,32 +20,26 @@ void UResourceManager::Initialize()
 	VertexData.emplace(EPrimitiveType::Sphere, &VerticesSphere);
 	VertexData.emplace(EPrimitiveType::Triangle, &VerticesTriangle);
 	VertexData.emplace(EPrimitiveType::Square, &VerticesSquare);
-	VertexData.emplace(EPrimitiveType::Torus, &VerticesTorus);
 	VertexData.emplace(EPrimitiveType::Arrow, &VerticesArrow);
 	VertexData.emplace(EPrimitiveType::CubeArrow, &VerticesCubeArrow);
 	VertexData.emplace(EPrimitiveType::Ring, &VerticesRing);
-	VertexData.emplace(EPrimitiveType::Line, &VerticesLine);
 
 	// TArray.GetData(), TArray.Num()*sizeof(FVertexSimple), TArray.GetTypeSize()
 	VertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
 	VertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(VerticesSphere));
 	VertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(VerticesTriangle));
 	VertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(VerticesSquare));
-	VertexBuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(VerticesTorus));
 	VertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(VerticesArrow));
 	VertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(VerticesCubeArrow));
 	VertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(VerticesRing));
-	VertexBuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(VerticesLine));
 
 	VertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
 	VertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(VerticesSphere.size()));
 	VertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(VerticesTriangle.size()));
 	VertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(VerticesSquare.size()));
-	VertexNum.emplace(EPrimitiveType::Torus, static_cast<uint32>(VerticesTorus.size()));
 	VertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(VerticesArrow.size()));
 	VertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(VerticesCubeArrow.size()));
 	VertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(VerticesRing.size()));
-	VertexNum.emplace(EPrimitiveType::Line, static_cast<uint32>(VerticesLine.size()));
 
 	TextVertexData = &VerticesText;
 	TextVertexBuffer = Renderer.CreateVertexBuffer(VerticesText);
@@ -59,31 +53,25 @@ void UResourceManager::Initialize()
 	ReducedVertexData.emplace(EPrimitiveType::Sphere, &ReducedVerticesSphere);
 	ReducedVertexData.emplace(EPrimitiveType::Triangle, &ReducedVerticesTriangle);
 	ReducedVertexData.emplace(EPrimitiveType::Square, &ReducedVerticesSquare);
-	ReducedVertexData.emplace(EPrimitiveType::Torus, &ReducedVerticesTorus);
 	ReducedVertexData.emplace(EPrimitiveType::Arrow, &ReducedVerticesArrow);
 	ReducedVertexData.emplace(EPrimitiveType::CubeArrow, &ReducedVerticesCubeArrow);
 	ReducedVertexData.emplace(EPrimitiveType::Ring, &ReducedVerticesRing);
-	ReducedVertexData.emplace(EPrimitiveType::Line, &ReducedVerticesLine);
 
 	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(ReducedVerticesCube));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(ReducedVerticesSphere));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(ReducedVerticesTriangle));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(ReducedVerticesSquare));
-	ReducedVertexBuffers.emplace(EPrimitiveType::Torus, Renderer.CreateVertexBuffer(ReducedVerticesTorus));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(ReducedVerticesArrow));
 	ReducedVertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(ReducedVerticesCubeArrow));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(ReducedVerticesRing));
-	ReducedVertexBuffers.emplace(EPrimitiveType::Line, Renderer.CreateVertexBuffer(ReducedVerticesLine));
 
 	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(ReducedVerticesSphere.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(ReducedVerticesTriangle.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(ReducedVerticesSquare.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Torus, static_cast<uint32>(ReducedVerticesTorus.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(ReducedVerticesArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(ReducedVerticesCubeArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(ReducedVerticesRing.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Line, static_cast<uint32>(ReducedVerticesLine.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(ReducedVerticesSphere.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(ReducedVerticesTriangle.size()));
+	ReducedVertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(ReducedVerticesSquare.size()));
 
 
 	// Create Index Data from Vertex Data and Reduced Vertex Data
