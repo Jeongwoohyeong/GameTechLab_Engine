@@ -111,7 +111,7 @@ const FVector& AActor::GetActorScale3D() const
 }
 
 //테스트용
-const FString& AActor::GetStaticMeshName() const
+FString AActor::GetStaticMeshName() const
 {
 	for (auto& Component : GetOwnedComponents())
 	{

@@ -6,10 +6,10 @@ IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
 
 //StaticMesh가 구현되면 주석 해제(09/19 13:05)
-//void UStaticMeshComponent::AddToRenderList(ULevel* Level)
-//{
-//	Level->AddStaticMeshComponentToRender(this);
-//}
+void UStaticMeshComponent::AddToRenderList(ULevel* Level)
+{
+	Level->AddStaticMeshComponentToRender(this);
+}
 
 
 

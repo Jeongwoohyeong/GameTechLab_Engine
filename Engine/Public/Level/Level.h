@@ -27,7 +27,8 @@ public:
 	void GatherComponentsToRender(AActor* Actor);
 
 	TArray<AActor*> GetLevelActors() const { return LevelActors; }
-	TArray<UPrimitiveComponent*> GetLevelPrimitiveComponents() const { return LevelPrimitiveComponents; }
+	//TArray<UPrimitiveComponent*> GetLevelPrimitiveComponents() const { return LevelPrimitiveComponents; }
+	TArray<UStaticMeshComponent*> GetStaticMeshComponentsToRender() const { return StaticMeshComponentsToRender; }
 	TArray<UTextComponent*> GetTextComponentsToRender() const { return TextComponentsToRender; }
 	AActor* GetSelectedActor() const { return SelectedActor; }
 
@@ -41,7 +42,8 @@ public:
 	void SetSelectedActor(AActor* InActor);
 
 	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
-	//void AddStaticMeshComponentToRender(UStaticMeshComponent* Component);
+	void AddStaticMeshComponentToRender(UStaticMeshComponent* Component);
+	void AddTextComponentToRender(UTextComponent* Component);
 
 	UCamera* GetCamera() const { return Camera; }
 	void SetCamera(UCamera* InCamera) { Camera = InCamera; }
@@ -61,7 +63,7 @@ private:
 	//렌더러에게 아래의 것들을 그려달라고 주문할 거임
 
 	TArray<UStaticMeshComponent*> StaticMeshComponentsToRender;
-	TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
+	//TArray<UPrimitiveComponent*> LevelPrimitiveComponents;
 	TArray<UTextComponent*> TextComponentsToRender;
 	//Deprecated : EditorPrimitive는 에디터에서 처리
 	//TArray<AActor*> EditorActors;

@@ -1,5 +1,7 @@
 #pragma once
 #include "Core/Object.h"
+class UStaticMesh;
+
 class UResourceManager : public UObject
 {
 	DECLARE_CLASS(UResourceManager, UObject)
@@ -9,6 +11,8 @@ public:
 	void Initialize();
 
 	void Release();
+
+	UStaticMesh* GetStaticMesh(const FString& Path);
 
 	TArray<FVertex>* GetVertexData(EPrimitiveType Type);
 	ID3D11Buffer* GetVertexBuffer(EPrimitiveType Type);
@@ -60,4 +64,7 @@ private:
 
 	TArray<FCharacterInfo> CharInfos;
 	TMap<WCHAR, int32> CharInfoIdxMap;
+
+	TMap<FString, FStaticMesh*> StaticMeshAssets;
+	TMap<FString, UStaticMesh*> StaticMeshes;
 };

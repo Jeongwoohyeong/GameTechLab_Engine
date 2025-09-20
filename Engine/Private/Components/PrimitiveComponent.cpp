@@ -4,9 +4,9 @@
 
 #include <algorithm>
 
-//IMPLEMENT_ABSTRACT_CLASS(UPrimitiveComponent, USceneComponent)
+IMPLEMENT_ABSTRACT_CLASS(UPrimitiveComponent, USceneComponent)
 
-IMPLEMENT_CLASS(UPrimitiveComponent, USceneComponent)
+//IMPLEMENT_CLASS(UPrimitiveComponent, USceneComponent)
 
 UPrimitiveComponent::UPrimitiveComponent()
 {
@@ -72,102 +72,102 @@ FAABB UPrimitiveComponent::GetWorldBounds() const
 *
 */
 
-IMPLEMENT_CLASS(USphereComponent, UPrimitiveComponent)
-USphereComponent::USphereComponent()
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	Type = EPrimitiveType::Sphere;
-
-	Vertices = ResourceManager.GetVertexData(Type);
-
-	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
-	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
-	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
-
-	VertexNum = ResourceManager.GetVertexNum(Type);
-	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
-	IndexNum = ResourceManager.GetIndexNum(Type);
-
-	RenderState.CullMode = ECullMode::Back;
-	RenderState.FillMode = EFillMode::Solid;
-}
-
-FAABB USphereComponent::GetWorldBounds() const
-{
-	// 실제 버텍스 데이터에서 바운딩 박스 계산
-	return UPrimitiveComponent::GetWorldBounds();
-}
-
-IMPLEMENT_CLASS(UCubeComponent, UPrimitiveComponent)
-UCubeComponent::UCubeComponent()
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	Type = EPrimitiveType::Cube;
-	Vertices = ResourceManager.GetVertexData(Type);
-
-	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
-	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
-	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
-
-	VertexNum = ResourceManager.GetVertexNum(Type);
-	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
-	IndexNum = ResourceManager.GetIndexNum(Type);
-
-	RenderState.CullMode = ECullMode::Back;
-	RenderState.FillMode = EFillMode::Solid;
-}
-
-FAABB UCubeComponent::GetWorldBounds() const
-{
-	// 실제 버텍스 데이터에서 바운딩 박스 계산
-	return UPrimitiveComponent::GetWorldBounds();
-}
-
-
-IMPLEMENT_CLASS(UTriangleComponent, UPrimitiveComponent)
-UTriangleComponent::UTriangleComponent()
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	Type = EPrimitiveType::Triangle;
-	Vertices = ResourceManager.GetVertexData(Type);
-
-	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
-	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
-	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
-
-	VertexNum = ResourceManager.GetVertexNum(Type);
-	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
-	IndexNum = ResourceManager.GetIndexNum(Type);
-
-	RenderState.CullMode = ECullMode::None;
-	RenderState.FillMode = EFillMode::Solid;
-}
-
-FAABB UTriangleComponent::GetWorldBounds() const
-{
-	return UPrimitiveComponent::GetWorldBounds();
-}
-
-IMPLEMENT_CLASS(USquareComponent, UPrimitiveComponent)
-USquareComponent::USquareComponent()
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	Type = EPrimitiveType::Square;
-	Vertices = ResourceManager.GetVertexData(Type);
-
-	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
-	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
-	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
-
-	VertexNum = ResourceManager.GetVertexNum(Type);
-	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
-	IndexNum = ResourceManager.GetIndexNum(Type);
-
-	RenderState.CullMode = ECullMode::None;
-	RenderState.FillMode = EFillMode::Solid;
-}
-
-FAABB USquareComponent::GetWorldBounds() const
-{
-	return UPrimitiveComponent::GetWorldBounds();
-}
+//IMPLEMENT_CLASS(USphereComponent, UPrimitiveComponent)
+//USphereComponent::USphereComponent()
+//{
+//	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+//	Type = EPrimitiveType::Sphere;
+//
+//	Vertices = ResourceManager.GetVertexData(Type);
+//
+//	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+//	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+//	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+//
+//	VertexNum = ResourceManager.GetVertexNum(Type);
+//	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+//	IndexNum = ResourceManager.GetIndexNum(Type);
+//
+//	RenderState.CullMode = ECullMode::Back;
+//	RenderState.FillMode = EFillMode::Solid;
+//}
+//
+//FAABB USphereComponent::GetWorldBounds() const
+//{
+//	// 실제 버텍스 데이터에서 바운딩 박스 계산
+//	return UPrimitiveComponent::GetWorldBounds();
+//}
+//
+//IMPLEMENT_CLASS(UCubeComponent, UPrimitiveComponent)
+//UCubeComponent::UCubeComponent()
+//{
+//	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+//	Type = EPrimitiveType::Cube;
+//	Vertices = ResourceManager.GetVertexData(Type);
+//
+//	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+//	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+//	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+//
+//	VertexNum = ResourceManager.GetVertexNum(Type);
+//	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+//	IndexNum = ResourceManager.GetIndexNum(Type);
+//
+//	RenderState.CullMode = ECullMode::Back;
+//	RenderState.FillMode = EFillMode::Solid;
+//}
+//
+//FAABB UCubeComponent::GetWorldBounds() const
+//{
+//	// 실제 버텍스 데이터에서 바운딩 박스 계산
+//	return UPrimitiveComponent::GetWorldBounds();
+//}
+//
+//
+//IMPLEMENT_CLASS(UTriangleComponent, UPrimitiveComponent)
+//UTriangleComponent::UTriangleComponent()
+//{
+//	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+//	Type = EPrimitiveType::Triangle;
+//	Vertices = ResourceManager.GetVertexData(Type);
+//
+//	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+//	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+//	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+//
+//	VertexNum = ResourceManager.GetVertexNum(Type);
+//	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+//	IndexNum = ResourceManager.GetIndexNum(Type);
+//
+//	RenderState.CullMode = ECullMode::None;
+//	RenderState.FillMode = EFillMode::Solid;
+//}
+//
+//FAABB UTriangleComponent::GetWorldBounds() const
+//{
+//	return UPrimitiveComponent::GetWorldBounds();
+//}
+//
+//IMPLEMENT_CLASS(USquareComponent, UPrimitiveComponent)
+//USquareComponent::USquareComponent()
+//{
+//	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+//	Type = EPrimitiveType::Square;
+//	Vertices = ResourceManager.GetVertexData(Type);
+//
+//	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
+//	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
+//	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
+//
+//	VertexNum = ResourceManager.GetVertexNum(Type);
+//	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
+//	IndexNum = ResourceManager.GetIndexNum(Type);
+//
+//	RenderState.CullMode = ECullMode::None;
+//	RenderState.FillMode = EFillMode::Solid;
+//}
+//
+//FAABB USquareComponent::GetWorldBounds() const
+//{
+//	return UPrimitiveComponent::GetWorldBounds();
+//}

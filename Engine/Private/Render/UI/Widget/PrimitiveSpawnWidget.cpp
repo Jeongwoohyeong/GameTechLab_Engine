@@ -7,6 +7,7 @@
 #include "Actor/SphereActor.h"
 #include "Actor/SquareActor.h"
 #include "Actor/TriangleActor.h"
+#include "Actor/StaticMeshActor.h"
 
 IMPLEMENT_CLASS(UPrimitiveSpawnWidget, UWidget)
 
@@ -77,38 +78,47 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 {
 	ULevelManager& LevelManager = ULevelManager::GetInstance();
 	ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
-
+	UResourceManager& ResourceManager = UResourceManager::GetInstance();
 	if (!CurrentLevel)
 	{
 		UE_LOG("ControlPanel: No Current Level To Spawn Actors");
 		return;
 	}
 
-	UE_LOG("ControlPanel: %s 타입의 Actor를 %d개 생성했습니다",
-		(SelectedPrimitiveType == 0 ? "Cube" : "Sphere"), NumberOfSpawn);
-
+	AActor* NewActor = nullptr;
 	// 지정된 개수만큼 액터 생성
 	for (int32 i = 0; i < NumberOfSpawn; i++)
 	{
-		AActor* NewActor = nullptr;
-
+		if (SelectedPrimitiveType == 0)
+		{
+			UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh("Data/cube-tex.obj");
+			if(StaticMesh)
+			{
+				NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
+				NewActor->SetStaticMesh(StaticMesh);
+			}
+			else
+			{
+				break;
+			}
+		}
 		// 타입에 따라 액터 생성
-		if (SelectedPrimitiveType == 0) // Cube
-		{
-			NewActor = CurrentLevel->SpawnActor<ACubeActor>();
-		}
-		else if (SelectedPrimitiveType == 1) // Sphere
-		{
-			NewActor = CurrentLevel->SpawnActor<ASphereActor>();
-		}
-		else if (SelectedPrimitiveType == 2)
-		{
-			NewActor = CurrentLevel->SpawnActor<ATriangleActor>();
-		}
-		else if (SelectedPrimitiveType == 3)
-		{
-			NewActor = CurrentLevel->SpawnActor<ASquareActor>();
-		}
+		//if (SelectedPrimitiveType == 0) // Cube
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ACubeActor>();
+		//}
+		//else if (SelectedPrimitiveType == 1) // Sphere
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ASphereActor>();
+		//}
+		//else if (SelectedPrimitiveType == 2)
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ATriangleActor>();
+		//}
+		//else if (SelectedPrimitiveType == 3)
+		//{
+		//	NewActor = CurrentLevel->SpawnActor<ASquareActor>();
+		//}
 
 		if (NewActor)
 		{
@@ -125,9 +135,14 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
 			UE_LOG("ControlPanel: (%.2f, %.2f, %.2f) 지점에 Actor를 생성했습니다", RandomX, RandomY, RandomZ);
 		}
-		else
-		{
-			UE_LOG("ControlPanel: Actor 생성에 실패했습니다 %d", i);
-		}
+	}
+	if(!NewActor)
+	{
+		UE_LOG("ControlPanel: Actor 생성에 실패했습니다");
+	}
+	else
+	{
+		UE_LOG("ControlPanel: %s 타입의 Actor를 %d개 생성했습니다",
+			(SelectedPrimitiveType == 0 ? "Cube" : "Sphere"), NumberOfSpawn);
 	}
 }

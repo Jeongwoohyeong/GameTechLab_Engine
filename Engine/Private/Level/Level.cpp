@@ -44,7 +44,7 @@ void ULevel::Update()
 	uint64 AllocatedByte = GetAllocatedBytes();
 	uint32 AllocatedCount = GetAllocatedCount();
 
-	LevelPrimitiveComponents.clear();
+	//LevelPrimitiveComponents.clear();
 	StaticMeshComponentsToRender.clear();
 	TextComponentsToRender.clear();
 
@@ -76,30 +76,13 @@ void ULevel::GatherComponentsToRender(AActor* Actor)
 		//액터의 컴포넌트를 순회하면서 PrimitiveComponent라면 타입체크 없이 자기가 알아서
 		//레벨의 RenderList에 추가하도록 수정.
 		//StaticMesh가 구현되면 주석 해제(09/19 13:05)
-		/*if (Component->IsA(UPrimitiveComponent::StaticClass()))
+		if (Component->IsA(UPrimitiveComponent::StaticClass()))
 		{
 			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
 			if (PrimitiveComponent->IsVisible())
 			{
 				PrimitiveComponent->AddToRenderList(this);
 			}
-		}*/
-
-
-
-		if (Component->GetComponentType() == EComponentType::Primitive)
-		{
-			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
-			if (PrimitiveComponent->IsVisible())
-			{
-				LevelPrimitiveComponents.push_back(PrimitiveComponent);
-			}
-		}
-		else if (Component->GetComponentType() == EComponentType::Text)
-		{
-			UTextComponent* TextComponent = static_cast<UTextComponent*>(Component);
-			if(TextComponent->IsVisible())
-				TextComponentsToRender.push_back(TextComponent);
 		}
 	}
 }
@@ -159,10 +142,15 @@ void ULevel::SetSelectedActor(AActor* InActor)
 
 
 //StaticMesh가 구현되면 주석 해제(09/19 13:05)
-//void ULevel::AddStaticMeshComponentToRender(UStaticMeshComponent* Component)
-//{
-//	StaticMeshComponentsToRender.push_back(Component);
-//}
+void ULevel::AddStaticMeshComponentToRender(UStaticMeshComponent* Component)
+{
+	StaticMeshComponentsToRender.push_back(Component);
+}
+
+void ULevel::AddTextComponentToRender(UTextComponent* Component)
+{
+	TextComponentsToRender.push_back(Component);
+}
 
 /**
  * @brief Level에서 Actor 제거하는 함수

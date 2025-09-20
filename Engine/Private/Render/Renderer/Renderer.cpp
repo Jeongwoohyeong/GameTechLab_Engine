@@ -10,6 +10,7 @@
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
 #include "Components/TextComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 namespace
 {
@@ -462,9 +463,6 @@ void URenderer::RenderBegin()
 	DeviceResources->UpdateViewport();
 }
 
-/**
- * @brief Buffer에 데이터 입력 및 Draw
- */
 void URenderer::RenderLevel()
 {
 	//
@@ -475,9 +473,11 @@ void URenderer::RenderLevel()
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
+	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
+	Pipeline->UpdatePipeline(CreateStaticMeshPipelineInfo(State));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
-	TMap<FPrimitiveBatchKey, TArray<FInstanceGPUData>, FPrimitiveBatchKeyHasher> InstanceBatches;
+	TMap<FStaticMeshBatchKey, TArray<FInstanceGPUData>, FStaticMeshBatchKeyHasher> InstanceBatches;
 
 
 
@@ -485,26 +485,22 @@ void URenderer::RenderLevel()
 
 	//Primitive를 순회하며 Key를 구하고 같은 key를 가진 component의 matrix와 color값들을
 	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨
-	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
-		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
-	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
+	const TArray<UStaticMeshComponent*>& StaticMeshComponentsToRender =
+		ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponentsToRender();
+	for (UStaticMeshComponent* StaticMeshComponent : StaticMeshComponentsToRender)
 	{
-		if (!PrimitiveComponent) { continue; }
-		if (!PrimitiveComponent->IsVisible()) { continue; }
+		if (!StaticMeshComponent) { continue; }
 
-		FPrimitiveBatchKey Key;
-		Key.VertexBuffer = PrimitiveComponent->GetReducedVertexBuffer();
-		Key.IndexBuffer = PrimitiveComponent->GetIndexBuffer();
-		Key.IndexCount = PrimitiveComponent->GetIndexNum();
-		Key.RenderState = PrimitiveComponent->GetRenderState();
+		FStaticMeshBatchKey Key;
+		
+		Key.StaticMesh = StaticMeshComponent->GetStaticMesh();
 
-
-		if (!Key.VertexBuffer || !Key.IndexBuffer || Key.IndexCount == 0)
+		if (!Key.StaticMesh)
 		{
 			continue;
 		}
 
-		InstanceBatches[Key].Emplace(PrimitiveComponent->GetWorldTransformMatrix(), PrimitiveComponent->GetColor());
+		InstanceBatches[Key].Emplace(StaticMeshComponent->GetWorldTransformMatrix(), StaticMeshComponent->GetColor());
 	}
 
 	//그릴 인스턴스가 없는 경우 리턴
@@ -519,7 +515,7 @@ void URenderer::RenderLevel()
 	//저장해놓은 인스턴스 데이터들을 순회하면서 버퍼를 업데이트하고 렌더링함.
 	for (auto& Batch : InstanceBatches)
 	{
-		const FPrimitiveBatchKey& Key = Batch.first;
+		const FStaticMeshBatchKey& Key = Batch.first;
 		TArray<FInstanceGPUData>& Instances = Batch.second;
 
 		if (Instances.IsEmpty())
@@ -539,7 +535,7 @@ void URenderer::RenderLevel()
 		//리소스에 인스턴스 데이터 업데이트함
 		UploadStructuredBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
 
-		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
+		Pipeline->UpdatePipeline(CreatePipelineInfo(State));
 
 		//인스턴스가 있으면 스트럭처드 버퍼의 행렬을 쓸 것이므로 identity로 업데이트
 		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
@@ -554,11 +550,11 @@ void URenderer::RenderLevel()
 		//아래 코드는 헤더파일 참고
 		//UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
 
-		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
-		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
+		Pipeline->SetVertexBuffer(Key.StaticMesh->GetVertexBuffer(), StrideStaticMesh);
+		Pipeline->SetIndexBuffer(Key.StaticMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
 		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
 
-		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
+		Pipeline->DrawIndexedInstanced(Key.StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 	//////////////////////////////////////
 
@@ -570,6 +566,114 @@ void URenderer::RenderLevel()
 	ID3D11ShaderResourceView* NullSRV = nullptr;
 	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
 }
+/**
+ * @brief Buffer에 데이터 입력 및 Draw
+ */
+//void URenderer::RenderLevel()
+//{
+//	//
+//	// 여기에 카메라 VP 업데이트 한 번 싹
+//	//
+//	if (!ULevelManager::GetInstance().GetCurrentLevel()) { return; }
+//
+//	// Check show flags for primitive components
+//	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
+//
+//	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
+//	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
+//	TMap<FPrimitiveBatchKey, TArray<FInstanceGPUData>, FPrimitiveBatchKeyHasher> InstanceBatches;
+//
+//
+//
+//
+//
+//	//Primitive를 순회하며 Key를 구하고 같은 key를 가진 component의 matrix와 color값들을
+//	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨
+//	const TArray<UPrimitiveComponent*>& PrimitiveComponents =
+//		ULevelManager::GetInstance().GetCurrentLevel()->GetLevelPrimitiveComponents();
+//	for (UPrimitiveComponent* PrimitiveComponent : PrimitiveComponents)
+//	{
+//		if (!PrimitiveComponent) { continue; }
+//		if (!PrimitiveComponent->IsVisible()) { continue; }
+//
+//		FPrimitiveBatchKey Key;
+//		Key.VertexBuffer = PrimitiveComponent->GetReducedVertexBuffer();
+//		Key.IndexBuffer = PrimitiveComponent->GetIndexBuffer();
+//		Key.IndexCount = PrimitiveComponent->GetIndexNum();
+//		Key.RenderState = PrimitiveComponent->GetRenderState();
+//
+//
+//		if (!Key.VertexBuffer || !Key.IndexBuffer || Key.IndexCount == 0)
+//		{
+//			continue;
+//		}
+//
+//		InstanceBatches[Key].Emplace(PrimitiveComponent->GetWorldTransformMatrix(), PrimitiveComponent->GetColor());
+//	}
+//
+//	//그릴 인스턴스가 없는 경우 리턴
+//	if (InstanceBatches.IsEmpty())
+//	{
+//		/*UpdateInstanceDrawConstants(false, 0, 0);
+//		ID3D11ShaderResourceView* NullSRV = nullptr;
+//		GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);*/
+//		return;
+//	}
+//
+//	//저장해놓은 인스턴스 데이터들을 순회하면서 버퍼를 업데이트하고 렌더링함.
+//	for (auto& Batch : InstanceBatches)
+//	{
+//		const FPrimitiveBatchKey& Key = Batch.first;
+//		TArray<FInstanceGPUData>& Instances = Batch.second;
+//
+//		if (Instances.IsEmpty())
+//		{
+//			continue;
+//		}
+//
+//		//키로 리소스 얻어옴(GPU 버퍼, 리소스 뷰)
+//		FStructuredBufferResource& Resource = GetOrCreateStructuredBuffer(Key);
+//		//리소스가 없거나 크기가 작으면 새로 만들거나 확장함
+//		EnsureStructuredBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
+//		if (!Resource.Buffer || !Resource.ShaderResourceView)
+//		{
+//			continue;
+//		}
+//
+//		//리소스에 인스턴스 데이터 업데이트함
+//		UploadStructuredBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
+//
+//		Pipeline->UpdatePipeline(CreatePipelineInfo(Key.RenderState));
+//
+//		//인스턴스가 있으면 스트럭처드 버퍼의 행렬을 쓸 것이므로 identity로 업데이트
+//		Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+//		UpdateConstant(FMatrix::Identity);
+//
+//		Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
+//		UpdateConstant(FVector4(0.f, 0.f, 0.f, 0.f));
+//
+//		Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
+//		UpdateInstanceDrawConstants(true);
+//
+//		//아래 코드는 헤더파일 참고
+//		//UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
+//
+//		Pipeline->SetVertexBuffer(Key.VertexBuffer, Stride);
+//		Pipeline->SetIndexBuffer(Key.IndexBuffer, DXGI_FORMAT_R32_UINT);
+//		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
+//
+//		Pipeline->DrawIndexedInstanced(Key.IndexCount, static_cast<uint32>(Instances.Num()), 0, 0, 0);
+//	}
+//	//////////////////////////////////////
+//
+//	//이후에 같은 셰이더를 쓰는 경우 인스턴싱 데이터를 쓰는 경우 예방
+//	UpdateInstanceDrawConstants(false);
+//
+//	//아래 코드는 헤더파일 참고
+//	//UpdateInstanceDrawConstants(false, 0, 0);
+//	ID3D11ShaderResourceView* NullSRV = nullptr;
+//	GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);
+//}
 
 void URenderer::RenderText(const FVector& CameraLocation)
 {
@@ -658,6 +762,37 @@ void URenderer::RenderText(const FVector& CameraLocation)
 	//UpdateInstanceDrawConstants(false, 0, 0);
 }
 
+void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
+{
+	ID3D11DepthStencilState* DepthStencilState =
+		Primitive.bShouldAlwaysVisible ? DisabledDepthStencilState : DefaultDepthStencilState;
+
+	ID3D11RasterizerState* RasterizerState =
+		GetRasterizerState(InRenderState);
+
+	FPipelineInfo PipelineInfo = {
+		DefaultInputLayout,
+		DefaultVertexShader,
+		RasterizerState,
+		DepthStencilState,
+		DefaultPixelShader,
+		nullptr,
+		Primitive.Topology
+	};
+
+	Pipeline->UpdatePipeline(PipelineInfo);
+
+	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
+	UpdateConstant(Primitive.Location, Primitive.Rotation, Primitive.Scale);
+
+	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
+	UpdateConstant(Primitive.Color);
+
+	Pipeline->SetVertexBuffer(Primitive.Vertexbuffer, Stride);
+	Pipeline->Draw(Primitive.NumVertices, 0);
+}
+
+
 /**
  * @brief 스왑 체인의 백 버퍼와 프론트 버퍼를 교체하여 화면에 출력
  */
@@ -693,37 +828,6 @@ static inline D3D11_FILL_MODE ToD3D11(EFillMode InFill)
 		return D3D11_FILL_SOLID;
 	}
 }
-
-void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
-{
-	ID3D11DepthStencilState* DepthStencilState =
-		Primitive.bShouldAlwaysVisible ? DisabledDepthStencilState : DefaultDepthStencilState;
-
-	ID3D11RasterizerState* RasterizerState =
-		GetRasterizerState(InRenderState);
-
-	FPipelineInfo PipelineInfo = {
-		DefaultInputLayout,
-		DefaultVertexShader,
-		RasterizerState,
-		DepthStencilState,
-		DefaultPixelShader,
-		nullptr,
-		Primitive.Topology
-	};
-
-	Pipeline->UpdatePipeline(PipelineInfo);
-
-	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
-	UpdateConstant(Primitive.Location, Primitive.Rotation, Primitive.Scale);
-
-	Pipeline->SetConstantBuffer(2, true, ConstantBufferColor);
-	UpdateConstant(Primitive.Color);
-
-	Pipeline->SetVertexBuffer(Primitive.Vertexbuffer, Stride);
-	Pipeline->Draw(Primitive.NumVertices, 0);
-}
-
 
 void URenderer::CreateInstanceBuffer()
 {
@@ -1088,6 +1192,30 @@ FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
 	};
 }
 
+FPipelineInfo URenderer::CreateStaticMeshPipelineInfo(const FRenderState& InRenderState)
+{
+	FRenderState ModifiedRenderState = InRenderState;
+
+	switch (CurrentViewMode)
+	{
+	case EViewModeIndex::Wireframe:
+		ModifiedRenderState.FillMode = EFillMode::WireFrame;
+		ModifiedRenderState.CullMode = ECullMode::None;
+		break;
+	case EViewModeIndex::Lit:
+	case EViewModeIndex::Unlit:
+	default:
+		break;
+	}
+
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
+	return FPipelineInfo{
+		StaticMeshInputLayout, StaticMeshVertexShader,
+		RasterizerState, DefaultDepthStencilState, StaticMeshPixelShader, nullptr,
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	};
+}
+
 FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderState)
 {
 	FRenderState ModifiedRenderState = InRenderState;
@@ -1111,9 +1239,9 @@ FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderStat
 	};
 }
 
-URenderer::FStructuredBufferResource& URenderer::GetOrCreateStructuredBuffer(const FPrimitiveBatchKey& InKey)
+URenderer::FStructuredBufferResource& URenderer::GetOrCreateStructuredBuffer(const FStaticMeshBatchKey& InKey)
 {
-	return PrimitiveStructuredBuffers[InKey];
+	return StaticMeshStructuredBuffers[InKey];
 }
 
 void URenderer::EnsureStructuredBufferCapacity(FStructuredBufferResource& InResource, uint32 InRequiredInstanceCount)
@@ -1205,7 +1333,7 @@ void URenderer::UploadStructuredBufferData(FStructuredBufferResource& InResource
 
 void URenderer::ReleasePrimitiveInstanceBuffers()
 {
-	for (auto& Pair : PrimitiveStructuredBuffers)
+	for (auto& Pair : StaticMeshStructuredBuffers)
 	{
 		if (Pair.second.ShaderResourceView)
 		{
@@ -1222,7 +1350,7 @@ void URenderer::ReleasePrimitiveInstanceBuffers()
 		Pair.second.Capacity = 0;
 	}
 
-	PrimitiveStructuredBuffers.Empty();
+	StaticMeshStructuredBuffers.Empty();
 }
 
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)

@@ -89,7 +89,8 @@ void UTargetActorTransformWidget::RenderWidget()
 		//ImGui::ShowDemoWindow();
 		ImGui::Separator();
 		ImGui::Text("Static Mesh");
-		const char* CurrentMeshName = SelectedActor->GetStaticMeshName().c_str();
+		FString NameString = SelectedActor->GetStaticMeshName();
+		const char* CurrentMeshName = NameString.c_str();
 		static int CurrentIndex = 0;
 		
 

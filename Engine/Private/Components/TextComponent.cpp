@@ -2,7 +2,10 @@
 #include "Components/TextComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Render/Renderer/Renderer.h"
+#include "Level/Level.h"
 #include <string>
+
+IMPLEMENT_CLASS(UTextComponent, UPrimitiveComponent)
 
 UTextComponent::UTextComponent()
 {
@@ -41,4 +44,9 @@ void UTextComponent::SetText(const FWstring& InText)
 {
 	Text = InText;
 	SetInstanceData(Text);
+}
+
+void UTextComponent::AddToRenderList(ULevel* Level)
+{
+	Level->AddTextComponentToRender(this);
 }
