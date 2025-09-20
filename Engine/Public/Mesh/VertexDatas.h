@@ -16,3 +16,5 @@ extern TArray<FVertex> ReducedVerticesSquare;
 extern TArray<FVertex> ReducedVerticesArrow;
 extern TArray<FVertex> ReducedVerticesCubeArrow;
 extern TArray<FVertex> ReducedVerticesRing;
+
+extern TArray<FVertex> objcube;

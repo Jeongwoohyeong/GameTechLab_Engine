@@ -79,6 +79,61 @@ struct FCharacterInfo
 	FVector2 UvSize;
 };
 
+#pragma region objstruct
+struct FVertexKey
+{
+	int32 v, vt, vn;
+	bool operator==(const FVertexKey& k) const
+	{
+		return v == k.v && vt == k.vt && vn == k.vn;
+	}
+};
+
+struct FVertexKeyHash
+{
+	size_t operator() (const FVertexKey& k) const noexcept
+	{
+		size_t h = 1469598103934665603ull;
+		auto mix = [&](int32 x)
+			{
+				h ^= size_t(x + 1);
+				h *= 1099511628211ull;
+			};
+		mix(k.v);
+		mix(k.vt);
+		mix(k.vn);
+
+		return h;
+	}
+};
+
+struct FObjImportOption
+{
+	bool bIsFlipWinding = false;
+	bool bIsInvertTexV = false;
+	// vn이 없는 경우
+	bool bIsRecalculateNormals = true;
+};
+
+struct FObjVertexRef
+{
+	int32 V = -1;
+	int32 VT = -1;
+	int32 VN = -1;
+};
+
+struct FObjFace
+{
+	TArray<FObjVertexRef> Conners;
+};
+
+struct FObjSection
+{
+	FString Name;
+	FString MaterialName;
+	TArray<FObjFace> Faces;
+};
+
 struct FNormalVertex
 {
 	FVector Position;
@@ -95,49 +150,44 @@ struct FNormalVertex
 
 struct FObjInfo
 {
-	// 당장 필요한 것만 추가함
-
 	// Vertex
 	TArray<FVector> Position;
 	TArray<FVector> Normal;
 	TArray<FVector4> Color; // Material 사용 시 필요할듯
 	TArray<FVector2> Tex;
+	FString Mtllib;
+	TArray<FObjSection> Sections;
 
 	FObjInfo()
 		: Position{}, Normal{}, Color{}, Tex{} {}		
 };
 
-struct FIndex
+struct FMeshSection
 {
-	TArray<uint32> VertexIndices;
-	TArray<uint32> UVIndices;
-	TArray<uint32> NormalIndices;
-
-	FIndex() : VertexIndices{}, UVIndices{}, NormalIndices{} {}
-
-	FIndex(TArray<uint32> vIndex, TArray<uint32> uvIndex, TArray<uint32> normalIndex)
-		: VertexIndices(vIndex), UVIndices(uvIndex), NormalIndices(normalIndex) { }
+	FString Name;
+	FString MaterialName;
+	uint32 IndexStart = 0;
+	uint32 IndexCount = 0;
 };
 
 // Cooked Data
 struct FStaticMesh
 {
 	FString PathFileName;
+	FString Mtllib;
 
 	TArray<FNormalVertex> Vertices;
-	FIndex Indices;
-	uint32 VertexIndexNum;
-	uint32 UVIndexNum;
-	uint32 NormalIndexNum;
+	TArray<uint32> Indices;
+	TArray<FMeshSection> Sections;
+	uint32 IndexNum;	
 
-	FStaticMesh() : PathFileName{}, Vertices{}, Indices{},
-		VertexIndexNum(0), UVIndexNum(0), NormalIndexNum(0) {}
+	FStaticMesh() : PathFileName{}, Vertices{}, Indices{}, Sections{}, IndexNum(0) {}
 
-	FStaticMesh(const FString name, const TArray<FNormalVertex> vertices, const FIndex indices,
-		uint32 vIdxNum = 0, uint32 uvIdxNum = 0, uint32 normIdxNum = 0)
-		: PathFileName(name), Vertices(vertices), Indices(indices),
-		VertexIndexNum(vIdxNum), UVIndexNum(uvIdxNum), NormalIndexNum(normIdxNum) {	}
+	FStaticMesh(const FString& name, const TArray<FNormalVertex>& vertices, const TArray<uint32>& indices,
+		const TArray<FMeshSection>& sections, uint32 indexNum)
+		: PathFileName(name), Vertices(vertices), Indices(indices), Sections{}, IndexNum(indexNum) {}
 };
+#pragma endregion
 
 //TMap<char, FCharacterInfo> CharInfoMap;
 

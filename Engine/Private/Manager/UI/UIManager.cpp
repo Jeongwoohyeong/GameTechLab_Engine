@@ -6,7 +6,6 @@
 #include "Render/UI/Window/ExperimentalFeatureWindow.h"
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
-#include "Utility/ObjParser.h"
 
 
 IMPLEMENT_CLASS(UUIManager, UObject)

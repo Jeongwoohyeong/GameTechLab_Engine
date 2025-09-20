@@ -68,7 +68,7 @@ void UResourceManager::Initialize()
 	ReducedVertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(ReducedVerticesCubeArrow));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(ReducedVerticesRing));
 
-	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
+	//ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(ReducedVerticesArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(ReducedVerticesCubeArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(ReducedVerticesRing.size()));
@@ -112,8 +112,8 @@ void UResourceManager::Initialize()
 		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
 	}
 
-	//FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
-	/*TArray<FVertex> objcube;
+	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/triangle.obj");
+
 	for (const auto& e : Mesh->Vertices)
 	{
 		objcube.push_back(FVertex(e.Position, e.Color));
@@ -122,8 +122,8 @@ void UResourceManager::Initialize()
 	/*ReducedVertexData.emplace(EPrimitiveType::Cube, &objcube);
 	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(objcube));
 	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(objcube.size()));
-	IndexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateIndexBuffer(Mesh->Indices.VertexIndices));
-	IndexNum.Emplace(EPrimitiveType::Cube, Mesh->VertexIndexNum);*/
+	IndexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateIndexBuffer(Mesh->Indices));
+	IndexNum.Emplace(EPrimitiveType::Cube, Mesh->IndexNum);
 }
 
 void UResourceManager::Release()
