@@ -158,11 +158,11 @@
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Math\AABB.h" />
-    <ClInclude Include="Public\Mesh\PrimitiveComponent.h" />
+    <ClInclude Include="Public\Components\PrimitiveComponent.h" />
     <ClInclude Include="Public\Mesh\StaticMesh.h" />
-    <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
-    <ClInclude Include="Public\Mesh\TextComponent.h" />
-    <ClInclude Include="Public\Mesh\MeshComponent.h" />
+    <ClInclude Include="Public\Components\StaticMeshComponent.h" />
+    <ClInclude Include="Public\Components\TextComponent.h" />
+    <ClInclude Include="Public\Components\MeshComponent.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
@@ -202,14 +202,14 @@
     <ClInclude Include="Public\\Manager\Time\\TimeManager.h" />
     <ClInclude Include="Public\\Manager\UI\\UIManager.h" />
     <ClInclude Include="Public\Actor\Actor.h" />
-    <ClInclude Include="Public\\Mesh\\ActorComponent.h" />
+    <ClInclude Include="Public\Components\ActorComponent.h" />
     <ClInclude Include="Public\Actor\CubeActor.h" />
     <ClInclude Include="Public\Manager\ResourceManager.h" />
-    <ClInclude Include="Public\\Mesh\\SceneComponent.h" />
+    <ClInclude Include="Public\Components\SceneComponent.h" />
     <ClInclude Include="Public\Actor\SphereActor.h" />
     <ClInclude Include="Public\Actor\SquareActor.h" />
     <ClInclude Include="Public\Actor\TriangleActor.h" />
-    <ClInclude Include="Public\\Mesh\\VertexDatas.h" />
+    <ClInclude Include="Public\Mesh\VertexDatas.h" />
     <ClInclude Include="Mesh\Sample\Rectangle.h" />
     <ClInclude Include="Mesh\Sample\Sphere.h" />
     <ClInclude Include="Mesh\Sample\Triangle.h" />
@@ -244,11 +244,11 @@
     <ClCompile Include="Global\NameTable.cpp" />
     <ClCompile Include="Private\Core\ObjectIterator.cpp" />
     <ClCompile Include="Private\Math\AABB.cpp" />
-    <ClCompile Include="Private\Mesh\PrimitiveComponent.cpp" />
+    <ClCompile Include="Private\Components\PrimitiveComponent.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh.cpp" />
-    <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />
-    <ClCompile Include="Private\Mesh\TextComponent.cpp" />
-    <ClCompile Include="Private\Mesh\MeshComponent.cpp" />
+    <ClCompile Include="Private\Components\StaticMeshComponent.cpp" />
+    <ClCompile Include="Private\Components\TextComponent.cpp" />
+    <ClCompile Include="Private\Components\MeshComponent.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
@@ -279,14 +279,14 @@
     <ClCompile Include="Private\\Manager\Time\\TimeManager.cpp" />
     <ClCompile Include="Private\\Manager\UI\\UIManager.cpp" />
     <ClCompile Include="Private\Actor\Actor.cpp" />
-    <ClCompile Include="Private\\Mesh\\ActorComponent.cpp" />
+    <ClCompile Include="Private\Components\ActorComponent.cpp" />
     <ClCompile Include="Private\Actor\CubeActor.cpp" />
     <ClCompile Include="Private\Manager\ResourceManager.cpp" />
-    <ClCompile Include="Private\\Mesh\\SceneComponent.cpp" />
+    <ClCompile Include="Private\Components\SceneComponent.cpp" />
     <ClCompile Include="Private\Actor\SphereActor.cpp" />
     <ClCompile Include="Private\Actor\SquareActor.cpp" />
     <ClCompile Include="Private\Actor\TriangleActor.cpp" />
-    <ClCompile Include="Private\\Mesh\\VertexDatas.cpp" />
+    <ClCompile Include="Private\Mesh\VertexDatas.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Actor/TriangleActor.h"
-#include "Mesh/TextComponent.h"
+#include "Components/TextComponent.h"
 
 IMPLEMENT_CLASS(ATriangleActor, AActor)
 

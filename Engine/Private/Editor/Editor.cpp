@@ -12,7 +12,7 @@
 #include "Manager/UI/UIManager.h"
 #include "Manager/Input/InputManager.h"
 #include "Actor/Actor.h"
-#include "Mesh/PrimitiveComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"

@@ -2,9 +2,9 @@
 #include "Level/Level.h"
 
 #include "Actor/Actor.h"
-#include "Mesh/TextComponent.h"
-#include "Mesh/PrimitiveComponent.h"
-#include "Mesh/StaticMeshComponent.h"
+#include "Components/TextComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Utility/Metadata.h"
 IMPLEMENT_CLASS(ULevel, UObject)
 

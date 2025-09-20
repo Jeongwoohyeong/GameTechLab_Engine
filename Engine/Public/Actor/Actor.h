@@ -1,6 +1,6 @@
 #pragma once
 #include "Core/Object.h"
-#include "Mesh/SceneComponent.h"
+#include "Components/SceneComponent.h"
 
 class UStaticMesh;
 /**

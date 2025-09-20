@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Actor/CubeActor.h"
-#include "Mesh/TextComponent.h"
-#include "Mesh/PrimitiveComponent.h"
+#include "Components/TextComponent.h"
+#include "Components/PrimitiveComponent.h"
 IMPLEMENT_CLASS(ACubeActor, AActor)
 
 ACubeActor::ACubeActor()

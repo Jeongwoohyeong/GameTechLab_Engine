@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Mesh/PrimitiveComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Manager/ResourceManager.h"
 
 #include <algorithm>

@@ -1,5 +1,5 @@
 #pragma once
-#include "Mesh/PrimitiveComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 
 class UMeshComponent : public UPrimitiveComponent

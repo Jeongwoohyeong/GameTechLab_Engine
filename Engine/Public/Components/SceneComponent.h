@@ -1,5 +1,5 @@
 #pragma once
-#include "Mesh/ActorComponent.h"
+#include "Components/ActorComponent.h"
 #include "Manager/ResourceManager.h"
 #include "Math/AABB.h"
 #include "Global/Quat.h"

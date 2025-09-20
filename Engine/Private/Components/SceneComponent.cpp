@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Mesh/SceneComponent.h"
+#include "Components/SceneComponent.h"
 #include "Manager/ResourceManager.h"
 
 #include <algorithm>

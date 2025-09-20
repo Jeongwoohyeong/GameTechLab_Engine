@@ -9,7 +9,7 @@
 #include "Render/Renderer/Pipeline.h"
 #include "Render/Renderer/LineBatchRenderer.h"
 #include "Editor/Editor.h"
-#include "Mesh/TextComponent.h"
+#include "Components/TextComponent.h"
 
 namespace
 {

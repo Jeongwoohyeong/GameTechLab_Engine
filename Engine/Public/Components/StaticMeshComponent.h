@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mesh/MeshComponent.h"
+#include "Components/MeshComponent.h"
 #include "Mesh/StaticMesh.h"
 #include "Global/Name.h"
 

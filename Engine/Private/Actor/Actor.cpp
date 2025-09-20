@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Actor/Actor.h"
-#include "Mesh/SceneComponent.h"
-#include "Mesh/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Mesh/StaticMesh.h"
 
 IMPLEMENT_CLASS(AActor, UObject)

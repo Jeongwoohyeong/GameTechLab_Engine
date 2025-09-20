@@ -1,6 +1,6 @@
 #pragma once
-#include "Mesh/SceneComponent.h"
-#include "Mesh/ActorComponent.h"
+#include "Components/SceneComponent.h"
+#include "Components/ActorComponent.h"
 #include "Manager/ResourceManager.h"
 #include "Math/AABB.h"
 
