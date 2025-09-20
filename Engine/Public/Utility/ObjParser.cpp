@@ -300,13 +300,14 @@ bool FObjParser::CookObjToStaticMesh(const FObjInfo& raw, const FObjImportOption
 			}
 		}
 
-		outMesh.IndexNum = outMesh.Indices.Num() - outSection.IndexStart;
+		outSection.IndexCount = outMesh.Indices.Num() - outSection.IndexStart;
 		if (outSection.IndexCount > 0)
 		{
 			outMesh.Sections.Emplace(outSection);
 		}
 	}
 
+	outMesh.IndexNum = outMesh.Indices.Num();
 	// 필요하면 노말 재계산 
 	/*if (opt.bIsRecalculateNormals)
 	{
