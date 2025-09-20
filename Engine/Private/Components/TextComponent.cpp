@@ -10,8 +10,6 @@ IMPLEMENT_CLASS(UTextComponent, UPrimitiveComponent)
 UTextComponent::UTextComponent()
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	RenderState.CullMode = ECullMode::None;
-	RenderState.FillMode = EFillMode::Solid;
 	ComponentType = EComponentType::Text;
 	VertexBuffer = ResourceManager.GetTextVertexBuffer();
 	VertexNum = ResourceManager.GetTextNumVertices();

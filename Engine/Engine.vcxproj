@@ -205,12 +205,8 @@
     <ClInclude Include="Public\\Manager\UI\\UIManager.h" />
     <ClInclude Include="Public\Actor\Actor.h" />
     <ClInclude Include="Public\Components\ActorComponent.h" />
-    <ClInclude Include="Public\Actor\CubeActor.h" />
     <ClInclude Include="Public\Manager\ResourceManager.h" />
     <ClInclude Include="Public\Components\SceneComponent.h" />
-    <ClInclude Include="Public\Actor\SphereActor.h" />
-    <ClInclude Include="Public\Actor\SquareActor.h" />
-    <ClInclude Include="Public\Actor\TriangleActor.h" />
     <ClInclude Include="Public\Mesh\VertexDatas.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Public\\Core\\AppWindow.h" />

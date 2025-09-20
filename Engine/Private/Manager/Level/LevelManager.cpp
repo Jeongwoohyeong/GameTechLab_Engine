@@ -2,10 +2,6 @@
 #include "Manager/Level/LevelManager.h"
 
 #include "Level/Level.h"
-#include "Actor/CubeActor.h"
-#include "Actor/SphereActor.h"
-#include "Actor/TriangleActor.h"
-#include "Actor/SquareActor.h"
 #include "Manager/Path/PathManager.h"
 #include "Utility/LevelSerializer.h"
 #include "Utility/Metadata.h"

@@ -8,8 +8,6 @@
 #include "Manager/Input/InputManager.h"
 #include "Manager/Time/TimeManager.h"
 
-#include "Actor/CubeActor.h"
-
 #include "Render/Renderer/Renderer.h"
 
 // 테스트용 Camera

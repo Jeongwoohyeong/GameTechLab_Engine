@@ -3,10 +3,6 @@
 
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
-#include "Actor/CubeActor.h"
-#include "Actor/SphereActor.h"
-#include "Actor/SquareActor.h"
-#include "Actor/TriangleActor.h"
 #include "Actor/StaticMeshActor.h"
 
 IMPLEMENT_CLASS(UPrimitiveSpawnWidget, UWidget)

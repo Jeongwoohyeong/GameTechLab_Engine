@@ -71,7 +71,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 	Position = mul(Position, ProjectionMatrix);
 
 	Output.Position = Position;
-	Output.Color = ShadeColor;
+	Output.Color = lerp(ShadeColor, Instance.Color, Instance.Color.a);
 	Output.UV = Input.BaseUV;
 	return Output;
 }
