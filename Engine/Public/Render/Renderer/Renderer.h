@@ -1,7 +1,7 @@
 #pragma once
 #include "DeviceResources.h"
 #include "Core/Object.h"
-#include "Mesh/SceneComponent.h"
+#include "Components/SceneComponent.h"
 #include "Editor/EditorPrimitive.h"
 
 class UPipeline;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mesh/Actor.h"
+#include "Actor/Actor.h"
 
 class USphereComponent;
 class UTextComponent;

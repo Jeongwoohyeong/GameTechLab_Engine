@@ -3,6 +3,8 @@
 
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
+#include "Core/ObjectIterator.h"
+#include "Mesh/StaticMesh.h"
 
 IMPLEMENT_CLASS(UTargetActorTransformWidget, UWidget)
 UTargetActorTransformWidget::UTargetActorTransformWidget()
@@ -23,7 +25,7 @@ void UTargetActorTransformWidget::Update()
 	ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
 
 	LevelMemoryByte = CurrentLevel->GetAllocatedBytes();
- 	LevelObjectCount = CurrentLevel->GetAllocatedCount();
+	LevelObjectCount = CurrentLevel->GetAllocatedCount();
 
 	if (CurrentLevel)
 	{
@@ -80,8 +82,56 @@ void UTargetActorTransformWidget::RenderWidget()
 		}
 
 		ImGui::Checkbox("Uniform Scale", &bUniformScale);
-
 		SelectedActor->SetUniformScale(bUniformScale);
+
+
+
+		//ImGui::ShowDemoWindow();
+		ImGui::Separator();
+		ImGui::Text("Static Mesh");
+		const char* CurrentMeshName = SelectedActor->GetStaticMeshName().c_str();
+		static int CurrentIndex = 0;
+		
+
+
+		if (ImGui::BeginCombo("Static Mesh", CurrentMeshName))
+		{
+			TArray<FString> StaticMeshNameList;
+			TArray<UStaticMesh*> StaticMeshList;
+			for (TObjectIterator<UStaticMesh> It; It; ++It)
+			{
+				UStaticMesh* StaticMesh = *It;
+				if (StaticMesh)
+				{
+					StaticMeshNameList.push_back(StaticMesh->GetName());
+					StaticMeshList.push_back(StaticMesh);
+				}
+			}
+			for (int Index = 0; Index < StaticMeshNameList.Num(); Index++)
+			{
+				const bool bIsSelected = (CurrentIndex == Index);
+
+				//선택되면 true, bool값이 true면 하이라이트
+				if (ImGui::Selectable(StaticMeshNameList[Index].c_str(), bIsSelected))
+				{
+					if (CurrentIndex != Index)
+					{
+						CurrentIndex = Index;
+						SelectedActor->SetStaticMesh(StaticMeshList[CurrentIndex]);
+					}
+					
+				}
+
+				
+				if (bIsSelected)
+					ImGui::SetItemDefaultFocus();
+
+			}
+			ImGui::EndCombo();	
+		}
+		
+
+		
 	}
 	else
 	{

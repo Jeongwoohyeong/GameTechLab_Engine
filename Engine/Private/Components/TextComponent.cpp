@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Mesh/TextComponent.h"
-#include "Mesh/PrimitiveComponent.h"
+#include "Components/TextComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Render/Renderer/Renderer.h"
 #include <string>
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Editor/EditorPrimitive.h"
 #include "Core/Object.h"
-#include "Mesh/Actor.h"
+#include "Actor/Actor.h"
 
 struct FQuat;
 class UObjectPicker;

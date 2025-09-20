@@ -9,7 +9,7 @@ using JSON = json::JSON;
 enum class EPrimitiveType : uint8_t;
 struct FLevelMetadata;
 struct FPrimitiveMetadata;
-
+struct FCameraMetadata;
 /**
  * @brief Level 직렬화에 관여하는 클래스
  * JSON 기반으로 레벨의 데이터를 Save / Load 처리
@@ -25,12 +25,17 @@ public:
 	static FPrimitiveMetadata JsonToPrimitive(const JSON& InJsonData, uint32 InID);
 	static JSON LevelToJson(const FLevelMetadata& InLevelData);
 	static FLevelMetadata JsonToLevel(JSON& InJsonData);
+	// 카메라 정보 저장/로드
+	static JSON CameraToJson(const FCameraMetadata& InCamera);
+	static FCameraMetadata JsonToCamera(const JSON& InJson);
+
 	static bool SaveLevelToFile(const FLevelMetadata& InLevelData, const string& InFilePath);
 	static bool LoadLevelFromFile(FLevelMetadata& OutLevelData, const string& InFilePath);
 	static string FormatJsonString(const JSON& JsonData, int Indent = 2);
 	static bool ValidateLevelData(const FLevelMetadata& InLevelData, string& OutErrorMessage);
 	static FLevelMetadata MergeLevelData(const FLevelMetadata& InBaseLevel,
 	                                     const FLevelMetadata& InMergeLevel);
+
 
 	static TArray<FPrimitiveMetadata>
 	FilterPrimitivesByType(const FLevelMetadata& InLevelData, EPrimitiveType InType);

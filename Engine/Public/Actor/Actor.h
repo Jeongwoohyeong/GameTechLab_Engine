@@ -1,7 +1,8 @@
 #pragma once
 #include "Core/Object.h"
-#include "Mesh/SceneComponent.h"
+#include "Components/SceneComponent.h"
 
+class UStaticMesh;
 /**
  * @brief Level에서 렌더링되는 UObject 클래스
  * UWorld로부터 업데이트 함수가 호출되면 component들을 순회하며 위치, 애니메이션, 상태 처리
@@ -39,6 +40,10 @@ public:
     const FVector& GetActorRotation() const;
     const FQuat& GetActorRotationQuat() const;
 	const FVector& GetActorScale3D() const;
+
+	//테스트용
+	const FString& GetStaticMeshName() const;
+	void SetStaticMesh(UStaticMesh* InStaticMesh);
 
 private:
 	USceneComponent* RootComponent = nullptr;

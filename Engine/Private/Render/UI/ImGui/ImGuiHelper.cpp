@@ -8,7 +8,7 @@
 #include "Manager/Input/InputManager.h"
 #include "Manager/Time/TimeManager.h"
 
-#include "Mesh/CubeActor.h"
+#include "Actor/CubeActor.h"
 
 #include "Render/Renderer/Renderer.h"
 

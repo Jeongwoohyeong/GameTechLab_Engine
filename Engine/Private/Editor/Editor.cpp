@@ -11,8 +11,8 @@
 #include "Manager/Level/LevelManager.h"
 #include "Manager/UI/UIManager.h"
 #include "Manager/Input/InputManager.h"
-#include "Mesh/Actor.h"
-#include "Mesh/PrimitiveComponent.h"
+#include "Actor/Actor.h"
+#include "Components/PrimitiveComponent.h"
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
@@ -39,6 +39,8 @@ void UEditor::Update()
 {
 	auto& Renderer = URenderer::GetInstance();
 	Camera.Update();
+	// 현재 레벨에 카메라 주입 보장
+	EnsureLevelHasCamera(ULevelManager::GetInstance().GetCurrentLevel());
 
 	ProcessMouseInput(ULevelManager::GetInstance().GetCurrentLevel());
 	ProcessKeyboardInput();
@@ -405,4 +407,22 @@ FVector UEditor::GetGizmoDragScale(const FRay& WorldRay)
 		return Gizmo.GetActorScale();
 	}
 	return Gizmo.GetActorScale();
+}
+
+void UEditor::EnsureLevelHasCamera(ULevel* Level)
+{
+	static ULevel* LastBound = nullptr;
+
+	if (!Level) return;
+
+	// 포인터 주입
+	if (Level->GetCamera() != &Camera)
+		Level->SetCamera(&Camera);
+
+	// 새 레벨에 처음 바인딩된 순간 카메라 스냅샷 적용
+	if (LastBound != Level)
+	{
+		Level->ApplySavedCameraSnapshotToCamera();
+		LastBound = Level;
+	}
 }

@@ -2,8 +2,8 @@
 #include "Editor/ObjectPicker.h"
 #include "Editor/Camera.h"
 #include "Editor/Gizmo.h"
-#include "Mesh/PrimitiveComponent.h"
-#include "Mesh/Actor.h"
+#include "Components/PrimitiveComponent.h"
+#include "Actor/Actor.h"
 #include "Manager/Input/InputManager.h"
 #include "Core/AppWindow.h"
 #include "ImGui/imgui.h"
@@ -39,8 +39,11 @@ UPrimitiveComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<U
 	{
 		FMatrix ModelMat = Primitive->GetWorldTransformMatrix();
 		FRay ModelRay = GetModelRay(WorldRay, Primitive);
+		//if (Primitive->IsRayCollided(ModelRay, ModelMat, &PrimitiveDistance))
+
 		if (IsRayPrimitiveCollided(ModelRay, Primitive, ModelMat, &PrimitiveDistance))
 			//Ray와 Primitive가 충돌했다면 거리 테스트 후 가까운 Actor Picking
+		
 		{
 			if (PrimitiveDistance < ShortestDistance)
 			{

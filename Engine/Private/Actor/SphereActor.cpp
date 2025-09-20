@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "Mesh/SphereActor.h"
-#include "Mesh/TextComponent.h"
-#include "Mesh/PrimitiveComponent.h"
+#include "Actor/SphereActor.h"
+#include "Components/TextComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 IMPLEMENT_CLASS(ASphereActor, AActor)
 ASphereActor::ASphereActor()

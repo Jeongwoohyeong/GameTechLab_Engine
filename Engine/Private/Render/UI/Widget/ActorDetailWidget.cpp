@@ -3,7 +3,7 @@
 
 #include "Level/Level.h"
 #include "Manager/Level/LevelManager.h"
-#include "Mesh/Actor.h"
+#include "Actor/Actor.h"
 
 UActorDetailWidget::UActorDetailWidget()
 {

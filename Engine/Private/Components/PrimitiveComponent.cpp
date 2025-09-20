@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Mesh/PrimitiveComponent.h"
-#include "Mesh/ResourceManager.h"
+#include "Components/PrimitiveComponent.h"
+#include "Manager/ResourceManager.h"
 
 #include <algorithm>
 
@@ -123,30 +123,6 @@ FAABB UCubeComponent::GetWorldBounds() const
 	return UPrimitiveComponent::GetWorldBounds();
 }
 
-IMPLEMENT_CLASS(ULineComponent, UPrimitiveComponent)
-ULineComponent::ULineComponent()
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	Type = EPrimitiveType::Line;
-	Vertices = ResourceManager.GetVertexData(Type);
-
-	VertexBuffer = ResourceManager.GetVertexBuffer(Type);
-	ReducedVertexBuffer = ResourceManager.GetReducedVertexBuffer(Type);
-	IndexBuffer = ResourceManager.GetIndexBuffer(Type);
-
-	VertexNum = ResourceManager.GetVertexNum(Type);
-	ReducedVertexNum = ResourceManager.GetReducedVertexNum(Type);
-	IndexNum = ResourceManager.GetIndexNum(Type);
-
-	Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-	RenderState.CullMode = ECullMode::None;
-	RenderState.FillMode = EFillMode::WireFrame;
-}
-
-FAABB ULineComponent::GetWorldBounds() const
-{
-	return UPrimitiveComponent::GetWorldBounds();
-}
 
 IMPLEMENT_CLASS(UTriangleComponent, UPrimitiveComponent)
 UTriangleComponent::UTriangleComponent()

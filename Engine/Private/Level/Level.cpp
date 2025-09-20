@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "Level/Level.h"
 
-#include "Mesh/Actor.h"
-#include "Mesh/TextComponent.h"
-#include "Mesh/PrimitiveComponent.h"
-#include "Mesh/StaticMeshComponent.h"
-
+#include "Actor/Actor.h"
+#include "Components/TextComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Utility/Metadata.h"
 IMPLEMENT_CLASS(ULevel, UObject)
 
 ULevel::ULevel() = default;
@@ -312,4 +312,28 @@ void ULevel::ProcessPendingDeletions()
 	// Clear TArray
 	ActorsToDelete.clear();
 	UE_LOG("[Level] All Pending Deletions Processed");
+}
+
+void ULevel::SaveCameraSnapshotFromCamera()
+{
+	if (!Camera) return;
+	FCameraMetadata CameraMetadata;
+	CameraMetadata.Location = Camera->GetLocation();
+	CameraMetadata.Rotation = Camera->GetRotation(); // 쿼터니언이면 변환해서 저장
+	CameraMetadata.Fov = Camera->GetFovY();
+	CameraMetadata.Aspect = Camera->GetAspect();
+	CameraMetadata.NearZ = Camera->GetNearZ();
+	CameraMetadata.FarZ = Camera->GetFarZ();
+	SavedCamera = CameraMetadata;
+}
+
+void ULevel::ApplySavedCameraSnapshotToCamera()
+{
+	if (!Camera) return;
+	Camera->SetLocation(SavedCamera.Location);
+	Camera->SetRotation(SavedCamera.Rotation); // 쿼터니언 API면 거기에 맞춰 Set
+	Camera->SetFovY(SavedCamera.Fov);
+	Camera->SetAspect(SavedCamera.Aspect);
+	Camera->SetNearZ(SavedCamera.NearZ);
+	Camera->SetFarZ(SavedCamera.FarZ);
 }

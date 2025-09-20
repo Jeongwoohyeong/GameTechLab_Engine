@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Mesh/ActorComponent.h"
+#include "Components/ActorComponent.h"
 
 IMPLEMENT_CLASS(UActorComponent, UObject)
 

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Mesh/StaticMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Level/Level.h"
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)

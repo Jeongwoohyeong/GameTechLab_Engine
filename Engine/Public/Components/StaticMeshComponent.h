@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Mesh/MeshComponent.h"
-//#include "json.hpp"
+#include "Components/MeshComponent.h"
+#include "Mesh/StaticMesh.h"
+#include "Global/Name.h"
 
 class UStaticMesh;
 
@@ -15,6 +16,8 @@ public:
 	//virtual void AddToRenderList(ULevel* Level) override;
 	///////////////////////////////////////////////////
 
+	const FString& GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetName(); else return FString(); }
+	void SetStaticMesh(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
 
 
 	//TODO: Serialize 구현

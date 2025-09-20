@@ -50,6 +50,30 @@ struct FPrimitiveMetadata
 	}
 };
 
+
+// 카메라 스냅샷
+struct FCameraMetadata
+{
+	FVector Location{ 0,0,0 };
+	FVector Rotation{ 0,0,0 }; // 쿼터니언을 쓸 거면 FVector 대신 FQuat로 교체
+	float Fov = 60.0f;
+	float Aspect = 16.0f / 9.0f;
+	float NearZ = 0.1f;
+	float FarZ = 1000.0f;
+};
+
+static FCameraMetadata GetDefaultCameraSnapshot()
+{
+	FCameraMetadata S;
+	S.Location = { 0.f, 0.f, 0.f };
+	S.Rotation = { 0.0f, 0.0f, 0.0f };  // pitch, yaw, roll 식이면 맞춰서
+	S.Fov = 60.0f;
+	S.Aspect = 16.0f / 9.0f;
+	S.NearZ = 0.1f;
+	S.FarZ = 1000.0f;
+	return S;
+}
+
 /**
  * @brief Level Meta Data Struct
  * @param Version 레벨 버전
@@ -61,7 +85,8 @@ struct FLevelMetadata
 	uint32 Version;
 	uint32 NextUUID;
 	TMap<uint32, FPrimitiveMetadata> Primitives;
-
+	// ▼ 추가
+	FCameraMetadata Camera;
 	/**
 	 * @brief 기본 생성자
 	 */

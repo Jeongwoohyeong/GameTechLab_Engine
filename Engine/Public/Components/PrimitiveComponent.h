@@ -1,7 +1,7 @@
 #pragma once
-#include "Mesh/SceneComponent.h"
-#include "Mesh/ActorComponent.h"
-#include "ResourceManager.h"
+#include "Components/SceneComponent.h"
+#include "Components/ActorComponent.h"
+#include "Manager/ResourceManager.h"
 #include "Math/AABB.h"
 
 class ULevel;
@@ -24,7 +24,19 @@ public:
 	uint32 GetReducedVertexNum() const { return ReducedVertexNum; }
 	uint32 GetIndexNum() const { return IndexNum; }
 
+	FVector4 GetColor() const { return Color; }
 	const FRenderState& GetRenderState() const { return RenderState; }
+	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const;
+
+
+	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology);
+	void SetVisibility(bool bVisibility) { bVisible = bVisibility; }
+	void SetColor(const FVector4& InColor) { Color = InColor; }
+
+	bool IsVisible() const { return bVisible; }
+	//virtual bool IsRayCollided() = 0;
+	virtual FAABB GetWorldBounds() const;
+
 
 
 	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
@@ -33,17 +45,9 @@ public:
 	///////////////////////////////////////////////////
 
 
-	void SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology);
-	D3D11_PRIMITIVE_TOPOLOGY GetTopology() const;
-	//void Render(const URenderer& Renderer) const override;
+	
 
-	bool IsVisible() const { return bVisible; }
-	void SetVisibility(bool bVisibility) { bVisible = bVisibility; }
-
-	FVector4 GetColor() const { return Color; }
-	void SetColor(const FVector4& InColor) { Color = InColor; }
-
-	virtual FAABB GetWorldBounds() const;
+	
 	//FAABB GetWorldBounds() const;
 
 protected:
@@ -92,13 +96,5 @@ class USphereComponent : public UPrimitiveComponent
 	DECLARE_CLASS(USphereComponent, UPrimitiveComponent)
 public:
 	USphereComponent();
-	virtual FAABB GetWorldBounds() const override;
-};
-
-class ULineComponent : public UPrimitiveComponent
-{
-	DECLARE_CLASS(ULineComponent, UPrimitiveComponent)
-public:
-	ULineComponent();
 	virtual FAABB GetWorldBounds() const override;
 };
