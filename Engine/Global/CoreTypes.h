@@ -23,6 +23,10 @@ struct FVertex
     FVector Position;
     FVector4 Color;
 
+	FVertex() : Position{}, Color{} {}
+
+	FVertex(const FVector& pos, const FVector4& col) : Position(pos), Color(col) {}
+
     // 동등 비교 연산자
     bool operator==(const FVertex& Other) const
     {
@@ -81,15 +85,58 @@ struct FNormalVertex
 	FVector Normal;
 	FVector4 Color;
 	FVector2 Tex;
+
+	FNormalVertex()
+		: Position(FVector(-1.0f,-1.0f,-1.0f)), Normal(FVector(-1.0f, -1.0f, -1.0f)),
+		Color(FVector4(-1.0f, -1.0f, -1.0f, 1.0f)), Tex(FVector2(-1.0f, -1.0f)) { }
+	FNormalVertex(const FVector& v, const FVector& norm, const FVector4& c, const FVector2& uv)
+		: Position(v), Normal(norm), Color(c), Tex(uv) {}
+};
+
+struct FObjInfo
+{
+	// 당장 필요한 것만 추가함
+
+	// Vertex
+	TArray<FVector> Position;
+	TArray<FVector> Normal;
+	TArray<FVector4> Color; // Material 사용 시 필요할듯
+	TArray<FVector2> Tex;
+
+	FObjInfo()
+		: Position{}, Normal{}, Color{}, Tex{} {}		
+};
+
+struct FIndex
+{
+	TArray<uint32> VertexIndices;
+	TArray<uint32> UVIndices;
+	TArray<uint32> NormalIndices;
+
+	FIndex() : VertexIndices{}, UVIndices{}, NormalIndices{} {}
+
+	FIndex(TArray<uint32> vIndex, TArray<uint32> uvIndex, TArray<uint32> normalIndex)
+		: VertexIndices(vIndex), UVIndices(uvIndex), NormalIndices(normalIndex) { }
 };
 
 // Cooked Data
 struct FStaticMesh
 {
-	std::string PathFileName;
+	FString PathFileName;
 
 	TArray<FNormalVertex> Vertices;
-	TArray<uint32> Indices;
+	FIndex Indices;
+	uint32 VertexIndexNum;
+	uint32 UVIndexNum;
+	uint32 NormalIndexNum;
+
+	FStaticMesh() : PathFileName{}, Vertices{}, Indices{},
+		VertexIndexNum(0), UVIndexNum(0), NormalIndexNum(0) {}
+
+	FStaticMesh(const FString name, const TArray<FNormalVertex> vertices, const FIndex indices,
+		uint32 vIdxNum = 0, uint32 uvIdxNum = 0, uint32 normIdxNum = 0)
+		: PathFileName(name), Vertices(vertices), Indices(indices),
+		VertexIndexNum(vIdxNum), UVIndexNum(uvIdxNum), NormalIndexNum(normIdxNum) {	}
 };
 
 //TMap<char, FCharacterInfo> CharInfoMap;

@@ -49,7 +49,7 @@ void UPathManager::GetEssentialPath()
 	AudioPath = AssetPath / "Audio";
 	WorldPath = AssetPath / "World";
 	ConfigPath = AssetPath / "Config";
-	FontPath = AssetPath / "Font";
+	FontPath = AssetPath / "Font";	
 }
 
 /**
@@ -65,7 +65,7 @@ void UPathManager::ValidateAndCreateDirectories() const
 		AudioPath,
 		WorldPath,
 		ConfigPath,
-		FontPath
+		FontPath		
 	};
 
 	for (const auto& Directory : DirectoriesToCreate)

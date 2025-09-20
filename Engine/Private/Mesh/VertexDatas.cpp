@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Mesh/VertexDatas.h"
 
+TArray<FVertex> objcube = {};
+
 TArray<FVertex> VerticesSphere = {
 	{{ 0.000000f, 1.000000f, 0.000000f }, { 0.500000f, 1.000000f, 0.500000f, 1.000000f }},
 	{{ 0.148778f, 0.987688f, 0.048341f }, { 0.574389f, 0.993844f, 0.524170f, 1.000000f }},

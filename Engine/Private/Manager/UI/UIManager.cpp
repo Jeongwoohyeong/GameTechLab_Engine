@@ -6,6 +6,8 @@
 #include "Render/UI/Window/ExperimentalFeatureWindow.h"
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
+#include "Utility/ObjParser.h"
+
 
 IMPLEMENT_CLASS(UUIManager, UObject)
 IMPLEMENT_SINGLETON(UUIManager)
@@ -14,6 +16,7 @@ UUIManager::UUIManager()
 {
 	ImGuiHelper = NewObject<UImGuiHelper>();
 	Initialize();
+	FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
 }
 
 UUIManager::~UUIManager()
