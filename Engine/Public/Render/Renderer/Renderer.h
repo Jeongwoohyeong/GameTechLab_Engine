@@ -126,12 +126,6 @@ public:
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
 	void UpdateConstant(const FVector4& Color) const;
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
-	//아래 함수는 여러 종류의 매시를 그릴 때 스트럭처드 버퍼를 한번만 업데이트해서 그리기 위해 존재하는 코드임.
-	//지금은 매시 종류가 10가지도 안되므로 오버엔지니어링이라고 생각해서 주석처리함.
-	//void UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const;
-	
-	//인스턴싱을 할지 말지 결정해줌
-	void UpdateInstanceDrawConstants(bool bUseInstancing) const;
 
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
@@ -177,9 +171,6 @@ private:
 	ID3D11Buffer* ConstantBufferPerFrame = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
 	ID3D11Buffer* ConstantBufferCharTable = nullptr;
-	//인스턴싱을 위한 constant buffer(default pass에 대한)
-	ID3D11Buffer* ConstantBufferInstance = nullptr;
-	//////////////////////////////////////
 
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
 	/////////////////////////////////////
@@ -208,42 +199,6 @@ private:
 	uint32 Stride = 0;
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
-
-	//struct FPrimitiveBatchKey
-	//{
-	//	ID3D11Buffer* VertexBuffer = nullptr;
-	//	ID3D11Buffer* IndexBuffer = nullptr;
-	//	uint32 IndexCount = 0;
-	//	FRenderState RenderState = {};
-	//	bool operator==(const FPrimitiveBatchKey& InRhs) const	//위의 모든 멤버가 같아야 같은 키
-	//	{
-	//		return VertexBuffer == InRhs.VertexBuffer &&
-	//			IndexBuffer == InRhs.IndexBuffer &&
-	//			IndexCount == InRhs.IndexCount &&
-	//			RenderState.CullMode == InRhs.RenderState.CullMode &&
-	//			RenderState.FillMode == InRhs.RenderState.FillMode;
-	//	}
-	//};
-
-	//struct FPrimitiveBatchKeyHasher
-	//{
-	//	size_t operator()(const FPrimitiveBatchKey& InKey) const noexcept
-	//	{
-	//		auto Mix = [](size_t& H, size_t V)
-	//		{
-	//			H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H >> 2);
-	//		};
-
-	//		size_t Hash = 0;
-	//		Mix(Hash, reinterpret_cast<size_t>(InKey.VertexBuffer));
-	//		Mix(Hash, reinterpret_cast<size_t>(InKey.IndexBuffer));
-	//		Mix(Hash, static_cast<size_t>(InKey.IndexCount));
-	//		Mix(Hash, static_cast<size_t>(InKey.RenderState.CullMode));
-	//		Mix(Hash, static_cast<size_t>(InKey.RenderState.FillMode));
-
-	//		return Hash;
-	//	}
-	//};
 
 	struct FStructuredBufferResource
 	{
