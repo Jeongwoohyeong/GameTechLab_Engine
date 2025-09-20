@@ -20,17 +20,7 @@ const TArray<FVertex>* UPrimitiveComponent::GetVerticesData() const
 	return ResourceManager.GetVertexData(Type);
 }
 
-const TArray<FVertex>* UPrimitiveComponent::GetReducedVerticesData() const
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	return ResourceManager.GetReducedVertexData(Type);
-}
 
-const TArray<uint32>* UPrimitiveComponent::GetIndicesData() const
-{
-	UResourceManager& ResourceManager = UResourceManager::GetInstance();
-	return ResourceManager.GetIndexData(Type);
-}
 
 void UPrimitiveComponent::SetTopology(D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {

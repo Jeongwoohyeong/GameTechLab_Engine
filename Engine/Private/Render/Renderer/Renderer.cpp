@@ -481,8 +481,6 @@ void URenderer::RenderLevel()
 
 
 
-
-
 	//Primitive를 순회하며 Key를 구하고 같은 key를 가진 component의 matrix와 color값들을
 	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨
 	const TArray<UStaticMeshComponent*>& StaticMeshComponentsToRender =

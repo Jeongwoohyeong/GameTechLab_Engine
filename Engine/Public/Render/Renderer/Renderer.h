@@ -194,11 +194,12 @@ private:
 	ID3D11PixelShader* StaticMeshPixelShader = nullptr;
 	ID3D11InputLayout* StaticMeshInputLayout = nullptr;
 	uint32 StrideStaticMesh = 0;
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 
 	uint32 Stride = 0;
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
+
+	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 
 	struct FStructuredBufferResource
 	{
@@ -280,10 +281,4 @@ private:
 	void ReleasePrimitiveInstanceBuffers();
 
 	bool bIsResizing = false;
-
-	///////////////////////////////////////////
-	// 카메라 VP Matrix 값 전달 받는 용도
-	// (차후 리팩터링이 필요합니다)
-	FViewProjConstants ViewProjConstants;
-	///////////////////////////////////////////
 };

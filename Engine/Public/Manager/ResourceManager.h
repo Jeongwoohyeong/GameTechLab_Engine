@@ -18,14 +18,6 @@ public:
 	ID3D11Buffer* GetVertexBuffer(EPrimitiveType Type);
 	uint32 GetVertexNum(EPrimitiveType Type);
 
-	TArray<FVertex>* GetReducedVertexData(EPrimitiveType Type);
-	ID3D11Buffer* GetReducedVertexBuffer(EPrimitiveType Type);
-	uint32 GetReducedVertexNum(EPrimitiveType Type);
-
-	TArray<uint32>* GetIndexData(EPrimitiveType Type);
-	ID3D11Buffer* GetIndexBuffer(EPrimitiveType Type);
-	uint32 GetIndexNum(EPrimitiveType Type);
-
 	//////////////////리팩토링 예정///////////
 	ID3D11Buffer* GetTextVertexBuffer() const { return TextVertexBuffer; }
 	uint32 GetTextNumVertices() const { return TexVertexNum; }
@@ -43,32 +35,33 @@ public:
 private:
 	void LoadCharInfoMap();
 
-	TMap<EPrimitiveType, TArray<FVertex>*> VertexData;
-	TMap<EPrimitiveType, ID3D11Buffer*> VertexBuffers;
-	TMap<EPrimitiveType, uint32> VertexNum;
-
-	TMap<EPrimitiveType, TArray<uint32>> IndexData;
-	TMap<EPrimitiveType, ID3D11Buffer*> IndexBuffers;
-	TMap<EPrimitiveType, uint32> IndexNum;
-
-	TMap<EPrimitiveType, TArray<FVertex>*> ReducedVertexData;
-	TMap<EPrimitiveType, ID3D11Buffer*> ReducedVertexBuffers;
-	TMap<EPrimitiveType, uint32> ReducedVertexNum;
-
-	TArray<FTextVertex>* TextVertexData;
-	ID3D11Buffer* TextVertexBuffer;
-	uint32 TexVertexNum;
+	TArray<FString> DefaultAssetPaths = { "Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj" };
+	TMap<FString, FStaticMesh*> StaticMeshAssets;
+	TMap<FString, UStaticMesh*> StaticMeshes;
 
 	TMap<FString, ID3D11ShaderResourceView*> ShaderResourceViews;
 	TMap<ESamplerType, ID3D11SamplerState*> SamplerStates;
 
+
+
+
+
+
+
+	////////////////////////////////////////////For Gizmo////////////////////////////////////
+	TMap<EPrimitiveType, TArray<FVertex>*> VertexData;
+	TMap<EPrimitiveType, ID3D11Buffer*> VertexBuffers;
+	TMap<EPrimitiveType, uint32> VertexNum;
+	////////////////////////////////////////////For Gizmo////////////////////////////////////
+	// 
+	////////////////////////////////////////////For Text////////////////////////////////////
+	TArray<FTextVertex>* TextVertexData;
+	ID3D11Buffer* TextVertexBuffer;
+	uint32 TexVertexNum;
+
 	TArray<FCharacterInfo> CharInfos;
 	TMap<WCHAR, int32> CharInfoIdxMap;
+	////////////////////////////////////////////For Text////////////////////////////////////
 
-
-
-
-	TArray<FString> DefaultAssetPaths = {"Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj"};
-	TMap<FString, FStaticMesh*> StaticMeshAssets;
-	TMap<FString, UStaticMesh*> StaticMeshes;
+	
 };
