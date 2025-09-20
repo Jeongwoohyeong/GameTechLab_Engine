@@ -473,7 +473,7 @@ void URenderer::RenderLevel()
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
-	FRenderState State = FRenderState{ ECullMode::None, EFillMode::Solid };
+	FRenderState State = FRenderState{ ECullMode::Back, EFillMode::Solid };
 	Pipeline->UpdatePipeline(CreateStaticMeshPipelineInfo(State));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정

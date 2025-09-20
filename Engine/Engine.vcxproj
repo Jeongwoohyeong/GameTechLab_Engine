@@ -280,12 +280,8 @@
     <ClCompile Include="Private\\Manager\UI\\UIManager.cpp" />
     <ClCompile Include="Private\Actor\Actor.cpp" />
     <ClCompile Include="Private\Components\ActorComponent.cpp" />
-    <ClCompile Include="Private\Actor\CubeActor.cpp" />
     <ClCompile Include="Private\Manager\ResourceManager.cpp" />
     <ClCompile Include="Private\Components\SceneComponent.cpp" />
-    <ClCompile Include="Private\Actor\SphereActor.cpp" />
-    <ClCompile Include="Private\Actor\SquareActor.cpp" />
-    <ClCompile Include="Private\Actor\TriangleActor.cpp" />
     <ClCompile Include="Private\Mesh\VertexDatas.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

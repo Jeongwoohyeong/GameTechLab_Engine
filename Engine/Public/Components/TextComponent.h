@@ -17,6 +17,7 @@ public:
 	FWstring GetText() const { return Text; }
 
 	virtual void AddToRenderList(ULevel* Level) override;
+	virtual bool IsRayCollided(const FRay& WorldRay, const FMatrix& ModelMatrix, float* Distance) override { return false; }
 
 private:
 	FWstring Text;

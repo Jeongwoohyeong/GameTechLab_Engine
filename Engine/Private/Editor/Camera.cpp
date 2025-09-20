@@ -253,10 +253,10 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 
 	if (CameraType == ECameraType::ECT_Perspective)
 	{
-		FVector4 DirectionVector = WorldFar - CameraPosition;
+		FVector4 DirectionVector = WorldFar - WorldNear;
 		DirectionVector.Normalize();
 
-		Ray.Origin = CameraPosition;
+		Ray.Origin = WorldNear;
 		Ray.Direction = DirectionVector;
 	}
 	else if (CameraType == ECameraType::ECT_Orthographic)

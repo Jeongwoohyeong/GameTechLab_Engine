@@ -34,7 +34,7 @@ public:
 	void SetColor(const FVector4& InColor) { Color = InColor; }
 
 	bool IsVisible() const { return bVisible; }
-	//virtual bool IsRayCollided() = 0;
+	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) = 0;
 	virtual FAABB GetWorldBounds() const;
 
 

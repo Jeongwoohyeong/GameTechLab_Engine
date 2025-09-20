@@ -39,11 +39,8 @@ UPrimitiveComponent* UObjectPicker::PickPrimitive(const FRay& WorldRay, TArray<U
 	{
 		FMatrix ModelMat = Primitive->GetWorldTransformMatrix();
 		FRay ModelRay = GetModelRay(WorldRay, Primitive);
-		//if (Primitive->IsRayCollided(ModelRay, ModelMat, &PrimitiveDistance))
-
-		if (IsRayPrimitiveCollided(ModelRay, Primitive, ModelMat, &PrimitiveDistance))
-			//Ray와 Primitive가 충돌했다면 거리 테스트 후 가까운 Actor Picking
 		
+		if (Primitive->IsRayCollided(ModelRay, ModelMat, &PrimitiveDistance))
 		{
 			if (PrimitiveDistance < ShortestDistance)
 			{
