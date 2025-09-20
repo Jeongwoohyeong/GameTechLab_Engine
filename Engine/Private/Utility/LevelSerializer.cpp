@@ -55,6 +55,12 @@ static std::string FormatPrimitiveKeyValue(uint32 Id, const FPrimitiveMetadata& 
 
 	std::ostringstream Os;
 	Os << I0 << "\"" << Id << "\": {\n";
+	// ★ StaticMeshComp이면 Asset 경로를 먼저 출력 (스키마 고정)
+	if (P.Type == EPrimitiveType::StaticMeshComp)
+	{
+		// 비어 있어도 스키마 일관성 위해 항상 출력
+		Os << I1 << "\"ObjStaticMeshAsset\": " << std::quoted(P.ObjStaticMeshAsset) << ",\n";
+	}
 	Os << I1 << "\"Location\": " << FormatVec3(P.Location, 6) << ",\n";
 	Os << I1 << "\"Rotation\": " << FormatVec3(P.Rotation, 6) << ",\n";
 	Os << I1 << "\"Scale\": " << FormatVec3(P.Scale, 6) << ",\n";
@@ -114,6 +120,8 @@ FString FLevelSerializer::PrimitiveTypeToWideString(EPrimitiveType InType)
 		return "Triangle";
 	case EPrimitiveType::Square:
 		return "Square";
+	case EPrimitiveType::StaticMeshComp:
+		return "StaticMeshComp";
 	default:
 		return "Unknown";
 	}
@@ -140,6 +148,10 @@ EPrimitiveType FLevelSerializer::StringToPrimitiveType(const FString& InTypeStri
 	{
 		return EPrimitiveType::Square;
 	}
+	if (InTypeString == "StaticMeshComp")
+	{
+		return EPrimitiveType::StaticMeshComp;
+	}
 
 	return EPrimitiveType::None;
 }
@@ -151,6 +163,7 @@ JSON FLevelSerializer::PrimitiveMetadataToJson(const FPrimitiveMetadata& InPrimi
 {
 	JSON PrimitiveJson;
 	// Maybe TODO(Dongmin) - Ex) "ObjStaticMeshAsset": "Data/Cube.obj"
+	PrimitiveJson["ObjStaticMeshAsset"] = InPrimitive.ObjStaticMeshAsset;
 	PrimitiveJson["Location"] = VectorToJson(InPrimitive.Location);
 	PrimitiveJson["Rotation"] = VectorToJson(InPrimitive.Rotation);
 	PrimitiveJson["Scale"] = VectorToJson(InPrimitive.Scale);
@@ -171,10 +184,12 @@ FPrimitiveMetadata FLevelSerializer::JsonToPrimitive(const JSON& InJsonData, uin
 		if (InJsonData.JSONType() == JSON::Class::Object)
 		{
 			// TODO(Dongmin) - ObjStaticMeshAsset 정보도 저장하기
+			const JSON& ObjStaticMeshAssetJson = InJsonData.at("ObjStaticMeshAsset");
 			const JSON& LocationJson = InJsonData.at("Location");
 			const JSON& RotationJson = InJsonData.at("Rotation");
 			const JSON& ScaleJson = InJsonData.at("Scale");
 			const JSON& TypeJson = InJsonData.at("Type");
+			PrimitiveMeta.ObjStaticMeshAsset = ObjStaticMeshAssetJson.ToString();
 			PrimitiveMeta.Location = JsonToVector(LocationJson);
 			PrimitiveMeta.Rotation = JsonToVector(RotationJson);
 			PrimitiveMeta.Scale = JsonToVector(ScaleJson);
@@ -318,7 +333,8 @@ bool FLevelSerializer::SaveLevelToFile(const FLevelMetadata& InLevelData, const 
 		std::sort(OrigIds.begin(), OrigIds.end());
 
 		// 2) NextUUID = N + 1
-		const uint32 NewNextUUID = static_cast<uint32>(OrigIds.size()) + 1;
+		const uint32 UsedMaxId = OrigIds.empty() ? 0u : OrigIds.back();
+		const uint32 NewNextUUID = std::max(InLevelData.NextUUID, UsedMaxId + 1);
 		const std::string NextUuidStr = std::to_string(NewNextUUID);
 
 		// 3) Primitives: 1..N 리넘버해서 수동 조립 (빈 줄 없음, 순서 Location→Rotation→Scale→Type)

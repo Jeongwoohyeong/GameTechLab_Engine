@@ -11,6 +11,7 @@
 struct FPrimitiveMetadata
 {
 	uint32 ID;
+	FString ObjStaticMeshAsset;
 	FVector Location;
 	FVector Rotation;
 	FVector Scale;
