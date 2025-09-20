@@ -64,7 +64,7 @@ vt 0.25 0     # 13 f(3)
 vt 0.50 0     # 14 g(3)
 
 # Define material for the following faces
-usemtl texture
+usemtl cubetexture
 
 # Faces v/vt/vn
 #   3-------2
