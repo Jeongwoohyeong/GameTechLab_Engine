@@ -10,8 +10,7 @@ public:
 	FStaticMesh* LoadObjStaticMesh(const FString& filePath);
 
 private:
-	static FVector PositionToUEBasis(const FVector& InVector);
+	static inline FVector PositionToUEBasis(const FVector& InVector) { return FVector(InVector.X, -InVector.Y, InVector.Z); }
 
-	static FVector2 UVToBasis(const FVector2& InVector);
-	
+	static inline FVector2 UVToBasis(const FVector2& InVector) { return FVector2(InVector.X, 1.0f - InVector.Y); }
 };

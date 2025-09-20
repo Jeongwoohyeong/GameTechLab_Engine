@@ -142,9 +142,9 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filePath)
 						newFace.NormalIndices.Emplace(std::stoi(faceSet[2]) - 1);
 					}
 				}
-				newStaticMesh->Indices.VertexIndices = newFace.VertexIndices;
-				newStaticMesh->Indices.UVIndices = newFace.UVIndices;
-				newStaticMesh->Indices.NormalIndices = newFace.NormalIndices;
+				newStaticMesh->Indices.VertexIndices = TArray<uint32>(newFace.VertexIndices.begin(), newFace.VertexIndices.end());
+				newStaticMesh->Indices.UVIndices = TArray<uint32>(newFace.UVIndices.begin(), newFace.UVIndices.end());
+				newStaticMesh->Indices.NormalIndices = TArray<uint32>(newFace.NormalIndices.begin(), newFace.NormalIndices.end());
 
 				// TODO : FaceMap
 			}
@@ -154,12 +154,3 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filePath)
 	return newStaticMesh;
 }
 
-FVector FObjParser::PositionToUEBasis(const FVector& InVector)
-{
-	return FVector(InVector.X, -InVector.Y, InVector.Z);
-}
-
-FVector2 FObjParser::UVToBasis(const FVector2& InVector)
-{
-	return FVector2(InVector.X, 1.0f - InVector.Y);
-}
