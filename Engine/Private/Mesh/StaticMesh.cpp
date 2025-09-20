@@ -27,6 +27,11 @@ UStaticMesh::~UStaticMesh()
 void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 {
 	URenderer& Renderer = URenderer::GetInstance();
+	if (!InStaticMeshAsset)
+	{
+		UE_LOG("MeshAsset이 유효하지 않아 SetStaticMeshAsset이 반환되었습니다");
+		return;
+	}
 	if (VertexBuffer)
 	{
 		VertexBuffer->Release();
@@ -40,4 +45,9 @@ void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 	VertexBuffer = Renderer.CreateVertexBuffer(InStaticMeshAsset->Vertices);
 	IndexBuffer = Renderer.CreateIndexBuffer(InStaticMeshAsset->Indices);
 	IndexNum = InStaticMeshAsset->IndexNum;
+}
+
+FStaticMesh* UStaticMesh::GetStaticMeshAsset()
+{
+	return StaticMeshAsset;
 }

@@ -17,6 +17,8 @@ public:
 
 	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset);
 
+	FStaticMesh* GetStaticMeshAsset();
+
 
 private:
 	FStaticMesh* StaticMeshAsset = nullptr;

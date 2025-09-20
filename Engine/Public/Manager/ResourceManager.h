@@ -65,6 +65,10 @@ private:
 	TArray<FCharacterInfo> CharInfos;
 	TMap<WCHAR, int32> CharInfoIdxMap;
 
+
+
+
+	TArray<FString> DefaultAssetPaths = {"Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj"};
 	TMap<FString, FStaticMesh*> StaticMeshAssets;
 	TMap<FString, UStaticMesh*> StaticMeshes;
 };

@@ -102,23 +102,45 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 				break;
 			}
 		}
-		// 타입에 따라 액터 생성
-		//if (SelectedPrimitiveType == 0) // Cube
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ACubeActor>();
-		//}
-		//else if (SelectedPrimitiveType == 1) // Sphere
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ASphereActor>();
-		//}
-		//else if (SelectedPrimitiveType == 2)
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ATriangleActor>();
-		//}
-		//else if (SelectedPrimitiveType == 3)
-		//{
-		//	NewActor = CurrentLevel->SpawnActor<ASquareActor>();
-		//}
+		else if (SelectedPrimitiveType == 1)
+		{
+			UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh("Data/sphere.obj");
+			if (StaticMesh)
+			{
+				NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
+				NewActor->SetStaticMesh(StaticMesh);
+			}
+			else
+			{
+				break;
+			}
+		}
+		else if (SelectedPrimitiveType == 2)
+		{
+			UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh("Data/triangle.obj");
+			if (StaticMesh)
+			{
+				NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
+				NewActor->SetStaticMesh(StaticMesh);
+			}
+			else
+			{
+				break;
+			}
+		}
+		else if (SelectedPrimitiveType == 3)
+		{
+			UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh("Data/square.obj");
+			if (StaticMesh)
+			{
+				NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
+				NewActor->SetStaticMesh(StaticMesh);
+			}
+			else
+			{
+				break;
+			}
+		}
 
 		if (NewActor)
 		{
