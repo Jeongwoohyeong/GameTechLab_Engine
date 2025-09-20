@@ -10,6 +10,11 @@
 #include "Utility/LevelSerializer.h"
 #include "Utility/Metadata.h"
 
+// TODO(Dongmin) - 스태틱 메쉬 저장을 위해 추가. 이 방법이 맞다면 추후에 순서에 맞게 수정
+#include "Actor/StaticMeshActor.h"
+#include "Mesh/StaticMesh.h"
+#include "Components/StaticMeshComponent.h"
+
 IMPLEMENT_CLASS(ULevelManager, UObject)
 IMPLEMENT_SINGLETON(ULevelManager)
 
@@ -307,6 +312,23 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		PrimitiveMeta.Rotation = Actor->GetActorRotation();
 		PrimitiveMeta.Scale = Actor->GetActorScale3D();
 
+		// TODO(Dongmin) - 우선은 임시로 구현.
+		// 해결방법일지도?
+		// 아마도 추후에 경로 로드는 리소스 매니저와 연관될지도
+		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(Actor))
+		{
+			PrimitiveMeta.Type = EPrimitiveType::StaticMeshComp;
+			// 이거 맞나..?
+			PrimitiveMeta.ObjStaticMeshAsset = StaticMeshActor->GetStaticMeshComponent()->GetStaticMesh()->GetAssetPathFileName();
+		}
+		else
+		{
+			UE_LOG("LevelManager: Unknown Actor Type, Skipping...");
+			assert(!"고려하지 않은 Actor 타입");
+			continue;
+		}
+
+		// 예전 방식입니다. 참고용
 		// Actor 타입에 따라 EPrimitiveType 설정
 		/*if (Cast<ACubeActor>(Actor))
 		{
@@ -361,7 +383,9 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 	for (const auto& [ID, PrimitiveMeta] : InMetadata.Primitives)
 	{
 		AActor* NewActor = nullptr;
-
+		UResourceManager& ResourceManager = UResourceManager::GetInstance();
+		UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh(PrimitiveMeta.ObjStaticMeshAsset);
+		// 예전 방식입니다. 참고용
 		// 타입에 따라 적절한 액터 생성
 		/*switch (PrimitiveMeta.Type)
 		{
@@ -382,6 +406,25 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 			assert(!"고려하지 않은 Actor 타입");
 			continue;
 		}*/
+
+
+		// TODO(Dongmin) - 우선은 임시로 구현.
+		// 해결방법일지도?
+		// 아마 이곳에서 리소스 매니저에게 넘겨서 파일의 경로를 로드하게 해야 할 수도 있다.
+		switch (PrimitiveMeta.Type)
+		{
+		case EPrimitiveType::StaticMeshComp:
+			if (StaticMesh)
+			{
+				NewActor = InLevel->SpawnActor<AStaticMeshActor>();
+				NewActor->SetStaticMesh(StaticMesh);
+			}
+			break;
+		default:
+			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
+			assert(!"고려하지 않은 Actor 타입");
+			continue;
+		}
 
 		if (NewActor)
 		{

@@ -233,6 +233,8 @@ enum class EPrimitiveType : uint8_t
 	CubeArrow,
 	Ring,
 	Line,
+	StaticMeshComp,
+
 
 	End = 0xFF
 };
