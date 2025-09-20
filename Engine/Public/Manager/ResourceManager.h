@@ -35,7 +35,7 @@ public:
 private:
 	void LoadCharInfoMap();
 
-	TArray<FString> DefaultAssetPaths = { "Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj" };
+	TArray<FString> DefaultAssetPaths = { "Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj", "Data/minion.obj" };
 	TMap<FString, FStaticMesh*> StaticMeshAssets;
 	TMap<FString, UStaticMesh*> StaticMeshes;
 
