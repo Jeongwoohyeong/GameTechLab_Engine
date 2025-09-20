@@ -337,7 +337,8 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 	Metadata.NextUUID = CurrentID;
 
 	UE_LOG("LevelManager: Converted %zu Actors To Metadata", Metadata.Primitives.size());
-
+	// 카메라 스냅샷도 같이 채움
+	// (Save에서 이미 SaveCameraSnapshotFromCamera 호출했지만, 안전하게 한 번 더 동기화)
 	Metadata.Camera = InLevel->GetSavedCameraSnapshot();
 
 	return Metadata;

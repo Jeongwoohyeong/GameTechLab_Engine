@@ -407,6 +407,7 @@ bool FLevelSerializer::LoadLevelFromFile(FLevelMetadata& OutLevelData, const FSt
 
 /**
  * @brief JSON 문자열을 예쁘게 포맷팅
+ * 지금은 사용하지 않는다.
  */
 FString FLevelSerializer::FormatJsonString(const JSON& JsonData, int Indent)
 {
@@ -462,6 +463,18 @@ bool FLevelSerializer::ValidateLevelData(const FLevelMetadata& InLevelData, FStr
 	{
 		OutErrorMessage = "Invalid NextUUID: Must Be Greater Than The Highest Used ID (" +
 			to_string(MaxUsedID) + ")";
+		return false;
+	}
+
+	// 카메라 유효성
+	if (InLevelData.Camera.Fov <= 0.0f)
+	{
+		OutErrorMessage = "Invalid Camera: FOV must be > 0";
+		return false;
+	}
+	if (InLevelData.Camera.FarZ <= InLevelData.Camera.NearZ)
+	{
+		OutErrorMessage = "Invalid Camera: FarClip must be greater than NearClip";
 		return false;
 	}
 
@@ -555,66 +568,3 @@ FLevelSerializer::FLevelStats FLevelSerializer::GenerateLevelStats(const FLevelM
 	return Stats;
 }
 
-/**
- * @brief 디버그용 레벨 정보 출력
- */
-void FLevelSerializer::PrintLevelInfo(const FLevelMetadata& InLevelData)
-{
-	cout << "=== Level Information ===" << "\n";
-	cout << "Version: " << InLevelData.Version << "\n";
-	cout << "NextUUID: " << InLevelData.NextUUID << "\n";
-	cout << "Total Primitives: " << InLevelData.Primitives.size() << "\n";
-
-	// ▼ 카메라
-	cout << "\n--- PerspectiveCamera ---\n";
-	cout << "  Location: (" << InLevelData.Camera.Location.X << ", "
-		<< InLevelData.Camera.Location.Y << ", "
-		<< InLevelData.Camera.Location.Z << ")\n";
-	cout << "  Rotation: (" << InLevelData.Camera.Rotation.X << ", "
-		<< InLevelData.Camera.Rotation.Y << ", "
-		<< InLevelData.Camera.Rotation.Z << ")\n";
-	cout << "  FOV: " << InLevelData.Camera.Fov << "\n";
-	cout << "  NearClip: " << InLevelData.Camera.NearZ << "\n";
-	cout << "  FarClip: " << InLevelData.Camera.FarZ << "\n";
-
-	if (!InLevelData.Primitives.empty())
-	{
-		FLevelStats Stats = GenerateLevelStats(InLevelData);
-
-		cout << "\n--- Primitive Count by Type ---" << "\n";
-		for (const auto& [Type, Count] : Stats.PrimitiveCountByType)
-		{
-			cout << PrimitiveTypeToWideString(Type) << ": " << Count << "\n";
-		}
-
-		// cout << "\n--- Bounding Box ---" << "\n";
-		// cout << "Min: (" << Stats.BoundingBoxMin.X << ", " << Stats.BoundingBoxMin.Y
-		// 	<< ", " << Stats.BoundingBoxMin.Z << ")" << "\n";
-		// cout << "Max: (" << Stats.BoundingBoxMax.X << ", " << Stats.BoundingBoxMax.Y
-		// 	<< ", " << Stats.BoundingBoxMax.Z << ")" << "\n";
-
-		cout << "\n--- Detailed Primitive List ---" << "\n";
-		for (const auto& [ID, Primitive] : InLevelData.Primitives)
-		{
-			cout << "ID " << ID << " [" << PrimitiveTypeToWideString(Primitive.Type) << "]" << "\n";
-			cout << "  Location: (" << Primitive.Location.X << ", " << Primitive.Location.Y
-				<< ", " << Primitive.Location.Z << ")" << "\n";
-			cout << "  Rotation: (" << Primitive.Rotation.X << ", " << Primitive.Rotation.Y
-				<< ", " << Primitive.Rotation.Z << ")" << "\n";
-			cout << "  Scale: (" << Primitive.Scale.X << ", " << Primitive.Scale.Y
-				<< ", " << Primitive.Scale.Z << ")" << "\n";
-		}
-	}
-
-	cout << "=========================" << "\n";
-}
-
-/**
- * @brief JSON 파싱 오류 처리 함수
- */
-bool FLevelSerializer::HandleJsonError(const exception& InException, const FString& InContext,
-                                       FString& OutErrorMessage)
-{
-	OutErrorMessage = InContext + ": " + InException.what();
-	return false;
-}

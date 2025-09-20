@@ -49,7 +49,6 @@ public:
 	};
 
 	static FLevelStats GenerateLevelStats(const FLevelMetadata& InLevelData);
-	static void PrintLevelInfo(const FLevelMetadata& InLevelData);
 
 private:
 	static bool HandleJsonError(const exception& InException, const string& InContext,
