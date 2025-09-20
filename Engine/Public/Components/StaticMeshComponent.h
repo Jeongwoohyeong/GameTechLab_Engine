@@ -14,6 +14,7 @@ public:
 	//자식 StaticMeshComponent가 본인 타입에 맞는 렌더 리스트에 알아서 추가
 	virtual void AddToRenderList(ULevel* Level) override;
 	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) override;
+	virtual FAABB GetWorldBounds() override;
 	///////////////////////////////////////////////////
 
 	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetName(); else return FString(); }
@@ -31,5 +32,6 @@ private:
 		const FMatrix& ModelMatrix, float* Distance);
 
 	UStaticMesh* StaticMesh = nullptr;
+	FAABB AABB = FAABB();
 };
 

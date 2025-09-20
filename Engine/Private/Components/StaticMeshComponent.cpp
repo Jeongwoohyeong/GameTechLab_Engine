@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Components/StaticMeshComponent.h"
 #include "Level/Level.h"
+#include "Math/AABB.h"
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
@@ -9,6 +10,23 @@ IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 void UStaticMeshComponent::AddToRenderList(ULevel* Level)
 {
 	Level->AddStaticMeshComponentToRender(this);
+}
+
+FAABB UStaticMeshComponent::GetWorldBounds()
+{
+	switch (StaticMesh->GetPrimitiveType())
+	{
+	case EPrimitiveType::None:
+	{
+		if (!AABB.IsValid())
+		{
+			AABB = StaticMesh->CalculateAABB();
+		}
+		return AABB.TransformBy(GetWorldTransformMatrix());
+	}break;
+
+	}
+	return FAABB();
 }
 
 bool UStaticMeshComponent::IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance)

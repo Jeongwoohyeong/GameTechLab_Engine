@@ -20,6 +20,7 @@ public:
 
 	virtual void AddToRenderList(ULevel* Level) override;
 	virtual bool IsRayCollided(const FRay& WorldRay, const FMatrix& ModelMatrix, float* Distance) override { return false; }
+	virtual FAABB GetWorldBounds() override { return FAABB(); }
 
 private:
 	FWstring Text;

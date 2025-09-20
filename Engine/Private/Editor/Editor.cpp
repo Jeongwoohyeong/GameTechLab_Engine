@@ -13,6 +13,7 @@
 #include "Manager/Input/InputManager.h"
 #include "Actor/Actor.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Level/Level.h"
 #include "Render/UI/Widget/CameraControlWidget.h"
 #include "Render/UI/Widget/ViewSettingsWidget.h"
@@ -76,22 +77,22 @@ void UEditor::RenderEditorBatched()
 
 		/** AABB 라인들 추가 (Min/Max 입력 기반, 인스턴싱) */
 		//StaticMesh 구현 후 처리
-		/*URenderer& Renderer = URenderer::GetInstance();
+		URenderer& Renderer = URenderer::GetInstance();
 		if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 		{
 			ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
 			if (Level)
 			{
-				const TArray<UPrimitiveComponent*>& Primitives = Level->GetLevelPrimitiveComponents();
-				for (UPrimitiveComponent* Prim : Primitives)
+				const TArray<UStaticMeshComponent*>& StaticMeshComponents= Level->GetStaticMeshComponentsToRender();
+				for (UStaticMeshComponent* Component : StaticMeshComponents)
 				{
-					if (!Prim) { continue; }
-					FAABB Bounds = Prim->GetWorldBounds();
+					if (!Component) { continue; }
+					FAABB Bounds = Component->GetWorldBounds();
 					if (!Bounds.IsValid()) { continue; }
 					LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
 				}
 			}
-		}*/
+		}
 
 		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
 		if (AActor* SelectedActor = ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor())
