@@ -89,8 +89,9 @@ void UTargetActorTransformWidget::RenderWidget()
 		//ImGui::ShowDemoWindow();
 		ImGui::Separator();
 		ImGui::Text("Static Mesh");
-		const char* CurrentMeshName = SelectedActor->GetStaticMeshName().c_str();
-		static int CurrentIndex = 0;
+		FString NameString = SelectedActor->GetStaticMeshName();
+		const char* CurrentMeshName = NameString.c_str();
+		
 		
 
 
@@ -109,6 +110,7 @@ void UTargetActorTransformWidget::RenderWidget()
 			}
 			for (int Index = 0; Index < StaticMeshNameList.Num(); Index++)
 			{
+				static int CurrentIndex = 0;
 				const bool bIsSelected = (CurrentIndex == Index);
 
 				//선택되면 true, bool값이 true면 하이라이트

@@ -1,17 +1,22 @@
 #pragma once
 #include "Components/PrimitiveComponent.h"
 
+class ULevel;
+
 class UTextComponent : public UPrimitiveComponent
 {
 public:
+	DECLARE_CLASS(UTextComponent, UPrimitiveComponent)
 	UTextComponent();
 	~UTextComponent();
 
 	void SetInstanceData(const FWstring& Characters);
-	TArray<FTextInstance>* GetInstanceData() { return &InstanceData; }
-
 	void SetText(const FWstring& InText);
+
+	TArray<FTextInstance>* GetInstanceData() { return &InstanceData; }
 	FWstring GetText() const { return Text; }
+
+	virtual void AddToRenderList(ULevel* Level) override;
 
 private:
 	FWstring Text;

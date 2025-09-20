@@ -75,7 +75,8 @@ void UEditor::RenderEditorBatched()
 		Axis.AddToLineBatch(LineBatch);
 
 		/** AABB 라인들 추가 (Min/Max 입력 기반, 인스턴싱) */
-		URenderer& Renderer = URenderer::GetInstance();
+		//StaticMesh 구현 후 처리
+		/*URenderer& Renderer = URenderer::GetInstance();
 		if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 		{
 			ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
@@ -90,7 +91,7 @@ void UEditor::RenderEditorBatched()
 					LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
 				}
 			}
-		}
+		}*/
 
 		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
 		if (AActor* SelectedActor = ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor())

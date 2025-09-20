@@ -81,6 +81,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 	{
 		InstanceData Instance = InstanceMatrices[InstanceId];
 		Position = mul(Position, Instance.World);
+		ShadeColor = lerp(ShadeColor, Instance.Color, Instance.Color.a);
 	}
 		
 	//인스턴싱 하는 경우 어차피 World는 Identity임.
@@ -96,7 +97,7 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-	float4 TextureColor = Texture.Sample(Sampler, Input.UV);
+	//float4 TextureColor = Texture.Sample(Sampler, Input.UV);
 	float4 FinalColor = lerp(Input.Color, totalColor, totalColor.a);
 	return FinalColor;
 }

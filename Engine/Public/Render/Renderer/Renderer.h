@@ -209,41 +209,41 @@ private:
 	uint32 StrideTextVertex = 0;
 	uint32 StrideTextInstance = 0;
 
-	struct FPrimitiveBatchKey
-	{
-		ID3D11Buffer* VertexBuffer = nullptr;
-		ID3D11Buffer* IndexBuffer = nullptr;
-		uint32 IndexCount = 0;
-		FRenderState RenderState = {};
-		bool operator==(const FPrimitiveBatchKey& InRhs) const	//위의 모든 멤버가 같아야 같은 키
-		{
-			return VertexBuffer == InRhs.VertexBuffer &&
-				IndexBuffer == InRhs.IndexBuffer &&
-				IndexCount == InRhs.IndexCount &&
-				RenderState.CullMode == InRhs.RenderState.CullMode &&
-				RenderState.FillMode == InRhs.RenderState.FillMode;
-		}
-	};
+	//struct FPrimitiveBatchKey
+	//{
+	//	ID3D11Buffer* VertexBuffer = nullptr;
+	//	ID3D11Buffer* IndexBuffer = nullptr;
+	//	uint32 IndexCount = 0;
+	//	FRenderState RenderState = {};
+	//	bool operator==(const FPrimitiveBatchKey& InRhs) const	//위의 모든 멤버가 같아야 같은 키
+	//	{
+	//		return VertexBuffer == InRhs.VertexBuffer &&
+	//			IndexBuffer == InRhs.IndexBuffer &&
+	//			IndexCount == InRhs.IndexCount &&
+	//			RenderState.CullMode == InRhs.RenderState.CullMode &&
+	//			RenderState.FillMode == InRhs.RenderState.FillMode;
+	//	}
+	//};
 
-	struct FPrimitiveBatchKeyHasher
-	{
-		size_t operator()(const FPrimitiveBatchKey& InKey) const noexcept
-		{
-			auto Mix = [](size_t& H, size_t V)
-			{
-				H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H >> 2);
-			};
+	//struct FPrimitiveBatchKeyHasher
+	//{
+	//	size_t operator()(const FPrimitiveBatchKey& InKey) const noexcept
+	//	{
+	//		auto Mix = [](size_t& H, size_t V)
+	//		{
+	//			H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H >> 2);
+	//		};
 
-			size_t Hash = 0;
-			Mix(Hash, reinterpret_cast<size_t>(InKey.VertexBuffer));
-			Mix(Hash, reinterpret_cast<size_t>(InKey.IndexBuffer));
-			Mix(Hash, static_cast<size_t>(InKey.IndexCount));
-			Mix(Hash, static_cast<size_t>(InKey.RenderState.CullMode));
-			Mix(Hash, static_cast<size_t>(InKey.RenderState.FillMode));
+	//		size_t Hash = 0;
+	//		Mix(Hash, reinterpret_cast<size_t>(InKey.VertexBuffer));
+	//		Mix(Hash, reinterpret_cast<size_t>(InKey.IndexBuffer));
+	//		Mix(Hash, static_cast<size_t>(InKey.IndexCount));
+	//		Mix(Hash, static_cast<size_t>(InKey.RenderState.CullMode));
+	//		Mix(Hash, static_cast<size_t>(InKey.RenderState.FillMode));
 
-			return Hash;
-		}
-	};
+	//		return Hash;
+	//	}
+	//};
 
 	struct FStructuredBufferResource
 	{
@@ -255,10 +255,10 @@ private:
 	//Vertex, Index, IndexCount, RenderState가 같은 것들은 같은 배치로 묶음.
 	//위의 요소들로 key를 만들고 Hasher는 키 해시값 결정
 	//FInstanceBufferResource는 스트럭처드 버퍼를 위한 구조체
-	TMap<FPrimitiveBatchKey, FStructuredBufferResource, FPrimitiveBatchKeyHasher> PrimitiveStructuredBuffers;
+	/*TMap<FPrimitiveBatchKey, FStructuredBufferResource, FPrimitiveBatchKeyHasher> PrimitiveStructuredBuffers;*/
 
 	//StaticMesh가 구현되면 주석 해제(09/19 )
-	/*struct FStaticMeshBatchKey
+	struct FStaticMeshBatchKey
 	{
 		UStaticMesh* StaticMesh = nullptr;
 
@@ -284,7 +284,7 @@ private:
 			return Hash;
 		}
 	};
-	TMap<FStaticMeshBatchKey, FStructuredBufferResource, FStaticMeshBatchKeyHasher> StaticMeshStructuredBuffers;*/
+	TMap<FStaticMeshBatchKey, FStructuredBufferResource, FStaticMeshBatchKeyHasher> StaticMeshStructuredBuffers;
 private:
 	struct FRasterKey
 	{
@@ -317,8 +317,9 @@ private:
 	TMap<FRasterKey, ID3D11RasterizerState*, FRasterKeyHasher> RasterCache;
 
 	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
+	FPipelineInfo CreateStaticMeshPipelineInfo(const FRenderState& InRenderState);
 	FPipelineInfo CreateTextPipelineInfo(const FRenderState& InRenderState);
-	FStructuredBufferResource& GetOrCreateStructuredBuffer(const FPrimitiveBatchKey& InKey);
+	FStructuredBufferResource& GetOrCreateStructuredBuffer(const FStaticMeshBatchKey& InKey);
 	void EnsureStructuredBufferCapacity(FStructuredBufferResource& InResource, uint32 InRequiredInstanceCount);
 	void UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData, uint32 InInstanceCount);
 	void ReleasePrimitiveInstanceBuffers();

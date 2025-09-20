@@ -3,6 +3,7 @@
 #include "Mesh/VertexDatas.h"
 #include "Render/Renderer/Renderer.h"
 #include "Utility/ObjParser.h"
+#include "Mesh/StaticMesh.h"
 #include <ranges>
 
 IMPLEMENT_CLASS(UResourceManager, UObject)
@@ -15,31 +16,27 @@ UResourceManager::~UResourceManager() = default;
 void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
-
+	for (FString& Path : DefaultAssetPaths)
+	{
+		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObjStaticMesh(Path);
+		StaticMeshAssets.emplace(Path, StaticMeshAsset);
+		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
+		StaticMesh->SetName(Path);
+		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);
+		if (!StaticMesh->GetStaticMeshAsset())
+			continue;
+		StaticMeshes.emplace(Path, StaticMesh);
+	}
 	
 
-	// TMap.Add()
-	//VertexData.emplace(EPrimitiveType::Cube, &VerticesCube);
-	VertexData.emplace(EPrimitiveType::Sphere, &VerticesSphere);
-	VertexData.emplace(EPrimitiveType::Triangle, &VerticesTriangle);
-	VertexData.emplace(EPrimitiveType::Square, &VerticesSquare);
 	VertexData.emplace(EPrimitiveType::Arrow, &VerticesArrow);
 	VertexData.emplace(EPrimitiveType::CubeArrow, &VerticesCubeArrow);
 	VertexData.emplace(EPrimitiveType::Ring, &VerticesRing);
 
-	// TArray.GetData(), TArray.Num()*sizeof(FVertexSimple), TArray.GetTypeSize()
-	//VertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(VerticesCube));
-	VertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(VerticesSphere));
-	VertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(VerticesTriangle));
-	VertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(VerticesSquare));
 	VertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(VerticesArrow));
 	VertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(VerticesCubeArrow));
 	VertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(VerticesRing));
 
-	//VertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(VerticesCube.size()));
-	VertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(VerticesSphere.size()));
-	VertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(VerticesTriangle.size()));
-	VertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(VerticesSquare.size()));
 	VertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(VerticesArrow.size()));
 	VertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(VerticesCubeArrow.size()));
 	VertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(VerticesRing.size()));
@@ -51,31 +48,18 @@ void UResourceManager::Initialize()
 	CreateTextSampler();
 
 
-	// Create Reduced Vertex Data and Index Data
-	//ReducedVertexData.emplace(EPrimitiveType::Cube, &ReducedVerticesCube);
-	ReducedVertexData.emplace(EPrimitiveType::Sphere, &ReducedVerticesSphere);
-	ReducedVertexData.emplace(EPrimitiveType::Triangle, &ReducedVerticesTriangle);
-	ReducedVertexData.emplace(EPrimitiveType::Square, &ReducedVerticesSquare);
 	ReducedVertexData.emplace(EPrimitiveType::Arrow, &ReducedVerticesArrow);
 	ReducedVertexData.emplace(EPrimitiveType::CubeArrow, &ReducedVerticesCubeArrow);
 	ReducedVertexData.emplace(EPrimitiveType::Ring, &ReducedVerticesRing);
 
-	//ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(ReducedVerticesCube));
-	ReducedVertexBuffers.emplace(EPrimitiveType::Sphere, Renderer.CreateVertexBuffer(ReducedVerticesSphere));
-	ReducedVertexBuffers.emplace(EPrimitiveType::Triangle, Renderer.CreateVertexBuffer(ReducedVerticesTriangle));
-	ReducedVertexBuffers.emplace(EPrimitiveType::Square, Renderer.CreateVertexBuffer(ReducedVerticesSquare));
+
 	ReducedVertexBuffers.emplace(EPrimitiveType::Arrow, Renderer.CreateVertexBuffer(ReducedVerticesArrow));
 	ReducedVertexBuffers.emplace(EPrimitiveType::CubeArrow, Renderer.CreateVertexBuffer(ReducedVerticesCubeArrow));
 	ReducedVertexBuffers.emplace(EPrimitiveType::Ring, Renderer.CreateVertexBuffer(ReducedVerticesRing));
 
-	//ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(ReducedVerticesCube.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Arrow, static_cast<uint32>(ReducedVerticesArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::CubeArrow, static_cast<uint32>(ReducedVerticesCubeArrow.size()));
 	ReducedVertexNum.emplace(EPrimitiveType::Ring, static_cast<uint32>(ReducedVerticesRing.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Sphere, static_cast<uint32>(ReducedVerticesSphere.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Triangle, static_cast<uint32>(ReducedVerticesTriangle.size()));
-	ReducedVertexNum.emplace(EPrimitiveType::Square, static_cast<uint32>(ReducedVerticesSquare.size()));
-
 	
 
 
@@ -112,23 +96,20 @@ void UResourceManager::Initialize()
 		IndexNum.emplace(Pair.first, static_cast<uint32>(IndexData[Pair.first].size()));
 	}
 
-	FStaticMesh* Mesh = FObjParser::GetInstance().LoadObjStaticMesh("Data/cube-tex.obj");
-
-	for (const auto& e : Mesh->Vertices)
-	{
-		objcube.push_back(FVertex(e.Position, e.Color));
-	}
-
-	ReducedVertexData.emplace(EPrimitiveType::Cube, &objcube);
-	ReducedVertexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateVertexBuffer(objcube));
-	ReducedVertexNum.emplace(EPrimitiveType::Cube, static_cast<uint32>(objcube.size()));
-	IndexBuffers.emplace(EPrimitiveType::Cube, Renderer.CreateIndexBuffer(Mesh->Indices));
-	IndexNum.Emplace(EPrimitiveType::Cube, Mesh->IndexNum);
 }
 
 void UResourceManager::Release()
 {
 	URenderer& Renderer = URenderer::GetInstance();
+
+	for (auto& Pair : StaticMeshes)
+	{
+		delete Pair.second;
+	}
+	for (auto& Pair : StaticMeshAssets)
+	{
+		delete Pair.second;
+	}
 	//TMap.Value()
 	for (auto& Pair : VertexBuffers)
 	{
@@ -159,6 +140,27 @@ void UResourceManager::Release()
 	ShaderResourceViews.clear();
 }
 
+UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
+{
+	if (StaticMeshes.Find(Path))
+	{
+		return StaticMeshes[Path];
+	}
+	else
+	{
+		URenderer& Renderer = URenderer::GetInstance();
+		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
+		if (!StaticMeshAsset)
+		{
+			return nullptr;
+		}
+		StaticMeshAssets.emplace(Path, StaticMeshAsset);
+		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
+
+		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);
+		StaticMeshes.emplace(Path, StaticMesh);
+	}
+}
 TArray<FVertex>* UResourceManager::GetVertexData(EPrimitiveType Type)
 {
 	return VertexData[Type];

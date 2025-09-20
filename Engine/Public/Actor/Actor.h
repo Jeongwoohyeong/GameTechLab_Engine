@@ -42,7 +42,7 @@ public:
 	const FVector& GetActorScale3D() const;
 
 	//테스트용
-	const FString& GetStaticMeshName() const;
+	FString GetStaticMeshName() const;
 	void SetStaticMesh(UStaticMesh* InStaticMesh);
 
 private:

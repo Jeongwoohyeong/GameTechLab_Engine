@@ -1,5 +1,7 @@
 #pragma once
 #include "Core/Object.h"
+class UStaticMesh;
+
 class UResourceManager : public UObject
 {
 	DECLARE_CLASS(UResourceManager, UObject)
@@ -9,6 +11,8 @@ public:
 	void Initialize();
 
 	void Release();
+
+	UStaticMesh* GetStaticMesh(const FString& Path);
 
 	TArray<FVertex>* GetVertexData(EPrimitiveType Type);
 	ID3D11Buffer* GetVertexBuffer(EPrimitiveType Type);
@@ -60,4 +64,11 @@ private:
 
 	TArray<FCharacterInfo> CharInfos;
 	TMap<WCHAR, int32> CharInfoIdxMap;
+
+
+
+
+	TArray<FString> DefaultAssetPaths = {"Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj"};
+	TMap<FString, FStaticMesh*> StaticMeshAssets;
+	TMap<FString, UStaticMesh*> StaticMeshes;
 };

@@ -308,7 +308,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 		PrimitiveMeta.Scale = Actor->GetActorScale3D();
 
 		// Actor 타입에 따라 EPrimitiveType 설정
-		if (Cast<ACubeActor>(Actor))
+		/*if (Cast<ACubeActor>(Actor))
 		{
 			PrimitiveMeta.Type = EPrimitiveType::Cube;
 		}
@@ -329,7 +329,7 @@ FLevelMetadata ULevelManager::ConvertLevelToMetadata(ULevel* InLevel)
 			UE_LOG("LevelManager: Unknown Actor Type, Skipping...");
 			assert(!"고려하지 않은 Actor 타입");
 			continue;
-		}
+		}*/
 
 		Metadata.Primitives[PrimitiveMeta.ID] = PrimitiveMeta;
 	}
@@ -363,7 +363,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 		AActor* NewActor = nullptr;
 
 		// 타입에 따라 적절한 액터 생성
-		switch (PrimitiveMeta.Type)
+		/*switch (PrimitiveMeta.Type)
 		{
 		case EPrimitiveType::Cube:
 			NewActor = InLevel->SpawnActor<ACubeActor>();
@@ -381,7 +381,7 @@ bool ULevelManager::LoadLevelFromMetadata(ULevel* InLevel, const FLevelMetadata&
 			UE_LOG("LevelManager: Unknown Primitive Type: %d", static_cast<int32>(PrimitiveMeta.Type));
 			assert(!"고려하지 않은 Actor 타입");
 			continue;
-		}
+		}*/
 
 		if (NewActor)
 		{
