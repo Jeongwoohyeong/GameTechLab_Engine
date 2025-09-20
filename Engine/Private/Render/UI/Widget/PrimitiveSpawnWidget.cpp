@@ -33,8 +33,8 @@ void UPrimitiveSpawnWidget::RenderWidget()
 		"Cube",
 		"Sphere",
 		"Triangle",
-		"Square"
-		"minion"
+		"Square",
+		"Minion"
 	};
 
 	ImGui::Text("Primitive Type:");

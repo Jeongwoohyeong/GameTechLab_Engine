@@ -364,6 +364,7 @@ bool FObjParser::CookObjToStaticMesh(const FObjInfo& raw, const FObjImportOption
 	}
 	outMesh.IndexNum = outMesh.Indices.Num();
 
+	outMesh.IndexNum = outMesh.Indices.Num();
 	// 필요하면 노말 재계산 
 	/*if (opt.bIsRecalculateNormals)
 	{
