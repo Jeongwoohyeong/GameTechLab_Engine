@@ -99,7 +99,7 @@ UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
 	else
 	{
 		URenderer& Renderer = URenderer::GetInstance();
-		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
+		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObjStaticMesh(Path);
 		if (!StaticMeshAsset)
 		{
 			return nullptr;

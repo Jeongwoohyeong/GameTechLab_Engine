@@ -34,12 +34,13 @@ void UPrimitiveSpawnWidget::RenderWidget()
 		"Sphere",
 		"Triangle",
 		"Square"
+		"minion"
 	};
 
 	ImGui::Text("Primitive Type:");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(120);
-	ImGui::Combo("##PrimitiveType", &SelectedPrimitiveType, PrimitiveTypes, 4);
+	ImGui::Combo("##PrimitiveType", &SelectedPrimitiveType, PrimitiveTypes, 5);
 
 	// Spawn 버튼과 개수 입력
 	ImGui::Text("Number of Spawn:");
@@ -127,6 +128,19 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 		else if (SelectedPrimitiveType == 3)
 		{
 			UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh("Data/square.obj");
+			if (StaticMesh)
+			{
+				NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
+				NewActor->SetStaticMesh(StaticMesh);
+			}
+			else
+			{
+				break;
+			}
+		}
+		else if (SelectedPrimitiveType == 4)
+		{
+			UStaticMesh* StaticMesh = ResourceManager.GetStaticMesh("Data/minion.obj");
 			if (StaticMesh)
 			{
 				NewActor = CurrentLevel->SpawnActor<AStaticMeshActor>();
