@@ -3,7 +3,7 @@
 #include "Editor/ObjectPicker.h"
 #include "Render/Renderer/Renderer.h"
 #include "Manager/Input/InputManager.h"
-#include "Mesh/Actor.h"
+#include "Actor/Actor.h"
 
 IMPLEMENT_CLASS(UGizmo, UObject)
 

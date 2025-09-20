@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh/SceneComponent.h"
 #include "Mesh/ActorComponent.h"
-#include "ResourceManager.h"
+#include "Manager/ResourceManager.h"
 #include "Math/AABB.h"
 
 class ULevel;

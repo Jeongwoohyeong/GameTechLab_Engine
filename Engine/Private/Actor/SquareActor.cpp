@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Mesh/PrimitiveComponent.h"
-#include "Mesh/SquareActor.h"
+#include "Actor/SquareActor.h"
 #include "Mesh/TextComponent.h"
 IMPLEMENT_CLASS(ASquareActor, AActor)
 

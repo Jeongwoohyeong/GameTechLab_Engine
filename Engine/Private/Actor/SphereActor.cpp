@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Mesh/SphereActor.h"
+#include "Actor/SphereActor.h"
 #include "Mesh/TextComponent.h"
 #include "Mesh/PrimitiveComponent.h"
 

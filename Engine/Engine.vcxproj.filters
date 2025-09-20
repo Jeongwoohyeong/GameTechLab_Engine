@@ -4,6 +4,7 @@
     <FxCompile Include="Asset\Shader\SampleShader.hlsl" />
     <FxCompile Include="Asset\Shader\TextShader.hlsl" />
     <FxCompile Include="Asset\Shader\LineInstanced.hlsl" />
+    <FxCompile Include="Asset\Shader\StaticMeshShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Private\\Core\\Object.cpp" />
@@ -90,6 +91,7 @@
     <ClCompile Include="Private\Mesh\StaticMeshComponent.cpp" />
     <ClCompile Include="Private\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Private\Mesh\PrimitiveComponent.cpp" />
+    <ClCompile Include="Private\Core\ObjectIterator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -109,13 +111,13 @@
     <ClInclude Include="Public\\Manager\Input\\InputManager.h" />
     <ClInclude Include="Public\\Manager\Level\\LevelManager.h" />
     <ClInclude Include="Public\\Manager\Time\\TimeManager.h" />
-    <ClInclude Include="Public\\Mesh\\Actor.h" />
+    <ClInclude Include="Public\Actor\Actor.h" />
     <ClInclude Include="Public\\Mesh\\ActorComponent.h" />
-    <ClInclude Include="Public\\Mesh\\CubeActor.h" />
+    <ClInclude Include="Public\Actor\CubeActor.h" />
     <ClInclude Include="Public\\Mesh\\ResourceManager.h" />
     <ClInclude Include="Public\\Mesh\\SceneComponent.h" />
-    <ClInclude Include="Public\\Mesh\\SphereActor.h" />
-    <ClInclude Include="Public\\Mesh\\TriangleActor.h" />
+    <ClInclude Include="Public\Actor\SphereActor.h" />
+    <ClInclude Include="Public\Actor\TriangleActor.h" />
     <ClInclude Include="Public\\Mesh\\VertexDatas.h" />
     <ClInclude Include="Mesh\Sample\Rectangle.h" />
     <ClInclude Include="Mesh\Sample\Sphere.h" />
@@ -145,7 +147,7 @@
     <ClInclude Include="Public\\Editor\\Grid.h" />
     <ClInclude Include="Public\\Editor\\ObjectPicker.h" />
     <ClInclude Include="Global\Types.h" />
-    <ClInclude Include="Public\\Mesh\\SquareActor.h" />
+    <ClInclude Include="Public\Actor\SquareActor.h" />
     <ClInclude Include="Global\Vector.h" />
     <ClInclude Include="Global\CoreTypes.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
@@ -189,6 +191,7 @@
     <ClInclude Include="Public\Mesh\StaticMeshComponent.h" />
     <ClInclude Include="Public\Mesh\StaticMesh.h" />
     <ClInclude Include="Public\Mesh\PrimitiveComponent.h" />
+    <ClInclude Include="Public\Core\ObjectIterator.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
