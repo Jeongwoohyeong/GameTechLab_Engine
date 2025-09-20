@@ -28,9 +28,6 @@ void UResourceManager::Initialize()
 		StaticMeshes.emplace(Path, StaticMesh);
 	}
 
-
-
-
 	////////////////////////////////////////////For Gizmo////////////////////////////////////
 	VertexData.emplace(EPrimitiveType::Arrow, &VerticesArrow);
 	VertexData.emplace(EPrimitiveType::CubeArrow, &VerticesCubeArrow);
@@ -49,7 +46,7 @@ void UResourceManager::Initialize()
 	////////////////////////////////////////////For Text////////////////////////////////////
 	TextVertexData = &VerticesText;
 	TextVertexBuffer = Renderer.CreateVertexBuffer(VerticesText);
-	TexVertexNum = static_cast<uint32>(VerticesText.size());
+	TextVertexNum = static_cast<uint32>(VerticesText.size());
 
 	CreateTextSampler();
 	////////////////////////////////////////////For Text////////////////////////////////////
@@ -111,42 +108,7 @@ UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
 		StaticMeshes.emplace(Path, StaticMesh);
 	}
 }
-TArray<FVertex>* UResourceManager::GetVertexData(EPrimitiveType Type)
-{
-	return VertexData[Type];
-}
 
-ID3D11Buffer* UResourceManager::GetVertexBuffer(EPrimitiveType Type)
-{
-	return VertexBuffers[Type];
-}
-
-uint32 UResourceManager::GetVertexNum(EPrimitiveType Type)
-{
-	return VertexNum[Type];
-}
-
-
-void UResourceManager::CreateTextSampler()
-{
-	URenderer& Renderer = URenderer::GetInstance();
-	ID3D11Device* Device = Renderer.GetDevice();
-
-	ID3D11SamplerState* SamplerState = nullptr;
-	D3D11_SAMPLER_DESC SamplerDesc = {};
-	SamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-
-	SamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	SamplerDesc.MinLOD = 0;
-	SamplerDesc.MaxLOD = 0;
-
-	Device->CreateSamplerState(&SamplerDesc, &SamplerState);
-
-	SamplerStates.emplace(ESamplerType::Text, SamplerState);
-}
 
 ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
 {
@@ -188,6 +150,25 @@ int32 UResourceManager::GetCharInfoIdx(WCHAR Char)
 	return CharInfoIdxMap[Char];
 }
 
+
+////////////////////////////////////////////For Gizmo////////////////////////////////////
+TArray<FVertex>* UResourceManager::GetVertexData(EPrimitiveType Type)
+{
+	return VertexData[Type];
+}
+
+ID3D11Buffer* UResourceManager::GetVertexBuffer(EPrimitiveType Type)
+{
+	return VertexBuffers[Type];
+}
+
+uint32 UResourceManager::GetVertexNum(EPrimitiveType Type)
+{
+	return VertexNum[Type];
+}
+////////////////////////////////////////////For Gizmo////////////////////////////////////
+
+////////////////////////////////////////////For Text////////////////////////////////////
 const TArray<FCharacterInfo>& UResourceManager::GetCharInfos()
 {
 	if (CharInfos.IsEmpty())
@@ -195,6 +176,27 @@ const TArray<FCharacterInfo>& UResourceManager::GetCharInfos()
 		LoadCharInfoMap();
 	}
 	return CharInfos;
+}
+
+void UResourceManager::CreateTextSampler()
+{
+	URenderer& Renderer = URenderer::GetInstance();
+	ID3D11Device* Device = Renderer.GetDevice();
+
+	ID3D11SamplerState* SamplerState = nullptr;
+	D3D11_SAMPLER_DESC SamplerDesc = {};
+	SamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+	SamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	SamplerDesc.MinLOD = 0;
+	SamplerDesc.MaxLOD = 0;
+
+	Device->CreateSamplerState(&SamplerDesc, &SamplerState);
+
+	SamplerStates.emplace(ESamplerType::Text, SamplerState);
 }
 
 void UResourceManager::LoadCharInfoMap()
@@ -225,3 +227,5 @@ void UResourceManager::LoadCharInfoMap()
 		CharInfoIdxMap[CharSet[Index]] = Index;
 	}
 }
+
+////////////////////////////////////////////For Text////////////////////////////////////

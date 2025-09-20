@@ -20,7 +20,7 @@ public:
 
 	//////////////////리팩토링 예정///////////
 	ID3D11Buffer* GetTextVertexBuffer() const { return TextVertexBuffer; }
-	uint32 GetTextNumVertices() const { return TexVertexNum; }
+	uint32 GetTextNumVertices() const { return TextVertexNum; }
 	/////////////////////////////////////////
 
 	void CreateTextSampler();
@@ -56,8 +56,8 @@ private:
 	// 
 	////////////////////////////////////////////For Text////////////////////////////////////
 	TArray<FTextVertex>* TextVertexData;
-	ID3D11Buffer* TextVertexBuffer;
-	uint32 TexVertexNum;
+	ID3D11Buffer* TextVertexBuffer = nullptr;
+	uint32 TextVertexNum = 0;
 
 	TArray<FCharacterInfo> CharInfos;
 	TMap<WCHAR, int32> CharInfoIdxMap;
