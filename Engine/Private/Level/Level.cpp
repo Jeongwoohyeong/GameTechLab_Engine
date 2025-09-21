@@ -5,6 +5,7 @@
 #include "Components/TextComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Render/Renderer/Renderer.h"
 #include "Utility/Metadata.h"
 IMPLEMENT_CLASS(ULevel, UObject)
 
@@ -47,6 +48,7 @@ void ULevel::Update()
 	//LevelPrimitiveComponents.clear();
 	StaticMeshComponentsToRender.clear();
 	TextComponentsToRender.clear();
+	AABBsToRender.clear();
 
 	for (auto& Actor : LevelActors)
 	{
@@ -70,7 +72,7 @@ void ULevel::Cleanup()
 void ULevel::GatherComponentsToRender(AActor* Actor)
 {
 	if (!Actor) return;
-
+	URenderer& Renderer = URenderer::GetInstance();
 	for (auto& Component : Actor->GetOwnedComponents())
 	{
 		//액터의 컴포넌트를 순회하면서 PrimitiveComponent라면 타입체크 없이 자기가 알아서
@@ -83,44 +85,17 @@ void ULevel::GatherComponentsToRender(AActor* Actor)
 			{
 				PrimitiveComponent->AddToRenderList(this);
 			}
-		}
-	}
-}
-//Deprecated : EditorPrimitive는 에디터에서 처리
-//void ULevel::AddEditorPrimitiveComponent(AActor* Actor)
-//{
-//	if (!Actor) return;
-//
-//	for (auto& Component : Actor->GetOwnedComponents())
-//	{
-//		if (Component->GetComponentType() >= EComponentType::Primitive)
-//		{
-//			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
-//			if (PrimitiveComponent->IsVisible())
-//			{
-//				EditorPrimitiveComponents.push_back(PrimitiveComponent);
-//			}
-//		}
-//	}
-//}
 
-void ULevel::SetSelectedActor(AActor* InActor)
-{
-	// Set Selected Actor
-	if (SelectedActor)
-	{
-		for (auto& Component : SelectedActor->GetOwnedComponents())
-		{
-			if (Component->GetComponentType() >= EComponentType::Primitive)
+			if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
 			{
-				UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
-				if (PrimitiveComponent->IsVisible())
-				{
-					PrimitiveComponent->SetColor({0.f, 0.f, 0.f, 0.f});
-				}
+				AABBsToRender.push_back(PrimitiveComponent->GetWorldBounds());
 			}
 		}
 	}
+}
+
+void ULevel::SetSelectedActor(AActor* InActor)
+{
 
 	SelectedActor = InActor;
 	if (SelectedActor)
@@ -137,7 +112,6 @@ void ULevel::SetSelectedActor(AActor* InActor)
 			}
 		}
 	}
-	//Gizmo->SetTargetActor(SelectedActor);
 }
 
 

@@ -609,7 +609,7 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 		//루트컴포넌트가 PrimitiveComponent가 아닌 다른 component가 될 수 있는지는 모르겠지만 일단 예외처리를 함.
 		//AABB의 높이값을 이용해서 항상 엑터 위에 텍스트가 출력되도록 함
-		if (RootComponent->GetClass()->IsChildOf(UPrimitiveComponent::StaticClass()))
+		if (RootComponent->IsA(UPrimitiveComponent::StaticClass()))
 		{
 			FAABB AABB = static_cast<UPrimitiveComponent*>(RootComponent)->GetWorldBounds();
 			FVector Position = AABB.GetCenter();
@@ -621,7 +621,6 @@ void URenderer::RenderText(const FVector& CameraLocation)
 		{
 			UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 		}
-		UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 
 		Pipeline->SetVertexBuffer(Object.Component->GetVertexBuffer(), StrideTextVertex);
 		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);

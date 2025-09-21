@@ -12,8 +12,6 @@ class UPrimitiveComponent : public USceneComponent
 public:
 	UPrimitiveComponent();
 
-	const TArray<FVertex>* GetVerticesData() const;
-
 
 	FVector4 GetColor() const { return Color; }
 
@@ -22,7 +20,7 @@ public:
 
 	bool IsVisible() const { return bVisible; }
 	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) = 0;
-	virtual FAABB GetWorldBounds() const;
+	virtual FAABB GetWorldBounds() = 0;
 
 
 
@@ -36,7 +34,6 @@ public:
 protected:
 	const TArray<FVertex>* Vertices = nullptr;
 	FVector4 Color = FVector4{ 0.f,0.f,0.f,0.f };
-	EPrimitiveType Type = EPrimitiveType::Cube;
 
 	bool bVisible = true;
 

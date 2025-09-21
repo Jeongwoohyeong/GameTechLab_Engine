@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Components/StaticMeshComponent.h"
 #include "Level/Level.h"
+#include "Math/AABB.h"
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
@@ -9,6 +10,27 @@ IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 void UStaticMeshComponent::AddToRenderList(ULevel* Level)
 {
 	Level->AddStaticMeshComponentToRender(this);
+}
+
+FAABB UStaticMeshComponent::GetWorldBounds()
+{
+	switch (StaticMesh->GetPrimitiveType())
+	{
+	case EPrimitiveType::Sphere:
+	{
+		FMatrix WorldMatrix = GetWorldTransformMatrix();
+		float ScaleX = FVector(WorldMatrix.Data[0][0], WorldMatrix.Data[1][0], WorldMatrix.Data[2][0]).Length();
+		float ScaleY = FVector(WorldMatrix.Data[0][1], WorldMatrix.Data[1][1], WorldMatrix.Data[2][1]).Length();
+		float ScaleZ = FVector(WorldMatrix.Data[0][2], WorldMatrix.Data[1][2], WorldMatrix.Data[2][2]).Length();
+		FVector Position(WorldMatrix.Data[3][0], WorldMatrix.Data[3][1], WorldMatrix.Data[3][2]);
+
+		return StaticMesh->GetLocalAABB().TransformBy(FMatrix::GetModelMatrix(Position,FQuat(), FVector(ScaleX, ScaleY, ScaleZ)));
+	}break;
+
+	default:
+		return StaticMesh->GetLocalAABB().TransformBy(GetWorldTransformMatrix());
+	}
+	return FAABB();
 }
 
 bool UStaticMeshComponent::IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance)

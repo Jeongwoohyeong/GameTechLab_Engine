@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Object.h"
+#include "Math/AABB.h"
 
 class UStaticMesh : public UObject
 {
@@ -14,15 +15,22 @@ public:
 	ID3D11Buffer* GetVertexBuffer() { return VertexBuffer; }
 	ID3D11Buffer* GetIndexBuffer() { return IndexBuffer; }
 	uint32 GetIndexNum() { return IndexNum; }
+	FStaticMesh* GetStaticMeshAsset();
+	FAABB GetLocalAABB();
+	EPrimitiveType GetPrimitiveType() const { return PrimitiveType; }
 
 	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset);
-
-	FStaticMesh* GetStaticMeshAsset();	
+	
+	
 
 
 private:
+	void CalculateLocalAABB();
+
 	FStaticMesh* StaticMeshAsset = nullptr;
 	ID3D11Buffer* VertexBuffer = nullptr;
 	ID3D11Buffer* IndexBuffer = nullptr;
 	uint32 IndexNum = 0;
+	EPrimitiveType PrimitiveType = EPrimitiveType::None;
+	FAABB AABB = FAABB();
 };
