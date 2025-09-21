@@ -1,18 +1,65 @@
 #include "pch.h"
-#include "ObjParser.h"
+#include "ObjManager.h"
 #include "Manager/Path/PathManager.h"
+#include "public/Mesh/StaticMesh.h"
+#include "Public/Core/ObjectIterator.h"
 
-IMPLEMENT_SINGLETON(FObjParser)
+IMPLEMENT_SINGLETON(FObjManager)
 
-FObjParser::FObjParser()
+TMap<FString, FStaticMesh*> FObjManager::ObjStaticMap{};
+
+
+FObjManager::FObjManager()
+{
+
+}
+
+FObjManager::~FObjManager()
 {
 }
 
-FObjParser::~FObjParser()
+void FObjManager::Intialize()
 {
+	LoadObjStaticMesh("Data/cube-tex.obj");
+	LoadObjStaticMesh("Data/sphere.obj");
+	LoadObjStaticMesh("Data/triangle.obj");
+	LoadObjStaticMesh("Data/square.obj");
+	LoadObjStaticMesh("Data/minion.obj");
 }
 
-FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filePath)
+UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& pathFileName)
+{
+	for (TObjectIterator<UStaticMesh> it; it; ++it)
+	{
+		UStaticMesh* staticMesh = *it;
+		if (staticMesh && (staticMesh->GetAssetPathFileName() == pathFileName))
+		{
+			return *it;
+		}
+	}
+
+	FStaticMesh* asset = FObjManager::LoadObjStaticMeshAsset(pathFileName);
+	UStaticMesh* staticMesh = NewObject<UStaticMesh>();
+	staticMesh->SetStaticMeshAsset(asset);
+
+
+	return staticMesh;
+}
+
+FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& pathFileName)
+{
+	auto it = ObjStaticMap.find(pathFileName);	
+	if (it != ObjStaticMap.end())
+	{
+		return (*it).second;
+	}
+	FStaticMesh* newStaticMesh = FObjManager::LoadObj(pathFileName);	
+	ObjStaticMap.emplace(pathFileName, newStaticMesh);
+
+	return newStaticMesh;
+}
+
+FStaticMesh* FObjManager::LoadObj(const FString& filePath)
 {	
 	FObjInfo raw{};
 
@@ -43,7 +90,7 @@ FStaticMesh* FObjParser::LoadObjStaticMesh(const FString& filePath)
 	return newStaticMesh;
 }
 
-bool FObjParser::ParseFaceTriplet(const FString& s, int32& v, int32& vt, int32& vn)
+bool FObjManager::ParseFaceTriplet(const FString& s, int32& v, int32& vt, int32& vn)
 {
 	// s : "v", "v/vt", "v//vn", "v/vt/vn"
 	v = vt = vn = 0;
@@ -107,7 +154,7 @@ bool FObjParser::ParseFaceTriplet(const FString& s, int32& v, int32& vt, int32& 
 	return true;
 }
 
-bool FObjParser::ParseObjRaw(const FString& filePath, FObjInfo& outRawData)
+bool FObjManager::ParseObjRaw(const FString& filePath, FObjInfo& outRawData)
 {
 	ifstream file(filePath);
 
@@ -241,7 +288,7 @@ bool FObjParser::ParseObjRaw(const FString& filePath, FObjInfo& outRawData)
 	return true;
 }
 
-bool FObjParser::CookObjToStaticMesh(const FObjInfo& raw, const FObjImportOption& opt, FStaticMesh& outMesh)
+bool FObjManager::CookObjToStaticMesh(const FObjInfo& raw, const FObjImportOption& opt, FStaticMesh& outMesh)
 {
 	outMesh.Vertices.clear();
 	outMesh.Indices.clear();

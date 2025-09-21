@@ -17,7 +17,7 @@ public:
 
 	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset);
 
-	FStaticMesh* GetStaticMeshAsset();
+	FStaticMesh* GetStaticMeshAsset();	
 
 
 private:

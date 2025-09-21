@@ -1,21 +1,31 @@
 #pragma once
 
 struct FNormalVertex;
+class UStaticMesh;
 
 
-class FObjParser
+class FObjManager
 {
-	DECLARE_SINGLETON(FObjParser);
+	DECLARE_SINGLETON(FObjManager);
 
 public:
-	FStaticMesh* LoadObjStaticMesh(const FString& filePath);
+	void Intialize();
+
+	UStaticMesh* LoadObjStaticMesh(const FString& pathFileName);
 
 private:
+	static FStaticMesh* LoadObjStaticMeshAsset(const FString& pathFileName);
+	static FStaticMesh* LoadObj(const FString& filePath);
 	static bool ParseFaceTriplet(const FString& s, int32& v, int32& vt, int32& vn);
 	static bool ParseObjRaw(const FString& filePath, FObjInfo& outRawData);
 	static bool CookObjToStaticMesh(const FObjInfo& raw, const FObjImportOption& opt, FStaticMesh& outMesh);
+
+private:
+	static TMap<FString, FStaticMesh*> ObjStaticMap;
 	
 };
+
+
 
 static inline FVector PositionToUEBasis(const FVector& InVector) { return FVector(InVector.X, -InVector.Y, InVector.Z); }
 

@@ -104,7 +104,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				UStaticMesh* StaticMesh = *It;
 				if (StaticMesh)
 				{
-					StaticMeshNameList.push_back(StaticMesh->GetName());
+					StaticMeshNameList.push_back(StaticMesh->GetAssetPathFileName());
 					StaticMeshList.push_back(StaticMesh);
 				}
 			}

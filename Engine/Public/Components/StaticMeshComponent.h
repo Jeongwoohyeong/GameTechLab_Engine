@@ -3,6 +3,7 @@
 #include "Mesh/StaticMesh.h"
 #include "Global/Name.h"
 
+
 class UStaticMesh;
 
 class UStaticMeshComponent : public UMeshComponent
@@ -16,7 +17,7 @@ public:
 	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) override;
 	///////////////////////////////////////////////////
 
-	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetName(); else return FString(); }
+	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetAssetPathFileName(); else return FString(); }
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 	void SetStaticMesh(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
 

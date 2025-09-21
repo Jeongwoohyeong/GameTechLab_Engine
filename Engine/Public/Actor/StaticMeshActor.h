@@ -17,6 +17,8 @@ public:
 		return StaticMeshComponent;
 	}
 
+
+
 private:
 	UStaticMeshComponent* StaticMeshComponent = nullptr;
 	UTextComponent* TextComponent = nullptr;

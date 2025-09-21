@@ -89,7 +89,7 @@
     <ClCompile Include="Private\Manager\ResourceManager.cpp" />
     <ClCompile Include="Private\Components\SceneComponent.cpp" />
     <ClCompile Include="Private\Mesh\VertexDatas.cpp" />
-    <ClCompile Include="Public\Utility\ObjParser.cpp" />
+    <ClCompile Include="Public\Utility\ObjManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -110,9 +110,6 @@
     <ClInclude Include="Public\\Manager\Level\\LevelManager.h" />
     <ClInclude Include="Public\\Manager\Time\\TimeManager.h" />
     <ClInclude Include="Public\Actor\Actor.h" />
-    <ClInclude Include="Public\Actor\CubeActor.h" />
-    <ClInclude Include="Public\Actor\SphereActor.h" />
-    <ClInclude Include="Public\Actor\TriangleActor.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Public\\Core\\AppWindow.h" />
     <ClInclude Include="Public\\Core\\ClientApp.h" />
@@ -138,7 +135,6 @@
     <ClInclude Include="Public\\Editor\\Grid.h" />
     <ClInclude Include="Public\\Editor\\ObjectPicker.h" />
     <ClInclude Include="Global\Types.h" />
-    <ClInclude Include="Public\Actor\SquareActor.h" />
     <ClInclude Include="Global\Vector.h" />
     <ClInclude Include="Global\CoreTypes.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
@@ -184,7 +180,7 @@
     <ClInclude Include="Public\Components\StaticMeshComponent.h" />
     <ClInclude Include="Public\Components\TextComponent.h" />
     <ClInclude Include="Public\Components\MeshComponent.h" />
-    <ClInclude Include="Public\Utility\ObjParser.h" />
+    <ClInclude Include="Public\Utility\ObjManager.h" />
     <ClInclude Include="Public\Components\ActorComponent.h" />
     <ClInclude Include="Public\Manager\ResourceManager.h" />
     <ClInclude Include="Public\Components\SceneComponent.h" />
