@@ -57,8 +57,8 @@ public:
 	void RenderBegin();
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);
+	void RenderEditorPrimitive(FEditorPrimitive& Primitive, const FPipelineDescKey PipelineDescKey);
 	void RenderEnd() const;
-	void RenderEditorPrimitive(FEditorPrimitive& InPrimitive, struct FRenderState& InRenderState);
 	
 
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);

@@ -9,7 +9,7 @@ IMPLEMENT_CLASS(UGrid, UObject)
 
 UGrid::UGrid()
 {
-    Primitive.Color = FVector4(1, 1, 1, 0.2f);
+    Primitive.Color = FVector4(0.2f, 0.2f, 0.2f, 0.2f);
 	LoadGridSettings();
 	SetupGrid();
 }

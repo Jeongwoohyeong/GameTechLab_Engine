@@ -26,7 +26,8 @@ UPipeline::~UPipeline()
 	}
 }
 
-
+//RaterizerState와 PipelineState를 제외하고는 모두 이미 생성된 것을 써야함(enum이 키값).
+//
 const FPipelineInfo UPipeline::GetOrCreatePipelineState(const FPipelineDescKey& InKey)
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
@@ -211,6 +212,7 @@ void UPipeline::CreateBlendState()
 	BlendDesc = {};
 	RtBlendDesc = BlendDesc.RenderTarget[0];
 	RtBlendDesc.BlendEnable = FALSE;
+	RtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	Device->CreateBlendState(&BlendDesc, &State);
 
 	BlendStates.emplace(EBlendType::Opaque, State);

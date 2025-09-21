@@ -18,6 +18,21 @@ void ULineBatchRenderer::Init()
 	/** 배칭 데이터 예약 */
 	BatchedVertices.reserve(MaxVertices);
 	BatchedIndices.reserve(MaxIndices);
+
+	PipelineDescKeyLine.BlendType = EBlendType::Opaque;
+	PipelineDescKeyLine.DepthStencilType = EDepthStencilType::Opaque;
+	PipelineDescKeyLine.ShaderType = EShaderType::SampleShader;
+	PipelineDescKeyLine.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	FRasterizerKey RasterizerKey;
+	RasterizerKey.CullMode = D3D11_CULL_NONE;
+	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	PipelineDescKeyLine.RasterizerKey = RasterizerKey;
+
+	PipelineDescKeyAABB.BlendType = EBlendType::Opaque;
+	PipelineDescKeyAABB.ShaderType = EShaderType::LineInstanceShader;
+	PipelineDescKeyAABB.DepthStencilType = EDepthStencilType::Opaque;
+	PipelineDescKeyAABB.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	PipelineDescKeyAABB.RasterizerKey = RasterizerKey;
 }
 
 void ULineBatchRenderer::Release()
@@ -284,26 +299,18 @@ void ULineBatchRenderer::RenderBatch()
 {
 	URenderer& Renderer = URenderer::GetInstance();
 
-	// 라인 렌더링용 렌더 상태 설정
-	FRenderState LineRenderState;
-	LineRenderState.CullMode = D3D11_CULL_NONE;
-	LineRenderState.FillMode = D3D11_FILL_SOLID;
-
 	// EditorPrimitive 생성하여 기존 렌더링 파이프라인 재사용
 	FEditorPrimitive LinePrimitive;
 	LinePrimitive.Vertexbuffer = DynamicVertexBuffer;
 	LinePrimitive.NumVertices = CurrentVertexCount;
-	LinePrimitive.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-	// Preserve per-vertex colors by disabling constant color override (alpha = 0)
 	LinePrimitive.Color = FVector4(1.0f, 1.0f, 1.0f, 0.0f);
 	LinePrimitive.Location = FVector::ZeroVector;
 	LinePrimitive.Rotation = FVector::ZeroVector;
 	LinePrimitive.Scale = FVector::OneVector;
-	LinePrimitive.RenderState = LineRenderState;
-	LinePrimitive.bShouldAlwaysVisible = false;
 
+	
 	// 기존 RenderPrimitive 사용 (인덱스 버퍼 미사용 버전)
-	Renderer.RenderEditorPrimitive(LinePrimitive, LineRenderState);
+	Renderer.RenderEditorPrimitive(LinePrimitive, PipelineDescKeyLine);
 }
 
 void ULineBatchRenderer::GenerateLineIndices(uint32 StartVertex, uint32 VertexCount)
@@ -475,17 +482,7 @@ void ULineBatchRenderer::RenderAABBInstances()
     // 라인용 상태
 
 
-	FPipelineDescKey PipelineDescKey;
-	PipelineDescKey.BlendType = EBlendType::Opaque;
-	PipelineDescKey.ShaderType = EShaderType::LineInstanceShader;
-	PipelineDescKey.DepthStencilType = EDepthStencilType::Opaque;
-	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-	FRasterizerKey RasterizerKey;
-	RasterizerKey.CullMode = D3D11_CULL_NONE;
-	RasterizerKey.FillMode = D3D11_FILL_SOLID;
-	PipelineDescKey.RasterizerKey = RasterizerKey;
-
-	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
+	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKeyAABB));
 
 
     // per-vertex: POSITION-only buffer (stride = sizeof(FVector))

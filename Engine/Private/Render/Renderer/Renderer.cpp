@@ -19,14 +19,6 @@ namespace
 		FMatrix World;
 		FVector4 Color;
 	};
-
-	struct FInstanceDrawConstants
-	{
-		uint32 bUseInstancing = 0;
-		uint32 BaseInstanceOffset = 0;
-		uint32 InstanceCount = 0;
-		uint32 Padding = 0;
-	};
 }
 
 IMPLEMENT_CLASS(URenderer, UObject)
@@ -133,7 +125,6 @@ void URenderer::RenderLevel()
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
-	FRenderState State = FRenderState{ D3D11_CULL_BACK, D3D11_FILL_SOLID};
 	FPipelineDescKey PipelineDescKey;
 	PipelineDescKey.BlendType = EBlendType::Opaque;
 	PipelineDescKey.DepthStencilType = EDepthStencilType::Opaque;
@@ -142,6 +133,12 @@ void URenderer::RenderLevel()
 	FRasterizerKey RasterizerKey;
 	RasterizerKey.CullMode = D3D11_CULL_BACK;
 	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+
+	if (CurrentViewMode == EViewModeIndex::Wireframe)
+	{
+		RasterizerKey.CullMode = D3D11_CULL_NONE;
+		RasterizerKey.FillMode = D3D11_FILL_WIREFRAME;
+	}
 	PipelineDescKey.RasterizerKey = RasterizerKey;
 	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
@@ -225,7 +222,6 @@ void URenderer::RenderText(const FVector& CameraLocation)
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
 	//shader, rasterizaer state, depth stencil state, input layout 설정///////////////////
-	FRenderState State = FRenderState{D3D11_CULL_NONE, D3D11_FILL_SOLID};
 	FPipelineDescKey PipelineDescKey;
 	PipelineDescKey.BlendType = EBlendType::Transparent;
 	PipelineDescKey.DepthStencilType = EDepthStencilType::Transparent;
@@ -234,6 +230,12 @@ void URenderer::RenderText(const FVector& CameraLocation)
 	FRasterizerKey RasterizerKey;
 	RasterizerKey.CullMode = D3D11_CULL_NONE;
 	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	if (CurrentViewMode == EViewModeIndex::Wireframe)
+	{
+		RasterizerKey.CullMode = D3D11_CULL_NONE;
+		RasterizerKey.FillMode = D3D11_FILL_WIREFRAME;
+	}
+
 	PipelineDescKey.RasterizerKey = RasterizerKey;
 
 	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
@@ -314,18 +316,8 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 }
 
-void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
+void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, const FPipelineDescKey PipelineDescKey)
 {
-	FPipelineDescKey PipelineDescKey;
-	PipelineDescKey.BlendType = EBlendType::Opaque;
-	PipelineDescKey.DepthStencilType = EDepthStencilType::Opaque;
-	PipelineDescKey.ShaderType = EShaderType::SampleShader;
-	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-	FRasterizerKey RasterizerKey;
-	RasterizerKey.CullMode = D3D11_CULL_NONE;
-	RasterizerKey.FillMode = D3D11_FILL_SOLID;
-	PipelineDescKey.RasterizerKey = RasterizerKey;
-
 	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 
 	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
@@ -501,23 +493,6 @@ void URenderer::ReleaseConstantBuffer()
 	{
 		ConstantBufferCharTable->Release();
 		ConstantBufferCharTable = nullptr;
-	}
-}
-
-
-void URenderer::UpdateConstant(const UPrimitiveComponent* Primitive)
-{
-	if (ConstantBufferModels)
-	{
-		D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
-
-		GetDeviceContext()->Map(ConstantBufferModels, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
-		// update constant buffer every frame
-		FMatrix* constants = (FMatrix*)constantbufferMSR.pData;
-		{
-			*constants = Primitive->GetWorldTransformMatrix();
-		}
-		GetDeviceContext()->Unmap(ConstantBufferModels, 0);
 	}
 }
 

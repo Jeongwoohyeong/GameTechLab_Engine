@@ -48,6 +48,9 @@ private:
     ID3D11Buffer* AABBWorldStructuredBuffer = nullptr; // StructuredBuffer(FMatrix)
     ID3D11ShaderResourceView* AABBWorldSRV = nullptr;  // SRV for StructuredBuffer
 
+	FPipelineDescKey PipelineDescKeyLine;
+	FPipelineDescKey PipelineDescKeyAABB;
+
     /** 배칭 데이터 */
     TArray<FVertex> BatchedVertices;
     TArray<uint32> BatchedIndices;
