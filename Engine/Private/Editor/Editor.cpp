@@ -77,30 +77,18 @@ void UEditor::RenderEditorBatched()
 
 		/** AABB 라인들 추가 (Min/Max 입력 기반, 인스턴싱) */
 		//StaticMesh 구현 후 처리
-		URenderer& Renderer = URenderer::GetInstance();
-		if (Renderer.IsShowFlagEnabled(EEngineShowFlags::SF_Bounds))
+		ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+		if (Level)
 		{
-			ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
-			if (Level)
+			const TArray<FAABB>& AABBsToRender = Level->GetAABBsToRender();
+			for (auto& Bound : AABBsToRender)
 			{
-				const TArray<UStaticMeshComponent*>& StaticMeshComponents= Level->GetStaticMeshComponentsToRender();
-				for (UStaticMeshComponent* Component : StaticMeshComponents)
-				{
-					if (!Component) { continue; }
-					FAABB Bounds = Component->GetWorldBounds();
-					if (!Bounds.IsValid()) { continue; }
-					LineBatch.AddAABB(Bounds.Min, Bounds.Max, FVector4(0, 1, 0, 1));
-				}
+				LineBatch.AddAABB(Bound.Min, Bound.Max, FVector4(0, 1, 0, 1));
 			}
-		}
-
-		/** Gizmo 라인들 추가 (오브젝트가 선택된 경우) */
-		if (AActor* SelectedActor = ULevelManager::GetInstance().GetCurrentLevel()->GetSelectedActor())
-		{
-			/** Gizmo는 현재 RenderGizmo를 통해 렌더링되므로 따로 처리 */
-			/** 추후 Gizmo도 배칭 지원하도록 수정 가능 */
+			
 		}
 	}
+	
 	/** 1회 드로우콜로 모든 라인 렌더링 */
 	LineBatch.FlushBatch();
 

@@ -621,7 +621,6 @@ void URenderer::RenderText(const FVector& CameraLocation)
 		{
 			UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 		}
-		UpdateConstant(Object.Component->GetWorldLocation() + FVector(0, 0, 2.0f), FVector(), FVector());
 
 		Pipeline->SetVertexBuffer(Object.Component->GetVertexBuffer(), StrideTextVertex);
 		Pipeline->SetInstanceBuffer(TextInstanceBuffer, StrideTextInstance);

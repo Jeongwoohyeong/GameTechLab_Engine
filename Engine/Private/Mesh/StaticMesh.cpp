@@ -25,6 +25,21 @@ UStaticMesh::~UStaticMesh()
 	}
 }
 
+FStaticMesh* UStaticMesh::GetStaticMeshAsset()
+{
+	return StaticMeshAsset;
+}
+
+FAABB UStaticMesh::GetLocalAABB()
+{
+	//Mesh에 로컬 바운드가 없으면 계산해서 리턴
+	if (!AABB.IsValid())
+	{
+		CalculateLocalAABB();
+	}
+	return AABB;
+}
+
 void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 {
 	URenderer& Renderer = URenderer::GetInstance();
@@ -48,22 +63,33 @@ void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 	IndexNum = InStaticMeshAsset->IndexNum;
 }
 
-FAABB UStaticMesh::CalculateAABB() const
+
+
+void UStaticMesh::CalculateLocalAABB()
 {
 	if (!StaticMeshAsset)
-		return FAABB();
+		return;
+
+
 	const TArray<FNormalVertex>& Vertices = StaticMeshAsset->Vertices;
 
-	FAABB AABB = FAABB();
-	for (int Index = 0; Index < Vertices.Num();Index++)
+	switch (PrimitiveType)
 	{
-		AABB.AddPoint(Vertices[Index].Position);
+	case EPrimitiveType::None:
+	case EPrimitiveType::Triangle:
+	case EPrimitiveType::Square:
+		for (int Index = 0; Index < Vertices.Num();Index++)
+		{
+			AABB.AddPoint(Vertices[Index].Position);
+		}break;
+	case EPrimitiveType::Sphere:
+	{
+		float Radius = Vertices[0].Position.Length();
+		AABB.Min = FVector(-Radius, -Radius, -Radius);
+		AABB.Max = FVector(Radius, Radius, Radius);
 	}
+	}
+	
 
-	return AABB;
 }
 
-FStaticMesh* UStaticMesh::GetStaticMeshAsset()
-{
-	return StaticMeshAsset;
-}
