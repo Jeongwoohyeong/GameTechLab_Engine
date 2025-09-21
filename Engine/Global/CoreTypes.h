@@ -238,26 +238,6 @@ enum class EPrimitiveType : uint8_t
 };
 
 /**
- * @brief RasterizerState Enum
- */
-enum class ECullMode : uint8_t
-{
-	Back,
-	Front,
-	None,
-
-	End = 0xFF
-};
-
-enum class EFillMode : uint8_t
-{
-	WireFrame,
-	Solid,
-
-	End = 0xFF
-};
-
-/**
  * @brief View Mode State
  */
 enum class EViewModeIndex : uint32
@@ -335,6 +315,6 @@ inline bool HasFlag(EEngineShowFlags flags, EEngineShowFlags flag)
  */
 struct FRenderState
 {
-	ECullMode CullMode = ECullMode::None;
-	EFillMode FillMode = EFillMode::Solid;
+	D3D11_CULL_MODE CullMode = D3D11_CULL_NONE;
+	D3D11_FILL_MODE FillMode = D3D11_FILL_SOLID;
 };

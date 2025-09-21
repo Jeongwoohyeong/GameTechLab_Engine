@@ -23,13 +23,6 @@ ULevel::~ULevel()
 		SafeDelete(Actor);
 	}
 
-	// Deprecated : EditorPrimitive는 에디터에서 처리
-	// for (auto Actor : EditorActors)
-	// {
-	// 	SafeDelete(Actor);
-	// }
-
-	//SafeDelete(CameraPtr);
 }
 
 void ULevel::Init()
@@ -75,9 +68,7 @@ void ULevel::GatherComponentsToRender(AActor* Actor)
 	URenderer& Renderer = URenderer::GetInstance();
 	for (auto& Component : Actor->GetOwnedComponents())
 	{
-		//액터의 컴포넌트를 순회하면서 PrimitiveComponent라면 타입체크 없이 자기가 알아서
-		//레벨의 RenderList에 추가하도록 수정.
-		//StaticMesh가 구현되면 주석 해제(09/19 13:05)
+		
 		if (Component->IsA(UPrimitiveComponent::StaticClass()))
 		{
 			UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
@@ -146,28 +137,12 @@ bool ULevel::DestroyActor(AActor* InActor)
 		}
 	}
 
-	//Deprecated : EditorPrimitive는 에디터에서 처리
-	// 필요하다면 EditorActors 리스트에서도 제거
-	/*for (auto Iterator = EditorActors.begin(); Iterator != EditorActors.end(); ++Iterator)
-	{
-		if (*Iterator == InActor)
-		{
-			EditorActors.erase(Iterator);
-			break;
-		}
-	}*/
 
 	// Remove Actor Selection
 	if (SelectedActor == InActor)
 	{
 		SelectedActor = nullptr;
 
-		//Deprecated : Gizmo는 에디터에서 처리
-		// Gizmo Target Release
-		/*if (Gizmo)
-		{
-			Gizmo->SetTargetActor(nullptr);
-		}*/
 	}
 
 	// Remove
@@ -254,17 +229,6 @@ void ULevel::ProcessPendingDeletions()
 				break;
 			}
 		}
-
-		//Deprecated : EditorActor는 에디터에서 처리
-		// EditorActors 리스트에서도 제거
-		/*for (auto Iterator = EditorActors.begin(); Iterator != EditorActors.end(); ++Iterator)
-		{
-			if (*Iterator == ActorToDelete)
-			{
-				EditorActors.erase(Iterator);
-				break;
-			}
-		}*/
 
 		// Release Memory
 		delete ActorToDelete;

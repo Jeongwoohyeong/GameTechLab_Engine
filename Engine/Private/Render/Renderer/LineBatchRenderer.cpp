@@ -286,8 +286,8 @@ void ULineBatchRenderer::RenderBatch()
 
 	// 라인 렌더링용 렌더 상태 설정
 	FRenderState LineRenderState;
-	LineRenderState.CullMode = ECullMode::None;
-	LineRenderState.FillMode = EFillMode::Solid;
+	LineRenderState.CullMode = D3D11_CULL_NONE;
+	LineRenderState.FillMode = D3D11_FILL_SOLID;
 
 	// EditorPrimitive 생성하여 기존 렌더링 파이프라인 재사용
 	FEditorPrimitive LinePrimitive;
@@ -474,8 +474,8 @@ void ULineBatchRenderer::RenderAABBInstances()
 
     // 라인용 상태
     FRenderState LineRenderState;
-    LineRenderState.CullMode = ECullMode::None;
-    LineRenderState.FillMode = EFillMode::Solid;
+    LineRenderState.CullMode = D3D11_CULL_NONE;
+    LineRenderState.FillMode = D3D11_FILL_SOLID;
 
     ID3D11RasterizerState* RasterizerState = Renderer.GetRasterizerState(LineRenderState);
 

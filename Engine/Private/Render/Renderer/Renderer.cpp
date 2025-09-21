@@ -473,7 +473,7 @@ void URenderer::RenderLevel()
 	// Check show flags for primitive components
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
-	FRenderState State = FRenderState{ ECullMode::Back, EFillMode::Solid };
+	FRenderState State = FRenderState{ D3D11_CULL_BACK, D3D11_FILL_SOLID};
 	Pipeline->UpdatePipeline(CreateStaticMeshPipelineInfo(State));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
@@ -556,7 +556,7 @@ void URenderer::RenderText(const FVector& CameraLocation)
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
 	//shader, rasterizaer state, depth stencil state, input layout 설정///////////////////
-	FRenderState State = FRenderState{ECullMode::None, EFillMode::Solid};
+	FRenderState State = FRenderState{D3D11_CULL_NONE, D3D11_FILL_SOLID};
 	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
 	/////////////////////////////////////////////////////////////////////////////////////
 
@@ -672,34 +672,6 @@ void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRende
 void URenderer::RenderEnd() const
 {
 	GetSwapChain()->Present(0, 0); // 1: VSync 활성화
-}
-
-static inline D3D11_CULL_MODE ToD3D11(ECullMode InCull)
-{
-	switch (InCull)
-	{
-	case ECullMode::Back:
-		return D3D11_CULL_BACK;
-	case ECullMode::Front:
-		return D3D11_CULL_FRONT;
-	case ECullMode::None:
-		return D3D11_CULL_NONE;
-	default:
-		return D3D11_CULL_BACK;
-	}
-}
-
-static inline D3D11_FILL_MODE ToD3D11(EFillMode InFill)
-{
-	switch (InFill)
-	{
-	case EFillMode::Solid:
-		return D3D11_FILL_SOLID;
-	case EFillMode::WireFrame:
-		return D3D11_FILL_WIREFRAME;
-	default:
-		return D3D11_FILL_SOLID;
-	}
 }
 
 void URenderer::CreateInstanceBuffer()
@@ -965,108 +937,6 @@ void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 	}
 }
 
-//void URenderer::UpdateInstanceDrawConstants(bool bUseInstancing, uint32 BaseInstanceOffset, uint32 InstanceCount) const
-//{
-//	if (!ConstantBufferInstance)
-//	{
-//		return;
-//	}
-//
-//	Pipeline->SetConstantBuffer(3, true, ConstantBufferInstance);
-//
-//	D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR = {};
-//	HRESULT Hr = GetDeviceContext()->Map(ConstantBufferInstance, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
-//	if (FAILED(Hr))
-//	{
-//		UE_LOG("Failed to map instancing constant buffer");
-//		return;
-//	}
-//
-//	auto* Constants = static_cast<FInstanceDrawConstants*>(ConstantBufferMSR.pData);
-//	Constants->bUseInstancing = bUseInstancing ? 1u : 0u;
-//	Constants->BaseInstanceOffset = BaseInstanceOffset;
-//	Constants->InstanceCount = InstanceCount;
-//	Constants->Padding = 0;
-//
-//	GetDeviceContext()->Unmap(ConstantBufferInstance, 0);
-//}
-
-// TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
-/**
- * @brief ViewMode를 고려한 PipelineInfo 생성
- * @param InRenderState 렌더할 대상의 RenderState
- * @return RenderState와 ViewMode를 고려한 FPipelineInfo
- */
-FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = EFillMode::WireFrame;
-		ModifiedRenderState.CullMode = ECullMode::None;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{
-		DefaultInputLayout, DefaultVertexShader,
-		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
-		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-	};
-}
-
-FPipelineInfo URenderer::CreateStaticMeshPipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = EFillMode::WireFrame;
-		ModifiedRenderState.CullMode = ECullMode::None;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{
-		StaticMeshInputLayout, StaticMeshVertexShader,
-		RasterizerState, DefaultDepthStencilState, StaticMeshPixelShader, nullptr,
-		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-	};
-}
-
-FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = EFillMode::WireFrame;
-		ModifiedRenderState.CullMode = ECullMode::None;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{
-		TextInputLayout, TextVertexShader,
-		RasterizerState, TextDepthStencilState, TextPixelShader, TextBlendState
-	};
-}
 
 URenderer::FStructuredBufferResource& URenderer::GetOrCreateStructuredBuffer(const FStaticMeshBatchKey& InKey)
 {
@@ -1182,10 +1052,88 @@ void URenderer::ReleasePrimitiveInstanceBuffers()
 	StaticMeshStructuredBuffers.Empty();
 }
 
+
+// TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
+/**
+ * @brief ViewMode를 고려한 PipelineInfo 생성
+ * @param InRenderState 렌더할 대상의 RenderState
+ * @return RenderState와 ViewMode를 고려한 FPipelineInfo
+ */
+FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
+{
+	FRenderState ModifiedRenderState = InRenderState;
+
+	switch (CurrentViewMode)
+	{
+	case EViewModeIndex::Wireframe:
+		ModifiedRenderState.FillMode = D3D11_FILL_WIREFRAME;
+		ModifiedRenderState.CullMode = D3D11_CULL_NONE;
+		break;
+	case EViewModeIndex::Lit:
+	case EViewModeIndex::Unlit:
+	default:
+		break;
+	}
+
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
+	return FPipelineInfo{
+		DefaultInputLayout, DefaultVertexShader,
+		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	};
+}
+
+FPipelineInfo URenderer::CreateStaticMeshPipelineInfo(const FRenderState& InRenderState)
+{
+	FRenderState ModifiedRenderState = InRenderState;
+
+	switch (CurrentViewMode)
+	{
+	case EViewModeIndex::Wireframe:
+		ModifiedRenderState.FillMode = D3D11_FILL_WIREFRAME;
+		ModifiedRenderState.CullMode = D3D11_CULL_NONE;
+		break;
+	case EViewModeIndex::Lit:
+	case EViewModeIndex::Unlit:
+	default:
+		break;
+	}
+
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
+	return FPipelineInfo{
+		StaticMeshInputLayout, StaticMeshVertexShader,
+		RasterizerState, DefaultDepthStencilState, StaticMeshPixelShader, nullptr,
+		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+	};
+}
+
+FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderState)
+{
+	FRenderState ModifiedRenderState = InRenderState;
+
+	switch (CurrentViewMode)
+	{
+	case EViewModeIndex::Wireframe:
+		ModifiedRenderState.FillMode = D3D11_FILL_WIREFRAME;
+		ModifiedRenderState.CullMode = D3D11_CULL_NONE;
+		break;
+	case EViewModeIndex::Lit:
+	case EViewModeIndex::Unlit:
+	default:
+		break;
+	}
+
+	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
+	return FPipelineInfo{
+		TextInputLayout, TextVertexShader,
+		RasterizerState, TextDepthStencilState, TextPixelShader, TextBlendState
+	};
+}
+
 ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)
 {
-	D3D11_FILL_MODE FillMode = ToD3D11(InRenderState.FillMode);
-	D3D11_CULL_MODE CullMode = ToD3D11(InRenderState.CullMode);
+	D3D11_FILL_MODE FillMode = InRenderState.FillMode;
+	D3D11_CULL_MODE CullMode = InRenderState.CullMode;
 
 	const FRasterKey Key{FillMode, CullMode};
 	if (auto It = RasterCache.find(Key); It != RasterCache.end())

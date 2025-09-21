@@ -51,8 +51,8 @@ UGizmo::UGizmo()
 	/* *
 	* @brief Render State
 	*/
-	RenderState.FillMode = EFillMode::Solid;
-	RenderState.CullMode = ECullMode::None;
+	RenderState.FillMode = D3D11_FILL_SOLID;
+	RenderState.CullMode = D3D11_CULL_NONE;
 }
 
 UGizmo::~UGizmo() = default;
