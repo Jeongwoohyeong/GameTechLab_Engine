@@ -54,7 +54,11 @@ public:
 	void ApplySavedCameraSnapshotToCamera();
 	void SetSavedCameraSnapshot(const FCameraMetadata& In) { SavedCamera = In; }
 	const FCameraMetadata& GetSavedCameraSnapshot() const { return SavedCamera; }
-
+private:
+	// 지연 삭제 처리 함수
+	void ProcessPendingDeletions();
+	// 렌더 큐에서 해당 액터 컴포넌트 제거
+	void RemoveFromRenderQueues(AActor* Owner);  
 private:
 	TArray<AActor*> LevelActors;
 
@@ -73,8 +77,7 @@ private:
 
 	AActor* SelectedActor = nullptr;
 
-	// 지연 삭제 처리 함수
-	void ProcessPendingDeletions();
+
 };
 
 template <typename T, typename ... Args>
@@ -89,7 +92,10 @@ T* ULevel::SpawnActor(const FString& InName)
 	//Outer 설정 시 Outer의 메모리 카운트에 자신의 메모리 합산 작업 수행
 
 	LevelActors.push_back(NewActor);
-	if (!InName.empty()) { NewActor->SetName(InName); }
+	if (!InName.empty())
+	{
+		NewActor->SetName(InName);
+	}
 	NewActor->BeginPlay();
 
 	UE_LOG("%s", NewActor->GetName().c_str());

@@ -10,6 +10,7 @@ public:
 
 	FString GetDisplayString(int32 Idx) const;
 
+	void Reset();
 private:
 	FString ToLower(const FString& Str) const;
 
