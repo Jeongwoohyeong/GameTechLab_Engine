@@ -91,14 +91,15 @@ void UTargetActorTransformWidget::RenderWidget()
 		ImGui::Text("Static Mesh");
 		FString NameString = SelectedActor->GetStaticMeshName();
 		const char* CurrentMeshName = NameString.c_str();
+		ImGui::ShowDemoWindow();
 		
-		
-
-
+		//현재 선택된 Actor의 Mesh의 index
+		static int CurrentIndex = -1;
 		if (ImGui::BeginCombo("Static Mesh", CurrentMeshName))
 		{
 			TArray<FString> StaticMeshNameList;
 			TArray<UStaticMesh*> StaticMeshList;
+			bool bIndexIsFound = false;
 			for (TObjectIterator<UStaticMesh> It; It; ++It)
 			{
 				UStaticMesh* StaticMesh = *It;
@@ -106,11 +107,19 @@ void UTargetActorTransformWidget::RenderWidget()
 				{
 					StaticMeshNameList.push_back(StaticMesh->GetName());
 					StaticMeshList.push_back(StaticMesh);
+					//현재 선택된 Actor의 Mesh에 index를 부여(이게 없으면 새로 선택한 엑터의 매시리스트에서 기존에 선택한 매시가 하이라이팅됨.
+					//그리고 리스트를 선택할때도 현재 매시가 하이라이팅 되야하는데 아래의 코드가 없으면 그게 안됨.
+					//근데 매번 Iterator를 돌면서 배열을 채우고 문자열을 비교하는게 최선인지는 모르겠음.
+					if (!bIndexIsFound && !StaticMesh->GetName().compare(CurrentMeshName))
+					{
+						CurrentIndex = StaticMeshNameList.Num() - 1;
+						bIndexIsFound = true;  
+					}
 				}
 			}
 			for (int Index = 0; Index < StaticMeshNameList.Num(); Index++)
 			{
-				static int CurrentIndex = 0;
+				
 				const bool bIsSelected = (CurrentIndex == Index);
 
 				//선택되면 true, bool값이 true면 하이라이트
