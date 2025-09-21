@@ -90,6 +90,8 @@
     <ClCompile Include="Private\Components\SceneComponent.cpp" />
     <ClCompile Include="Private\Mesh\VertexDatas.cpp" />
     <ClCompile Include="Public\Utility\ObjManager.cpp" />
+    <ClCompile Include="Public\Utility\MtlManager.cpp" />
+    <ClCompile Include="Public\Mesh\Material.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -185,6 +187,8 @@
     <ClInclude Include="Public\Manager\ResourceManager.h" />
     <ClInclude Include="Public\Components\SceneComponent.h" />
     <ClInclude Include="Public\Mesh\VertexDatas.h" />
+    <ClInclude Include="Public\Utility\MtlManager.h" />
+    <ClInclude Include="Public\Mesh\Material.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />

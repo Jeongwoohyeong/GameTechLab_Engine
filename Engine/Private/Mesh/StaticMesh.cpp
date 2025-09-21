@@ -2,6 +2,8 @@
 #include "Mesh/StaticMesh.h"
 #include "Render/Renderer/Renderer.h"
 #include "Math/AABB.h"
+#include "Mesh/Material.h"
+
 IMPLEMENT_CLASS(UStaticMesh, UObject)
 
 UStaticMesh::UStaticMesh()
@@ -40,6 +42,26 @@ FAABB UStaticMesh::GetLocalAABB()
 	return AABB;
 }
 
+const FObjMaterialInfo* UStaticMesh::GetMaterialInfo() const
+{
+	return MaterialInfo->GetMaterialInfo();
+}
+
+const FString& UStaticMesh::GetKdTextureFilePath() const
+{
+	return MaterialInfo->GetKdTextureFilePath();
+}
+
+const FString& UStaticMesh::GetKsTextureFilePath() const
+{
+	return MaterialInfo->GetKsTextureFilePath();
+}
+
+const FString& UStaticMesh::GetBumpTextureFilePath() const
+{
+	return MaterialInfo->GetBumpTextureFilePath();
+}
+
 void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 {
 	URenderer& Renderer = URenderer::GetInstance();
@@ -63,6 +85,10 @@ void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 	IndexNum = InStaticMeshAsset->IndexNum;
 }
 
+void UStaticMesh::SetMaterialInfo(FObjMaterialInfo* InMaterialInfo)
+{
+	MaterialInfo->SetMaterialInfo(InMaterialInfo);
+}
 
 
 void UStaticMesh::CalculateLocalAABB()

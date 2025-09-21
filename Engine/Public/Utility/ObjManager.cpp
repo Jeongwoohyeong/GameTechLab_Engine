@@ -3,11 +3,12 @@
 #include "Manager/Path/PathManager.h"
 #include "public/Mesh/StaticMesh.h"
 #include "Public/Core/ObjectIterator.h"
-
-IMPLEMENT_SINGLETON(FObjManager)
+#include "Public/Utility/MtlManager.h"
 
 TMap<FString, FStaticMesh*> FObjManager::ObjStaticMap{};
+FMtlManager* FObjManager::MtlManager{};
 
+IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager()
 {
@@ -16,268 +17,338 @@ FObjManager::FObjManager()
 
 FObjManager::~FObjManager()
 {
+	if (MtlManager)
+	{
+		delete MtlManager;
+	}
 }
 
 void FObjManager::Intialize()
 {
-	LoadObjStaticMesh("Data/cube-tex.obj");
-	LoadObjStaticMesh("Data/sphere.obj");
-	LoadObjStaticMesh("Data/triangle.obj");
-	LoadObjStaticMesh("Data/square.obj");
-	LoadObjStaticMesh("Data/minion.obj");
+	MtlManager = new FMtlManager();
+	LoadObjStaticMeshAsset("Data/cube-tex.obj");
+	LoadObjStaticMeshAsset("Data/sphere.obj");
+	LoadObjStaticMeshAsset("Data/triangle.obj");
+	LoadObjStaticMeshAsset("Data/square.obj");
+	LoadObjStaticMeshAsset("Data/minion.obj");
 }
 
-UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& pathFileName)
+UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 {
-	for (TObjectIterator<UStaticMesh> it; it; ++it)
+	UStaticMesh* Result = nullptr;
+	for (TObjectIterator<UStaticMesh> It; It; ++It)
 	{
-		UStaticMesh* staticMesh = *it;
-		if (staticMesh && (staticMesh->GetAssetPathFileName() == pathFileName))
+		UStaticMesh* StaticMesh = *It;
+		if (StaticMesh && (StaticMesh->GetAssetPathFileName() == PathFileName))
 		{
-			return *it;
+			Result = *It;
+			break;
 		}
 	}
 
-	FStaticMesh* asset = FObjManager::LoadObjStaticMeshAsset(pathFileName);
-	UStaticMesh* staticMesh = NewObject<UStaticMesh>();
-	staticMesh->SetStaticMeshAsset(asset);
+	if (Result == nullptr)
+	{
+		FStaticMesh* Asset = FObjManager::LoadObjStaticMeshAsset(PathFileName);
+		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
+		StaticMesh->SetStaticMeshAsset(Asset);
+		Result = StaticMesh;
+	}
 
+	
+	if (PathFileName.find("sphere") != PathFileName.npos)
+	{
+		Result->SetPrimtiveType(EPrimitiveType::Sphere);
+	}
+	else if (PathFileName.find("cube") != PathFileName.npos)
+	{
+		Result->SetPrimtiveType(EPrimitiveType::Cube);
+	}
+	else if (PathFileName.find("square") != PathFileName.npos)
+	{
+		Result->SetPrimtiveType(EPrimitiveType::Square);
+	}
+	else if (PathFileName.find("triangle") != PathFileName.npos)
+	{
+		Result->SetPrimtiveType(EPrimitiveType::Triangle);
+	}
 
-	return staticMesh;
+	return Result;
 }
 
 FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& pathFileName)
-{
-	auto it = ObjStaticMap.find(pathFileName);	
-	if (it != ObjStaticMap.end())
+{	
+	auto It = ObjStaticMap.find(pathFileName);	
+	if (It != ObjStaticMap.end())
 	{
-		return (*it).second;
+		return (*It).second;
 	}
-	FStaticMesh* newStaticMesh = FObjManager::LoadObj(pathFileName);	
-	ObjStaticMap.emplace(pathFileName, newStaticMesh);
+	FStaticMesh* NewStaticMesh = FObjManager::LoadObj(pathFileName);	
+	ObjStaticMap.emplace(pathFileName, NewStaticMesh);
 
-	return newStaticMesh;
+	FMtlManager mtl;
+	for (const auto& Section : NewStaticMesh->Sections)
+	{
+		if (!Section.MaterialName.empty())
+		{
+			UE_LOG("----%s %s %s", NewStaticMesh->Mtllib.c_str(), Section.Name.c_str(), Section.MaterialName.c_str());			
+			mtl.LoadMtlInfo(NewStaticMesh->Mtllib, Section.MaterialName);
+		}
+	}
+
+	/*if (!NewStaticMesh->PathFileName.empty())
+	{
+		UE_LOG("PathFileName %s", NewStaticMesh->PathFileName.c_str());
+		UE_LOG("Mtllib %s", NewStaticMesh->Mtllib.c_str());
+		if (!NewStaticMesh->Sections.empty())
+		{
+			for (const auto& Section : NewStaticMesh->Sections)
+			{
+				if (!Section.Name.empty())
+				{
+					UE_LOG("Section name %s", Section.Name.c_str());
+				}
+
+				if (!Section.MaterialName.empty())
+				{
+					UE_LOG("Material name %s", Section.MaterialName.c_str());
+				}
+			}
+		}
+	}*/
+
+	return NewStaticMesh;
 }
 
 FStaticMesh* FObjManager::LoadObj(const FString& filePath)
 {	
-	FObjInfo raw{};
+	FObjInfo Raw{};
 
-	if (!ParseObjRaw(filePath, raw))
+	if (!ParseObjRaw(filePath, Raw))
 	{
 		UE_LOG("obj 파싱 실패");
 		return nullptr;
 	}
 
-	FStaticMesh* newStaticMesh = new FStaticMesh();
-	newStaticMesh->PathFileName = filePath;
+	FStaticMesh* NewStaticMesh = new FStaticMesh();
+	NewStaticMesh->PathFileName = filePath;
 
-	FObjImportOption opt{};
+	FObjImportOption Opt{};
 
-	if (!CookObjToStaticMesh(raw, opt, *newStaticMesh))
+	if (!CookObjToStaticMesh(Raw, Opt, *NewStaticMesh))
 	{
 		UE_LOG("obj cook 실패");
-		delete newStaticMesh;
+		delete NewStaticMesh;
 		return nullptr;
 	}
 
 	{
-		uint32 pos = filePath.find('/');
-		FString name = filePath.substr(pos + 1);
-		UE_LOG("FObjParser: %s 로드 완료", name.c_str());
+		uint32 Pos = filePath.find('/');
+		FString Name = filePath.substr(Pos + 1);
+		UE_LOG("FObjParser: %s 로드 완료", Name.c_str());
 	}
 
-	return newStaticMesh;
+	return NewStaticMesh;
 }
 
-bool FObjManager::ParseFaceTriplet(const FString& s, int32& v, int32& vt, int32& vn)
+bool FObjManager::ParseFaceTriplet(const FString& S, int32& V, int32& Vt, int32& Vn)
 {
 	// s : "v", "v/vt", "v//vn", "v/vt/vn"
-	v = vt = vn = 0;
+	V = Vt = Vn = 0;
 
 	// slash 위치 저장용 변수
-	int slash1 = -1, slash2 = -1;
+	int Slash1 = -1, Slash2 = -1;
 
-	for (size_t i = 0;i < (size_t)s.size();i++)
+	for (size_t i = 0;i < (size_t)S.size();i++)
 	{
 		// 문자열의 slash 위치 탐색
-		if (s[i] == '/')
+		if (S[i] == '/')
 		{
 			// slash는 문자열의 1번 째 index부터 시작
 			// 먼저 첫 번째 슬래쉬를 검사해서 위치를 저장한다.
-			if (slash1 < 0)
+			if (Slash1 < 0)
 			{
-				slash1 = i;
+				Slash1 = i;
 			}
 			// slash1이 음수가 아닌 경우는 첫 번째 슬래쉬가 탐색된 경우
 			// 슬래쉬가 탐색되었는데 첫 번째 슬래쉬가 존재하는 경우는 현재 슬래쉬가 두 번째 슬래쉬
 			else
 			{
-				slash2 = i;
+				Slash2 = i;
 				break;
 			}
 		}
 	}
 
 	// 문자열 존재 여부를 검사하고 정수로 변환하는 람다함수
-	auto toInt = [](const FString& a)->int
+	auto ToInt = [](const FString& a)->int
 		{
 			return a.empty() ? 0 : std::stoi(a);
 		};
 
 	// slash1이 음수 -> f v v v
-	if (slash1 < 0)
+	if (Slash1 < 0)
 	{
-		v = toInt(s);
+		V = ToInt(S);
 		return true;
 	}
 	// slash2가 음수 -> f v/vt v/vt v/vt
-	if (slash2 < 0)
+	if (Slash2 < 0)
 	{
-		v = toInt(s.substr(0,slash1));
-		vt = toInt(s.substr(slash1 + 1));
+		V = ToInt(S.substr(0,Slash1));
+		Vt = ToInt(S.substr(Slash1 + 1));
 		return true;
 	}
 
 	// slash가 두개 존재하는 경우 : v/vt/vn, v//vn
 	// 첫 위치에서 첫 번째 슬래쉬까지 파싱
-	v = toInt(s.substr(0, slash1));
+	V = ToInt(S.substr(0, Slash1));
 	// 첫 번째 슬래쉬와 두 번쨰 슬래쉬까지 파싱
 	// 1/10/4 : slash1(1), slash2(4) 문자열의 2번 인덱스에서 2 글자 파싱
-	FString mid = s.substr(slash1 + 1, slash2 - slash1 - 1);
+	FString Mid = S.substr(Slash1 + 1, Slash2 - Slash1 - 1);
 	// 두 번째 슬래쉬 다음 위치부터 끝까지 파싱
-	FString tail = s.substr(slash2 + 1);
+	FString Tail = S.substr(Slash2 + 1);
 	// 문자열이 존재하지 않으면 0
-	vt = mid.empty() ? 0 : toInt(mid);
-	vn = tail.empty() ? 0 : toInt(tail);
+	Vt = Mid.empty() ? 0 : ToInt(Mid);
+	Vn = Tail.empty() ? 0 : ToInt(Tail);
 
 	return true;
 }
 
-bool FObjManager::ParseObjRaw(const FString& filePath, FObjInfo& outRawData)
+bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 {
-	ifstream file(filePath);
+	ifstream File(FilePath);
 
-	if (!file.is_open())
+	if (!File.is_open())
 	{
-		UE_LOG("파일 열기 실패");
+		UE_LOG("Obj 파일 열기 실패");
 		return false;
 	}
 
-	outRawData = FObjInfo();
+	OutRawData = FObjInfo();
 
-	FString line;
+	uint32 Pos = FilePath.find('/');
+	FString Path = FilePath.substr(0, Pos + 1);	
+
+	FString Line;
 	// 최소 1개 섹션 시작
-	outRawData.Sections.Emplace();
-	FObjSection* currentSection = &outRawData.Sections.back();
+	OutRawData.Sections.Emplace();
+	FObjSection* CurrentSection = &OutRawData.Sections.back();
 
 	// 줄 단위로 파싱
-	while (std::getline(file, line))
+	while (std::getline(File, Line))
 	{
 		// 빈 줄, 주석 줄은 제외
-		if (line.empty() || line[0] == '#')
+		if (Line.empty() || Line[0] == '#')
 		{
 			continue;
 		}
 
 		// stringstream을 문자열 파싱에 사용
 		// 공백, 개행을 제외함, 특정 문자로 tokenize 가능
-		std::stringstream ss(line);
-		FString token;
-		ss >> token;
+		std::stringstream Ss(Line);
+		FString Token;
+		Ss >> Token;
 
-		if (token.empty())
+		if (Token.empty())
 		{
 			continue;
 		}
 
 		// v : v v1 v2 v3
-		if (token == "v")
+		if (Token == "v")
 		{
-			FVector pos{};
-			ss >> pos.X >> pos.Y >> pos.Z;
-			outRawData.Position.Emplace(pos);
+			FVector Pos{};
+			Ss >> Pos.X >> Pos.Y >> Pos.Z;
+			OutRawData.Position.Emplace(Pos);
 		}
 		// vt : vt u v
-		else if(token == "vt")
+		else if(Token == "vt")
 		{
-			FVector2 uv{};
-			ss >> uv.X >> uv.Y;
-			uv = UVToBasis(uv);
-			outRawData.Tex.Emplace(uv);
+			FVector2 UV{};
+			Ss >> UV.X >> UV.Y;
+			UV = UVToBasis(UV);
+			OutRawData.Tex.Emplace(UV);
 		}
 		// vn : vn vn1 vn2 vn3
-		else if (token == "vn")
+		else if (Token == "vn")
 		{
-			FVector norm{};
-			ss >> norm.X >> norm.Y >> norm.Z;
-			outRawData.Normal.Emplace(norm);
+			FVector Norm{};
+			Ss >> Norm.X >> Norm.Y >> Norm.Z;
+			OutRawData.Normal.Emplace(Norm);
 		}
 		// f : f "v/vt/vn"m "v/vt", "v//vn", "v"
 		// face 파싱 함수로 파싱
-		else if (token == "f")
+		else if (Token == "f")
 		{
-			FObjFace face{};
-			FString faceToken;
+			FObjFace Face{};
+			FString FaceToken;
 			// ss에 남아 있는 f를 제외한 문자열 tokenize
-			while (ss >> faceToken)
+			while (Ss >> FaceToken)
 			{
-				int32 v = 0, vt = 0, vn = 0;
-				ParseFaceTriplet(faceToken, v, vt, vn);
-				FObjVertexRef ref{};
+				int32 V = 0, Vt = 0, Vn = 0;
+				ParseFaceTriplet(FaceToken, V, Vt, Vn);
+				FObjVertexRef Ref{};
 				// 음수 인덱스 보정
-				ref.V = ResolveIndex(v, (int32)outRawData.Position.size());
-				ref.VT = (vt != 0) ? ResolveIndex(vt, (int32)outRawData.Tex.size()) : -1;
-				ref.VN = (vn != 0) ? ResolveIndex(vn, (int32)outRawData.Normal.size()) : -1;
+				Ref.V = ResolveIndex(V, (int32)OutRawData.Position.size());
+				Ref.VT = (Vt != 0) ? ResolveIndex(Vt, (int32)OutRawData.Tex.size()) : -1;
+				Ref.VN = (Vn != 0) ? ResolveIndex(Vn, (int32)OutRawData.Normal.size()) : -1;
 
 				// 정점 인덱스가 음수인 경우 이미 존재하는 인덱스 참조하면 된다.
 				// 정점 개수가 n이고 정점이 -2면 n-2 인덱스
 				// 배열의 크기보다 인덱스 값이 클 수 없음
-				if (ref.V < 0 || ref.V >= (int32)outRawData.Position.size())
+				if (Ref.V < 0 || Ref.V >= (int32)OutRawData.Position.size())
 				{
 					continue;
 				}
-				if (ref.VT >= (int32)outRawData.Tex.size())
+				if (Ref.VT >= (int32)OutRawData.Tex.size())
 				{
-					ref.VT = -1;
+					Ref.VT = -1;
 				}
-				if (ref.VN >= (int32)outRawData.Normal.size())
+				if (Ref.VN >= (int32)OutRawData.Normal.size())
 				{
-					ref.VN = -1;
+					Ref.VN = -1;
 				}
-				face.Conners.Emplace(ref);
+				Face.Conners.Emplace(Ref);
 			}
 			// 면의 경계가 3개 이상 -> 면을 형성함(최소 삼각형)
-			if (face.Conners.size() >= 3)
+			if (Face.Conners.size() >= 3)
 			{
-				// currentSection 변수는 포인터로 rawdata의 Sections변수 참조 중
-				currentSection->Faces.Emplace(face);
-			}			
+				// currentSection 변수는 포인터로 rawdata의 Sections변수 참조 중				
+				CurrentSection->Faces.Emplace(Face);
+			}
 		}
 		// object : submesh로 이해하자.
 		// group : 공통 속성이나 논리적 관계로 구성
-		else if (token == "o" || token == "g")
+		else if (Token == "o" || Token == "g")
 		{
-			FString name;
-			std::getline(ss, name);
-			while (!name.empty() && std::isspace((unsigned char)name.front()))
+			FString Name;
+			std::getline(Ss, Name);
+			while (!Name.empty() && std::isspace((unsigned char)Name.front()))
 			{
-				name.erase(name.begin());
+				Name.erase(Name.begin());
 			}
 			// 그룹이나 오브젝트의 경우 새로운 섹션 추가
-			outRawData.Sections.Emplace();
-			currentSection = &outRawData.Sections.back();
-			currentSection->Name = name;
+			OutRawData.Sections.Emplace();
+			CurrentSection = &OutRawData.Sections.back();
+			CurrentSection->Name = Name;
 		}
-		else if (token == "usemtl")
+		else if (Token == "usemtl")
 		{
+			// usemtl이 시작되면 새로운 섹션 추가
+			OutRawData.Sections.Emplace();
+			CurrentSection = &OutRawData.Sections.back();
 			// 현재 섹션의 mtl명 저장
-			ss >> currentSection->MaterialName;
+			Ss >> CurrentSection->MaterialName;
+			//UE_LOG("mtl name %s", CurrentSection->MaterialName.c_str());
+
 		}
-		else if (token == "mtllib")
+		else if (Token == "mtllib")
 		{
 			// .mtl 파일명 저장
-			ss >> outRawData.Mtllib;
+			FString MtlName;
+			Ss >> MtlName;
+			OutRawData.Mtllib = Path.append(MtlName);
+			UE_LOG("Mtllib %s", OutRawData.Mtllib.c_str());
 		}
 		else
 		{
@@ -288,130 +359,138 @@ bool FObjManager::ParseObjRaw(const FString& filePath, FObjInfo& outRawData)
 	return true;
 }
 
-bool FObjManager::CookObjToStaticMesh(const FObjInfo& raw, const FObjImportOption& opt, FStaticMesh& outMesh)
+bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOption& Opt, FStaticMesh& OutMesh)
 {
-	outMesh.Vertices.clear();
-	outMesh.Indices.clear();
-	outMesh.Sections.clear();
-	outMesh.Mtllib = raw.Mtllib;
+	OutMesh.Vertices.clear();
+	OutMesh.Indices.clear();
+	OutMesh.Sections.clear();
+	OutMesh.Mtllib = Raw.Mtllib;	
 	
 	// .obj의 raw data의 section 순회
-	for (const FObjSection& section : raw.Sections)
+	for (const FObjSection& Section : Raw.Sections)
 	{
 		// 면이 아니면 건너뛰기
-		if (section.Faces.empty())
+		if (Section.Faces.empty())
 		{
 			continue;
 		}
 
-		FMeshSection outSection{};
-		outSection.Name = section.Name;
-		outSection.MaterialName = section.MaterialName;
+		FMeshSection OutSection{};
+		OutSection.Name = Section.Name;
+		OutSection.MaterialName = Section.MaterialName;
 		// 섹션의 시작 인덱스 기록
-		outSection.IndexStart = outMesh.Indices.Num();
+		OutSection.IndexStart = OutMesh.Indices.Num();
 
 		// 중복정점 제거 용 캐시맵
-		TMap<FVertexKey, uint32, FVertexKeyHash> cache;
+		TMap<FVertexKey, uint32, FVertexKeyHash> Cache;
 
 		// FVertexKey(v, vt, vn)의 정점 생성
 		// 또는 존재하는 정점 인덱스 반환
-		auto emit = [&](const FVertexKey& key) -> uint32
+		auto Emit = [&](const FVertexKey& key) -> uint32
 			{				
-				auto it = cache.find(key);
+				auto It = Cache.find(key);
 				// 캐시에 존재하는 정점 인덱스 반환
-				if (it != cache.end())
+				if (It != Cache.end())
 				{
-					return it->second;
+					return It->second;
 				}
 
-				FNormalVertex vertex{};
+				FNormalVertex Vertex{};
 				// raw data에서 vertex position 추출
-				vertex.Position = raw.Position[key.v];
+				Vertex.Position = Raw.Position[key.v];
 
 				if (key.vt >= 0)
 				{
-					vertex.Tex = raw.Tex[key.vt];
-					if (opt.bIsInvertTexV)
+					Vertex.Tex = Raw.Tex[key.vt];
+					if (Opt.bIsInvertTexV)
 					{
-						vertex.Tex = UVToBasis(vertex.Tex);
+						Vertex.Tex = UVToBasis(Vertex.Tex);
 					}
 				}
 				else
 				{
-					vertex.Tex = FVector2(0, 0);
+					Vertex.Tex = FVector2(0, 0);
 				}
 
 				if (key.vn >= 0)
 				{
-					vertex.Normal = raw.Normal[key.vn];
+					Vertex.Normal = Raw.Normal[key.vn];
 				}
 				else
 				{
 					// 임시 노말
-					vertex.Normal = FVector(0, 0, 1);
+					Vertex.Normal = FVector(0, 0, 1);
 				}
 				// 기본 색상
-				vertex.Color = FVector4(0.4f, 0.4f, 0.4f, 1.0f);
+				Vertex.Color = FVector4(0.4f, 0.4f, 0.4f, 1.0f);
 
 				// 정점 배열의 현재 개수가 새로운 인덱스
-				uint32 newIdx = (uint32)outMesh.Vertices.Num();
-				outMesh.Vertices.Emplace(vertex);
-				cache.Emplace(key, newIdx);
-				return newIdx;
+				uint32 NewIdx = (uint32)OutMesh.Vertices.Num();
+				OutMesh.Vertices.Emplace(Vertex);
+				Cache.Emplace(key, NewIdx);
+				return NewIdx;
 			};
 
-		for (const FObjFace& face : section.Faces)
+		for (const FObjFace& Face : Section.Faces)
 		{
-			if (face.Conners.size() < 3)
+			if (Face.Conners.size() < 3)
 			{
 				continue;
 			}
-			const FObjVertexRef& a = face.Conners[0];
+			const FObjVertexRef& A = Face.Conners[0];
 
-			for (size_t i = 1; i + 1 < face.Conners.size(); i++)
+			for (size_t i = 1; i + 1 < Face.Conners.size(); i++)
 			{
-				const FObjVertexRef& b = face.Conners[i];
-				const FObjVertexRef& c = face.Conners[i + 1];
+				const FObjVertexRef& B = Face.Conners[i];
+				const FObjVertexRef& C = Face.Conners[i + 1];
 
-				FVertexKey ka{ a.V, a.VT, a.VN };
-				FVertexKey kb{ b.V, b.VT, b.VN };
-				FVertexKey kc{ c.V, c.VT, c.VN };
+				FVertexKey Ka{ A.V, A.VT, A.VN };
+				FVertexKey Kb{ B.V, B.VT, B.VN };
+				FVertexKey Kc{ C.V, C.VT, C.VN };
 
 				// 람다함수 emit은 내부에서 vertices배열의 개수를 인덱스로 반환한다.
 				// 함수 내부에서 vertices배열에 vertex를 저장한다.
 				// 저장하고 반환하면 저장된 정점의 다음 인덱스가 되어 저장 전에 반환
-				uint32 ia = emit(ka);
-				uint32 ib = emit(kb);
-				uint32 ic = emit(kc);
+				uint32 Ia = Emit(Ka);
+				uint32 Ib = Emit(Kb);
+				uint32 Ic = Emit(Kc);
 
 				// emit함수가 반환한 인덱스를 indices배열에 저장
-				if (!opt.bIsFlipWinding)
+				if (!Opt.bIsFlipWinding)
 				{
-					outMesh.Indices.Emplace(ia);
-					outMesh.Indices.Emplace(ib);
-					outMesh.Indices.Emplace(ic);
+					OutMesh.Indices.Emplace(Ia);
+					OutMesh.Indices.Emplace(Ib);
+					OutMesh.Indices.Emplace(Ic);
 				}
 				else
 				{
-					outMesh.Indices.Emplace(ia);
-					outMesh.Indices.Emplace(ic);
-					outMesh.Indices.Emplace(ib);
+					OutMesh.Indices.Emplace(Ia);
+					OutMesh.Indices.Emplace(Ic);
+					OutMesh.Indices.Emplace(Ib);
 				}
-			}
+			}			
 		}
 
 		// 현재 섹션의 인덱스 개수 계산
 		// indices배열의 원소 개수에서 시작 인덱스를 제외하면 섹션의 인덱스 개수
-		outSection.IndexCount = outMesh.Indices.Num() - outSection.IndexStart;
+		OutSection.IndexCount = OutMesh.Indices.Num() - OutSection.IndexStart;
 		// 
-		if (outSection.IndexCount > 0)
+		if (OutSection.IndexCount > 0)
 		{
-			outMesh.Sections.Emplace(outSection);
+			OutMesh.Sections.Emplace(OutSection);
 		}
 	}
-	outMesh.IndexNum = outMesh.Indices.Num();
+	OutMesh.IndexNum = OutMesh.Indices.Num();
 
-	outMesh.IndexNum = outMesh.Indices.Num();
+	/*if (OutMesh.Mtllib == "Data/minion.mtl")
+	{
+		for (const auto& e : OutMesh.Sections)
+		{
+			UE_LOG("mtl name %s", e.MaterialName.c_str());
+			UE_LOG("group name %s", e.Name.c_str());
+		}
+	}*/
+
 	// 필요하면 노말 재계산 
 	/*if (opt.bIsRecalculateNormals)
 	{

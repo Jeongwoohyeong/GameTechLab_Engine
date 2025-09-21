@@ -160,6 +160,7 @@
     <ClInclude Include="Public\Core\ObjectIterator.h" />
     <ClInclude Include="Public\Math\AABB.h" />
     <ClInclude Include="Public\Components\PrimitiveComponent.h" />
+    <ClInclude Include="Public\Mesh\Material.h" />
     <ClInclude Include="Public\Mesh\StaticMesh.h" />
     <ClInclude Include="Public\Components\StaticMeshComponent.h" />
     <ClInclude Include="Public\Components\TextComponent.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
+    <ClInclude Include="Public\Utility\MtlManager.h" />
     <ClInclude Include="Public\Utility\ObjManager.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -306,6 +308,8 @@
     <ClCompile Include="Private\\Render\UI\Window\\OutlinerWindow.cpp" />
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
+    <ClCompile Include="Public\Mesh\Material.cpp" />
+    <ClCompile Include="Public\Utility\MtlManager.cpp" />
     <ClCompile Include="Public\Utility\ObjManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
