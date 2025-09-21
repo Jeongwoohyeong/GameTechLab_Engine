@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Manager/Level/LevelManager.h"
+#include "Core/EngineStatics.h"
 
 #include "Level/Level.h"
 #include "Manager/Path/PathManager.h"
@@ -17,6 +18,37 @@ IMPLEMENT_SINGLETON(ULevelManager)
 ULevelManager::ULevelManager() = default;
 
 ULevelManager::~ULevelManager() = default;
+
+void ULevelManager::Update() const
+{
+	if (CurrentLevel)
+	{
+		CurrentLevel->Update();
+	}
+}
+void ULevelManager::ClearAllLevels()
+{
+	// 1) 현재 레벨 포함 모든 레벨 파괴
+	if (CurrentLevel)
+	{
+		CurrentLevel->Cleanup();
+		SafeDelete(CurrentLevel);
+		CurrentLevel = nullptr;
+	}
+	// 2) 넘버링 리셋
+	FNameTable::GetInstance().Reset();      // 이름/넘버링 초기화
+	UEngineStatics::ResetUUID();            // NextUUID = 0 등
+}
+
+/**
+ * @brief 기본 레벨을 생성하는 함수
+ * XXX(KHJ): 이걸 지워야 할지, 아니면 Main Init에서만 배제할지 고민
+ */
+void ULevelManager::CreateDefaultLevel()
+{
+	Levels["Default"] = new ULevel("Default");
+	LoadLevel("Default");
+}
 
 void ULevelManager::RegisterLevel(const FString& InName, ULevel* InLevel)
 {
@@ -46,29 +78,12 @@ void ULevelManager::LoadLevel(const FString& InName)
 
 void ULevelManager::Shutdown()
 {
-	for (auto& Level : Levels)
-	{
-		SafeDelete(Level.second);
-	}
+	ClearAllLevels();
 }
 
-/**
- * @brief 기본 레벨을 생성하는 함수
- * XXX(KHJ): 이걸 지워야 할지, 아니면 Main Init에서만 배제할지 고민
- */
-void ULevelManager::CreateDefaultLevel()
-{
-	Levels["Default"] = new ULevel("Default");
-	LoadLevel("Default");
-}
 
-void ULevelManager::Update() const
-{
-	if (CurrentLevel)
-	{
-		CurrentLevel->Update();
-	}
-}
+
+
 
 /**
  * @brief 현재 레벨을 지정된 경로에 저장
@@ -129,97 +144,55 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 {
 	UE_LOG("LevelManager: Loading Level '%s' From: %s", InLevelName.c_str(), InFilePath.c_str());
 
-	// Make New Level
+	// 1) 이전 씬 완전 정리(+UUID/Name 리셋)
+	ClearAllLevels();
+
+	// 2) 새 레벨 뼈대
 	ULevel* NewLevel = new ULevel(InLevelName);
 
-	// 직접 LevelSerializer를 사용하여 로드
 	try
 	{
 		FLevelMetadata Metadata;
 
-		bool bLoadSuccess = FLevelSerializer::LoadLevelFromFile(Metadata, InFilePath);
-		if (!bLoadSuccess)
+		if (!FLevelSerializer::LoadLevelFromFile(Metadata, InFilePath))
 		{
 			UE_LOG("LevelManager: Failed To Load Level From: %s", InFilePath.c_str());
-			delete NewLevel;
+			SafeDelete(NewLevel);
 			return false;
 		}
 
-		// 유효성 검사
-		FString ErrorMessage;
-		if (!FLevelSerializer::ValidateLevelData(Metadata, ErrorMessage))
+		FString Error;
+		if (!FLevelSerializer::ValidateLevelData(Metadata, Error))
 		{
-			UE_LOG("LevelManager: Level Validation Failed: %s", ErrorMessage.c_str());
-			delete NewLevel;
+			UE_LOG("LevelManager: Level Validation Failed: %s", Error.c_str());
+			SafeDelete(NewLevel);
 			return false;
 		}
 
-		// 메타데이터로부터 Level 생성
-		bool bSuccess = LoadLevelFromMetadata(NewLevel, Metadata);
-
-		if (!bSuccess)
+		if (!LoadLevelFromMetadata(NewLevel, Metadata))
 		{
 			UE_LOG("LevelManager: Failed To Create Level From Metadata");
-			delete NewLevel;
+			SafeDelete(NewLevel);
 			return false;
 		}
-		// 카메라 스냅샷은 레벨에 저장만 해둔다.
-		// (에디터가 이 프레임 이후 NewLevel->SetCamera(&Editor.Camera)로 포인터를 주입하면,
-		// 그때 1회 ApplySavedCameraSnapshotToCamera()를 호출)
+
+		// 카메라 스냅샷 적용(옵션)
+		// if (EditorCamera) NewLevel->SetCamera(EditorCamera);
 		NewLevel->SetSavedCameraSnapshot(Metadata.Camera);
+		NewLevel->ApplySavedCameraSnapshotToCamera();
 	}
-	catch (const exception& InException)
+	catch (const std::exception& e)
 	{
-		UE_LOG("LevelManager: Exception During Load: %s", InException.what());
-		delete NewLevel;
+		UE_LOG("LevelManager: Exception During Load: %s", e.what());
+		SafeDelete(NewLevel);
 		return false;
 	}
 
-	// 위에서 이미 로드 완료했으므로 Success 처리
-	bool bSuccess = true;
+	CurrentLevel = NewLevel;
+	CurrentLevel->Init();
 
-	if (bSuccess)
-	{
-		// 기존 레벨이 있다면 정리
-		ULevel* OldLevel;
-
-		if (Levels.find(InLevelName) != Levels.end())
-		{
-			OldLevel = Levels[InLevelName];
-
-			// CurrentLevel이 삭제될 레벨과 같다면 미리 nullptr로 설정
-			if (CurrentLevel == OldLevel)
-			{
-				CurrentLevel->Cleanup();
-				CurrentLevel = nullptr;
-			}
-
-			delete OldLevel;
-			Levels.erase(InLevelName);
-		}
-
-		// 새 레벨 등록 및 활성화
-		RegisterLevel(InLevelName, NewLevel);
-
-		// 현재 레벨을 로드된 레벨로 전환
-		if (CurrentLevel && CurrentLevel != NewLevel)
-		{
-			CurrentLevel->Cleanup();
-		}
-
-		CurrentLevel = NewLevel;
-		CurrentLevel->Init();
-
-		UE_LOG("LevelManager: Level이 성공적으로 로드되어 Level '%s' (으)로 레벨을 교체 완료했습니다", InLevelName.c_str());
-	}
-	else
-	{
-		// 로드 실패 시 정리
-		delete NewLevel;
-		UE_LOG("LevelManager: 파일로부터 Level을 로드하는 데에 실패했습니다");
-	}
-
-	return bSuccess;
+	UE_LOG("LevelManager: Level '%s' loaded and activated", InLevelName.c_str());
+	return true;
 }
 
 /**
@@ -236,25 +209,16 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 		return false;
 	}
 
-
+	// 이전 씬 완전 정리
+	ClearAllLevels();
 	// 1) 새 레벨 생성
 	ULevel* NewLevel = new ULevel(InLevelName);
 
-	// 2) 새 레벨에 기본값 스냅샷 전달 (Editor가 카메라 주입 후 1회 적용)
-	NewLevel->SetSavedCameraSnapshot(GetDefaultCameraSnapshot());
-
-	// 3) 레벨 등록 및 활성화
-	RegisterLevel(InLevelName, NewLevel);
-
-	// 현재 레벨을 새 레벨로 전환
-	if (CurrentLevel && CurrentLevel != NewLevel)
-	{
-		CurrentLevel->Cleanup();
-	}
-
 	CurrentLevel = NewLevel;
 	CurrentLevel->Init();
-
+	// 2) 새 레벨에 기본값 스냅샷 전달 (Editor가 카메라 주입 후 1회 적용)
+	CurrentLevel->SetSavedCameraSnapshot(GetDefaultCameraSnapshot());
+	CurrentLevel->ApplySavedCameraSnapshotToCamera();
 	UE_LOG("LevelManager: Successfully Created and Switched to New Level '%s'", InLevelName.c_str());
 
 	return true;
@@ -276,8 +240,8 @@ path ULevelManager::GenerateLevelFilePath(const FString& InLevelName)
 {
 	path LevelDirectory = GetLevelDirectory();
 	path FileName = InLevelName + ".json";
-	path FullPath = LevelDirectory / FileName;
-	return FullPath;
+	return LevelDirectory / FileName;
+
 }
 
 /**

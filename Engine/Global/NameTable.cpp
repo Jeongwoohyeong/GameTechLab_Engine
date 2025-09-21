@@ -76,3 +76,12 @@ FString FNameTable::ToLower(const FString& Str) const
 		[](unsigned char C) { return std::tolower(C); });
 	return LowerStr;
 }
+
+void FNameTable::Reset()
+{
+	ComparisonStringPool.clear();
+	DisplayStringPool.clear();
+	ComparisonMap.clear();
+	DisplayMap.clear();
+	NextNumberMap.clear(); // 번호 리셋 필수
+}

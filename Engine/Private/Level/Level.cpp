@@ -60,6 +60,24 @@ void ULevel::Render()
 
 void ULevel::Cleanup()
 {
+	SelectedActor = nullptr;
+
+	// 지연 삭제 먼저
+	for (AActor*& A : ActorsToDelete) {
+		RemoveFromRenderQueues(A);
+		SafeDelete(A);
+	}
+	ActorsToDelete.clear();
+
+	// 모든 액터 삭제
+	for (AActor*& A : LevelActors) {
+		RemoveFromRenderQueues(A);
+		SafeDelete(A);
+	}
+	LevelActors.clear();
+
+	StaticMeshComponentsToRender.clear();
+	TextComponentsToRender.clear();
 }
 
 void ULevel::GatherComponentsToRender(AActor* Actor)
@@ -191,6 +209,30 @@ void ULevel::MarkActorForDeletion(AActor* InActor)
 	}
 }
 
+void ULevel::SaveCameraSnapshotFromCamera()
+{
+	if (!Camera) return;
+	FCameraMetadata CameraMetadata;
+	CameraMetadata.Location = Camera->GetLocation();
+	CameraMetadata.Rotation = Camera->GetRotation(); // 쿼터니언이면 변환해서 저장
+	CameraMetadata.Fov = Camera->GetFovY();
+	CameraMetadata.Aspect = Camera->GetAspect();
+	CameraMetadata.NearZ = Camera->GetNearZ();
+	CameraMetadata.FarZ = Camera->GetFarZ();
+	SavedCamera = CameraMetadata;
+}
+
+void ULevel::ApplySavedCameraSnapshotToCamera()
+{
+	if (!Camera) return;
+	Camera->SetLocation(SavedCamera.Location);
+	Camera->SetRotation(SavedCamera.Rotation); // 쿼터니언 API면 거기에 맞춰 Set
+	Camera->SetFovY(SavedCamera.Fov);
+	Camera->SetAspect(SavedCamera.Aspect);
+	Camera->SetNearZ(SavedCamera.NearZ);
+	Camera->SetFarZ(SavedCamera.FarZ);
+}
+
 /**
  * @brief Level에서 Actor를 실질적으로 제거하는 함수
  * 이전 Tick에서 마킹된 Actor를 제거한다
@@ -240,26 +282,17 @@ void ULevel::ProcessPendingDeletions()
 	UE_LOG("[Level] All Pending Deletions Processed");
 }
 
-void ULevel::SaveCameraSnapshotFromCamera()
+void ULevel::RemoveFromRenderQueues(AActor* Owner)
 {
-	if (!Camera) return;
-	FCameraMetadata CameraMetadata;
-	CameraMetadata.Location = Camera->GetLocation();
-	CameraMetadata.Rotation = Camera->GetRotation(); // 쿼터니언이면 변환해서 저장
-	CameraMetadata.Fov = Camera->GetFovY();
-	CameraMetadata.Aspect = Camera->GetAspect();
-	CameraMetadata.NearZ = Camera->GetNearZ();
-	CameraMetadata.FarZ = Camera->GetFarZ();
-	SavedCamera = CameraMetadata;
-}
+	if (!Owner) return;
 
-void ULevel::ApplySavedCameraSnapshotToCamera()
-{
-	if (!Camera) return;
-	Camera->SetLocation(SavedCamera.Location);
-	Camera->SetRotation(SavedCamera.Rotation); // 쿼터니언 API면 거기에 맞춰 Set
-	Camera->SetFovY(SavedCamera.Fov);
-	Camera->SetAspect(SavedCamera.Aspect);
-	Camera->SetNearZ(SavedCamera.NearZ);
-	Camera->SetFarZ(SavedCamera.FarZ);
+	StaticMeshComponentsToRender.erase(
+		std::remove_if(StaticMeshComponentsToRender.begin(), StaticMeshComponentsToRender.end(),
+			[Owner](UStaticMeshComponent* C) { return C && C->GetOuter() == Owner; }),
+		StaticMeshComponentsToRender.end());
+
+	TextComponentsToRender.erase(
+		std::remove_if(TextComponentsToRender.begin(), TextComponentsToRender.end(),
+			[Owner](UTextComponent* C) { return C && C->GetOuter() == Owner; }),
+		TextComponentsToRender.end());
 }
