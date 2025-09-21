@@ -39,17 +39,17 @@ URenderer::~URenderer() = default;
 void URenderer::Init(HWND InWindowHandle)
 {
 	DeviceResources = new UDeviceResources(InWindowHandle);
-	Pipeline = new UPipeline(GetDeviceContext());
+	Pipeline = new UPipeline(GetDeviceContext(), GetDevice());
 
 	/** 래스터라이저 상태 생성 */
-	CreateRasterizerState();
-	CreateDepthStencilState();
-	CreateBlendState();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	CreateStaticMeshShader();
-	CreateDefaultShader();
-	CreateTextShader();
-	CreateLineInstancedShader();
+	//CreateRasterizerState();
+	//CreateDepthStencilState();
+	//CreateBlendState();
+	///////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	//CreateStaticMeshShader();
+	//CreateDefaultShader();
+	//CreateTextShader();
+	//CreateLineInstancedShader();
 	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	CreateInstanceBuffer();
 
@@ -65,135 +65,21 @@ void URenderer::Release()
 	ULineBatchRenderer::GetInstance().Release();
 
 	ReleaseConstantBuffer();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	ReleaseStaticMeshShader();
-	ReleaseDefaultShader();
-	ReleaseTextShader();
-	ReleaseLineInstancedShader();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+
 	ReleaseResource();
 	ReleaseInstanceBuffer();
-	ReleaseBlendState();
+
 
 	SafeDelete(Pipeline);
 	SafeDelete(DeviceResources);
 }
 
-/**
- * @brief 래스터라이저 상태를 생성하는 함수
- */
-void URenderer::CreateRasterizerState()
-{
-}
-
-void URenderer::CreateDepthStencilState()
-{
-	D3D11_DEPTH_STENCIL_DESC DescDefault = {};
-
-	DescDefault.DepthEnable = TRUE;
-	DescDefault.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-
-	DescDefault.DepthFunc = D3D11_COMPARISON_LESS;
-
-	DescDefault.StencilEnable = FALSE;
-	DescDefault.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	DescDefault.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-
-	HRESULT hr = DeviceResources->GetDevice()->CreateDepthStencilState(
-		&DescDefault,
-		&DefaultDepthStencilState
-	);
-
-	D3D11_DEPTH_STENCIL_DESC descDisabled = {};
-
-	descDisabled.DepthEnable = FALSE;
-
-	DescDefault.StencilEnable = FALSE;
-	DescDefault.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	DescDefault.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-
-	hr = DeviceResources->GetDevice()->CreateDepthStencilState(
-		&descDisabled,
-		&DisabledDepthStencilState
-	);
-
-	D3D11_DEPTH_STENCIL_DESC DescText = {};
-
-	//Text(외 투명한 물체)는 깊이테스트를 하되 쓰지는 않아야 함.
-	DescText.DepthEnable = TRUE;
-	DescText.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-
-	DescDefault.StencilEnable = FALSE;
-	DescDefault.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
-	DescDefault.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
-
-	hr = DeviceResources->GetDevice()->CreateDepthStencilState(
-		&DescText,
-		&TextDepthStencilState
-	);
-}
-
-void URenderer::CreateBlendState()
-{
-	D3D11_BLEND_DESC BlendDesc = {};
-
-	D3D11_RENDER_TARGET_BLEND_DESC& RtBlendDesc = BlendDesc.RenderTarget[0];
-
-	RtBlendDesc.BlendEnable = TRUE;
-
-	RtBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	RtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	RtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;
-
-	RtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
-	RtBlendDesc.DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-	RtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-
-	RtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	GetDevice()->CreateBlendState(&BlendDesc, &TextBlendState);
-}
-
-/**
- * @brief 래스터라이저 상태를 해제하는 함수
- */
-void URenderer::ReleaseRasterizerState()
-{
-	for (auto& Cache : RasterCache)
-	{
-		if (Cache.second != nullptr)
-		{
-			Cache.second->Release();
-		}
-	}
-	RasterCache.clear();
-}
 
 /**
  * @brief 렌더러에 사용된 모든 리소스를 해제하는 함수
  */
 void URenderer::ReleaseResource()
 {
-	for (auto& Cache : RasterCache)
-	{
-		if (Cache.second != nullptr)
-		{
-			Cache.second->Release();
-		}
-	}
-	RasterCache.clear();
-
-	if (DefaultDepthStencilState)
-	{
-		DefaultDepthStencilState->Release();
-		DefaultDepthStencilState = nullptr;
-	}
-
-	if (DisabledDepthStencilState)
-	{
-		DisabledDepthStencilState->Release();
-		DisabledDepthStencilState = nullptr;
-	}
 
 	/** 렌더 타겟을 초기화 */
 	if (GetDeviceContext())
@@ -203,232 +89,6 @@ void URenderer::ReleaseResource()
 }
 
 
-void URenderer::CreateStaticMeshShader() 
-{
-	ID3DBlob* VertexShaderCSO;
-	ID3DBlob* PixelShaderCSO;
-
-	D3DCompileFromFile(L"Asset/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
-		&VertexShaderCSO, nullptr);
-
-	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-		VertexShaderCSO->GetBufferSize(), nullptr, &StaticMeshVertexShader);
-
-	D3DCompileFromFile(L"Asset/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
-		&PixelShaderCSO, nullptr);
-
-	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-		PixelShaderCSO->GetBufferSize(), nullptr, &StaticMeshPixelShader);
-
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-
-	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-		VertexShaderCSO->GetBufferSize(), &StaticMeshInputLayout);
-
-	StrideStaticMesh = sizeof(FNormalVertex);
-
-	VertexShaderCSO->Release();
-	PixelShaderCSO->Release();
-}
-
-/**
- * @brief Shader 기반의 CSO 생성 함수
- */
-void URenderer::CreateDefaultShader()
-{
-	ID3DBlob* VertexShaderCSO;
-	ID3DBlob* PixelShaderCSO;
-
-	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
-	                   &VertexShaderCSO, nullptr);
-
-	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-	                                VertexShaderCSO->GetBufferSize(), nullptr, &DefaultVertexShader);
-
-	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
-	                   &PixelShaderCSO, nullptr);
-
-	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-	                               PixelShaderCSO->GetBufferSize(), nullptr, &DefaultPixelShader);
-
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-
-	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-	                               VertexShaderCSO->GetBufferSize(), &DefaultInputLayout);
-
-	Stride = sizeof(FVertex);
-
-	VertexShaderCSO->Release();
-	PixelShaderCSO->Release();
-}
-
-void URenderer::CreateTextShader()
-{
-	ID3DBlob* VertexShaderCSO;
-	ID3DBlob* PixelShaderCSO;
-
-	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
-	                   &VertexShaderCSO, nullptr);
-
-	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-	                                VertexShaderCSO->GetBufferSize(), nullptr, &TextVertexShader);
-
-	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
-	                   &PixelShaderCSO, nullptr);
-
-	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-	                               PixelShaderCSO->GetBufferSize(), nullptr, &TextPixelShader);
-
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{"OFFSET", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-		{"TEXCOORD", 1, DXGI_FORMAT_R32_UINT, 1, 28, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-	};
-
-	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-	                               VertexShaderCSO->GetBufferSize(), &TextInputLayout);
-
-	StrideTextVertex = sizeof(FTextVertex);
-	StrideTextInstance = sizeof(FTextInstance);
-
-	VertexShaderCSO->Release();
-	PixelShaderCSO->Release();
-}
-
-void URenderer::CreateLineInstancedShader()
-{
-	ID3DBlob* VertexShaderCSO = nullptr;
-	ID3DBlob* PixelShaderCSO = nullptr;
-
-	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
-	                   &VertexShaderCSO, nullptr);
-
-	GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
-	                                VertexShaderCSO->GetBufferSize(), nullptr, &LineInstancedVertexShader);
-
-	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
-	                   &PixelShaderCSO, nullptr);
-
-	GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
-	                               PixelShaderCSO->GetBufferSize(), nullptr, &LineInstancedPixelShader);
-
-	// slot 0: POSITION (per-vertex), slot 1: COLOR (per-instance)
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
-	};
-
-	GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
-	                               VertexShaderCSO->GetBufferSize(), &LineInstancedInputLayout);
-
-	VertexShaderCSO->Release();
-	PixelShaderCSO->Release();
-}
-
-void URenderer::ReleaseStaticMeshShader()
-{
-	if (StaticMeshInputLayout)
-	{
-		StaticMeshInputLayout->Release();
-		StaticMeshInputLayout = nullptr;
-	}
-
-	if (StaticMeshPixelShader)
-	{
-		StaticMeshPixelShader->Release();
-		StaticMeshPixelShader = nullptr;
-	}
-
-	if (StaticMeshVertexShader)
-	{
-		StaticMeshVertexShader->Release();
-		StaticMeshVertexShader = nullptr;
-	}
-}
-
-/**
- * @brief Shader Release
- */
-void URenderer::ReleaseDefaultShader()
-{
-	if (DefaultInputLayout)
-	{
-		DefaultInputLayout->Release();
-		DefaultInputLayout = nullptr;
-	}
-
-	if (DefaultPixelShader)
-	{
-		DefaultPixelShader->Release();
-		DefaultPixelShader = nullptr;
-	}
-
-	if (DefaultVertexShader)
-	{
-		DefaultVertexShader->Release();
-		DefaultVertexShader = nullptr;
-	}
-}
-
-void URenderer::ReleaseTextShader()
-{
-	if (TextInputLayout)
-	{
-		TextInputLayout->Release();
-		TextInputLayout = nullptr;
-	}
-
-	if (TextPixelShader)
-	{
-		TextPixelShader->Release();
-		TextPixelShader = nullptr;
-	}
-
-	if (TextVertexShader)
-	{
-		TextVertexShader->Release();
-		TextVertexShader = nullptr;
-	}
-}
-
-void URenderer::ReleaseLineInstancedShader()
-{
-	if (LineInstancedInputLayout)
-	{
-		LineInstancedInputLayout->Release();
-		LineInstancedInputLayout = nullptr;
-	}
-	if (LineInstancedPixelShader)
-	{
-		LineInstancedPixelShader->Release();
-		LineInstancedPixelShader = nullptr;
-	}
-	if (LineInstancedVertexShader)
-	{
-		LineInstancedVertexShader->Release();
-		LineInstancedVertexShader = nullptr;
-	}
-}
-
-void URenderer::ReleaseBlendState()
-{
-	TextBlendState->Release();
-}
 
 void URenderer::Update(UEditor* Editor)
 {
@@ -474,7 +134,16 @@ void URenderer::RenderLevel()
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives) == false) { return; }
 
 	FRenderState State = FRenderState{ D3D11_CULL_BACK, D3D11_FILL_SOLID};
-	Pipeline->UpdatePipeline(CreateStaticMeshPipelineInfo(State));
+	FPipelineDescKey PipelineDescKey;
+	PipelineDescKey.BlendType = EBlendType::Opaque;
+	PipelineDescKey.DepthStencilType = EDepthStencilType::Opaque;
+	PipelineDescKey.ShaderType = EShaderType::StaticMeshShader;
+	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	FRasterizerKey RasterizerKey;
+	RasterizerKey.CullMode = D3D11_CULL_BACK;
+	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	PipelineDescKey.RasterizerKey = RasterizerKey;
+	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
 	TMap<FStaticMeshBatchKey, TArray<FInstanceGPUData>, FStaticMeshBatchKeyHasher> InstanceBatches;
@@ -557,7 +226,17 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 	//shader, rasterizaer state, depth stencil state, input layout 설정///////////////////
 	FRenderState State = FRenderState{D3D11_CULL_NONE, D3D11_FILL_SOLID};
-	Pipeline->UpdatePipeline(CreateTextPipelineInfo(State));
+	FPipelineDescKey PipelineDescKey;
+	PipelineDescKey.BlendType = EBlendType::Transparent;
+	PipelineDescKey.DepthStencilType = EDepthStencilType::Transparent;
+	PipelineDescKey.ShaderType = EShaderType::TextShader;
+	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	FRasterizerKey RasterizerKey;
+	RasterizerKey.CullMode = D3D11_CULL_NONE;
+	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	PipelineDescKey.RasterizerKey = RasterizerKey;
+
+	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 	/////////////////////////////////////////////////////////////////////////////////////
 
 	/////////////텍스처, 샘플러 설정////////////////////
@@ -637,23 +316,17 @@ void URenderer::RenderText(const FVector& CameraLocation)
 
 void URenderer::RenderEditorPrimitive(FEditorPrimitive& Primitive, struct FRenderState& InRenderState)
 {
-	ID3D11DepthStencilState* DepthStencilState =
-		Primitive.bShouldAlwaysVisible ? DisabledDepthStencilState : DefaultDepthStencilState;
+	FPipelineDescKey PipelineDescKey;
+	PipelineDescKey.BlendType = EBlendType::Opaque;
+	PipelineDescKey.DepthStencilType = EDepthStencilType::Opaque;
+	PipelineDescKey.ShaderType = EShaderType::SampleShader;
+	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	FRasterizerKey RasterizerKey;
+	RasterizerKey.CullMode = D3D11_CULL_NONE;
+	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	PipelineDescKey.RasterizerKey = RasterizerKey;
 
-	ID3D11RasterizerState* RasterizerState =
-		GetRasterizerState(InRenderState);
-
-	FPipelineInfo PipelineInfo = {
-		DefaultInputLayout,
-		DefaultVertexShader,
-		RasterizerState,
-		DepthStencilState,
-		DefaultPixelShader,
-		nullptr,
-		Primitive.Topology
-	};
-
-	Pipeline->UpdatePipeline(PipelineInfo);
+	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 
 	Pipeline->SetConstantBuffer(0, true, ConstantBufferModels);
 	UpdateConstant(Primitive.Location, Primitive.Rotation, Primitive.Scale);
@@ -1050,106 +723,4 @@ void URenderer::ReleasePrimitiveInstanceBuffers()
 	}
 
 	StaticMeshStructuredBuffers.Empty();
-}
-
-
-// TODO - 추후 ViewMode가 증가하거나, 바꿔야하는 설정이 많을 경우 별개의 Handler에서 진행하도록 변경
-/**
- * @brief ViewMode를 고려한 PipelineInfo 생성
- * @param InRenderState 렌더할 대상의 RenderState
- * @return RenderState와 ViewMode를 고려한 FPipelineInfo
- */
-FPipelineInfo URenderer::CreatePipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = D3D11_FILL_WIREFRAME;
-		ModifiedRenderState.CullMode = D3D11_CULL_NONE;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{
-		DefaultInputLayout, DefaultVertexShader,
-		RasterizerState, DefaultDepthStencilState, DefaultPixelShader, nullptr,
-		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-	};
-}
-
-FPipelineInfo URenderer::CreateStaticMeshPipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = D3D11_FILL_WIREFRAME;
-		ModifiedRenderState.CullMode = D3D11_CULL_NONE;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{
-		StaticMeshInputLayout, StaticMeshVertexShader,
-		RasterizerState, DefaultDepthStencilState, StaticMeshPixelShader, nullptr,
-		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-	};
-}
-
-FPipelineInfo URenderer::CreateTextPipelineInfo(const FRenderState& InRenderState)
-{
-	FRenderState ModifiedRenderState = InRenderState;
-
-	switch (CurrentViewMode)
-	{
-	case EViewModeIndex::Wireframe:
-		ModifiedRenderState.FillMode = D3D11_FILL_WIREFRAME;
-		ModifiedRenderState.CullMode = D3D11_CULL_NONE;
-		break;
-	case EViewModeIndex::Lit:
-	case EViewModeIndex::Unlit:
-	default:
-		break;
-	}
-
-	ID3D11RasterizerState* RasterizerState = GetRasterizerState(ModifiedRenderState);
-	return FPipelineInfo{
-		TextInputLayout, TextVertexShader,
-		RasterizerState, TextDepthStencilState, TextPixelShader, TextBlendState
-	};
-}
-
-ID3D11RasterizerState* URenderer::GetRasterizerState(const FRenderState& InRenderState)
-{
-	D3D11_FILL_MODE FillMode = InRenderState.FillMode;
-	D3D11_CULL_MODE CullMode = InRenderState.CullMode;
-
-	const FRasterKey Key{FillMode, CullMode};
-	if (auto It = RasterCache.find(Key); It != RasterCache.end())
-		return It->second;
-
-	ID3D11RasterizerState* RasterizerState = nullptr;
-	D3D11_RASTERIZER_DESC RasterizerDesc = {};
-	// RasterizerDesc.FrontCounterClockwise = TRUE; // CCW를 앞면으로 보겠다! (기본값은 CW)
-	RasterizerDesc.FillMode = FillMode;
-	RasterizerDesc.CullMode = CullMode;
-	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
-
-	HRESULT Hr = GetDevice()->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
-
-	if (FAILED(Hr)) { return nullptr; }
-
-	RasterCache.emplace(Key, RasterizerState);
-	return RasterizerState;
 }

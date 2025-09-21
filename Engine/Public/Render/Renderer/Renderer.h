@@ -46,32 +46,14 @@ public:
 	void Init(HWND InWindowHandle);
 	void Release();
 
-	void CreateRasterizerState();
-	void CreateDepthStencilState();
-	void CreateBlendState();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	void CreateStaticMeshShader();
-	void CreateDefaultShader();
-	void CreateTextShader();
-	void CreateLineInstancedShader();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	void CreateConstantBuffer();
 
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	void ReleaseStaticMeshShader();
-	void ReleaseDefaultShader();
-	void ReleaseTextShader();
-	void ReleaseLineInstancedShader();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	static void ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer);
 	void ReleaseConstantBuffer();
-	void ReleaseRasterizerState();
 	void ReleaseResource();
-	void ReleaseBlendState();
 	void ReleaseInstanceBuffer();
 
 	void Update(UEditor* Editor);
-	//void Update();
 	void RenderBegin();
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);
@@ -144,16 +126,6 @@ public:
 
 	/** LineBatchRenderer에서 사용할 공개 메서드 */
 	UPipeline* GetPipeline() const { return Pipeline; }
-	ID3D11InputLayout* GetDefaultInputLayout() const { return DefaultInputLayout; }
-	ID3D11VertexShader* GetDefaultVertexShader() const { return DefaultVertexShader; }
-	ID3D11PixelShader* GetDefaultPixelShader() const { return DefaultPixelShader; }
-	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
-	ID3D11RasterizerState* GetRasterizerState(const FRenderState& InRenderState);
-
-	/** Instanced line shader accessors */
-	ID3D11InputLayout* GetLineInstancedInputLayout() const { return LineInstancedInputLayout; }
-	ID3D11VertexShader* GetLineInstancedVertexShader() const { return LineInstancedVertexShader; }
-	ID3D11PixelShader* GetLineInstancedPixelShader() const { return LineInstancedPixelShader; }
 
 private:
 	UPipeline* Pipeline = nullptr;
@@ -177,29 +149,14 @@ private:
 	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};
 
 
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	ID3D11VertexShader* DefaultVertexShader = nullptr;
-	ID3D11PixelShader* DefaultPixelShader = nullptr;
-	ID3D11InputLayout* DefaultInputLayout = nullptr;
 
-	ID3D11VertexShader* TextVertexShader = nullptr;
-	ID3D11PixelShader* TextPixelShader = nullptr;
-	ID3D11InputLayout* TextInputLayout = nullptr;
+	uint32 StrideStaticMesh = sizeof(FNormalVertex);
 
-	ID3D11VertexShader* LineInstancedVertexShader = nullptr;
-	ID3D11PixelShader* LineInstancedPixelShader = nullptr;
-	ID3D11InputLayout* LineInstancedInputLayout = nullptr;
+	uint32 Stride = sizeof(FVertex);
+	uint32 StrideTextVertex = sizeof(FTextVertex);
+	uint32 StrideTextInstance = sizeof(FTextInstance);
 
-	ID3D11VertexShader* StaticMeshVertexShader = nullptr;
-	ID3D11PixelShader* StaticMeshPixelShader = nullptr;
-	ID3D11InputLayout* StaticMeshInputLayout = nullptr;
-	uint32 StrideStaticMesh = 0;
-
-	uint32 Stride = 0;
-	uint32 StrideTextVertex = 0;
-	uint32 StrideTextInstance = 0;
-
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
+	
 
 	struct FStructuredBufferResource
 	{
@@ -242,39 +199,7 @@ private:
 	};
 	TMap<FStaticMeshBatchKey, FStructuredBufferResource, FStaticMeshBatchKeyHasher> StaticMeshStructuredBuffers;
 private:
-	struct FRasterKey
-	{
-		D3D11_FILL_MODE FillMode = {};
-		D3D11_CULL_MODE CullMode = {};
 
-		bool operator==(const FRasterKey& InKey) const
-		{
-			return FillMode == InKey.FillMode && CullMode == InKey.CullMode;
-		}
-	};
-
-	struct FRasterKeyHasher
-	{
-		size_t operator()(const FRasterKey& InKey) const noexcept
-		{
-			auto Mix = [](size_t& H, size_t V)
-				{
-					H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H << 2);
-				};
-
-			size_t H = 0;
-			Mix(H, (size_t)InKey.FillMode);
-			Mix(H, (size_t)InKey.CullMode);
-
-			return H;
-		}
-	};
-
-	TMap<FRasterKey, ID3D11RasterizerState*, FRasterKeyHasher> RasterCache;
-
-	FPipelineInfo CreatePipelineInfo(const FRenderState& InRenderState);
-	FPipelineInfo CreateStaticMeshPipelineInfo(const FRenderState& InRenderState);
-	FPipelineInfo CreateTextPipelineInfo(const FRenderState& InRenderState);
 	FStructuredBufferResource& GetOrCreateStructuredBuffer(const FStaticMeshBatchKey& InKey);
 	void EnsureStructuredBufferCapacity(FStructuredBufferResource& InResource, uint32 InRequiredInstanceCount);
 	void UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData, uint32 InInstanceCount);

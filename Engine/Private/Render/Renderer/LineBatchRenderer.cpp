@@ -473,23 +473,20 @@ void ULineBatchRenderer::RenderAABBInstances()
     UPipeline* Pipeline = Renderer.GetPipeline();
 
     // 라인용 상태
-    FRenderState LineRenderState;
-    LineRenderState.CullMode = D3D11_CULL_NONE;
-    LineRenderState.FillMode = D3D11_FILL_SOLID;
 
-    ID3D11RasterizerState* RasterizerState = Renderer.GetRasterizerState(LineRenderState);
 
-    FPipelineInfo Info = {
-        Renderer.GetLineInstancedInputLayout(),
-        Renderer.GetLineInstancedVertexShader(),
-        RasterizerState,
-        Renderer.GetDefaultDepthStencilState(),
-        Renderer.GetLineInstancedPixelShader(),
-        nullptr,
-        D3D11_PRIMITIVE_TOPOLOGY_LINELIST
-    };
+	FPipelineDescKey PipelineDescKey;
+	PipelineDescKey.BlendType = EBlendType::Opaque;
+	PipelineDescKey.ShaderType = EShaderType::LineInstanceShader;
+	PipelineDescKey.DepthStencilType = EDepthStencilType::Opaque;
+	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+	FRasterizerKey RasterizerKey;
+	RasterizerKey.CullMode = D3D11_CULL_NONE;
+	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	PipelineDescKey.RasterizerKey = RasterizerKey;
 
-    Pipeline->UpdatePipeline(Info);
+	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
+
 
     // per-vertex: POSITION-only buffer (stride = sizeof(FVector))
     const uint32 StrideVertex = sizeof(FVector);

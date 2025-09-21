@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="Global\Name.h" />
     <ClInclude Include="Global\NameTable.h" />
+    <ClInclude Include="Global\PipelineType.h" />
     <ClInclude Include="Global\Quat.h" />
     <ClInclude Include="Public\Actor\StaticMeshActor.h" />
     <ClInclude Include="Public\Core\ObjectIterator.h" />

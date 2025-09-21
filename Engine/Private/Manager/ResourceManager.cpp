@@ -51,6 +51,11 @@ void UResourceManager::Initialize()
 	CreateTextSampler();
 	////////////////////////////////////////////For Text////////////////////////////////////
 
+
+	CreateStaticMeshShader();
+	CreateDefaultShader();
+	CreateTextShader();
+	CreateLineInstancedShader();
 }
 
 void UResourceManager::Release()
@@ -85,6 +90,8 @@ void UResourceManager::Release()
 		Pair.second->Release();
 	}
 	ShaderResourceViews.clear();
+
+	ReleaseShaders();
 }
 
 UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
@@ -229,3 +236,188 @@ void UResourceManager::LoadCharInfoMap()
 }
 
 ////////////////////////////////////////////For Text////////////////////////////////////
+
+
+void UResourceManager::CreateStaticMeshShader()
+{
+	URenderer& Renderer = URenderer::GetInstance();
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	ID3D11VertexShader* VertexShader;
+	ID3D11PixelShader* PixelShader;
+	ID3D11InputLayout* InputLayout;
+	D3DCompileFromFile(L"Asset/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &VertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/StaticMeshShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &PixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXTURE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	Renderer.GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &InputLayout);
+
+	FShader Shader;
+	Shader.InputLayout = InputLayout;
+	Shader.VertexShader = VertexShader;
+	Shader.PixelShader = PixelShader;
+	Shaders.emplace(EShaderType::StaticMeshShader, Shader);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
+/**
+ * @brief Shader 기반의 CSO 생성 함수
+ */
+void UResourceManager::CreateDefaultShader()
+{
+	URenderer& Renderer = URenderer::GetInstance();
+
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	ID3D11VertexShader* VertexShader;
+	ID3D11PixelShader* PixelShader;
+	ID3D11InputLayout* InputLayout;
+	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &VertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/SampleShader.hlsl", nullptr, nullptr, "MainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &PixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	Renderer.GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &InputLayout);
+
+
+	FShader Shader;
+	Shader.InputLayout = InputLayout;
+	Shader.VertexShader = VertexShader;
+	Shader.PixelShader = PixelShader;
+	Shaders.emplace(EShaderType::SampleShader, Shader);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
+void UResourceManager::CreateTextShader()
+{
+	URenderer& Renderer = URenderer::GetInstance();
+	ID3DBlob* VertexShaderCSO;
+	ID3DBlob* PixelShaderCSO;
+
+	ID3D11VertexShader* VertexShader;
+	ID3D11PixelShader* PixelShader;
+	ID3D11InputLayout* InputLayout;
+
+	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &VertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/TextShader.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &PixelShader);
+
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"OFFSET", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+		{"TEXCOORD", 1, DXGI_FORMAT_R32_UINT, 1, 28, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+	};
+
+	Renderer.GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &InputLayout);
+
+	FShader Shader;
+	Shader.InputLayout = InputLayout;
+	Shader.VertexShader = VertexShader;
+	Shader.PixelShader = PixelShader;
+	Shaders.emplace(EShaderType::TextShader, Shader);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
+void UResourceManager::CreateLineInstancedShader()
+{
+	URenderer& Renderer = URenderer::GetInstance();
+	ID3DBlob* VertexShaderCSO = nullptr;
+	ID3DBlob* PixelShaderCSO = nullptr;
+
+	ID3D11VertexShader* VertexShader;
+	ID3D11PixelShader* PixelShader;
+	ID3D11InputLayout* InputLayout;
+
+	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainVS", "vs_5_0", 0, 0,
+		&VertexShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreateVertexShader(VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), nullptr, &VertexShader);
+
+	D3DCompileFromFile(L"Asset/Shader/LineInstanced.hlsl", nullptr, nullptr, "mainPS", "ps_5_0", 0, 0,
+		&PixelShaderCSO, nullptr);
+
+	Renderer.GetDevice()->CreatePixelShader(PixelShaderCSO->GetBufferPointer(),
+		PixelShaderCSO->GetBufferSize(), nullptr, &PixelShader);
+
+	// slot 0: POSITION (per-vertex), slot 1: COLOR (per-instance)
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1},
+	};
+
+	Renderer.GetDevice()->CreateInputLayout(layout, ARRAYSIZE(layout), VertexShaderCSO->GetBufferPointer(),
+		VertexShaderCSO->GetBufferSize(), &InputLayout);
+
+	FShader Shader;
+	Shader.InputLayout = InputLayout;
+	Shader.VertexShader = VertexShader;
+	Shader.PixelShader = PixelShader;
+	Shaders.emplace(EShaderType::LineInstanceShader, Shader);
+
+	VertexShaderCSO->Release();
+	PixelShaderCSO->Release();
+}
+
+void UResourceManager::ReleaseShaders()
+{
+	for (auto& Shader : Shaders)
+	{
+		Shader.second.InputLayout->Release();
+		Shader.second.PixelShader->Release();
+		Shader.second.VertexShader->Release();
+	}
+}
