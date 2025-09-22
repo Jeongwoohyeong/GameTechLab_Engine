@@ -143,7 +143,7 @@ void URenderer::RenderLevel()
 	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
-	TMap<FStaticMeshBatchKey, TArray<FInstanceGPUData>, FStaticMeshBatchKeyHasher> InstanceBatches;
+	TMap<UStaticMesh*, TArray<FInstanceGPUData>> InstanceBatches;
 
 
 
@@ -155,31 +155,19 @@ void URenderer::RenderLevel()
 	{
 		if (!StaticMeshComponent) { continue; }
 
-		FStaticMeshBatchKey Key;
-		
-		Key.StaticMesh = StaticMeshComponent->GetStaticMesh();
-
-		if (!Key.StaticMesh)
+		UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
+		if (!StaticMesh)
 		{
 			continue;
 		}
 
-		InstanceBatches[Key].Emplace(StaticMeshComponent->GetWorldTransformMatrix(), StaticMeshComponent->GetColor());
-	}
-
-	//그릴 인스턴스가 없는 경우 리턴
-	if (InstanceBatches.IsEmpty())
-	{
-		/*UpdateInstanceDrawConstants(false, 0, 0);
-		ID3D11ShaderResourceView* NullSRV = nullptr;
-		GetDeviceContext()->VSSetShaderResources(0, 1, &NullSRV);*/
-		return;
+		InstanceBatches[StaticMesh].Emplace(StaticMeshComponent->GetWorldTransformMatrix(), StaticMeshComponent->GetColor());
 	}
 
 	//저장해놓은 인스턴스 데이터들을 순회하면서 버퍼를 업데이트하고 렌더링함.
 	for (auto& Batch : InstanceBatches)
 	{
-		const FStaticMeshBatchKey& Key = Batch.first;
+		UStaticMesh* StaticMesh = Batch.first;
 		TArray<FInstanceGPUData>& Instances = Batch.second;
 
 		if (Instances.IsEmpty())
@@ -188,7 +176,7 @@ void URenderer::RenderLevel()
 		}
 
 		//키로 리소스 얻어옴(GPU 버퍼, 리소스 뷰)
-		FStructuredBufferResource& Resource = GetOrCreateStructuredBuffer(Key);
+		FStructuredBufferResource& Resource = GetOrCreateStructuredBuffer(StaticMesh);
 		//리소스가 없거나 크기가 작으면 새로 만들거나 확장함
 		EnsureStructuredBufferCapacity(Resource, static_cast<uint32>(Instances.Num()));
 		if (!Resource.Buffer || !Resource.ShaderResourceView)
@@ -199,16 +187,11 @@ void URenderer::RenderLevel()
 		//리소스에 인스턴스 데이터 업데이트함
 		UploadStructuredBufferData(Resource, Instances.data(), static_cast<uint32>(Instances.Num()));
 
-		//Pipeline->UpdatePipeline(CreatePipelineInfo(State));
-
-		//아래 코드는 헤더파일 참고
-		//UpdateInstanceDrawConstants(true, 0, static_cast<uint32>(Instances.Num()));
-
-		Pipeline->SetVertexBuffer(Key.StaticMesh->GetVertexBuffer(), StrideStaticMesh);
-		Pipeline->SetIndexBuffer(Key.StaticMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
+		Pipeline->SetVertexBuffer(StaticMesh->GetVertexBuffer(), StrideStaticMesh);
+		Pipeline->SetIndexBuffer(StaticMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
 		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
 
-		Pipeline->DrawIndexedInstanced(Key.StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
+		Pipeline->DrawIndexedInstanced(StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 
 	//아래 코드는 헤더파일 참고
@@ -585,8 +568,7 @@ void URenderer::UpdateInstance(const TArray<FTextInstance>* Instance)
 	}
 }
 
-
-URenderer::FStructuredBufferResource& URenderer::GetOrCreateStructuredBuffer(const FStaticMeshBatchKey& InKey)
+URenderer::FStructuredBufferResource& URenderer::GetOrCreateStructuredBuffer(UStaticMesh* InKey)
 {
 	return StaticMeshStructuredBuffers[InKey];
 }

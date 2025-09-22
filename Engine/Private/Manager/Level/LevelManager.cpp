@@ -208,7 +208,7 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 		UE_LOG("LevelManager: Level '%s' Already Exists", InLevelName.c_str());
 		return false;
 	}
-
+	
 	// 이전 씬 완전 정리
 	ClearAllLevels();
 	// 1) 새 레벨 생성

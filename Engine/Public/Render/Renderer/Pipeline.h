@@ -7,7 +7,7 @@ public:
 	UPipeline(ID3D11DeviceContext* InDeviceContext, ID3D11Device* InDevice);
 	~UPipeline();
 
-	const FPipelineInfo GetOrCreatePipelineState(const FPipelineDescKey& InKey);
+	const FPipelineInfo& GetOrCreatePipelineState(const FPipelineDescKey& InKey);
 
 	void UpdatePipeline(FPipelineInfo Info);
 

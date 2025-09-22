@@ -79,7 +79,7 @@ struct FPipelineDescKey
 	EBlendType BlendType;
 	D3D11_PRIMITIVE_TOPOLOGY Topology;
 
-	bool operator==(const FPipelineDescKey& OtherDesc)
+	bool operator==(const FPipelineDescKey& OtherDesc) const
 	{
 		return ShaderType == OtherDesc.ShaderType &&
 			RasterizerKey == OtherDesc.RasterizerKey && // FRasterizerKey의 operator== 호출
@@ -91,7 +91,7 @@ struct FPipelineDescKey
 
 struct FPipelineDescHasher
 {
-	size_t operator()(const FPipelineDescKey& Key)
+	size_t operator()(const FPipelineDescKey& Key) const
 	{
 		auto Mix = [](size_t& H, size_t V)
 			{
