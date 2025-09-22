@@ -2,6 +2,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Level/Level.h"
 #include "Math/AABB.h"
+#include "Mesh/Material.h"
+#include "Utility/ObjManager.h"
 
 IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 
@@ -10,6 +12,19 @@ IMPLEMENT_CLASS(UStaticMeshComponent, UMeshComponent)
 void UStaticMeshComponent::AddToRenderList(ULevel* Level)
 {
 	Level->AddStaticMeshComponentToRender(this);
+}
+
+void UStaticMeshComponent::SetStaticMesh(UStaticMesh* InStaticMesh)
+{
+	StaticMesh = InStaticMesh;
+
+	const FStaticMesh* StaticMeshAsset = InStaticMesh->GetStaticMeshAsset();
+	MaterialList.SetNum(StaticMeshAsset->Sections.Num());
+
+	for (int Index = 0; Index < StaticMeshAsset->Sections.Num(); Index++)
+	{
+		MaterialList[Index] = FObjManager::LoadMaterial(StaticMeshAsset->Sections[Index].MaterialName);
+	}
 }
 
 FAABB UStaticMeshComponent::GetWorldBounds()
@@ -24,7 +39,7 @@ FAABB UStaticMeshComponent::GetWorldBounds()
 		float ScaleZ = FVector(WorldMatrix.Data[0][2], WorldMatrix.Data[1][2], WorldMatrix.Data[2][2]).Length();
 		FVector Position(WorldMatrix.Data[3][0], WorldMatrix.Data[3][1], WorldMatrix.Data[3][2]);
 
-		return StaticMesh->GetLocalAABB().TransformBy(FMatrix::GetModelMatrix(Position,FQuat(), FVector(ScaleX, ScaleY, ScaleZ)));
+		return StaticMesh->GetLocalAABB().TransformBy(FMatrix::GetModelMatrix(Position, FQuat(), FVector(ScaleX, ScaleY, ScaleZ)));
 	}break;
 
 	default:
@@ -46,8 +61,8 @@ bool UStaticMeshComponent::IsRayCollided(const FRay& ModelRay, const FMatrix& Mo
 	for (int32 a = 0; a < Indices.Num(); a = a + 3) //삼각형 단위로 Vertex 위치정보 읽음
 	{
 		const FVector& Vertex1 = Vertices[Indices[a]].Position;
-		const FVector& Vertex2 = Vertices[Indices[a+1]].Position;
-		const FVector& Vertex3 = Vertices[Indices[a+2]].Position;
+		const FVector& Vertex2 = Vertices[Indices[a + 1]].Position;
+		const FVector& Vertex3 = Vertices[Indices[a + 2]].Position;
 
 		if (IsRayTriangleCollided(ModelRay, Vertex1, Vertex2, Vertex3, ModelMatrix, &Distance)) //Ray와 삼각형이 충돌하면 거리 비교 후 최단거리 갱신
 

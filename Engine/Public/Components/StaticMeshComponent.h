@@ -5,7 +5,7 @@
 
 
 class UStaticMesh;
-
+class UMaterial;
 class UStaticMeshComponent : public UMeshComponent
 {
 	DECLARE_CLASS(UStaticMeshComponent, UMeshComponent)
@@ -20,7 +20,8 @@ public:
 
 	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetAssetPathFileName(); else return FString(); }
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
-	void SetStaticMesh(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
+	const UMaterial* GetMaterial(int Index) const { return MaterialList[Index]; }
+	void SetStaticMesh(UStaticMesh* InStaticMesh);
 
 
 	//TODO: Serialize 구현
@@ -33,5 +34,7 @@ private:
 		const FMatrix& ModelMatrix, float* Distance);
 
 	UStaticMesh* StaticMesh = nullptr;
+	TArray<UMaterial*> MaterialList;
+
 };
 

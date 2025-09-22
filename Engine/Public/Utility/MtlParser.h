@@ -1,15 +1,17 @@
 #pragma once
 
+
 struct FObjMaterialInfo;
+class UMaterial;
 
 class FMtlParser
 {
 public:
 	FMtlParser() {};
-	FMtlParser(TMap<FString, TMap<FString, FObjMaterialInfo*>>*);
+	FMtlParser(TMap<FString, UMaterial*>* InMaterials);
 	~FMtlParser() {};
-	bool ParseMtl(const FString& PathFileName);	
+	bool ParseMtl(const FString& PathFileName);
 
 private:
-	TMap<FString, TMap<FString, FObjMaterialInfo*>>* MtlFileMap = nullptr;
+	TMap<FString, UMaterial*>* Materials = nullptr;
 };
