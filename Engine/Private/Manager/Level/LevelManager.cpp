@@ -26,64 +26,27 @@ void ULevelManager::Update() const
 		CurrentLevel->Update();
 	}
 }
-void ULevelManager::ClearAllLevels()
-{
-	// 1) 현재 레벨 포함 모든 레벨 파괴
-	if (CurrentLevel)
-	{
-		CurrentLevel->Cleanup();
-		SafeDelete(CurrentLevel);
-		CurrentLevel = nullptr;
-	}
-	// 2) 넘버링 리셋
-	FNameTable::GetInstance().Reset();      // 이름/넘버링 초기화
-	UEngineStatics::ResetUUID();            // NextUUID = 0 등
-}
 
 /**
- * @brief 기본 레벨을 생성하는 함수
- * XXX(KHJ): 이걸 지워야 할지, 아니면 Main Init에서만 배제할지 고민
+ * @brief New Blank Level 생성
  */
-void ULevelManager::CreateDefaultLevel()
+bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 {
-	Levels["Default"] = new ULevel("Default");
-	LoadLevel("Default");
-}
-
-void ULevelManager::RegisterLevel(const FString& InName, ULevel* InLevel)
-{
-	Levels[InName] = InLevel;
-	if (!CurrentLevel)
-	{
-		CurrentLevel = InLevel;
-	}
-}
-
-void ULevelManager::LoadLevel(const FString& InName)
-{
-	if (Levels.find(InName) == Levels.end())
-	{
-		assert(!"Load할 레벨을 탐색하지 못함");
-	}
-
-	if (CurrentLevel)
-	{
-		CurrentLevel->Cleanup();
-	}
-
-	CurrentLevel = Levels[InName];
-
-	CurrentLevel->Init();
-}
-
-void ULevelManager::Shutdown()
-{
+	UE_LOG("LevelManager: Creating New Level: %s", InLevelName.c_str());
+	// 이전 씬 완전 정리
 	ClearAllLevels();
+	// 1) 새 레벨 생성
+	ULevel* NewLevel = new ULevel(InLevelName);
+	// 2) 새 레벨에 기본값 스냅샷 전달
+	NewLevel->SetSavedCameraSnapshot(GetDefaultCameraSnapshot());
+	CurrentLevel = NewLevel;
+	CurrentLevel->Init();
+
+
+	UE_LOG("LevelManager: Successfully Created and Switched to New Level '%s'", InLevelName.c_str());
+
+	return true;
 }
-
-
-
-
 
 /**
  * @brief 현재 레벨을 지정된 경로에 저장
@@ -176,8 +139,7 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 			return false;
 		}
 
-		// 카메라 스냅샷 적용(옵션)
-		// if (EditorCamera) NewLevel->SetCamera(EditorCamera);
+		// 카메라 스냅샷 적용
 		NewLevel->SetSavedCameraSnapshot(Metadata.Camera);
 		NewLevel->ApplySavedCameraSnapshotToCamera();
 	}
@@ -194,35 +156,25 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 	UE_LOG("LevelManager: Level '%s' loaded and activated", InLevelName.c_str());
 	return true;
 }
-
-/**
- * @brief New Blank Level 생성
- */
-bool ULevelManager::CreateNewLevel(const FString& InLevelName)
+void ULevelManager::ClearAllLevels()
 {
-	UE_LOG("LevelManager: Creating New Level: %s", InLevelName.c_str());
-
-	// 이미 존재하는 레벨 이름인지 확인
-	if (Levels.find(InLevelName) != Levels.end())
+	// 1) 현재 레벨 포함 모든 레벨 파괴
+	if (CurrentLevel)
 	{
-		UE_LOG("LevelManager: Level '%s' Already Exists", InLevelName.c_str());
-		return false;
+		CurrentLevel->SetSelectedActor(nullptr); // ← 명시
+		CurrentLevel->Cleanup();
+		SafeDelete(CurrentLevel);
+		CurrentLevel = nullptr;
 	}
-
-	// 이전 씬 완전 정리
-	ClearAllLevels();
-	// 1) 새 레벨 생성
-	ULevel* NewLevel = new ULevel(InLevelName);
-
-	CurrentLevel = NewLevel;
-	CurrentLevel->Init();
-	// 2) 새 레벨에 기본값 스냅샷 전달 (Editor가 카메라 주입 후 1회 적용)
-	CurrentLevel->SetSavedCameraSnapshot(GetDefaultCameraSnapshot());
-	CurrentLevel->ApplySavedCameraSnapshotToCamera();
-	UE_LOG("LevelManager: Successfully Created and Switched to New Level '%s'", InLevelName.c_str());
-
-	return true;
+	// 2) 넘버링 리셋
+	FNameTable::GetInstance().Reset();      // 이름/넘버링 초기화
+	UEngineStatics::ResetUUID();            // NextUUID = 0 등
 }
+void ULevelManager::Shutdown()
+{
+	ClearAllLevels();
+}
+
 
 /**
  * @brief 레벨 저장 디렉토리 경로 반환

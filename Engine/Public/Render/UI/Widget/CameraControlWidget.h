@@ -15,7 +15,10 @@ public:
 	void PushToCamera();
 
 	// Setter
-	void SetCamera(UCamera* InCamera) { Camera = InCamera; }
+	void SetCamera(UCamera* InCamera)
+	{
+		Camera = InCamera;
+	}
 
 	// Special Member Function
 	UCameraControlWidget();

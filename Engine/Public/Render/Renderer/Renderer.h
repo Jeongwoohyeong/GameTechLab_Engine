@@ -164,42 +164,10 @@ private:
 		uint32 Capacity = 0;	//스트럭처드 버퍼 크기
 	};
 
-	//Vertex, Index, IndexCount, RenderState가 같은 것들은 같은 배치로 묶음.
-	//위의 요소들로 key를 만들고 Hasher는 키 해시값 결정
-	//FInstanceBufferResource는 스트럭처드 버퍼를 위한 구조체
-	/*TMap<FPrimitiveBatchKey, FStructuredBufferResource, FPrimitiveBatchKeyHasher> PrimitiveStructuredBuffers;*/
-
-	//StaticMesh가 구현되면 주석 해제(09/19 )
-	struct FStaticMeshBatchKey
-	{
-		UStaticMesh* StaticMesh = nullptr;
-
-		bool operator==(const FStaticMeshBatchKey& InKey) const
-		{
-			return StaticMesh == InKey.StaticMesh;
-		}
-	};
-
-	struct FStaticMeshBatchKeyHasher
-	{
-		size_t operator()(const FStaticMeshBatchKey& InKey) const noexcept
-		{
-			auto Mix = [](size_t& H, size_t V)
-				{
-					H ^= V + 0x9e3779b97f4a7c15ULL + (H << 6) + (H >> 2);
-				};
-
-			size_t Hash = 0;
-			Mix(Hash, reinterpret_cast<size_t>(InKey.StaticMesh));
-
-
-			return Hash;
-		}
-	};
-	TMap<FStaticMeshBatchKey, FStructuredBufferResource, FStaticMeshBatchKeyHasher> StaticMeshStructuredBuffers;
+	TMap<UStaticMesh*, FStructuredBufferResource> StaticMeshStructuredBuffers;
 private:
 
-	FStructuredBufferResource& GetOrCreateStructuredBuffer(const FStaticMeshBatchKey& InKey);
+	FStructuredBufferResource& GetOrCreateStructuredBuffer(UStaticMesh* InKey);
 	void EnsureStructuredBufferCapacity(FStructuredBufferResource& InResource, uint32 InRequiredInstanceCount);
 	void UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData, uint32 InInstanceCount);
 	void ReleasePrimitiveInstanceBuffers();

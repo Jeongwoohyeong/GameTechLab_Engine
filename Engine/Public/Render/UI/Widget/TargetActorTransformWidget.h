@@ -28,4 +28,6 @@ private:
 	bool bPositionChanged;
 	uint64 LevelMemoryByte;
 	uint32 LevelObjectCount;
+
+	ULevel* LastLevel = nullptr;
 };

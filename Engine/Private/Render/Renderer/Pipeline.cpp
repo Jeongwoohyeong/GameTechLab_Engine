@@ -28,9 +28,13 @@ UPipeline::~UPipeline()
 
 //RaterizerState와 PipelineState를 제외하고는 모두 이미 생성된 것을 써야함(enum이 키값).
 //
-const FPipelineInfo UPipeline::GetOrCreatePipelineState(const FPipelineDescKey& InKey)
+const FPipelineInfo& UPipeline::GetOrCreatePipelineState(const FPipelineDescKey& InKey)
 {
 	UResourceManager& ResourceManager = UResourceManager::GetInstance();
+	if (Pipelines.Find(InKey))
+	{
+		return Pipelines[InKey];
+	}
 	FPipelineInfo PipelineInfo = {};
 	PipelineInfo.BlendState = BlendStates[InKey.BlendType];
 	PipelineInfo.DepthStencilState = DepthStencilStates[InKey.DepthStencilType];
@@ -42,7 +46,9 @@ const FPipelineInfo UPipeline::GetOrCreatePipelineState(const FPipelineDescKey& 
 
 	PipelineInfo.RasterizerState = GetOrCreateRasterizerState(InKey.RasterizerKey);
 
-	return PipelineInfo;
+	Pipelines.emplace(InKey, PipelineInfo);
+
+	return Pipelines[InKey];
 
 }
 

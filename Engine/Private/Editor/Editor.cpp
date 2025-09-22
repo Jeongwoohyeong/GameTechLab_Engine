@@ -36,14 +36,28 @@ UEditor::UEditor()
 
 UEditor::~UEditor() = default;
 
+void UEditor::Initialize()
+{
+	ULevelManager::GetInstance().CreateNewLevel("Default");
+}
 void UEditor::Update()
 {
 	auto& Renderer = URenderer::GetInstance();
 	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
 
+	// 레벨 변경 감지
+	//static ULevel* LastLevel = nullptr;
+	//if (Level != LastLevel) {
+	//	// 새 레벨: 기즈모/픽커 상태 초기화
+	//	Gizmo.EndDrag();
+	//	Gizmo.SetGizmoDirection(EGizmoDirection::None);
+	//	Level->SetSelectedActor(nullptr);
+	//	LastLevel = Level;
+	//}
 	// 현재 레벨에 카메라 주입 보장
 	EnsureLevelHasCamera(Level);
 	// 입력 루틴이 카메라 파라미터를 직접 바꾸므로
+
 	ProcessMouseInput(Level);
 	ProcessKeyboardInput();
 	Camera.Update();
