@@ -53,5 +53,7 @@ void UUIWindowFactory::CreateDefaultUILayout()
 	UIManager.RegisterUIWindow(CreateOutlinerWindow(EUIDockDirection::Center));
 	UIManager.RegisterUIWindow(CreateDetailWindow(EUIDockDirection::Right));
 	UIManager.RegisterUIWindow(CreateExperimentalFeatureWindow(EUIDockDirection::Right));
+	// 콘솔을 여기서 한 번 초기화(준비 완료 표시)
+	UConsoleWindow::GetInstance().Initialize();
 	UE_LOG("UIWindowFactory: 기본적인 UI 생성이 성공적으로 완료되었습니다");
 }

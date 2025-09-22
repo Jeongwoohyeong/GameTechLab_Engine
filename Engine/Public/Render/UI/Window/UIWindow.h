@@ -123,7 +123,6 @@ public:
 	void OnMainWindowResized();
 	void ClampWindow();
 protected:
-	void RenderInternal();
 	void ApplyDockingSettings() const;
 	void UpdateWindowInfo();
 

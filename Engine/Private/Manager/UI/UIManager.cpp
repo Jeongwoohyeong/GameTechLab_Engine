@@ -13,9 +13,6 @@ IMPLEMENT_SINGLETON(UUIManager)
 
 UUIManager::UUIManager()
 {
-	ImGuiHelper = NewObject<UImGuiHelper>();
-	Initialize();
-	//FObjParser::GetInstance().LoadObjStaticMesh("Data/Untitled.obj");
 }
 
 UUIManager::~UUIManager()
@@ -39,6 +36,7 @@ void UUIManager::Initialize()
 
 	UE_LOG("UIManager: UI System 초기화 진행 중...");
 
+	ImGuiHelper = NewObject<UImGuiHelper>();
 	UIWindows.clear();
 	FocusedWindow = nullptr;
 	TotalTime = 0.0f;
@@ -78,6 +76,7 @@ void UUIManager::Release()
 	if (ImGuiHelper)
 	{
 		ImGuiHelper->Release();
+		SafeDelete(ImGuiHelper);
 	}
 
 	// 모든 UI 윈도우 정리
