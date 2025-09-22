@@ -9,7 +9,7 @@ class UStaticMesh;
 class UStaticMeshComponent : public UMeshComponent
 {
 	DECLARE_CLASS(UStaticMeshComponent, UMeshComponent)
-public:
+public:	
 
 	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
 	//자식 StaticMeshComponent가 본인 타입에 맞는 렌더 리스트에 알아서 추가

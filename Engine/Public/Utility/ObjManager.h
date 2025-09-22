@@ -9,7 +9,6 @@ class FObjManager
 	DECLARE_SINGLETON(FObjManager);
 
 public:
-	void Intialize();
 
 	UStaticMesh* LoadObjStaticMesh(const FString& PathFileName);
 

@@ -16,7 +16,6 @@ UResourceManager::~UResourceManager() = default;
 void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
-	FObjManager::GetInstance().Intialize();
 	for (FString& Path : DefaultAssetPaths)
 	{
 		/*FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObj(Path);

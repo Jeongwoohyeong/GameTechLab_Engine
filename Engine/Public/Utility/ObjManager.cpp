@@ -13,7 +13,7 @@ IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager()
 {
-
+	MtlManager = new FMtlParser(&MtlFileMap);
 }
 
 FObjManager::~FObjManager()
@@ -32,18 +32,6 @@ FObjManager::~FObjManager()
 	{
 		delete MtlManager;
 	}
-}
-
-void FObjManager::Intialize()
-{
-	MtlManager = new FMtlParser(&MtlFileMap);
-	LoadObjStaticMeshAsset("Data/cube-tex.obj");
-	LoadObjStaticMeshAsset("Data/sphere.obj");
-	LoadObjStaticMeshAsset("Data/triangle.obj");
-	LoadObjStaticMeshAsset("Data/square.obj");
-	LoadObjStaticMeshAsset("Data/minion.obj");
-	LoadObjStaticMeshAsset("Data/trees9.obj");
-	
 }
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
