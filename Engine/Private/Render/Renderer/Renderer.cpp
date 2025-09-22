@@ -148,7 +148,7 @@ void URenderer::RenderLevel()
 
 
 	//Primitive를 순회하며 Key를 구하고 같은 key를 가진 component의 matrix와 color값들을
-	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨
+	//한데 묶음. Key(매쉬)별로 필요한 matirx와 color가 모두 저장됨s
 	const TArray<UStaticMeshComponent*>& StaticMeshComponentsToRender =
 		ULevelManager::GetInstance().GetCurrentLevel()->GetStaticMeshComponentsToRender();
 	for (UStaticMeshComponent* StaticMeshComponent : StaticMeshComponentsToRender)
@@ -191,30 +191,32 @@ void URenderer::RenderLevel()
 		Pipeline->SetIndexBuffer(StaticMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
 		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
 
-		////////////////// 텍스쳐 적용 테스트 코드////////////////
-		/*UResourceManager& ResourceManager = UResourceManager::GetInstance();
-		UStaticMesh* StaticMesh = Key.StaticMesh;
+
+		////////////// 텍스쳐 적용 테스트 코드////////////////
+		UResourceManager& ResourceManager = UResourceManager::GetInstance();
 		FStaticMesh* Asset = StaticMesh->GetStaticMeshAsset();
 
 		if (Asset && !Asset->Sections.empty())
 		{
-			const FString& MaterialName = Asset->Sections[0].MaterialName;
-			if (!MaterialName.empty())
+			for (int Index = 0; Index < Asset->Sections.Num(); Index++)
 			{
-				const FString& TexturePath = StaticMesh->GetKdTextureFilePath(MaterialName);
-				if (!TexturePath.empty())
+				const FString& MaterialName = Asset->Sections[Index].MaterialName;
+				if (!MaterialName.empty())
 				{
-					ID3D11ShaderResourceView* TextureSRV = ResourceManager.GetTexture(TexturePath);
-					if (TextureSRV)
+					const FString& TexturePath = StaticMesh->GetKdTextureFilePath(MaterialName);
+					if (!TexturePath.empty())
 					{
-						Pipeline->SetShaderResourceView(1, false, TextureSRV);
+						ID3D11ShaderResourceView* TextureSRV = ResourceManager.GetTexture(TexturePath);
+						if (TextureSRV)
+						{
+							Pipeline->SetShaderResourceView(1, false, TextureSRV);
+						}   
 					}
 				}
+				Pipeline->DrawIndexedInstanced(Asset->Sections[Index].IndexCount, Instances.Num(), Asset->Sections[Index].IndexStart, 0, 0);
 			}
-		}*/
-		////////////////// 텍스쳐 적용 테스트 코드////////////////
+		}
 
-		Pipeline->DrawIndexedInstanced(Key.StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 
 	//아래 코드는 헤더파일 참고

@@ -16,14 +16,8 @@ UResourceManager::~UResourceManager() = default;
 void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
-	FObjManager::GetInstance().Intialize();
 	for (FString& Path : DefaultAssetPaths)
 	{
-		/*FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObj(Path);
-		StaticMeshAssets.emplace(Path, StaticMeshAsset);
-		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
-		StaticMesh->SetName(Path);
-		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);*/
 		UStaticMesh* StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(Path);
 		if (!StaticMesh->GetStaticMeshAsset())
 			continue;
@@ -104,19 +98,9 @@ UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
 	}
 	else
 	{
-		/*URenderer& Renderer = URenderer::GetInstance();
-		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObj(Path);
-		if (!StaticMeshAsset)
-		{
-			return nullptr;
-		}
-		StaticMeshAssets.emplace(Path, StaticMeshAsset);
-		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
-
-		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);
-		StaticMeshes.emplace(Path, StaticMesh);*/
 		UStaticMesh* StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(Path);
 		StaticMeshes.emplace(Path, StaticMesh);
+		return StaticMesh;
 	}
 }
 
