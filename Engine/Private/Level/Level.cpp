@@ -21,6 +21,7 @@ ULevel::~ULevel()
 	Cleanup();
 }
 
+// 원래는 레벨 내부 리소스 생성하는 것이 이상적으로 보이지만, 지금은 테스트 코드만 넣어둠
 void ULevel::Init()
 {
 	// TEST CODE
@@ -59,7 +60,8 @@ void ULevel::Cleanup()
 	SelectedActor = nullptr;
 
 	// 지연 삭제 먼저
-	for (AActor*& A : ActorsToDelete) {
+	for (AActor*& A : ActorsToDelete)
+	{
 		A->SetLevel(nullptr);         // 역참조 해제
 		RemoveFromRenderQueues(A);
 		SafeDelete(A);
@@ -67,13 +69,13 @@ void ULevel::Cleanup()
 	ActorsToDelete.clear();
 
 	// 모든 액터 삭제
-	for (AActor*& A : LevelActors) {
+	for (AActor*& A : LevelActors)
+	{
 		A->SetLevel(nullptr);         // 역참조 해제
 		RemoveFromRenderQueues(A);
 		SafeDelete(A);
 	}
 	LevelActors.clear();
-
 	StaticMeshComponentsToRender.clear();
 	TextComponentsToRender.clear();
 	AABBsToRender.clear();
@@ -81,7 +83,10 @@ void ULevel::Cleanup()
 
 void ULevel::GatherComponentsToRender(AActor* Actor)
 {
-	if (!Actor) return;
+	if (!Actor)
+	{
+		return;
+	}
 	URenderer& Renderer = URenderer::GetInstance();
 	for (auto& Component : Actor->GetOwnedComponents())
 	{
@@ -118,23 +123,40 @@ void ULevel::AddTextComponentToRender(UTextComponent* Component)
 // 1) 유효성 검사: 같은 레벨에 속하고, 삭제 대기 아님, 리스트에 실제로 존재
 bool ULevel::IsActorValid(AActor* InActor) const
 {
-	if (!InActor) return false;
+	if (!InActor)
+	{
+		return false;
+	}
 	// Actor가 자신의 Level 포인터를 가진다면 가장 빠른 1차 필터
-	//if (InActor->GetLevel() != this) return false;                     // (있다면 사용)
+	if (InActor->GetLevel() != this)  // (있다면 사용)
+	{
+		return false;                    
+	}
 	if (std::find(LevelActors.begin(), LevelActors.end(), InActor) == LevelActors.end())
+	{
 		return false;
+	}
+
 	if (std::find(ActorsToDelete.begin(), ActorsToDelete.end(), InActor) != ActorsToDelete.end())
+	{
 		return false;
+	}
 	return true;
 }
 
 void ULevel::SetSelectedActor(AActor* InActor)
 {
 	// 선택 해제 요청
-	if (!InActor) { SelectedActor = nullptr; return; }
+	if (!InActor)
+	{
+		SelectedActor = nullptr; return;
+	}
 
 	// 새로 고른 대상이 유효하지 않으면 무시하고 선택 해제
-	if (!IsActorValid(InActor)) { SelectedActor = nullptr; return; }
+	if (!IsActorValid(InActor))
+	{
+		SelectedActor = nullptr; return;
+	}
 	
 	SelectedActor = InActor;
 	if (SelectedActor)
@@ -242,6 +264,22 @@ void ULevel::ApplySavedCameraSnapshotToCamera()
 	Camera->SetFarZ(SavedCamera.FarZ);
 }
 
+void ULevel::SetSavedCameraSnapshot(const FCameraMetadata& In)
+{
+	SavedCamera = In;
+	bSavedCameraDirty = true;  // 더티 플래그 들어왔으니 적용 대기
+}
+
+// 더티 플래그를 보고 카메라에 저장된 스냅샷을 적용
+void ULevel::TryApplySavedCameraSnapshot()
+{
+	if (bSavedCameraDirty && Camera)
+	{
+		ApplySavedCameraSnapshotToCamera();
+		bSavedCameraDirty = false;    // 한 번만 적용
+	}
+}
+
 /**
  * @brief Level에서 Actor를 실질적으로 제거하는 함수
  * 이전 Tick에서 마킹된 Actor를 제거한다
@@ -309,6 +347,9 @@ void ULevel::RemoveFromRenderQueues(AActor* Owner)
 
 bool ULevel::IsPendingDeletion(AActor* InActor) const
 {
-	if (!InActor) return false;
+	if (!InActor)
+	{
+		return false;
+	}
 	return std::find(ActorsToDelete.begin(), ActorsToDelete.end(), InActor) != ActorsToDelete.end();
 }

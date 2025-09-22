@@ -34,9 +34,18 @@ public:
 
 	// ----- Components -----
 	// Getter & Setter
-	USceneComponent* GetRootComponent() const { return RootComponent; }
-	TArray<UActorComponent*> GetOwnedComponents() const { return OwnedComponents; }
-	void SetRootComponent(USceneComponent* InOwnedComponents) { RootComponent = InOwnedComponents; }
+	USceneComponent* GetRootComponent() const
+	{
+		return RootComponent;
+	}
+	TArray<UActorComponent*> GetOwnedComponents() const
+	{
+		return OwnedComponents;
+	}
+	void SetRootComponent(USceneComponent* InOwnedComponents)
+	{
+		RootComponent = InOwnedComponents;
+	}
 
 	// ----- Actor state -----
 	const FVector& GetActorLocation() const;
@@ -45,8 +54,14 @@ public:
 	const FVector& GetActorScale3D() const;
 
 	// ----- Level back-pointer (비소유) -----
-	ULevel* GetLevel() const { return OwnerLevel; }
-	void    SetLevel(ULevel* InLevel) { OwnerLevel = InLevel; } // 레벨에서만 호출
+	ULevel* GetLevel() const
+	{
+		return OwnerLevel;
+	}
+	void SetLevel(ULevel* InLevel) // 레벨에서만 호출
+	{
+		OwnerLevel = InLevel;
+	}
 
 	//테스트용
 	FString GetStaticMeshName() const;
@@ -55,8 +70,7 @@ public:
 private:
 	USceneComponent* RootComponent = nullptr;
 	TArray<UActorComponent*> OwnedComponents;
-	// 현재 자신이 속한 레벨(비소유, 생명주기 소유권 없음)
-	ULevel* OwnerLevel = nullptr;
+	ULevel* OwnerLevel = nullptr; 	// 현재 자신이 속한 레벨(비소유, 생명주기 소유권 없음)
 };
 
 template <typename T>

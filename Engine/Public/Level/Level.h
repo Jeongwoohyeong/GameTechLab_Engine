@@ -73,16 +73,16 @@ public:
 	}
 
 	// ▼ 카메라 스냅샷 저장/적용
-	void SaveCameraSnapshotFromCamera();
-	void ApplySavedCameraSnapshotToCamera();
-	void SetSavedCameraSnapshot(const FCameraMetadata& In)
-	{
-		SavedCamera = In;
-	}
 	const FCameraMetadata& GetSavedCameraSnapshot() const
 	{
 		return SavedCamera;
 	}
+	void SaveCameraSnapshotFromCamera();
+	void ApplySavedCameraSnapshotToCamera();
+	void SetSavedCameraSnapshot(const FCameraMetadata& In);
+
+	// 새로 추가: 더티면 적용(Init/포인터 바인딩/로드 완료 등 '언제든' 호출 가능)
+	void TryApplySavedCameraSnapshot();
 private:
 	// 지연 삭제 처리 함수
 	void ProcessPendingDeletions();
@@ -98,7 +98,7 @@ private:
 
 	UCamera* Camera = nullptr;          // 비소유
 	FCameraMetadata SavedCamera;        // 직렬화 대상으로 보관
-
+	bool bSavedCameraDirty = false;   // 추가
 	//렌더러에게 아래의 것들을 그려달라고 주문할 거임
 
 	TArray<UStaticMeshComponent*> StaticMeshComponentsToRender;

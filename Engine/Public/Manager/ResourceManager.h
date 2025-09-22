@@ -42,7 +42,7 @@ private:
 
 	void ReleaseShaders();
 
-	TArray<FString> DefaultAssetPaths = { "Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj", "Data/minion.obj" };
+	TArray<FString> DefaultAssetPaths = { "Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj", "Data/minion.obj", "Data/trees9.obj"};
 	TMap<FString, FStaticMesh*> StaticMeshAssets;
 	TMap<FString, UStaticMesh*> StaticMeshes;
 

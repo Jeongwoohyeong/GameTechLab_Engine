@@ -25,7 +25,7 @@ void UActorTerminationWidget::Update()
 		SelectedActor = nullptr;
 		return;
 	}
-
+	// 레벨의 현재 선택 대상 동기화 (유효성 검사 포함)
 	AActor* CurrSel = Level->GetSelectedActor();
 	if (!Level->IsActorValid(CurrSel)) CurrSel = nullptr;
 
@@ -39,8 +39,6 @@ void UActorTerminationWidget::RenderWidget()
 {
 	auto& InputManager = UInputManager::GetInstance();
 
-	// ImGui::Text("Actor Management");
-
 	if (SelectedActor)
 	{
 		ImGui::TextColored(ImVec4(1.0f, 0.6f, 0.6f, 1.0f), "Selected: %s (%p)",
@@ -50,10 +48,6 @@ void UActorTerminationWidget::RenderWidget()
 		{
 			DeleteSelectedActor();
 		}
-	}
-	else
-	{
-		// ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No Actor Selected For Deletion");
 	}
 }
 
