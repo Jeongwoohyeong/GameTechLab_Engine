@@ -2,6 +2,7 @@
 #include "Class.h"
 #include "Global/Memory.h"
 
+
 UCLASS()
 class UObject
 {

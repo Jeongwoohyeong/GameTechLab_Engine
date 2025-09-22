@@ -2,10 +2,13 @@
 #include "Mesh/StaticMesh.h"
 #include "Render/Renderer/Renderer.h"
 #include "Math/AABB.h"
+#include "Mesh/Material.h"
+
 IMPLEMENT_CLASS(UStaticMesh, UObject)
 
 UStaticMesh::UStaticMesh()
 {
+	MaterialInfo = NewObject<UMaterial>();
 }
 
 UStaticMesh::UStaticMesh(FStaticMesh* InStaticMeshAsset)
@@ -23,6 +26,11 @@ UStaticMesh::~UStaticMesh()
 	{
 		IndexBuffer->Release();
 	}
+	if (MaterialInfo)
+	{
+		delete MaterialInfo;
+		MaterialInfo = nullptr;
+	}
 }
 
 FStaticMesh* UStaticMesh::GetStaticMeshAsset()
@@ -38,6 +46,26 @@ FAABB UStaticMesh::GetLocalAABB()
 		CalculateLocalAABB();
 	}
 	return AABB;
+}
+
+const FObjMaterialInfo* UStaticMesh::GetMaterialInfo(const FString& MtlName) const
+{
+	return MaterialInfo->GetMaterialInfo(MtlName);
+}
+
+const FString& UStaticMesh::GetKdTextureFilePath(const FString& MtlName) const
+{
+	return MaterialInfo->GetKdTextureFilePath(MtlName);
+}
+
+const FString& UStaticMesh::GetKsTextureFilePath(const FString& MtlName) const
+{
+	return MaterialInfo->GetKsTextureFilePath(MtlName);
+}
+
+const FString& UStaticMesh::GetBumpTextureFilePath(const FString& MtlName) const
+{
+	return MaterialInfo->GetBumpTextureFilePath(MtlName);
 }
 
 void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
@@ -63,6 +91,10 @@ void UStaticMesh::SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset)
 	IndexNum = InStaticMeshAsset->IndexNum;
 }
 
+void UStaticMesh::SetMaterialInfo(TMap<FString, FObjMaterialInfo*>* InMaterialInfo)
+{
+	MaterialInfo->SetMaterialInfo(InMaterialInfo);
+}
 
 
 void UStaticMesh::CalculateLocalAABB()

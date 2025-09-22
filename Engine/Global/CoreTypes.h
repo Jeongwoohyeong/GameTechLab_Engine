@@ -187,6 +187,21 @@ struct FStaticMesh
 		const TArray<FMeshSection>& sections, uint32 indexNum)
 		: PathFileName(name), Vertices(vertices), Indices(indices), Sections{}, IndexNum(indexNum) {}
 };
+
+struct FObjMaterialInfo
+{
+	FVector Ka, Kd, Ks, Ke;
+	float Ns, Ni, d;
+	uint32 illum;
+	FString Map_Kd;
+	FString Map_Ks;
+	FString Map_bump;
+
+	FObjMaterialInfo() : Ka{}, Kd{}, Ks{}, Ke{}, Ns(0), Ni(0), d(0), illum(-1) {}
+	FObjMaterialInfo(const FVector& _Ka, const FVector& _Kd, const FVector& _Ks, const FVector& _Ke,
+		float _Ns, float _Ni, float _d, uint32 _illum)
+		:Ka(_Ka), Kd(_Kd), Ks(_Ks), Ke(_Ke), Ns(_Ns), Ni(_Ni), d(_d), illum(_illum) {}
+};
 #pragma endregion
 
 //TMap<char, FCharacterInfo> CharInfoMap;

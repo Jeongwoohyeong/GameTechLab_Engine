@@ -2,7 +2,7 @@
 #include "Manager/ResourceManager.h"
 #include "Mesh/VertexDatas.h"
 #include "Render/Renderer/Renderer.h"
-#include "Utility/ObjParser.h"
+#include "Utility/ObjManager.h"
 #include "Mesh/StaticMesh.h"
 #include <ranges>
 
@@ -16,13 +16,15 @@ UResourceManager::~UResourceManager() = default;
 void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
+	FObjManager::GetInstance().Intialize();
 	for (FString& Path : DefaultAssetPaths)
 	{
-		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObjStaticMesh(Path);
+		/*FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObj(Path);
 		StaticMeshAssets.emplace(Path, StaticMeshAsset);
 		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
 		StaticMesh->SetName(Path);
-		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);
+		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);*/
+		UStaticMesh* StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(Path);
 		if (!StaticMesh->GetStaticMeshAsset())
 			continue;
 		StaticMeshes.emplace(Path, StaticMesh);
@@ -102,8 +104,8 @@ UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
 	}
 	else
 	{
-		URenderer& Renderer = URenderer::GetInstance();
-		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObjStaticMesh(Path);
+		/*URenderer& Renderer = URenderer::GetInstance();
+		FStaticMesh* StaticMeshAsset = FObjParser::GetInstance().LoadObj(Path);
 		if (!StaticMeshAsset)
 		{
 			return nullptr;
@@ -112,6 +114,8 @@ UStaticMesh* UResourceManager::GetStaticMesh(const FString& Path)
 		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
 
 		StaticMesh->SetStaticMeshAsset(StaticMeshAsset);
+		StaticMeshes.emplace(Path, StaticMesh);*/
+		UStaticMesh* StaticMesh = FObjManager::GetInstance().LoadObjStaticMesh(Path);
 		StaticMeshes.emplace(Path, StaticMesh);
 	}
 }
