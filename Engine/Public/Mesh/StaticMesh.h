@@ -20,14 +20,14 @@ public:
 	FStaticMesh* GetStaticMeshAsset();
 	FAABB GetLocalAABB();
 	EPrimitiveType GetPrimitiveType() const { return PrimitiveType; }
-	const FObjMaterialInfo* GetMaterialInfo() const;
-	const FString& GetKdTextureFilePath() const;
-	const FString& GetKsTextureFilePath() const;
-	const FString& GetBumpTextureFilePath() const;
+	const FObjMaterialInfo* GetMaterialInfo(const FString& MtlName) const;
+	const FString& GetKdTextureFilePath(const FString& MtlName) const;
+	const FString& GetKsTextureFilePath(const FString& MtlName) const;
+	const FString& GetBumpTextureFilePath(const FString& MtlName) const;
 
 	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset);
 	void SetPrimtiveType(EPrimitiveType Type) { PrimitiveType = Type; }
-	void SetMaterialInfo(FObjMaterialInfo* InMaterialInfo);
+	void SetMaterialInfo(TMap<FString, FObjMaterialInfo*>* InMaterialInfo);
 
 
 private:

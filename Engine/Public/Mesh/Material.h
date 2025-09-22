@@ -7,18 +7,18 @@ class UMaterial : public UObject
 
 public:
 	UMaterial();
-	UMaterial(FObjMaterialInfo* InFObjMaterial);
+	UMaterial(TMap<FString, FObjMaterialInfo*>* InFObjMaterial);
 	~UMaterial();
 	
-	const FObjMaterialInfo* GetMaterialInfo() const { return ObjMaterialInfo; }
-	const FString& GetKdTextureFilePath() const { return KdTextureFilePath; }
-	const FString& GetKsTextureFilePath() const { return KsTextureFilePath; }
-	const FString& GetBumpTextureFilePath() const { return BumpTextureFilePath; }
+	const FObjMaterialInfo* GetMaterialInfo(const FString& MtlName) const;
+	const FString& GetKdTextureFilePath(const FString& MtlName);
+	const FString& GetKsTextureFilePath(const FString& MtlName);
+	const FString& GetBumpTextureFilePath(const FString& MtlName);
 
-	void SetMaterialInfo(FObjMaterialInfo* InFObjMaterial);
+	void SetMaterialInfo(TMap<FString, FObjMaterialInfo*>* InFObjMaterial);
 
 private:
-	FObjMaterialInfo* ObjMaterialInfo = nullptr;
+	TMap<FString, FObjMaterialInfo*>* ObjMaterialInfoMap;
 	FString KdTextureFilePath{};
 	FString KsTextureFilePath{};
 	FString BumpTextureFilePath{};

@@ -1,9 +1,12 @@
 #include "pch.h"
-#include "MtlManager.h"
+#include "MtlParser.h"
 
-TMap<FString, TMap<FString, FObjMaterialInfo*>> FMtlManager::MtlFileMap{};
+FMtlParser::FMtlParser(TMap<FString, TMap<FString, FObjMaterialInfo*>>* InMtlFileMap)
+{
+	MtlFileMap = InMtlFileMap;
+}
 
-bool FMtlManager::ParseMtl(const FString& PathFileName)
+bool FMtlParser::ParseMtl(const FString& PathFileName)
 {
 	ifstream File(PathFileName);
 
@@ -122,50 +125,7 @@ bool FMtlManager::ParseMtl(const FString& PathFileName)
 		MtlInfoMap.Emplace(CurrentMtlName, CurrentMtlInfo);
 	}
 
-	MtlFileMap.Emplace(PathFileName, MtlInfoMap);
+	MtlFileMap->Emplace(PathFileName, MtlInfoMap);
 
 	return true;
-}
-
-FObjMaterialInfo* FMtlManager::LoadMtlInfo(const FString& MtlFileName, const FString& MtlName)
-{
-	auto MtlMapIt = MtlFileMap.find(MtlFileName);
-
-	if (MtlMapIt == MtlFileMap.end())
-	{
-		if (!ParseMtl(MtlFileName))
-		{
-			UE_LOG("%s Parsing fail", MtlFileName.c_str());
-			return nullptr;
-		}
-		MtlMapIt = MtlFileMap.find(MtlFileName);
-	}
-
-	TMap<FString, FObjMaterialInfo*> MtlInfoMap = (*MtlMapIt).second;
-
-	auto MtlInfo = MtlInfoMap.find(MtlName);
-
-	if (MtlInfo == MtlInfoMap.end())
-	{
-		UE_LOG("%s 정보가 없습니다.", MtlName.c_str());
-		return nullptr;
-	}
-
-	FObjMaterialInfo* TargetInfo = (*MtlInfo).second;
-
-	UE_LOG("Mtl File Name %s", MtlFileName.c_str());
-	UE_LOG("Mtl Name %s", MtlName.c_str());
-	UE_LOG("Mtl Info");
-	UE_LOG("Ka %f %f %f", TargetInfo->Ka.X, TargetInfo->Ka.Y, TargetInfo->Ka.Z);
-	UE_LOG("Kd %f %f %f", TargetInfo->Kd.X, TargetInfo->Kd.Y, TargetInfo->Kd.Z);
-	UE_LOG("Ks %f %f %f", TargetInfo->Ks.X, TargetInfo->Ks.Y, TargetInfo->Ks.Z);
-	UE_LOG("Ke %f %f %f", TargetInfo->Ke.X, TargetInfo->Ke.Y, TargetInfo->Ke.Z);
-	UE_LOG("Ns %f Ni %f d %f", TargetInfo->Ns, TargetInfo->Ni, TargetInfo->d);
-	UE_LOG("map_kd %s", TargetInfo->Map_Kd.c_str());
-	UE_LOG("map_ks %s", TargetInfo->Map_Ks.c_str());
-	UE_LOG("map_bump %s", TargetInfo->Map_bump.c_str());
-	UE_LOG("illum %d", TargetInfo->illum);
-
-
-	return TargetInfo;
 }

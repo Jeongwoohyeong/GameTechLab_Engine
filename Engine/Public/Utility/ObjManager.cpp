@@ -3,10 +3,11 @@
 #include "Manager/Path/PathManager.h"
 #include "public/Mesh/StaticMesh.h"
 #include "Public/Core/ObjectIterator.h"
-#include "Public/Utility/MtlManager.h"
+#include "Public/Utility/MtlParser.h"
 
 TMap<FString, FStaticMesh*> FObjManager::ObjStaticMap{};
-FMtlManager* FObjManager::MtlManager{};
+TMap<FString, TMap<FString, FObjMaterialInfo*>> FObjManager::MtlFileMap{};
+FMtlParser* FObjManager::MtlManager{};
 
 IMPLEMENT_SINGLETON(FObjManager)
 
@@ -17,6 +18,16 @@ FObjManager::FObjManager()
 
 FObjManager::~FObjManager()
 {
+	if (!MtlFileMap.empty())
+	{
+		ReleaseMtlInfo();
+	}
+
+	if (!ObjStaticMap.empty())
+	{
+		ReleaseStaticMesh();
+	}
+
 	if (MtlManager)
 	{
 		delete MtlManager;
@@ -25,7 +36,7 @@ FObjManager::~FObjManager()
 
 void FObjManager::Intialize()
 {
-	MtlManager = new FMtlManager();
+	MtlManager = new FMtlParser(&MtlFileMap);
 	LoadObjStaticMeshAsset("Data/cube-tex.obj");
 	LoadObjStaticMeshAsset("Data/sphere.obj");
 	LoadObjStaticMeshAsset("Data/triangle.obj");
@@ -53,7 +64,6 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 		StaticMesh->SetStaticMeshAsset(Asset);
 		Result = StaticMesh;
 	}
-
 	
 	if (PathFileName.find("sphere") != PathFileName.npos)
 	{
@@ -72,6 +82,12 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 		Result->SetPrimtiveType(EPrimitiveType::Triangle);
 	}
 
+	FString MtlFileName = Result->GetStaticMeshAsset()->Mtllib;
+	if (!MtlFileName.empty() && LoadMtlMap(MtlFileName))
+	{		
+		Result->SetMaterialInfo(&(*MtlFileMap.find(MtlFileName)).second);
+	}
+
 	return Result;
 }
 
@@ -85,16 +101,11 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& pathFileName)
 	FStaticMesh* NewStaticMesh = FObjManager::LoadObj(pathFileName);	
 	ObjStaticMap.emplace(pathFileName, NewStaticMesh);
 
-	FMtlManager mtl;
-	for (const auto& Section : NewStaticMesh->Sections)
+	if (!MtlManager->ParseMtl(NewStaticMesh->Mtllib))
 	{
-		if (!Section.MaterialName.empty())
-		{
-			UE_LOG("----%s %s %s", NewStaticMesh->Mtllib.c_str(), Section.Name.c_str(), Section.MaterialName.c_str());			
-			mtl.LoadMtlInfo(NewStaticMesh->Mtllib, Section.MaterialName);
-		}
+		UE_LOG("LoadObjStaticMeshAsset : Mtl Parsing 실패");
 	}
-
+	
 	/*if (!NewStaticMesh->PathFileName.empty())
 	{
 		UE_LOG("PathFileName %s", NewStaticMesh->PathFileName.c_str());
@@ -144,7 +155,7 @@ FStaticMesh* FObjManager::LoadObj(const FString& filePath)
 	{
 		uint32 Pos = filePath.find('/');
 		FString Name = filePath.substr(Pos + 1);
-		UE_LOG("FObjParser: %s 로드 완료", Name.c_str());
+		UE_LOG("FObjManager: %s 로드 완료", Name.c_str());
 	}
 
 	return NewStaticMesh;
@@ -334,9 +345,16 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 		}
 		else if (Token == "usemtl")
 		{
+			// cli 수정코드
+			if (!CurrentSection->Faces.empty())
+			{
+				OutRawData.Sections.Emplace();
+				CurrentSection = &OutRawData.Sections.back();
+			}
 			// usemtl이 시작되면 새로운 섹션 추가
-			OutRawData.Sections.Emplace();
-			CurrentSection = &OutRawData.Sections.back();
+			// 원래 코드
+			/*OutRawData.Sections.Emplace();
+			CurrentSection = &OutRawData.Sections.back();*/
 			// 현재 섹션의 mtl명 저장
 			Ss >> CurrentSection->MaterialName;
 			//UE_LOG("mtl name %s", CurrentSection->MaterialName.c_str());
@@ -348,7 +366,7 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 			FString MtlName;
 			Ss >> MtlName;
 			OutRawData.Mtllib = Path.append(MtlName);
-			UE_LOG("Mtllib %s", OutRawData.Mtllib.c_str());
+			//UE_LOG("Mtllib %s", OutRawData.Mtllib.c_str());
 		}
 		else
 		{
@@ -481,6 +499,12 @@ bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOptio
 		}
 	}
 	OutMesh.IndexNum = OutMesh.Indices.Num();
+	for (auto& Section : OutMesh.Sections)
+	{
+		UE_LOG("mtl name %s", Section.MaterialName.c_str());
+		UE_LOG("Start Index %d", Section.IndexStart);
+		UE_LOG("Index Count %d", Section.IndexCount);
+	}
 
 	/*if (OutMesh.Mtllib == "Data/minion.mtl")
 	{
@@ -498,4 +522,55 @@ bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOptio
 	}*/
 
 	return true;
+}
+
+bool FObjManager::LoadMtlMap(const FString& MtlFileName)
+{
+	//UE_LOG("mtlfilename %s", MtlFileName.c_str());
+
+	// find의 결과가 end가 아니면 존재
+	bool bIsExist = (MtlFileMap.find(MtlFileName) != MtlFileMap.end());
+
+	// 존재하지 않으면 mtlfile parsing
+	if (!bIsExist)
+	{
+		// 파싱 성공 여부 저장
+		// 성공 : true
+		// 실패 : false
+		bIsExist = MtlManager->ParseMtl(MtlFileName);		
+	}
+
+	if (!bIsExist)
+	{
+		UE_LOG("%s Parsing Fail", MtlFileName.c_str());
+	}
+
+	return bIsExist;
+}
+
+void FObjManager::ReleaseStaticMesh()
+{
+	for (auto It = ObjStaticMap.begin(); It != ObjStaticMap.end(); It++)
+	{
+		if ((*It).second)
+		{
+			delete (*It).second;
+			(*It).second = nullptr;
+		}
+	}
+}
+
+void FObjManager::ReleaseMtlInfo()
+{
+	for (auto MtlFileIt = MtlFileMap.begin(); MtlFileIt != MtlFileMap.end(); MtlFileIt++)
+	{
+		for (auto MtlInfoIt = (*MtlFileIt).second.begin(); MtlInfoIt != (*MtlFileIt).second.end(); MtlInfoIt++)
+		{
+			if ((*MtlInfoIt).second)
+			{
+				delete (*MtlInfoIt).second;
+				(*MtlInfoIt).second = nullptr;
+			}
+		}
+	}
 }
