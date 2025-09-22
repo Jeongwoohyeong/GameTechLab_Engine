@@ -18,7 +18,7 @@ public:
 	bool LoadLevel(const FString& InLevelName, const FString& InFilePath);
 
 	void ClearAllLevels();
-	void Shutdown();
+	void Release();
 
 	// Getter
 	ULevel* GetCurrentLevel() const

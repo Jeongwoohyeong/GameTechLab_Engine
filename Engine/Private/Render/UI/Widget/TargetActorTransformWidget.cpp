@@ -23,7 +23,7 @@ void UTargetActorTransformWidget::Update()
 	// 매 프레임 Level의 선택된 Actor를 확인해서 정보 반영
 	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
 
-	// 1) Level 자체 null이면 전부 리셋하고 종료
+	// Level 자체 null이면 전부 리셋하고 종료
 	if (!Level)
 	{
 		SelectedActor = nullptr;
@@ -35,36 +35,18 @@ void UTargetActorTransformWidget::Update()
 	LevelMemoryByte = Level->GetAllocatedBytes();
 	LevelObjectCount = Level->GetAllocatedCount();
 
-	// 3) 레벨의 현재 선택 대상 동기화 (유효성 검사 포함)
+	// 레벨의 현재 선택 대상 동기화 (유효성 검사 포함)
 	AActor* CurrSel = Level->GetSelectedActor();
 	SelectedActor = Level->IsActorValid(CurrSel) ? CurrSel : nullptr;
 
-	if (!Level->IsActorValid(CurrSel))
-	{
-		CurrSel = nullptr;
-	}
 
-	// 4) 변경 시 갱신
-	if (SelectedActor != CurrSel)
+	if (SelectedActor)
 	{
-		SelectedActor = CurrSel;
-		if (SelectedActor)
-		{
-			UpdateTransformFromActor();
-		}
-		else
-		{
-			// 선택 해제되면 편집 필드도 안전 값으로
-			EditLocation = FVector::ZeroVector;
-			EditRotation = FVector::ZeroVector;
-			EditScale = FVector(1.f, 1.f, 1.f);
-		}
+		UpdateTransformFromActor();
 	}
-
-	// 5) (선택 유지 중) 액터가 틱 중 삭제 대기 등으로 무효화되면 해제
-	if (SelectedActor && !Level->IsActorValid(SelectedActor))
+	else
 	{
-		SelectedActor = nullptr;
+		// 선택 해제되면 편집 필드도 안전 값으로
 		EditLocation = FVector::ZeroVector;
 		EditRotation = FVector::ZeroVector;
 		EditScale = FVector(1.f, 1.f, 1.f);
@@ -75,7 +57,10 @@ void UTargetActorTransformWidget::RenderWidget()
 {
 	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
 	AActor* Actor = (Level && Level->IsActorValid(SelectedActor)) ? SelectedActor : nullptr;
-	if (!Actor) return;
+	if (!Actor)
+	{
+		return;
+	}
 	// Level Memory Information
 	ImGui::Text("Level Memory Information");
 	ImGui::Text("Level Object Count: %s", to_string(LevelObjectCount).c_str());
@@ -190,20 +175,32 @@ void UTargetActorTransformWidget::PostProcess()
 
 void UTargetActorTransformWidget::UpdateTransformFromActor()
 {
-	if (SelectedActor)
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+	AActor* Actor = (Level && Level->IsActorValid(SelectedActor)) ? SelectedActor : nullptr;
+	if (!Actor)
 	{
-		EditLocation = SelectedActor->GetActorLocation();
-		EditRotation = SelectedActor->GetActorRotation();
-		EditScale = SelectedActor->GetActorScale3D();
+		return;
+	}
+	if (Actor)
+	{
+		EditLocation = Actor->GetActorLocation();
+		EditRotation = Actor->GetActorRotation();
+		EditScale = Actor->GetActorScale3D();
 	}
 }
 
 void UTargetActorTransformWidget::ApplyTransformToActor() const
 {
-	if (SelectedActor)
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+	AActor* Actor = (Level && Level->IsActorValid(SelectedActor)) ? SelectedActor : nullptr;
+	if (!Actor)
 	{
-		SelectedActor->SetActorLocation(EditLocation);
-		SelectedActor->SetActorRotation(EditRotation);
-		SelectedActor->SetActorScale3D(EditScale);
+		return;
+	}
+	if (Actor)
+	{
+		Actor->SetActorLocation(EditLocation);
+		Actor->SetActorRotation(EditRotation);
+		Actor->SetActorScale3D(EditScale);
 	}
 }

@@ -182,8 +182,8 @@ void FClientApp::MainLoop()
 void FClientApp::ShutdownSystem()
 {
 	URenderer::GetInstance().Release();
-	UUIManager::GetInstance().Shutdown();
-	ULevelManager::GetInstance().Shutdown();
+	UUIManager::GetInstance().Release();
+	ULevelManager::GetInstance().Release();
 	UResourceManager::GetInstance().Release();
 
 	// 레벨 매니저 정리

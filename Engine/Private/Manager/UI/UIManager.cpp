@@ -65,7 +65,7 @@ void UUIManager::Initialize(HWND InWindowHandle)
 /**
  * @brief UI 매니저 종료 및 정리
  */
-void UUIManager::Shutdown()
+void UUIManager::Release()
 {
 	if (!bIsInitialized)
 	{
