@@ -42,6 +42,8 @@ void FObjManager::Intialize()
 	LoadObjStaticMeshAsset("Data/triangle.obj");
 	LoadObjStaticMeshAsset("Data/square.obj");
 	LoadObjStaticMeshAsset("Data/minion.obj");
+	LoadObjStaticMeshAsset("Data/trees9.obj");
+	
 }
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
@@ -105,27 +107,30 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& pathFileName)
 	{
 		UE_LOG("LoadObjStaticMeshAsset : Mtl Parsing 실패");
 	}
-	
-	/*if (!NewStaticMesh->PathFileName.empty())
-	{
-		UE_LOG("PathFileName %s", NewStaticMesh->PathFileName.c_str());
-		UE_LOG("Mtllib %s", NewStaticMesh->Mtllib.c_str());
-		if (!NewStaticMesh->Sections.empty())
-		{
-			for (const auto& Section : NewStaticMesh->Sections)
-			{
-				if (!Section.Name.empty())
-				{
-					UE_LOG("Section name %s", Section.Name.c_str());
-				}
 
-				if (!Section.MaterialName.empty())
+	// 디버깅용 로그
+	{
+		/*if (!NewStaticMesh->PathFileName.empty())
+		{
+			UE_LOG("PathFileName %s", NewStaticMesh->PathFileName.c_str());
+			UE_LOG("Mtllib %s", NewStaticMesh->Mtllib.c_str());
+			if (!NewStaticMesh->Sections.empty())
+			{
+				for (const auto& Section : NewStaticMesh->Sections)
 				{
-					UE_LOG("Material name %s", Section.MaterialName.c_str());
+					if (!Section.Name.empty())
+					{
+						UE_LOG("Section name %s", Section.Name.c_str());
+					}
+
+					if (!Section.MaterialName.empty())
+					{
+						UE_LOG("Material name %s", Section.MaterialName.c_str());
+					}
 				}
 			}
-		}
-	}*/
+		}*/
+	}
 
 	return NewStaticMesh;
 }
@@ -153,7 +158,7 @@ FStaticMesh* FObjManager::LoadObj(const FString& filePath)
 	}
 
 	{
-		uint32 Pos = filePath.find('/');
+		uint32 Pos = filePath.find_last_of("/\\");
 		FString Name = filePath.substr(Pos + 1);
 		UE_LOG("FObjManager: %s 로드 완료", Name.c_str());
 	}
@@ -237,7 +242,7 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 
 	OutRawData = FObjInfo();
 
-	uint32 Pos = FilePath.find('/');
+	uint32 Pos = FilePath.find_last_of("/\\");
 	FString Path = FilePath.substr(0, Pos + 1);	
 
 	FString Line;

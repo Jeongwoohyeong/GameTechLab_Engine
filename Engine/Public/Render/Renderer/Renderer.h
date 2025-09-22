@@ -101,8 +101,7 @@ public:
 	}
 
 	void CreateInstanceBuffer();
-
-	void UpdateConstant(const UPrimitiveComponent* Primitive);
+		
 	void UpdateConstant(const FMatrix& InMatrix) const;
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;

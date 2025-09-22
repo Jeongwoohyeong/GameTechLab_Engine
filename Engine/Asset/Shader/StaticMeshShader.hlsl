@@ -78,6 +78,8 @@ PS_INPUT MainVS(VS_INPUT Input, uint InstanceId : SV_InstanceID)
 
 float4 MainPS(PS_INPUT Input) : SV_TARGET
 {
-	//float4 TextureColor = Texture.Sample(Sampler, Input.UV);
-	return Input.Color;
+	// 텍스처 적용
+	float4 TextureColor = Texture.Sample(Sampler, Input.UV);	
+	
+	return Input.Color * TextureColor;
 }

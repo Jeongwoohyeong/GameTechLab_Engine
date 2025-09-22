@@ -41,7 +41,7 @@ const FString& UMaterial::GetKdTextureFilePath(const FString& MtlName)
 
 	KdTextureFilePath = (*It).second->Map_Kd;
 
-	if(KdTextureFilePath.empty());
+	if(KdTextureFilePath.empty())
 	{
 		return FString();
 	}

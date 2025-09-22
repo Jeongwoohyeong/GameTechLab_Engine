@@ -208,6 +208,29 @@ void URenderer::RenderLevel()
 		Pipeline->SetIndexBuffer(Key.StaticMesh->GetIndexBuffer(), DXGI_FORMAT_R32_UINT);
 		Pipeline->SetShaderResourceView(0, true, Resource.ShaderResourceView);
 
+		////////////////// 텍스쳐 적용 테스트 코드////////////////
+		/*UResourceManager& ResourceManager = UResourceManager::GetInstance();
+		UStaticMesh* StaticMesh = Key.StaticMesh;
+		FStaticMesh* Asset = StaticMesh->GetStaticMeshAsset();
+
+		if (Asset && !Asset->Sections.empty())
+		{
+			const FString& MaterialName = Asset->Sections[0].MaterialName;
+			if (!MaterialName.empty())
+			{
+				const FString& TexturePath = StaticMesh->GetKdTextureFilePath(MaterialName);
+				if (!TexturePath.empty())
+				{
+					ID3D11ShaderResourceView* TextureSRV = ResourceManager.GetTexture(TexturePath);
+					if (TextureSRV)
+					{
+						Pipeline->SetShaderResourceView(1, false, TextureSRV);
+					}
+				}
+			}
+		}*/
+		////////////////// 텍스쳐 적용 테스트 코드////////////////
+
 		Pipeline->DrawIndexedInstanced(Key.StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 
