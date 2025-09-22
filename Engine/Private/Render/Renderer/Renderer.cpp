@@ -33,16 +33,6 @@ void URenderer::Init(HWND InWindowHandle)
 	DeviceResources = new UDeviceResources(InWindowHandle);
 	Pipeline = new UPipeline(GetDeviceContext(), GetDevice());
 
-	/** 래스터라이저 상태 생성 */
-	//CreateRasterizerState();
-	//CreateDepthStencilState();
-	//CreateBlendState();
-	///////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	//CreateStaticMeshShader();
-	//CreateDefaultShader();
-	//CreateTextShader();
-	//CreateLineInstancedShader();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	CreateInstanceBuffer();
 
 	CreateConstantBuffer();
@@ -200,17 +190,27 @@ void URenderer::RenderLevel()
 		{
 			for (int Index = 0; Index < Asset->Sections.Num(); Index++)
 			{
+				ID3D11ShaderResourceView* TextureSRV = nullptr;
 				const FString& MaterialName = Asset->Sections[Index].MaterialName;
 				if (!MaterialName.empty())
 				{
 					const FString& TexturePath = StaticMesh->GetKdTextureFilePath(MaterialName);
 					if (!TexturePath.empty())
 					{
-						ID3D11ShaderResourceView* TextureSRV = ResourceManager.GetTexture(TexturePath);
+						TextureSRV = ResourceManager.GetTexture(TexturePath);
 						if (TextureSRV)
 						{
 							Pipeline->SetShaderResourceView(1, false, TextureSRV);
 						}   
+					}
+				}
+				if (!TextureSRV)
+				{
+					//에셋에 텍스쳐 없는 경우 흰색 텍스쳐 써서 기본 vertex 컬러 출력되도록 함.
+					TextureSRV = ResourceManager.GetTexture("Data/whitespace.dds");
+					if (TextureSRV)
+					{
+						Pipeline->SetShaderResourceView(1, false, TextureSRV);
 					}
 				}
 				Pipeline->DrawIndexedInstanced(Asset->Sections[Index].IndexCount, Instances.Num(), Asset->Sections[Index].IndexStart, 0, 0);

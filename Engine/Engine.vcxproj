@@ -347,5 +347,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Asset\Font\Roboto-Medium.dds" />
+    <Image Include="Data\whitespace.dds">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Image>
   </ItemGroup>
 </Project>
