@@ -12,7 +12,7 @@ public:
 	// Special Member Function
 	UObject();
 	explicit UObject(const FString& InString);
-	virtual ~UObject() noexcept;
+	virtual ~UObject();
 
 	// Getter & Setter
 	FString GetName() const

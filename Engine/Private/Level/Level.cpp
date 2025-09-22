@@ -18,11 +18,7 @@ ULevel::ULevel(const FString& InName)
 
 ULevel::~ULevel()
 {
-	for (auto Actor : LevelActors)
-	{
-		SafeDelete(Actor);
-	}
-
+	Cleanup();
 }
 
 void ULevel::Init()
@@ -64,6 +60,7 @@ void ULevel::Cleanup()
 
 	// 지연 삭제 먼저
 	for (AActor*& A : ActorsToDelete) {
+		A->SetLevel(nullptr);         // 역참조 해제
 		RemoveFromRenderQueues(A);
 		SafeDelete(A);
 	}
@@ -71,6 +68,7 @@ void ULevel::Cleanup()
 
 	// 모든 액터 삭제
 	for (AActor*& A : LevelActors) {
+		A->SetLevel(nullptr);         // 역참조 해제
 		RemoveFromRenderQueues(A);
 		SafeDelete(A);
 	}
@@ -78,6 +76,7 @@ void ULevel::Cleanup()
 
 	StaticMeshComponentsToRender.clear();
 	TextComponentsToRender.clear();
+	AABBsToRender.clear();
 }
 
 void ULevel::GatherComponentsToRender(AActor* Actor)
@@ -103,27 +102,6 @@ void ULevel::GatherComponentsToRender(AActor* Actor)
 	}
 }
 
-void ULevel::SetSelectedActor(AActor* InActor)
-{
-
-	SelectedActor = InActor;
-	if (SelectedActor)
-	{
-		for (auto& Component : SelectedActor->GetOwnedComponents())
-		{
-			if (Component->GetComponentType() >= EComponentType::Primitive)
-			{
-				UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
-				if (PrimitiveComponent->IsVisible())
-				{
-					PrimitiveComponent->SetColor({1.f, 0.8f, 0.2f, 0.4f});
-				}
-			}
-		}
-	}
-}
-
-
 //StaticMesh가 구현되면 주석 해제(09/19 13:05)
 void ULevel::AddStaticMeshComponentToRender(UStaticMeshComponent* Component)
 {
@@ -135,6 +113,46 @@ void ULevel::AddTextComponentToRender(UTextComponent* Component)
 	TextComponentsToRender.push_back(Component);
 }
 
+
+
+// 1) 유효성 검사: 같은 레벨에 속하고, 삭제 대기 아님, 리스트에 실제로 존재
+bool ULevel::IsActorValid(AActor* InActor) const
+{
+	if (!InActor) return false;
+	// Actor가 자신의 Level 포인터를 가진다면 가장 빠른 1차 필터
+	//if (InActor->GetLevel() != this) return false;                     // (있다면 사용)
+	if (std::find(LevelActors.begin(), LevelActors.end(), InActor) == LevelActors.end())
+		return false;
+	if (std::find(ActorsToDelete.begin(), ActorsToDelete.end(), InActor) != ActorsToDelete.end())
+		return false;
+	return true;
+}
+
+void ULevel::SetSelectedActor(AActor* InActor)
+{
+	// 선택 해제 요청
+	if (!InActor) { SelectedActor = nullptr; return; }
+
+	// 새로 고른 대상이 유효하지 않으면 무시하고 선택 해제
+	if (!IsActorValid(InActor)) { SelectedActor = nullptr; return; }
+	
+	SelectedActor = InActor;
+	if (SelectedActor)
+	{
+		for (auto& Component : SelectedActor->GetOwnedComponents())
+		{
+			if (Component->GetComponentType() >= EComponentType::Primitive)
+			{
+				UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
+				if (PrimitiveComponent->IsVisible())
+				{
+					PrimitiveComponent->SetColor({ 1.f, 0.8f, 0.2f, 0.4f });
+				}
+			}
+		}
+	}
+}
+
 /**
  * @brief Level에서 Actor 제거하는 함수
  */
@@ -144,7 +162,7 @@ bool ULevel::DestroyActor(AActor* InActor)
 	{
 		return false;
 	}
-
+	RemoveFromRenderQueues(InActor);
 	// LevelActors 리스트에서 제거
 	for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
 	{
@@ -160,11 +178,10 @@ bool ULevel::DestroyActor(AActor* InActor)
 	if (SelectedActor == InActor)
 	{
 		SelectedActor = nullptr;
-
 	}
 
 	// Remove
-	delete InActor;
+	SafeDelete(InActor);
 
 	UE_LOG("Level: Actor Destroyed Successfully");
 	return true;
@@ -190,23 +207,15 @@ void ULevel::MarkActorForDeletion(AActor* InActor)
 			return;
 		}
 	}
+	RemoveFromRenderQueues(InActor);
 
-	// 삭제 대기 리스트에 추가
-	ActorsToDelete.push_back(InActor);
-	UE_LOG("Level: Actor Marked For Deletion In Next Tick: %p", InActor);
-
-	// 선택 해제는 바로 처리
 	if (SelectedActor == InActor)
 	{
 		SelectedActor = nullptr;
-
-		//Deprecated : Gizmo는 에디터에서 처리
-		// Gizmo Target도 즉시 해제
-		/*if (Gizmo)
-		{
-			Gizmo->SetTargetActor(nullptr);
-		}*/
 	}
+	// 삭제 대기 리스트에 추가
+	ActorsToDelete.push_back(InActor);
+	UE_LOG("Level: Actor Marked For Deletion In Next Tick: %p", InActor);
 }
 
 void ULevel::SaveCameraSnapshotFromCamera()
@@ -273,7 +282,7 @@ void ULevel::ProcessPendingDeletions()
 		}
 
 		// Release Memory
-		delete ActorToDelete;
+		SafeDelete(ActorToDelete);
 		UE_LOG("[Level] Actor Deleted: %p", ActorToDelete);
 	}
 
@@ -295,4 +304,11 @@ void ULevel::RemoveFromRenderQueues(AActor* Owner)
 		std::remove_if(TextComponentsToRender.begin(), TextComponentsToRender.end(),
 			[Owner](UTextComponent* C) { return C && C->GetOuter() == Owner; }),
 		TextComponentsToRender.end());
+}
+
+
+bool ULevel::IsPendingDeletion(AActor* InActor) const
+{
+	if (!InActor) return false;
+	return std::find(ActorsToDelete.begin(), ActorsToDelete.end(), InActor) != ActorsToDelete.end();
 }

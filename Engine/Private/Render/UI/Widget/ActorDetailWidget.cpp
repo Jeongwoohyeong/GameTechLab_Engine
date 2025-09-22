@@ -16,26 +16,29 @@ void UActorDetailWidget::Initialize()
 
 void UActorDetailWidget::Update()
 {
-	ULevelManager& LevelManager = ULevelManager::GetInstance();
-	ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
-
-	if (CurrentLevel)
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+	if (!Level)
 	{
-		AActor* CurrentSelectedActor = CurrentLevel->GetSelectedActor();
-		if (SelectedActor != CurrentSelectedActor)
-		{
-			SelectedActor = CurrentSelectedActor;
+		SelectedActor = nullptr;
+		ActorNameBuffer[0] = '\0';
+		return;
+	}
 
-			if (SelectedActor)
-			{
-				FString ActorName = SelectedActor->GetName();
-				strncpy_s(ActorNameBuffer, ActorName.c_str(), sizeof(ActorNameBuffer) - 1);
-				ActorNameBuffer[sizeof(ActorNameBuffer) - 1] = '\0';
-			}
-			else
-			{
-				ActorNameBuffer[0] = '\0';
-			}
+	AActor* CurrSel = Level->GetSelectedActor();
+	if (!Level->IsActorValid(CurrSel)) CurrSel = nullptr;
+
+	if (SelectedActor != CurrSel)
+	{
+		SelectedActor = CurrSel;
+		if (SelectedActor)
+		{
+			FString Name = SelectedActor->GetName();
+			strncpy_s(ActorNameBuffer, Name.c_str(), sizeof(ActorNameBuffer) - 1);
+			ActorNameBuffer[sizeof(ActorNameBuffer) - 1] = '\0';
+		}
+		else
+		{
+			ActorNameBuffer[0] = '\0';
 		}
 	}
 }
@@ -65,18 +68,25 @@ void UActorDetailWidget::RenderWidget()
 
 void UActorDetailWidget::RenderActorInfo()
 {
-	if (!SelectedActor)
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+	if (!Level)
+	{
+		SelectedActor = nullptr;
 		return;
+	}
 
-	UClass* ActorClass = SelectedActor->GetClass();
+	AActor* Actor = Level->IsActorValid(SelectedActor) ? SelectedActor : nullptr;
+	if (!Actor) { SelectedActor = nullptr; return; }
+
+	UClass* ActorClass = Actor->GetClass();
 	FString ClassName = ActorClass ? ActorClass->GetName() : "Unknown";
 
 	ImGui::Text("Class: %s", ClassName.c_str());
 
-	void* ActorPtr = static_cast<void*>(SelectedActor);
+	void* ActorPtr = static_cast<void*>(Actor);
 	ImGui::Text("Address: %p", ActorPtr);
 
-	uint64 MemoryUsage = SelectedActor->GetAllocatedBytes();
+	uint64 MemoryUsage = Actor->GetAllocatedBytes();
 	ImGui::Text("Memory: %llu bytes", MemoryUsage);
 }
 

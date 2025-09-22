@@ -29,7 +29,8 @@ UObject::UObject(const FString& InString) : Outer(nullptr)
 UObject::~UObject()
 {
 	// Outer 집계 정리(네 구현 유지)
-	if (Outer) {
+	if (Outer)
+	{
 		Outer->RemoveMemoryUsage(AllocatedBytes, AllocatedCounts);
 		Outer = nullptr;
 	}

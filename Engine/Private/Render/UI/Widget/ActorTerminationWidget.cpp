@@ -19,25 +19,19 @@ void UActorTerminationWidget::Initialize()
 
 void UActorTerminationWidget::Update()
 {
-	// 매 프레임 Level의 선택된 Actor를 확인해서 정보 반영
-	ULevelManager& LevelManager = ULevelManager::GetInstance();
-	ULevel* CurrentLevel = LevelManager.GetCurrentLevel();
-
-	if (CurrentLevel)
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+	if (!Level)
 	{
-		AActor* CurrentSelectedActor = CurrentLevel->GetSelectedActor();
+		SelectedActor = nullptr;
+		return;
+	}
 
-		// Update Current Selected Actor
-		if (SelectedActor != CurrentSelectedActor)
-		{
-			SelectedActor = CurrentSelectedActor;
-		}
+	AActor* CurrSel = Level->GetSelectedActor();
+	if (!Level->IsActorValid(CurrSel)) CurrSel = nullptr;
 
-		// null이어도 갱신 필요
-		if (!CurrentSelectedActor)
-		{
-			SelectedActor = nullptr;
-		}
+	if (SelectedActor != CurrSel)
+	{
+		SelectedActor = CurrSel;
 	}
 }
 
