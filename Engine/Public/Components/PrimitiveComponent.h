@@ -11,7 +11,9 @@ class UPrimitiveComponent : public USceneComponent
 
 public:
 	UPrimitiveComponent();
-
+	virtual ~UPrimitiveComponent() = default;
+	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) = 0;
+	virtual FAABB GetWorldBounds() = 0;
 
 	FVector4 GetColor() const { return Color; }
 
@@ -19,8 +21,7 @@ public:
 	void SetColor(const FVector4& InColor) { Color = InColor; }
 
 	bool IsVisible() const { return bVisible; }
-	virtual bool IsRayCollided(const FRay& ModelRay, const FMatrix& ModelMatrix, float* ShortestDistance) = 0;
-	virtual FAABB GetWorldBounds() = 0;
+	
 
 
 

@@ -140,7 +140,7 @@ private:
 	//로컬 기즈모. 쿼터니언 구현 후 사용
 	bool bIsWorld = true;
 
-	FRenderState RenderState;
+	FPipelineDescKey PipelineDescKey;
 
 	EGizmoDirection GizmoDirection = EGizmoDirection::None;
 	EGizmoMode      GizmoMode = EGizmoMode::Translate;

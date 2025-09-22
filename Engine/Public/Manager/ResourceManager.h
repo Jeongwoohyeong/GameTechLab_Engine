@@ -28,12 +28,19 @@ public:
 	ID3D11ShaderResourceView* GetTexture(const FString& Path);
 
 	ID3D11SamplerState* GetSamplerState(ESamplerType Type);
+	const FShader& GetShader(EShaderType Type) { return Shaders[Type]; }
 
 	int32 GetCharInfoIdx(WCHAR Char);
 	const TArray<FCharacterInfo>& GetCharInfos();
 
 private:
 	void LoadCharInfoMap();
+	void CreateStaticMeshShader();
+	void CreateDefaultShader();
+	void CreateTextShader();
+	void CreateLineInstancedShader();
+
+	void ReleaseShaders();
 
 	TArray<FString> DefaultAssetPaths = { "Data/cube-tex.obj", "Data/triangle.obj", "Data/square.obj", "Data/sphere.obj", "Data/minion.obj" };
 	TMap<FString, FStaticMesh*> StaticMeshAssets;
@@ -42,7 +49,7 @@ private:
 	TMap<FString, ID3D11ShaderResourceView*> ShaderResourceViews;
 	TMap<ESamplerType, ID3D11SamplerState*> SamplerStates;
 
-
+	TMap<EShaderType, FShader> Shaders;
 
 
 

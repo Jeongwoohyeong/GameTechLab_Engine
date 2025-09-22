@@ -11,13 +11,17 @@ class ULevelManager : public UObject
 
 public:
 	void Update() const;
+	void ClearAllLevels();
 	void CreateDefaultLevel();
 	void RegisterLevel(const FString& InName, ULevel* InLevel);
 	void LoadLevel(const FString& InName);
 	void Shutdown();
 
 	// Getter
-	ULevel* GetCurrentLevel() const { return CurrentLevel; }
+	ULevel* GetCurrentLevel() const
+	{
+		return CurrentLevel;
+	}
 
 	// Save & Load System
 	bool SaveCurrentLevel(const FString& InFilePath) const;

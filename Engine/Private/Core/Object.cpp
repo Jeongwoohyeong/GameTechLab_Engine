@@ -25,7 +25,17 @@ UObject::UObject(const FString& InString) : Outer(nullptr)
 	GUObjectArray.push_back(this);
 	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
 }
-
+// ★ 소멸자 추가
+UObject::~UObject()
+{
+	// Outer 집계 정리(네 구현 유지)
+	if (Outer) {
+		Outer->RemoveMemoryUsage(AllocatedBytes, AllocatedCounts);
+		Outer = nullptr;
+	}
+	RemoveFromGlobalObjectArray(this);
+	InternalIndex = (uint32)-1;
+}
 void UObject::SetOuter(UObject* InObject)
 {
 	if (Outer == InObject)
@@ -83,4 +93,25 @@ bool UObject::IsA(const UClass* InClass) const
 	}
 
 	return GetClass()->IsChildOf(InClass);
+}
+
+void RemoveFromGlobalObjectArray(UObject* Obj)
+{
+	if (!Obj) return;
+	uint32 idx = Obj->InternalIndex; // private이면 getter 추가하거나 friend 처리
+	if (idx < GUObjectArray.size() && GUObjectArray[idx] == Obj) {
+		UObject* last = GUObjectArray.back();
+		GUObjectArray[idx] = last;
+		last->InternalIndex = idx;
+		GUObjectArray.pop_back();
+	}
+	else {
+		// 인덱스가 꼬였을 때 방어적으로 선형 제거
+		auto it = std::find(GUObjectArray.begin(), GUObjectArray.end(), Obj);
+		if (it != GUObjectArray.end()) {
+			*it = GUObjectArray.back();
+			(*it)->InternalIndex = static_cast<uint32>(it - GUObjectArray.begin());
+			GUObjectArray.pop_back();
+		}
+	}
 }

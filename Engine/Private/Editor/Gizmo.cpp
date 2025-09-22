@@ -51,8 +51,14 @@ UGizmo::UGizmo()
 	/* *
 	* @brief Render State
 	*/
-	RenderState.FillMode = EFillMode::Solid;
-	RenderState.CullMode = ECullMode::None;
+	PipelineDescKey.BlendType = EBlendType::Opaque;
+	PipelineDescKey.DepthStencilType = EDepthStencilType::DepthDisable;
+	PipelineDescKey.ShaderType = EShaderType::SampleShader;
+	PipelineDescKey.Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	FRasterizerKey RasterizerKey;
+	RasterizerKey.CullMode = D3D11_CULL_NONE;
+	RasterizerKey.FillMode = D3D11_FILL_SOLID;
+	PipelineDescKey.RasterizerKey = RasterizerKey;
 }
 
 UGizmo::~UGizmo() = default;
@@ -97,7 +103,7 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
         EditorPrimitive.Rotation = FQuat::ToEulerXYZ(QuatFinal);
     }
     EditorPrimitive.Color = ColorFor(EGizmoDirection::Right);
-    Renderer.RenderEditorPrimitive(EditorPrimitive, RenderState);
+    Renderer.RenderEditorPrimitive(EditorPrimitive, PipelineDescKey);
 
     // Y (Up)
     {
@@ -105,7 +111,7 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
         EditorPrimitive.Rotation = FQuat::ToEulerXYZ(QuatFinal);
     }
     EditorPrimitive.Color = ColorFor(EGizmoDirection::Up);
-    Renderer.RenderEditorPrimitive(EditorPrimitive, RenderState);
+    Renderer.RenderEditorPrimitive(EditorPrimitive, PipelineDescKey);
 
     // Z (Forward)
     {
@@ -113,7 +119,7 @@ void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
         EditorPrimitive.Rotation = FQuat::ToEulerXYZ(QuatFinal);
     }
     EditorPrimitive.Color = ColorFor(EGizmoDirection::Forward);
-    Renderer.RenderEditorPrimitive(EditorPrimitive, RenderState);
+    Renderer.RenderEditorPrimitive(EditorPrimitive, PipelineDescKey);
 }
 
 void UGizmo::ChangeGizmoMode()

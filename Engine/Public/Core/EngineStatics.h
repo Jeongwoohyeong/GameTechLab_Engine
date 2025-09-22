@@ -7,7 +7,10 @@ public:
 	{
 		return NextUUID++;
 	}
-
+	static void ResetUUID()
+	{
+		NextUUID = 0;
+	}
 private:
 	static uint32 NextUUID;
 };

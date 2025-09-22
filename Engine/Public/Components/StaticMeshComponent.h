@@ -33,6 +33,5 @@ private:
 		const FMatrix& ModelMatrix, float* Distance);
 
 	UStaticMesh* StaticMesh = nullptr;
-	FAABB AABB = FAABB();
 };
 

@@ -1,21 +1,13 @@
 #pragma once
 
-struct FPipelineInfo
-{
-	ID3D11InputLayout* InputLayout;
-	ID3D11VertexShader* VertexShader;
-	ID3D11RasterizerState* RasterizerState;
-	ID3D11DepthStencilState* DepthStencilState;
-	ID3D11PixelShader* PixelShader;
-	ID3D11BlendState* BlendState;
-	D3D11_PRIMITIVE_TOPOLOGY Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-};
 
 class UPipeline
 {
 public:
-	UPipeline(ID3D11DeviceContext* InDeviceContext);
+	UPipeline(ID3D11DeviceContext* InDeviceContext, ID3D11Device* InDevice);
 	~UPipeline();
+
+	const FPipelineInfo GetOrCreatePipelineState(const FPipelineDescKey& InKey);
 
 	void UpdatePipeline(FPipelineInfo Info);
 
@@ -38,5 +30,17 @@ public:
 	void DrawIndexed(uint32 IndexCount, uint32 StartIndexLocation, int32 BaseVertexLocation);
 	void DrawIndexedInstanced(uint32 IndexCountPerInstance, uint32 InstanceCount, uint32 StartIndexLocation, int32 BaseVertexLocation, uint32 StartInstanceLocation);
 private:
+	ID3D11RasterizerState* GetOrCreateRasterizerState(const FRasterizerKey& InRenderState);
+
+	void CreateDepthStencilState();
+	void CreateBlendState();
+
 	ID3D11DeviceContext* DeviceContext;
+
+	ID3D11Device* Device = nullptr;
+
+	TMap<FPipelineDescKey, FPipelineInfo, FPipelineDescHasher> Pipelines;
+	TMap<EDepthStencilType, ID3D11DepthStencilState*> DepthStencilStates;
+	TMap<FRasterizerKey, ID3D11RasterizerState*, FRasterizerKeyHasher> RasterizerStates;
+	TMap<EBlendType, ID3D11BlendState*> BlendStates;
 };
