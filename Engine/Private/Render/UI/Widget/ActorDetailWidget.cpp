@@ -25,7 +25,10 @@ void UActorDetailWidget::Update()
 	}
 
 	AActor* CurrSel = Level->GetSelectedActor();
-	if (!Level->IsActorValid(CurrSel)) CurrSel = nullptr;
+	if (!Level->IsActorValid(CurrSel))
+	{
+		CurrSel = nullptr;
+	}
 
 	if (SelectedActor != CurrSel)
 	{
@@ -42,7 +45,7 @@ void UActorDetailWidget::Update()
 		}
 	}
 }
-
+// 위젯을 출력한다.
 void UActorDetailWidget::RenderWidget()
 {
 	ImGui::Text("Actor Details");
@@ -65,19 +68,24 @@ void UActorDetailWidget::RenderWidget()
 		bNameChanged = false;
 	}
 }
-
+// 액터의 정보들을 출력한다.
 void UActorDetailWidget::RenderActorInfo()
 {
+	// 지금 순간의 레벨/선택을 '다시' 확인
 	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
 	if (!Level)
 	{
 		SelectedActor = nullptr;
 		return;
 	}
-
+	// SelectedActor가 유효한지 다시 확인
 	AActor* Actor = Level->IsActorValid(SelectedActor) ? SelectedActor : nullptr;
-	if (!Actor) { SelectedActor = nullptr; return; }
-
+	if (!Actor)
+	{
+		SelectedActor = nullptr;
+		return;
+	}
+	// Actor로만 사용
 	UClass* ActorClass = Actor->GetClass();
 	FString ClassName = ActorClass ? ActorClass->GetName() : "Unknown";
 

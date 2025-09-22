@@ -35,14 +35,15 @@ bool ULevelManager::CreateNewLevel(const FString& InLevelName)
 	UE_LOG("LevelManager: Creating New Level: %s", InLevelName.c_str());
 	// 이전 씬 완전 정리
 	ClearAllLevels();
-	// 1) 새 레벨 생성
+	// 새 레벨 생성
 	ULevel* NewLevel = new ULevel(InLevelName);
-	// 2) 새 레벨에 기본값 스냅샷 전달
-	NewLevel->SetSavedCameraSnapshot(GetDefaultCameraSnapshot());
 	CurrentLevel = NewLevel;
 	CurrentLevel->Init();
 
-
+	// 기본 스냅샷 by value로 확보
+	FCameraMetadata DefaultMeta = GetDefaultCameraSnapshot();
+	CurrentLevel->SetSavedCameraSnapshot(DefaultMeta); // 더티만 세우고
+	// 적용은 Editor 쪽에서 TryApply가 해줌
 	UE_LOG("LevelManager: Successfully Created and Switched to New Level '%s'", InLevelName.c_str());
 
 	return true;
@@ -170,7 +171,7 @@ void ULevelManager::ClearAllLevels()
 	FNameTable::GetInstance().Reset();      // 이름/넘버링 초기화
 	UEngineStatics::ResetUUID();            // NextUUID = 0 등
 }
-void ULevelManager::Shutdown()
+void ULevelManager::Release()
 {
 	ClearAllLevels();
 }

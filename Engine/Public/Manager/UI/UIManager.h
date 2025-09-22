@@ -20,7 +20,7 @@ class UUIManager : public UObject
 public:
 	void Initialize();
 	void Initialize(HWND InWindowHandle);
-	void Shutdown();
+	void Release();
 	void Update();
 	void Render();
 	bool RegisterUIWindow(UUIWindow* InWindow);

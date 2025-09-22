@@ -45,19 +45,9 @@ void UEditor::Update()
 	auto& Renderer = URenderer::GetInstance();
 	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
 
-	// 레벨 변경 감지
-	//static ULevel* LastLevel = nullptr;
-	//if (Level != LastLevel) {
-	//	// 새 레벨: 기즈모/픽커 상태 초기화
-	//	Gizmo.EndDrag();
-	//	Gizmo.SetGizmoDirection(EGizmoDirection::None);
-	//	Level->SetSelectedActor(nullptr);
-	//	LastLevel = Level;
-	//}
 	// 현재 레벨에 카메라 주입 보장
 	EnsureLevelHasCamera(Level);
 	// 입력 루틴이 카메라 파라미터를 직접 바꾸므로
-
 	ProcessMouseInput(Level);
 	ProcessKeyboardInput();
 	Camera.Update();
@@ -414,20 +404,16 @@ FVector UEditor::GetGizmoDragScale(const FRay& WorldRay)
 	return Gizmo.GetActorScale();
 }
 
+// 레벨이 카메라를 가지도록 보장
 void UEditor::EnsureLevelHasCamera(ULevel* Level)
 {
-	static ULevel* LastBound = nullptr;
-
 	if (!Level) return;
 
 	// 포인터 주입
 	if (Level->GetCamera() != &Camera)
-		Level->SetCamera(&Camera);
-
-	// 새 레벨에 처음 바인딩된 순간 카메라 스냅샷 적용
-	if (LastBound != Level)
 	{
-		Level->ApplySavedCameraSnapshotToCamera();
-		LastBound = Level;
+		Level->SetCamera(&Camera);
 	}
+	// 매 프레임 '안전 적용' 시도: 더티면 한 번만 적용되고 플래그가 꺼짐
+	Level->TryApplySavedCameraSnapshot();
 }
