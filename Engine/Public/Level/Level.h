@@ -27,33 +27,62 @@ public:
 
 	void GatherComponentsToRender(AActor* Actor);
 
-	TArray<AActor*> GetLevelActors() const { return LevelActors; }
-	const TArray<FAABB>& GetAABBsToRender() const {return AABBsToRender;}
-	const TArray<UStaticMeshComponent*>& GetStaticMeshComponentsToRender() const { return StaticMeshComponentsToRender; }
-	const TArray<UTextComponent*>& GetTextComponentsToRender() const { return TextComponentsToRender; }
-	AActor* GetSelectedActor() const { return SelectedActor; }
-
-	template<typename T, typename... Args>
-	T* SpawnActor(const FString& InName = "");
-
-	// Actor 삭제
-	bool DestroyActor(AActor* InActor);
-	void MarkActorForDeletion(AActor* InActor); // 지연 삭제를 위한 마킹
-
-	void SetSelectedActor(AActor* InActor);
+	TArray<AActor*> GetLevelActors() const
+	{
+		return LevelActors;
+	}
+	const TArray<FAABB>& GetAABBsToRender() const
+	{
+		return AABBsToRender;
+	}
+	const TArray<UStaticMeshComponent*>& GetStaticMeshComponentsToRender() const
+	{
+		return StaticMeshComponentsToRender;
+	}
+	const TArray<UTextComponent*>& GetTextComponentsToRender() const
+	{
+		return TextComponentsToRender;
+	}
+	AActor* GetSelectedActor() const
+	{
+		return SelectedActor;
+	}
 
 	//StaticMesh가 구현되면 주석 해제(09/19 13:05)
 	void AddStaticMeshComponentToRender(UStaticMeshComponent* Component);
 	void AddTextComponentToRender(UTextComponent* Component);
 
-	UCamera* GetCamera() const { return Camera; }
-	void SetCamera(UCamera* InCamera) { Camera = InCamera; }
+	template<typename T, typename... Args>
+	T* SpawnActor(const FString& InName = "");
+
+	// 선택된 액터 설정
+	void SetSelectedActor(AActor* InActor);
+	// Actor 삭제
+	bool DestroyActor(AActor* InActor);
+	// 지연 삭제를 위한 마킹
+	void MarkActorForDeletion(AActor* InActor);
+
+
+	UCamera* GetCamera() const
+	{
+		return Camera;
+	}
+	void SetCamera(UCamera* InCamera)
+	{
+		Camera = InCamera;
+	}
 
 	// ▼ 카메라 스냅샷 저장/적용
 	void SaveCameraSnapshotFromCamera();
 	void ApplySavedCameraSnapshotToCamera();
-	void SetSavedCameraSnapshot(const FCameraMetadata& In) { SavedCamera = In; }
-	const FCameraMetadata& GetSavedCameraSnapshot() const { return SavedCamera; }
+	void SetSavedCameraSnapshot(const FCameraMetadata& In)
+	{
+		SavedCamera = In;
+	}
+	const FCameraMetadata& GetSavedCameraSnapshot() const
+	{
+		return SavedCamera;
+	}
 private:
 	// 지연 삭제 처리 함수
 	void ProcessPendingDeletions();
@@ -102,15 +131,3 @@ T* ULevel::SpawnActor(const FString& InName)
 
 	return NewActor;
 }
-
-//Deprecated : EditorPrimitive는 에디터에서 처리
-//template <typename T, typename ... Args>
-//T* ULevel::SpawnEditorActor(Args&&... InArgs)
-//{
-//	T* NewActor = new T(std::forward<Args>(InArgs)...);
-//
-//	EditorActors.push_back(NewActor);
-//	NewActor->BeginPlay();
-//
-//	return NewActor;
-//}

@@ -90,23 +90,9 @@ int FClientApp::InitializeSystem()
 
 	UResourceManager::GetInstance().Initialize();
 
-	// UE_LOG 테스트
-	// UE_LOG("=== Engine Initialization Started ===");
-	// UE_LOG("Window Handle: %p", Window->GetWindowHandle());
-	// UE_LOG("Renderer initialized successfully");
-
-	// Console Window 테스트
-	// cout << "[System] This is cout output test\n";
-	// cerr << "[System] This is cerr output test\n";
-
-	// UE_LOG("=== Engine Initialization Completed ===");
-
-	// Create Default Level
-	// TODO(KHJ): 나중에 Init에서 처리하도록 하는 게 맞을 듯
-	ULevelManager::GetInstance().CreateDefaultLevel();
-
 	// Initialize Editor
 	Editor = NewObject<UEditor>();
+	Editor->Initialize();
 
 	return S_OK;
 }

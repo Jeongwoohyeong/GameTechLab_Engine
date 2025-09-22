@@ -17,7 +17,7 @@ public:
 	virtual FAABB GetWorldBounds() override;
 	///////////////////////////////////////////////////
 
-	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetName(); else return FString(); }
+	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetAssetPathFileName(); else return FString(); }
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 	void SetStaticMesh(UStaticMesh* InStaticMesh) { StaticMesh = InStaticMesh; }
 

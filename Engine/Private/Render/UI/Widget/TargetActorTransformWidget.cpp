@@ -105,7 +105,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				UStaticMesh* StaticMesh = *It;
 				if (StaticMesh)
 				{
-					StaticMeshNameList.push_back(StaticMesh->GetName());
+					StaticMeshNameList.push_back(StaticMesh->GetAssetPathFileName());
 					StaticMeshList.push_back(StaticMesh);
 					//현재 선택된 Actor의 Mesh에 index를 부여(이게 없으면 새로 선택한 엑터의 매시리스트에서 기존에 선택한 매시가 하이라이팅됨.
 					//그리고 리스트를 선택할때도 현재 매시가 하이라이팅 되야하는데 아래의 코드가 없으면 그게 안됨.

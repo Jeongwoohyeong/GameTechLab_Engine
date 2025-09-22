@@ -18,11 +18,7 @@ ULevel::ULevel(const FString& InName)
 
 ULevel::~ULevel()
 {
-	for (auto Actor : LevelActors)
-	{
-		SafeDelete(Actor);
-	}
-
+	Cleanup();
 }
 
 void ULevel::Init()
@@ -78,6 +74,7 @@ void ULevel::Cleanup()
 
 	StaticMeshComponentsToRender.clear();
 	TextComponentsToRender.clear();
+	AABBsToRender.clear();
 }
 
 void ULevel::GatherComponentsToRender(AActor* Actor)
@@ -103,6 +100,17 @@ void ULevel::GatherComponentsToRender(AActor* Actor)
 	}
 }
 
+//StaticMesh가 구현되면 주석 해제(09/19 13:05)
+void ULevel::AddStaticMeshComponentToRender(UStaticMeshComponent* Component)
+{
+	StaticMeshComponentsToRender.push_back(Component);
+}
+
+void ULevel::AddTextComponentToRender(UTextComponent* Component)
+{
+	TextComponentsToRender.push_back(Component);
+}
+
 void ULevel::SetSelectedActor(AActor* InActor)
 {
 
@@ -116,23 +124,11 @@ void ULevel::SetSelectedActor(AActor* InActor)
 				UPrimitiveComponent* PrimitiveComponent = static_cast<UPrimitiveComponent*>(Component);
 				if (PrimitiveComponent->IsVisible())
 				{
-					PrimitiveComponent->SetColor({1.f, 0.8f, 0.2f, 0.4f});
+					PrimitiveComponent->SetColor({ 1.f, 0.8f, 0.2f, 0.4f });
 				}
 			}
 		}
 	}
-}
-
-
-//StaticMesh가 구현되면 주석 해제(09/19 13:05)
-void ULevel::AddStaticMeshComponentToRender(UStaticMeshComponent* Component)
-{
-	StaticMeshComponentsToRender.push_back(Component);
-}
-
-void ULevel::AddTextComponentToRender(UTextComponent* Component)
-{
-	TextComponentsToRender.push_back(Component);
 }
 
 /**
@@ -144,7 +140,7 @@ bool ULevel::DestroyActor(AActor* InActor)
 	{
 		return false;
 	}
-
+	RemoveFromRenderQueues(InActor);
 	// LevelActors 리스트에서 제거
 	for (auto Iterator = LevelActors.begin(); Iterator != LevelActors.end(); ++Iterator)
 	{
@@ -160,11 +156,10 @@ bool ULevel::DestroyActor(AActor* InActor)
 	if (SelectedActor == InActor)
 	{
 		SelectedActor = nullptr;
-
 	}
 
 	// Remove
-	delete InActor;
+	SafeDelete(InActor);
 
 	UE_LOG("Level: Actor Destroyed Successfully");
 	return true;
@@ -190,23 +185,15 @@ void ULevel::MarkActorForDeletion(AActor* InActor)
 			return;
 		}
 	}
+	RemoveFromRenderQueues(InActor);
 
-	// 삭제 대기 리스트에 추가
-	ActorsToDelete.push_back(InActor);
-	UE_LOG("Level: Actor Marked For Deletion In Next Tick: %p", InActor);
-
-	// 선택 해제는 바로 처리
 	if (SelectedActor == InActor)
 	{
 		SelectedActor = nullptr;
-
-		//Deprecated : Gizmo는 에디터에서 처리
-		// Gizmo Target도 즉시 해제
-		/*if (Gizmo)
-		{
-			Gizmo->SetTargetActor(nullptr);
-		}*/
 	}
+	// 삭제 대기 리스트에 추가
+	ActorsToDelete.push_back(InActor);
+	UE_LOG("Level: Actor Marked For Deletion In Next Tick: %p", InActor);
 }
 
 void ULevel::SaveCameraSnapshotFromCamera()
@@ -273,7 +260,7 @@ void ULevel::ProcessPendingDeletions()
 		}
 
 		// Release Memory
-		delete ActorToDelete;
+		SafeDelete(ActorToDelete);
 		UE_LOG("[Level] Actor Deleted: %p", ActorToDelete);
 	}
 

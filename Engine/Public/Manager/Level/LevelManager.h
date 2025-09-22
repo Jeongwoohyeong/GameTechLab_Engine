@@ -11,10 +11,13 @@ class ULevelManager : public UObject
 
 public:
 	void Update() const;
+
+	// Save & Load System
+	bool CreateNewLevel(const FString& InLevelName);
+	bool SaveCurrentLevel(const FString& InFilePath) const;
+	bool LoadLevel(const FString& InLevelName, const FString& InFilePath);
+
 	void ClearAllLevels();
-	void CreateDefaultLevel();
-	void RegisterLevel(const FString& InName, ULevel* InLevel);
-	void LoadLevel(const FString& InName);
 	void Shutdown();
 
 	// Getter
@@ -23,10 +26,6 @@ public:
 		return CurrentLevel;
 	}
 
-	// Save & Load System
-	bool SaveCurrentLevel(const FString& InFilePath) const;
-	bool LoadLevel(const FString& InLevelName, const FString& InFilePath);
-	bool CreateNewLevel(const FString& InLevelName);
 	static path GetLevelDirectory();
 	static path GenerateLevelFilePath(const FString& InLevelName);
 
@@ -36,5 +35,4 @@ public:
 
 private:
 	ULevel* CurrentLevel;
-	TMap<FString, ULevel*> Levels;
 };

@@ -17,7 +17,7 @@ class UEditor : public UObject
 public:
 	UEditor();
 	~UEditor();
-
+	void Initialize();
 	void Update();
 
 	// 카메라의 정보를 저장하기 위해 (카메라를 직접 넘기는 것은 위험)
