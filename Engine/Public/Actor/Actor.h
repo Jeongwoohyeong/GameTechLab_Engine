@@ -1,7 +1,9 @@
 #pragma once
 #include "Core/Object.h"
 #include "Components/SceneComponent.h"
+#include "level/Level.h"
 
+class ULevel;
 class UStaticMesh;
 /**
  * @brief Level에서 렌더링되는 UObject 클래스
@@ -14,7 +16,7 @@ public:
 	AActor();
 	AActor(UObject* InOuter);
 	virtual ~AActor() override;
-
+	// ----- Transform -----
 	void SetActorLocation(const FVector& InLocation) const;
     void SetActorRotation(const FVector& InRotation) const;
     void SetActorRotation(const struct FQuat& InRotation) const;
@@ -30,16 +32,21 @@ public:
 	virtual void EndPlay();
 	virtual void Tick();
 
+	// ----- Components -----
 	// Getter & Setter
 	USceneComponent* GetRootComponent() const { return RootComponent; }
 	TArray<UActorComponent*> GetOwnedComponents() const { return OwnedComponents; }
-
 	void SetRootComponent(USceneComponent* InOwnedComponents) { RootComponent = InOwnedComponents; }
 
+	// ----- Actor state -----
 	const FVector& GetActorLocation() const;
     const FVector& GetActorRotation() const;
     const FQuat& GetActorRotationQuat() const;
 	const FVector& GetActorScale3D() const;
+
+	// ----- Level back-pointer (비소유) -----
+	ULevel* GetLevel() const { return OwnerLevel; }
+	void    SetLevel(ULevel* InLevel) { OwnerLevel = InLevel; } // 레벨에서만 호출
 
 	//테스트용
 	FString GetStaticMeshName() const;
@@ -48,6 +55,8 @@ public:
 private:
 	USceneComponent* RootComponent = nullptr;
 	TArray<UActorComponent*> OwnedComponents;
+	// 현재 자신이 속한 레벨(비소유, 생명주기 소유권 없음)
+	ULevel* OwnerLevel = nullptr;
 };
 
 template <typename T>

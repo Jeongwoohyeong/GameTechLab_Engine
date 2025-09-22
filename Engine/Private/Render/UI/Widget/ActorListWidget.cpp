@@ -16,16 +16,21 @@ void UActorListWidget::Initialize()
 
 void UActorListWidget::Update()
 {
-	ULevelManager& LevelManager = ULevelManager::GetInstance();
-	CurrentLevel = LevelManager.GetCurrentLevel();
+	ULevel* Level = ULevelManager::GetInstance().GetCurrentLevel();
+	CurrentLevel = Level;
 
-	if (CurrentLevel)
+	if (!Level)
 	{
-		AActor* CurrentSelectedActor = CurrentLevel->GetSelectedActor();
-		if (SelectedActor != CurrentSelectedActor)
-		{
-			SelectedActor = CurrentSelectedActor;
-		}
+		SelectedActor = nullptr;
+		return;
+	}
+
+	AActor* CurrSel = Level->GetSelectedActor();
+	if (!Level->IsActorValid(CurrSel)) CurrSel = nullptr;
+
+	if (SelectedActor != CurrSel)
+	{
+		SelectedActor = CurrSel;
 	}
 }
 

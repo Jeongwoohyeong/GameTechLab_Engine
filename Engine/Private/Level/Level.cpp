@@ -60,6 +60,7 @@ void ULevel::Cleanup()
 
 	// 지연 삭제 먼저
 	for (AActor*& A : ActorsToDelete) {
+		A->SetLevel(nullptr);         // 역참조 해제
 		RemoveFromRenderQueues(A);
 		SafeDelete(A);
 	}
@@ -67,6 +68,7 @@ void ULevel::Cleanup()
 
 	// 모든 액터 삭제
 	for (AActor*& A : LevelActors) {
+		A->SetLevel(nullptr);         // 역참조 해제
 		RemoveFromRenderQueues(A);
 		SafeDelete(A);
 	}
@@ -111,9 +113,29 @@ void ULevel::AddTextComponentToRender(UTextComponent* Component)
 	TextComponentsToRender.push_back(Component);
 }
 
+
+
+// 1) 유효성 검사: 같은 레벨에 속하고, 삭제 대기 아님, 리스트에 실제로 존재
+bool ULevel::IsActorValid(AActor* InActor) const
+{
+	if (!InActor) return false;
+	// Actor가 자신의 Level 포인터를 가진다면 가장 빠른 1차 필터
+	//if (InActor->GetLevel() != this) return false;                     // (있다면 사용)
+	if (std::find(LevelActors.begin(), LevelActors.end(), InActor) == LevelActors.end())
+		return false;
+	if (std::find(ActorsToDelete.begin(), ActorsToDelete.end(), InActor) != ActorsToDelete.end())
+		return false;
+	return true;
+}
+
 void ULevel::SetSelectedActor(AActor* InActor)
 {
+	// 선택 해제 요청
+	if (!InActor) { SelectedActor = nullptr; return; }
 
+	// 새로 고른 대상이 유효하지 않으면 무시하고 선택 해제
+	if (!IsActorValid(InActor)) { SelectedActor = nullptr; return; }
+	
 	SelectedActor = InActor;
 	if (SelectedActor)
 	{
@@ -282,4 +304,11 @@ void ULevel::RemoveFromRenderQueues(AActor* Owner)
 		std::remove_if(TextComponentsToRender.begin(), TextComponentsToRender.end(),
 			[Owner](UTextComponent* C) { return C && C->GetOuter() == Owner; }),
 		TextComponentsToRender.end());
+}
+
+
+bool ULevel::IsPendingDeletion(AActor* InActor) const
+{
+	if (!InActor) return false;
+	return std::find(ActorsToDelete.begin(), ActorsToDelete.end(), InActor) != ActorsToDelete.end();
 }
