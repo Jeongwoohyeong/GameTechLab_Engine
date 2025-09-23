@@ -11,6 +11,7 @@
 #include "Editor/Editor.h"
 #include "Components/TextComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Mesh/Material.h"
 
 namespace
 {
@@ -33,16 +34,6 @@ void URenderer::Init(HWND InWindowHandle)
 	DeviceResources = new UDeviceResources(InWindowHandle);
 	Pipeline = new UPipeline(GetDeviceContext(), GetDevice());
 
-	/** 래스터라이저 상태 생성 */
-	//CreateRasterizerState();
-	//CreateDepthStencilState();
-	//CreateBlendState();
-	///////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
-	//CreateStaticMeshShader();
-	//CreateDefaultShader();
-	//CreateTextShader();
-	//CreateLineInstancedShader();
-	/////////////////////////////리소스 매니저가 관리하도록 리팩토링 꼭 해야함///////////////////////////////////////////////
 	CreateInstanceBuffer();
 
 	CreateConstantBuffer();
@@ -109,7 +100,7 @@ void URenderer::RenderBegin()
 
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 
-	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
+	ID3D11RenderTargetView* RenderTargetViews[] = { RenderTargetView }; // 배열 생성
 
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 	DeviceResources->UpdateViewport();
@@ -143,7 +134,7 @@ void URenderer::RenderLevel()
 	Pipeline->UpdatePipeline(Pipeline->GetOrCreatePipelineState(PipelineDescKey));
 	//같은 Key(같은 매쉬)를 가진 instance의 model Matrix와 Color값을 얻어내기 위한 TMap
 	//이후 PrimitiveInstanceBuffer에(GPU 버퍼를 저장) 업데이트해줄 예정
-	TMap<UStaticMesh*, TArray<FInstanceGPUData>> InstanceBatches;
+	TMap<UStaticMeshComponent*, TArray<FInstanceGPUData>> InstanceBatches;
 
 
 
@@ -155,19 +146,15 @@ void URenderer::RenderLevel()
 	{
 		if (!StaticMeshComponent) { continue; }
 
-		UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
-		if (!StaticMesh)
-		{
-			continue;
-		}
 
-		InstanceBatches[StaticMesh].Emplace(StaticMeshComponent->GetWorldTransformMatrix(), StaticMeshComponent->GetColor());
+		InstanceBatches[StaticMeshComponent].Emplace(StaticMeshComponent->GetWorldTransformMatrix(), StaticMeshComponent->GetColor());
 	}
 
 	//저장해놓은 인스턴스 데이터들을 순회하면서 버퍼를 업데이트하고 렌더링함.
 	for (auto& Batch : InstanceBatches)
 	{
-		UStaticMesh* StaticMesh = Batch.first;
+		UStaticMeshComponent* StaticMeshComponent = Batch.first;
+		UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
 		TArray<FInstanceGPUData>& Instances = Batch.second;
 
 		if (Instances.IsEmpty())
@@ -200,17 +187,30 @@ void URenderer::RenderLevel()
 		{
 			for (int Index = 0; Index < Asset->Sections.Num(); Index++)
 			{
-				const FString& MaterialName = Asset->Sections[Index].MaterialName;
-				if (!MaterialName.empty())
+				ID3D11ShaderResourceView* TextureSRV = nullptr;
+
+
+				const UMaterial* Material = StaticMeshComponent->GetMaterial(Index);
+				if (Material)
 				{
-					const FString& TexturePath = StaticMesh->GetKdTextureFilePath(MaterialName);
-					if (!TexturePath.empty())
+					if (!Material->GetKdTextureFilePath().empty())
 					{
-						ID3D11ShaderResourceView* TextureSRV = ResourceManager.GetTexture(TexturePath);
+
+						TextureSRV = ResourceManager.GetTexture(Material->GetKdTextureFilePath());
 						if (TextureSRV)
 						{
 							Pipeline->SetShaderResourceView(1, false, TextureSRV);
-						}   
+						}
+					}
+				}
+
+				if (!TextureSRV)
+				{
+					//에셋에 텍스쳐 없는 경우 흰색 텍스쳐 써서 기본 vertex 컬러 출력되도록 함.
+					TextureSRV = ResourceManager.GetTexture("Data/whitespace.dds");
+					if (TextureSRV)
+					{
+						Pipeline->SetShaderResourceView(1, false, TextureSRV);
 					}
 				}
 				Pipeline->DrawIndexedInstanced(Asset->Sections[Index].IndexCount, Instances.Num(), Asset->Sections[Index].IndexStart, 0, 0);
@@ -392,7 +392,7 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
 	DeviceResources->CreateDepthBuffer();
 
 	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();
-	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
+	ID3D11RenderTargetView* RenderTargetViews[] = { RenderTargetView }; // 배열 생성
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 }
 
@@ -665,7 +665,7 @@ void URenderer::EnsureStructuredBufferCapacity(FStructuredBufferResource& InReso
 }
 
 void URenderer::UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData,
-                                         uint32 InInstanceCount)
+	uint32 InInstanceCount)
 {
 	if (!InResource.Buffer || InInstanceCount == 0)
 	{

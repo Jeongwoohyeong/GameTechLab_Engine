@@ -58,7 +58,6 @@ public:
 		return InternalIndex;
 	}
 
-
 private:
 	uint32 UUID = UINT32_MAX;
 	uint32 InternalIndex = UINT32_MAX;

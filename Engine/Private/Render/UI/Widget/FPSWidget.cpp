@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Core/Object.h"
 #include "Render/UI/Widget/FPSWidget.h"
 
 #include "Manager/Time/TimeManager.h"
@@ -71,8 +72,9 @@ void UFPSWidget::RenderWidget()
 
 	// Game Time 출력
 	ImGui::Text("Game Time: %.1f s", TotalGameTime);
-	ImGui::Text("Object Count: %s", to_string(TotalAllocationCount).c_str());
-	ImGui::Text("Memory Byte: %s", to_string(TotalAllocationBytes).c_str());
+	ImGui::Text("Total Allocation Count: %s", to_string(TotalAllocationCount).c_str());
+	ImGui::Text("Total Allocation Memory Byte: %s", to_string(TotalAllocationBytes).c_str());
+	ImGui::Text("Total UObject Count: %s", to_string(GUObjectArray.size()).c_str());
 	ImGui::Separator();
 
 	ImGui::Checkbox("Show Details", &bShowGraph);

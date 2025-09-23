@@ -108,10 +108,10 @@ void FClientApp::UpdateSystem()
 	auto& LevelManager = ULevelManager::GetInstance();
 	auto& UiManager = UUIManager::GetInstance();
 
-	Editor->Update();
 	TimeManager.Update();
-	InputManager.Update(Window);
 	LevelManager.Update();
+	Editor->Update();
+	InputManager.Update(Window);
 	UiManager.Update();
 	Renderer.Update(Editor);
 }
@@ -181,8 +181,8 @@ void FClientApp::MainLoop()
  */
 void FClientApp::ShutdownSystem()
 {
-	URenderer::GetInstance().Release();
 	UUIManager::GetInstance().Release();
+	URenderer::GetInstance().Release();
 	ULevelManager::GetInstance().Release();
 	UResourceManager::GetInstance().Release();
 

@@ -4,21 +4,24 @@
 #include "public/Mesh/StaticMesh.h"
 #include "Public/Core/ObjectIterator.h"
 #include "Public/Utility/MtlParser.h"
+#include "Mesh/Material.h"
 
 TMap<FString, FStaticMesh*> FObjManager::ObjStaticMap{};
-TMap<FString, TMap<FString, FObjMaterialInfo*>> FObjManager::MtlFileMap{};
+
+TMap<FString, UMaterial*> FObjManager::Materials{};
+
 FMtlParser* FObjManager::MtlManager{};
 
 IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager()
 {
-	MtlManager = new FMtlParser(&MtlFileMap);
+	MtlManager = new FMtlParser(&Materials);
 }
 
 FObjManager::~FObjManager()
 {
-	if (!MtlFileMap.empty())
+	if (!Materials.empty())
 	{
 		ReleaseMtlInfo();
 	}
@@ -70,12 +73,6 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 	else if (PathFileName.find("triangle") != PathFileName.npos)
 	{
 		Result->SetPrimtiveType(EPrimitiveType::Triangle);
-	}
-
-	FString MtlFileName = Result->GetStaticMeshAsset()->Mtllib;
-	if (!MtlFileName.empty() && LoadMtlMap(MtlFileName))
-	{		
-		Result->SetMaterialInfo(&(*MtlFileMap.find(MtlFileName)).second);
 	}
 
 	return Result;
@@ -517,29 +514,29 @@ bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOptio
 	return true;
 }
 
-bool FObjManager::LoadMtlMap(const FString& MtlFileName)
-{
-	//UE_LOG("mtlfilename %s", MtlFileName.c_str());
-
-	// find의 결과가 end가 아니면 존재
-	bool bIsExist = (MtlFileMap.find(MtlFileName) != MtlFileMap.end());
-
-	// 존재하지 않으면 mtlfile parsing
-	if (!bIsExist)
-	{
-		// 파싱 성공 여부 저장
-		// 성공 : true
-		// 실패 : false
-		bIsExist = MtlManager->ParseMtl(MtlFileName);		
-	}
-
-	if (!bIsExist)
-	{
-		UE_LOG("%s Parsing Fail", MtlFileName.c_str());
-	}
-
-	return bIsExist;
-}
+//bool FObjManager::LoadMtlMap(const FString& MtlFileName)
+//{
+//	//UE_LOG("mtlfilename %s", MtlFileName.c_str());
+//
+//	// find의 결과가 end가 아니면 존재
+//	bool bIsExist = (MtlFileMap.find(MtlFileName) != MtlFileMap.end());
+//
+//	// 존재하지 않으면 mtlfile parsing
+//	if (!bIsExist)
+//	{
+//		// 파싱 성공 여부 저장
+//		// 성공 : true
+//		// 실패 : false
+//		bIsExist = MtlManager->ParseMtl(MtlFileName);		
+//	}
+//
+//	if (!bIsExist)
+//	{
+//		UE_LOG("%s Parsing Fail", MtlFileName.c_str());
+//	}
+//
+//	return bIsExist;
+//}
 
 void FObjManager::ReleaseStaticMesh()
 {
@@ -555,15 +552,9 @@ void FObjManager::ReleaseStaticMesh()
 
 void FObjManager::ReleaseMtlInfo()
 {
-	for (auto MtlFileIt = MtlFileMap.begin(); MtlFileIt != MtlFileMap.end(); MtlFileIt++)
+	for (auto& Pair : Materials)
 	{
-		for (auto MtlInfoIt = (*MtlFileIt).second.begin(); MtlInfoIt != (*MtlFileIt).second.end(); MtlInfoIt++)
-		{
-			if ((*MtlInfoIt).second)
-			{
-				delete (*MtlInfoIt).second;
-				(*MtlInfoIt).second = nullptr;
-			}
-		}
+		delete Pair.second;
 	}
+	Materials.Empty();
 }

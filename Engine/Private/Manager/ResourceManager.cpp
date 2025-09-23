@@ -62,10 +62,6 @@ void UResourceManager::Release()
 	{
 		delete Pair.second;
 	}
-	for (auto& Pair : StaticMeshAssets)
-	{
-		delete Pair.second;
-	}
 	//TMap.Value()
 	for (auto& Pair : VertexBuffers)
 	{

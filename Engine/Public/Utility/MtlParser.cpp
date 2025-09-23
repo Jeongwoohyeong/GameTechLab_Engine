@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "MtlParser.h"
+#include "Mesh/Material.h"
 
-FMtlParser::FMtlParser(TMap<FString, TMap<FString, FObjMaterialInfo*>>* InMtlFileMap)
+FMtlParser::FMtlParser(TMap<FString, UMaterial*>* InMaterials)
 {
-	MtlFileMap = InMtlFileMap;
+	Materials = InMaterials;
 }
 
 bool FMtlParser::ParseMtl(const FString& PathFileName)
@@ -20,8 +21,8 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 	FString Path = PathFileName.substr(0, Pos + 1);
 
 	FString Line;
-	TMap<FString, FObjMaterialInfo*> MtlInfoMap{};
-	FObjMaterialInfo* CurrentMtlInfo = nullptr;
+	FObjMaterialInfo CurrentMaterialInfo;
+	bool bIsEmpty = true;
 	FString CurrentMtlName{};
 	while (std::getline(File, Line))
 	{
@@ -39,93 +40,92 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 		{
 			continue;
 		}
-		
+
 		FString MapFileName;
 		if (Token == "newmtl")
 		{
-			if (CurrentMtlInfo != nullptr)
+			if (!bIsEmpty)
 			{
-				MtlInfoMap.Emplace(CurrentMtlName, CurrentMtlInfo);
-				CurrentMtlInfo = nullptr;
+				Materials->emplace(CurrentMtlName, new UMaterial(CurrentMaterialInfo));
+				bIsEmpty = true;
 			}
 
 			Ss >> CurrentMtlName;
-			CurrentMtlInfo = new FObjMaterialInfo();
+			CurrentMaterialInfo = {};
+			bIsEmpty = false;
 			UE_LOG("mtl name %s", CurrentMtlName.c_str());
 		}
-		else if (CurrentMtlInfo == nullptr)
+		else if (bIsEmpty)
 		{
 			continue;
 		}
 		else if (Token == "Ka")
 		{
-			Ss >> CurrentMtlInfo->Ka.X >> CurrentMtlInfo->Ka.Y >> CurrentMtlInfo->Ka.Z;
-			UE_LOG("%f %f %f", CurrentMtlInfo->Ka.X, CurrentMtlInfo->Ka.Y, CurrentMtlInfo->Ka.Z);
+			Ss >> CurrentMaterialInfo.Ka.X >> CurrentMaterialInfo.Ka.Y >> CurrentMaterialInfo.Ka.Z;
+			UE_LOG("%f %f %f", CurrentMaterialInfo.Ka.X, CurrentMaterialInfo.Ka.Y, CurrentMaterialInfo.Ka.Z);
 		}
 		else if (Token == "Kd")
 		{
-			Ss >> CurrentMtlInfo->Kd.X >> CurrentMtlInfo->Kd.Y >> CurrentMtlInfo->Kd.Z;
-			UE_LOG("%f %f %f", CurrentMtlInfo->Kd.X, CurrentMtlInfo->Kd.Y, CurrentMtlInfo->Kd.Z);
+			Ss >> CurrentMaterialInfo.Kd.X >> CurrentMaterialInfo.Kd.Y >> CurrentMaterialInfo.Kd.Z;
+			UE_LOG("%f %f %f", CurrentMaterialInfo.Kd.X, CurrentMaterialInfo.Kd.Y, CurrentMaterialInfo.Kd.Z);
 		}
 		else if (Token == "Ks")
 		{
-			Ss >> CurrentMtlInfo->Ks.X >> CurrentMtlInfo->Ks.Y >> CurrentMtlInfo->Ks.Z;
-			UE_LOG("%f %f %f", CurrentMtlInfo->Ks.X, CurrentMtlInfo->Ks.Y, CurrentMtlInfo->Ks.Z);
+			Ss >> CurrentMaterialInfo.Ks.X >> CurrentMaterialInfo.Ks.Y >> CurrentMaterialInfo.Ks.Z;
+			UE_LOG("%f %f %f", CurrentMaterialInfo.Ks.X, CurrentMaterialInfo.Ks.Y, CurrentMaterialInfo.Ks.Z);
 		}
 		else if (Token == "Ke")
 		{
-			Ss >> CurrentMtlInfo->Ke.X >> CurrentMtlInfo->Ke.Y >> CurrentMtlInfo->Ke.Z;
-			UE_LOG("%f %f %f", CurrentMtlInfo->Ke.X, CurrentMtlInfo->Ke.Y, CurrentMtlInfo->Ke.Z);
+			Ss >> CurrentMaterialInfo.Ke.X >> CurrentMaterialInfo.Ke.Y >> CurrentMaterialInfo.Ke.Z;
+			UE_LOG("%f %f %f", CurrentMaterialInfo.Ke.X, CurrentMaterialInfo.Ke.Y, CurrentMaterialInfo.Ke.Z);
 		}
 		else if (Token == "Ns")
 		{
-			Ss >> CurrentMtlInfo->Ns;
-			UE_LOG("Ns %f", CurrentMtlInfo->Ns);
+			Ss >> CurrentMaterialInfo.Ns;
+			UE_LOG("Ns %f", CurrentMaterialInfo.Ns);
 		}
 		else if (Token == "Ni")
 		{
-			Ss >> CurrentMtlInfo->Ni;
-			UE_LOG("Ni %f", CurrentMtlInfo->Ni);
+			Ss >> CurrentMaterialInfo.Ni;
+			UE_LOG("Ni %f", CurrentMaterialInfo.Ni);
 		}
 		else if (Token == "d")
 		{
-			Ss >> CurrentMtlInfo->d;
-			UE_LOG("d %f", CurrentMtlInfo->d);
+			Ss >> CurrentMaterialInfo.d;
+			UE_LOG("d %f", CurrentMaterialInfo.d);
 		}
 		else if (Token == "illum")
 		{
-			Ss >> CurrentMtlInfo->illum;
-			UE_LOG("illum %d", CurrentMtlInfo->illum);
+			Ss >> CurrentMaterialInfo.illum;
+			UE_LOG("illum %d", CurrentMaterialInfo.illum);
 		}
 		else if (Token == "map_Kd")
 		{
 			Ss >> MapFileName;
 			MapFileName = Path + MapFileName;
-			CurrentMtlInfo->Map_Kd = MapFileName;
-			UE_LOG("Map Kd %s", CurrentMtlInfo->Map_Kd.c_str());
+			CurrentMaterialInfo.Map_Kd = MapFileName;
+			UE_LOG("Map Kd %s", CurrentMaterialInfo.Map_Kd.c_str());
 		}
 		else if (Token == "map_Ks")
 		{
 			Ss >> MapFileName;
 			MapFileName = Path + MapFileName;
-			CurrentMtlInfo->Map_Ks = MapFileName;
-			UE_LOG("Map Ks %s", CurrentMtlInfo->Map_Ks.c_str());
+			CurrentMaterialInfo.Map_Ks = MapFileName;
+			UE_LOG("Map Ks %s", CurrentMaterialInfo.Map_Ks.c_str());
 		}
 		else if (Token == "map_bump")
 		{
 			Ss >> MapFileName;
 			MapFileName = Path + MapFileName;
-			CurrentMtlInfo->Map_bump = MapFileName;
-			UE_LOG("Map bump %s", CurrentMtlInfo->Map_bump.c_str());
+			CurrentMaterialInfo.Map_bump = MapFileName;
+			UE_LOG("Map bump %s", CurrentMaterialInfo.Map_bump.c_str());
 		}
 	}
 
-	if (CurrentMtlInfo != nullptr)
+	if (!bIsEmpty)
 	{
-		MtlInfoMap.Emplace(CurrentMtlName, CurrentMtlInfo);
+		Materials->emplace(CurrentMtlName, new UMaterial(CurrentMaterialInfo));
 	}
-
-	MtlFileMap->Emplace(PathFileName, MtlInfoMap);
 
 	return true;
 }
