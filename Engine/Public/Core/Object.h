@@ -62,7 +62,16 @@ private:
 	uint32 UUID = UINT32_MAX;
 	uint32 InternalIndex = UINT32_MAX;
 	FName Name;
+	// 소유자(컨테이너) 의미. 어떤 UObject가 다른 UObject 안에 속해있다는 것을 표현함.
 	UObject* Outer = nullptr;
+	/*
+	* Ex) Outer의 의미 예시
+	*	World (Outer = null)
+	*		└─ Level_A (Outer = World)
+	*		   ├─ Actor_1 (Outer = Level_A)
+	*		   │  └─ Component_X (Outer = Actor_1)
+	*		   └─ Actor_2 (Outer = Level_A)
+	*/
 
 	uint64 AllocatedBytes = 0;
 	uint32 AllocatedCounts = 0;

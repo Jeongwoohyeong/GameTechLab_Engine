@@ -25,10 +25,10 @@ UObject::UObject(const FString& InString) : Outer(nullptr)
 	GUObjectArray.push_back(this);
 	InternalIndex = static_cast<uint32>(GUObjectArray.size()) - 1;
 }
-// ★ 소멸자 추가
+// 소멸자 추가
 UObject::~UObject()
 {
-	// Outer 집계 정리(네 구현 유지)
+	// Outer 집계 정리
 	if (Outer)
 	{
 		Outer->RemoveMemoryUsage(AllocatedBytes, AllocatedCounts);
@@ -39,11 +39,11 @@ UObject::~UObject()
 }
 void UObject::SetOuter(UObject* InObject)
 {
-	if (Outer == InObject)
+	// 자기 자신으로의 재설정 방지
+	if (Outer == InObject) 
 	{
 		return;
 	}
-
 	// 기존 Outer가 있다면 해당 오브젝트에서 메모리 관리 제거
 	if (Outer)
 	{
