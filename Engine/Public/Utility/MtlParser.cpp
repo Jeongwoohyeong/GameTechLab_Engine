@@ -9,17 +9,31 @@ FMtlParser::FMtlParser(TMap<FString, UMaterial*>* InMaterials)
 
 bool FMtlParser::ParseMtl(const FString& PathFileName)
 {
-	ifstream File(PathFileName);
+	ifstream File(PathFileName);	
 
+	
 	if (!File.is_open())
 	{
 		UE_LOG("Mtl 파일 열기 실패");
 		return false;
 	}
+	UE_LOG("mtl file name %s", PathFileName.c_str());
 
-	uint32 Pos = PathFileName.find_last_of("/\\");
-	FString Path = PathFileName.substr(0, Pos + 1);
-
+	FString Path{};
+	if (PathFileName.find(".bin"))
+	{
+		uint32 Pos = PathFileName.find_first_of("/\\");
+		Path = PathFileName.substr(0, Pos + 1);
+		UE_LOG("------------ %s", Path.c_str());
+	}
+	else
+	{
+		uint32 Pos = PathFileName.find_last_of("/\\");
+		Path = PathFileName.substr(0, Pos + 1);
+		//UE_LOG("------------ %s", Path.c_str());
+	}
+	
+	
 	FString Line;
 	FObjMaterialInfo CurrentMaterialInfo;
 	bool bIsEmpty = true;

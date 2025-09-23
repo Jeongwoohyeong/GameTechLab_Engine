@@ -108,6 +108,24 @@ FArchive& operator<<(FArchive& Ar, FVector4& Value)
 	return Ar;
 }
 
+FArchive& operator<<(FArchive& Ar, FNormalVertex& Value)
+{
+	Ar << Value.Position;
+	Ar << Value.Normal;
+	Ar << Value.Color;
+	Ar << Value.Tex;
+	return Ar;
+}
+
+FArchive& operator<<(FArchive& Ar, FMeshSection& Value)
+{
+	Ar << Value.Name;
+	Ar << Value.MaterialName;
+	Ar << Value.IndexStart;
+	Ar << Value.IndexCount;
+	return Ar;
+}
+
 template<typename T>
 FArchive& operator<<(FArchive& Ar, TArray<T>& Value)
 {
@@ -147,7 +165,7 @@ FArchive& operator<<(FArchive& Ar, FStaticMesh& Value)
 	Ar << Value.IndexNum;
 	Ar << Value.Indices;
 
-	if (Value.IndexNum != Value.Indices.Num())
+	if (Ar.IsLoading() && Value.IndexNum != Value.Indices.Num())
 	{
 		assert("StaticMesh .bin Indices size mismatch ");
 	}

@@ -9,6 +9,11 @@ public:
 	virtual bool IsSaving() const override { return true; }
 	virtual bool IsFileOpen() override { return FilePointer != nullptr; }
 	virtual bool IsFileClose() override { return FilePointer == nullptr; }
+	virtual void FileClose() override;
+	virtual bool IsFileExist(const FString& FilePath) override;
+
+private:
+	bool CheckDirectory(const FString& FilePath);
 
 private:
 	FILE* FilePointer;

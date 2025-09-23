@@ -12,6 +12,8 @@ public:
 	virtual bool IsSaving() const { return false; }
 	virtual bool IsFileOpen() = 0;
 	virtual bool IsFileClose() = 0;
+	virtual void FileClose() = 0;
+	virtual bool IsFileExist(const FString& FilePath) = 0;
 
 private:
 
@@ -39,6 +41,16 @@ FArchive& operator<<(FArchive& Ar, uint64& Value);
 FArchive& operator<<(FArchive& Ar, float& Value);
 
 FArchive& operator<<(FArchive& Ar, FString& Value);
+
+FArchive& operator<<(FArchive& Ar, FVector2& Value);
+
+FArchive& operator<<(FArchive& Ar, FVector& Value);
+
+FArchive& operator<<(FArchive& Ar, FVector4& Value);
+
+FArchive& operator<<(FArchive& Ar, FNormalVertex& Value);
+
+FArchive& operator<<(FArchive& Ar, FMeshSection& Value);
 
 template<typename T>
 FArchive& operator<<(FArchive& Ar, TArray<T>& Value);
