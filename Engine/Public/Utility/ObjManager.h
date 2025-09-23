@@ -3,6 +3,7 @@
 struct FNormalVertex;
 class UStaticMesh;
 class FMtlParser;
+class UMaterial;
 
 class FObjManager
 {
@@ -13,13 +14,14 @@ public:
 
 	UStaticMesh* LoadObjStaticMesh(const FString& PathFileName);
 
+	static UMaterial* LoadMaterial(const FString& FilePath) { if (Materials.Find(FilePath)) return Materials[FilePath]; else return nullptr; }
 private:
 	static FStaticMesh* LoadObjStaticMeshAsset(const FString& PathFileName);
 	static FStaticMesh* LoadObj(const FString& FilePath);
 	static bool ParseFaceTriplet(const FString& s, int32& v, int32& vt, int32& vn);
 	static bool ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData);
 	static bool CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOption& Opt, FStaticMesh& OutMesh);
-	static bool LoadMtlMap(const FString& MtlFileName);
+	//static bool LoadMtlMap(const FString& MtlFileName);
 	void ReleaseStaticMesh();
 	void ReleaseMtlInfo();
 
@@ -27,7 +29,7 @@ private:
 	static TMap<FString, FStaticMesh*> ObjStaticMap;
 
 	// TMap<mtl파일명, TMap<mtl파일 안의 mtl명, mtl정보포인터>>
-	static TMap<FString, TMap<FString, FObjMaterialInfo*>> MtlFileMap;
+	static TMap<FString, UMaterial*> Materials;
 
 	static FMtlParser* MtlManager;
 };

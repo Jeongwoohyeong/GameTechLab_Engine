@@ -6,21 +6,21 @@ class UMaterial : public UObject
 	DECLARE_CLASS(UMaterial, UObject)
 
 public:
-	UMaterial();
-	UMaterial(TMap<FString, FObjMaterialInfo*>* InFObjMaterial);
-	~UMaterial();
 	
-	const FObjMaterialInfo* GetMaterialInfo(const FString& MtlName) const;
-	const FString& GetKdTextureFilePath(const FString& MtlName);
-	const FString& GetKsTextureFilePath(const FString& MtlName);
-	const FString& GetBumpTextureFilePath(const FString& MtlName);
 
-	void SetMaterialInfo(TMap<FString, FObjMaterialInfo*>* InFObjMaterial);
+	void SetMaterialInfo(const FObjMaterialInfo& InFObjMaterial);
+
+	const FObjMaterialInfo& GetMaterialInfo() const { return MaterialInfo; }
+	const FString& GetKdTextureFilePath() const { return MaterialInfo.Map_Kd; }
+	const FString& GetKsTextureFilePath() const { return MaterialInfo.Map_Ks; }
+	const FString& GetBumpTextureFilePath() const { return MaterialInfo.Map_bump; }
 
 private:
-	TMap<FString, FObjMaterialInfo*>* ObjMaterialInfoMap;
-	FString KdTextureFilePath{};
-	FString KsTextureFilePath{};
-	FString BumpTextureFilePath{};
+	UMaterial();
+	UMaterial(const FObjMaterialInfo& InFObjMaterial);
+	~UMaterial();
 
+	friend class FObjManager;
+	friend class FMtlParser;
+	FObjMaterialInfo MaterialInfo;
 };
