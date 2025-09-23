@@ -10,11 +10,11 @@ class FObjManager
 	DECLARE_SINGLETON(FObjManager);
 
 public:
-	void Intialize();
+	void LoadPresetMaterial();
 
 	UStaticMesh* LoadObjStaticMesh(const FString& PathFileName);
 
-	static UMaterial* LoadMaterial(const FString& FilePath) { if (Materials.Find(FilePath)) return Materials[FilePath]; else return nullptr; }
+	static UMaterial* LoadMaterial(const FString& FilePath) { if (Materials.Find(FilePath)) return Materials[FilePath]; else return Materials["None"]; }
 private:
 	static FStaticMesh* LoadObjStaticMeshAsset(const FString& PathFileName);
 	static FStaticMesh* LoadObj(const FString& FilePath);

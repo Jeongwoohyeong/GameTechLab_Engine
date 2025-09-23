@@ -117,7 +117,7 @@ void UTargetActorTransformWidget::RenderWidget()
 
 void UTargetActorTransformWidget::RenderComponents() 
 {
-	TArray<UActorComponent*> Components = SelectedActor->GetOwnedComponents();
+	const TArray<UActorComponent*>& Components = SelectedActor->GetOwnedComponents();
 
 	for (UActorComponent* Component : Components)
 	{
@@ -183,7 +183,7 @@ void UTargetActorTransformWidget::RenderMaterials(UStaticMeshComponent* Componen
 			return;
 		for (int Index = 0; Index < MaterialListOfComponent.Num(); Index++)
 		{
-			const FString& CurrentMaterialName = MaterialListOfComponent[Index]->GetMaterialInfo().Map_Kd;
+			const FString& CurrentMaterialName = MaterialListOfComponent[Index]->GetMaterialName();
 			
 			const uint32 CurrentUUID = MaterialListOfComponent[Index]->GetUUID();
 
@@ -198,10 +198,10 @@ void UTargetActorTransformWidget::RenderMaterials(UStaticMeshComponent* Componen
 					const bool bIsSelected = (CurrentUUID == MaterialUUID);
 
 					//선택되면 true, bool값이 true면 하이라이트
-					const FString& MaterialKdName = MaterialList[WIndex]->GetKdTextureFilePath();
-					if (MaterialKdName.empty())
+					const FString& MaterialName = MaterialList[WIndex]->GetMaterialName();
+					if (MaterialName.empty())
 						continue;
-					if (ImGui::Selectable(MaterialKdName.c_str(), bIsSelected))
+					if (ImGui::Selectable(MaterialName.c_str(), bIsSelected))
 					{
 						if (CurrentUUID != MaterialUUID)
 						{

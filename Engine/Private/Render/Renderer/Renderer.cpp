@@ -204,15 +204,15 @@ void URenderer::RenderLevel()
 					}
 				}
 
-				if (!TextureSRV)
-				{
-					//에셋에 텍스쳐 없는 경우 흰색 텍스쳐 써서 기본 vertex 컬러 출력되도록 함.
-					TextureSRV = ResourceManager.GetTexture("Data/whitespace.dds");
-					if (TextureSRV)
-					{
-						Pipeline->SetShaderResourceView(1, false, TextureSRV);
-					}
-				}
+				//if (!TextureSRV)
+				//{
+				//	//에셋에 텍스쳐 없는 경우 흰색 텍스쳐 써서 기본 vertex 컬러 출력되도록 함.
+				//	TextureSRV = ResourceManager.GetTexture("Data/whitespace.dds");
+				//	if (TextureSRV)
+				//	{
+				//		Pipeline->SetShaderResourceView(1, false, TextureSRV);
+				//	}
+				//}
 				Pipeline->DrawIndexedInstanced(Asset->Sections[Index].IndexCount, Instances.Num(), Asset->Sections[Index].IndexStart, 0, 0);
 			}
 		}

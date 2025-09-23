@@ -37,15 +37,13 @@ FObjManager::~FObjManager()
 	}
 }
 
-void FObjManager::Intialize()
+void FObjManager::LoadPresetMaterial()
 {
-	LoadObjStaticMeshAsset("Data/cube-tex.obj");
-	LoadObjStaticMeshAsset("Data/sphere.obj");
-	LoadObjStaticMeshAsset("Data/triangle.obj");
-	LoadObjStaticMeshAsset("Data/square.obj");
-	LoadObjStaticMeshAsset("Data/minion.obj");
-	//LoadObjStaticMeshAsset("Data/trees9.obj");
-	
+	//아무런 정보 없이 (1,1,1,1)텍스처만 가진 매터리얼
+	FObjMaterialInfo MaterialInfo = {};
+	MaterialInfo.Map_Kd = "Data/None.dds";
+	Materials.emplace("None", new UMaterial(MaterialInfo));
+
 }
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
