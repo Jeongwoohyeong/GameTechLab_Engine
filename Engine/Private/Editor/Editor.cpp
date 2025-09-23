@@ -355,6 +355,11 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			Gizmo.SetGizmoDirection(EGizmoDirection::None);
 		}
 		// 뷰포트 위에 마우스가 있을 때는 ImGui 캡처 여부와 관계 없이 피킹 허용
+		/*bool bAllowPicking = true;
+		if (bIsQuad)
+		{
+			bAllowPicking = (HoverIndex >= 0);
+		}*/
 		if (!ImGui::GetIO().WantCaptureMouse && InputManager.IsKeyPressed(EKeyInput::MouseLeft))
 		{
 			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
