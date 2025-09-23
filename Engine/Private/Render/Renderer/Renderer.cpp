@@ -246,7 +246,7 @@ void URenderer::Update(UEditor* Editor)
 		}
 
 		// Select camera per viewport
-		UCamera* Cam = ViewCameras[i];
+		UCamera* Cam = (CurrentLayout == EViewportLayout::Single) ? &Editor->GetCamera() : ViewCameras[i];
 		switch (ViewTypes[i])
 		{
 		case EViewportType::Perspective:
@@ -285,7 +285,7 @@ case EViewportType::Front:
 		}
 
 		RenderLevel();
-		Editor->RenderEditorBatched();
+		Editor->RenderEditorBatched(Cam ? Cam->GetLocation() : Editor->GetCameraLocation());
 		// For text sorting, use per-viewport camera location if available
 		RenderText(Cam ? Cam->GetLocation() : Editor->GetCameraLocation());
 	}
@@ -660,6 +660,70 @@ void URenderer::LoadViewportLayout()
 	ViewTypes[1] = ReadType("BottomLeft", EViewportType::Right);
 	ViewTypes[2] = ReadType("TopRight", EViewportType::Top);
 	ViewTypes[3] = ReadType("BottomRight", EViewportType::Front);
+}
+
+int URenderer::GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRect)
+{
+	DXGI_SWAP_CHAIN_DESC scd = {};
+	GetSwapChain()->GetDesc(&scd);
+
+	if (CurrentLayout == EViewportLayout::Single)
+	{
+		FRect R{0.0f, 0.0f, (float)scd.BufferDesc.Width, (float)scd.BufferDesc.Height};
+		OutRect = R;
+		if (MouseX >= R.X && MouseX < (R.X + R.W) && MouseY >= R.Y && MouseY < (R.Y + R.H))
+		{
+			return 0;
+		}
+		return -1;
+	}
+	// Quad: compute rects either from tree or evenly split
+	FRect Rects[4] = {};
+	if (MultiViewRoot)
+	{
+		// Layout tree to current window
+		MultiViewRoot->SetRect({0.0f, 0.0f, (float)scd.BufferDesc.Width, (float)scd.BufferDesc.Height});
+		MultiViewRoot->LayoutChildren();
+		SSplitter* root = static_cast<SSplitter*>(MultiViewRoot);
+		SSplitter* left = root ? static_cast<SSplitter*>(root->GetLT()) : nullptr;
+		SSplitter* right = root ? static_cast<SSplitter*>(root->GetRB()) : nullptr;
+		if (left && right && left->GetLT() && left->GetRB() && right->GetLT() && right->GetRB())
+		{
+			Rects[0] = left->GetLT()->GetRect();
+			Rects[1] = left->GetRB()->GetRect();
+			Rects[2] = right->GetLT()->GetRect();
+			Rects[3] = right->GetRB()->GetRect();
+		}
+		else
+		{
+			float W = (float)scd.BufferDesc.Width;
+			float H = (float)scd.BufferDesc.Height;
+			Rects[0] = {0.0f, 0.0f, W * 0.5f, H * 0.5f};
+			Rects[1] = {0.0f, H * 0.5f, W * 0.5f, H * 0.5f};
+			Rects[2] = {W * 0.5f, 0.0f, W * 0.5f, H * 0.5f};
+			Rects[3] = {W * 0.5f, H * 0.5f, W * 0.5f, H * 0.5f};
+		}
+	}
+	else
+	{
+		float W = (float)scd.BufferDesc.Width;
+		float H = (float)scd.BufferDesc.Height;
+		Rects[0] = {0.0f, 0.0f, W * 0.5f, H * 0.5f};
+		Rects[1] = {0.0f, H * 0.5f, W * 0.5f, H * 0.5f};
+		Rects[2] = {W * 0.5f, 0.0f, W * 0.5f, H * 0.5f};
+		Rects[3] = {W * 0.5f, H * 0.5f, W * 0.5f, H * 0.5f};
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		const FRect& R = Rects[i];
+		if (MouseX >= R.X && MouseX < (R.X + R.W) && MouseY >= R.Y && MouseY < (R.Y + R.H))
+		{
+			OutRect = R;
+			return i;
+		}
+	}
+	return -1;
 }
 
 void URenderer::SaveViewportLayout() const

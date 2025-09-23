@@ -96,6 +96,11 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 		}
 	}
 	EViewportLayout GetViewportLayout() const { return CurrentLayout; }
+
+	// Viewport hit-testing and camera access
+	int GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRect);
+	UCamera* GetViewCameraAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewCameras[Index] : nullptr; }
+
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, const FPipelineDescKey PipelineDescKey);

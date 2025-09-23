@@ -274,12 +274,12 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 	return Ray;
 }
 
-FVector UCamera::CalculatePlaneNormal(const FVector4& Axis)
+FVector UCamera::CalculatePlaneNormal(const FVector4& Axis) const
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
 }
 
-FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
+FVector UCamera::CalculatePlaneNormal(const FVector& Axis) const
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
 }

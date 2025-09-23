@@ -36,7 +36,7 @@ public:
 
 	/** 배칭 렌더링 버전 */
 	// void RenderEditor();
-	void RenderEditorBatched();
+	void RenderEditorBatched(const FVector& CameraLocation);
 	void EnsureLevelHasCamera(ULevel* Level);
 
 	/**
@@ -69,10 +69,10 @@ private:
 	void ProcessKeyboardInput();
 	TArray<UPrimitiveComponent*> FindCandidatePrimitives(ULevel* InLevel);
 
-	FVector GetGizmoDragLocation(const FRay& WorldRay);
-	FVector GetGizmoDragRotation(const FRay& WorldRay);
-	FQuat GetGizmoDragRotationQuat(const FRay& WorldRay);
-	FVector GetGizmoDragScale(const FRay& WorldRay);
+	FVector GetGizmoDragLocation(const FRay& WorldRay, const UCamera& ViewCam);
+	FVector GetGizmoDragRotation(const FRay& WorldRay, const UCamera& ViewCam);
+	FQuat GetGizmoDragRotationQuat(const FRay& WorldRay, const UCamera& ViewCam);
+	FVector GetGizmoDragScale(const FRay& WorldRay, const UCamera& ViewCam);
 
 	UCamera Camera;
 	UObjectPicker ObjectPicker;
