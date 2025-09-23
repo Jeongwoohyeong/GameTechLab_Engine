@@ -21,6 +21,9 @@ public:
 	FString GetStaticMeshName() const { if (StaticMesh) return StaticMesh->GetAssetPathFileName(); else return FString(); }
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 	const UMaterial* GetMaterial(int Index) const { return MaterialList[Index]; }
+	const TArray<UMaterial*>& GetMaterialList(){ return MaterialList; }
+
+	void SetMaterial(UMaterial* Material, int Index) { if (Index < MaterialList.Num()) MaterialList[Index] = Material; else return; }
 	void SetStaticMesh(UStaticMesh* InStaticMesh);
 
 

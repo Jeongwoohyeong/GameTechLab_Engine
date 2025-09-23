@@ -193,10 +193,14 @@ void URenderer::RenderLevel()
 				const UMaterial* Material = StaticMeshComponent->GetMaterial(Index);
 				if (Material)
 				{
-					TextureSRV = ResourceManager.GetTexture(Material->GetKdTextureFilePath());
-					if (TextureSRV)
+					if (!Material->GetKdTextureFilePath().empty())
 					{
-						Pipeline->SetShaderResourceView(1, false, TextureSRV);
+
+						TextureSRV = ResourceManager.GetTexture(Material->GetKdTextureFilePath());
+						if (TextureSRV)
+						{
+							Pipeline->SetShaderResourceView(1, false, TextureSRV);
+						}
 					}
 				}
 

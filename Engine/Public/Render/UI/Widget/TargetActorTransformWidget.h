@@ -1,6 +1,7 @@
 #pragma once
 #include "Widget.h"
 
+class UMaterial;
 class UTargetActorTransformWidget : public UWidget
 {
 	DECLARE_CLASS(UTargetActorTransformWidget, UWidget)
@@ -11,7 +12,12 @@ public:
 	void PostProcess() override;
 
 	void UpdateTransformFromActor();
+	void UpdateMaterialListCash();
+	void UpdateStaticMeshListCash();
 	void ApplyTransformToActor() const;
+	void RenderComponents();
+	void RenderStatitMeshComponent(UStaticMeshComponent* Component);
+	void RenderMaterials(UStaticMeshComponent* Component);
 
 	// Special Member Function
 	UTargetActorTransformWidget();
@@ -19,6 +25,12 @@ public:
 
 private:
 	AActor* SelectedActor;
+
+	//캐싱용
+	TArray<UStaticMesh*> StaticMeshList;
+	TArray<UMaterial*> MaterialList;
+	bool bMaterialListDirty = true;
+	bool bStaticMeshListDirty = true;
 
 	FVector EditLocation;
 	FVector EditRotation;

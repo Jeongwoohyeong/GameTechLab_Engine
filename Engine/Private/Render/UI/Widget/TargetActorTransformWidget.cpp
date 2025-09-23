@@ -5,6 +5,10 @@
 #include "Manager/Level/LevelManager.h"
 #include "Core/ObjectIterator.h"
 #include "Mesh/StaticMesh.h"
+#include "Mesh/Material.h"
+#include "Components/ActorComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/TextComponent.h"
 
 IMPLEMENT_CLASS(UTargetActorTransformWidget, UWidget)
 UTargetActorTransformWidget::UTargetActorTransformWidget()
@@ -95,61 +99,10 @@ void UTargetActorTransformWidget::RenderWidget()
 		Actor->SetUniformScale(bUniformScale);
 
 
-
-		//ImGui::ShowDemoWindow();
-		ImGui::Separator();
-		ImGui::Text("Static Mesh");
-		FString NameString = Actor->GetStaticMeshName();
-		const char* CurrentMeshName = NameString.c_str();
+		RenderComponents();
 		ImGui::ShowDemoWindow();
 
 		//현재 선택된 Actor의 Mesh의 index
-		static int CurrentIndex = -1;
-		if (ImGui::BeginCombo("Static Mesh", CurrentMeshName))
-		{
-			TArray<FString> StaticMeshNameList;
-			TArray<UStaticMesh*> StaticMeshList;
-			bool bIndexIsFound = false;
-			for (TObjectIterator<UStaticMesh> It; It; ++It)
-			{
-				UStaticMesh* StaticMesh = *It;
-				if (StaticMesh)
-				{
-					StaticMeshNameList.push_back(StaticMesh->GetAssetPathFileName());
-					StaticMeshList.push_back(StaticMesh);
-					//현재 선택된 Actor의 Mesh에 index를 부여(이게 없으면 새로 선택한 엑터의 매시리스트에서 기존에 선택한 매시가 하이라이팅됨.
-					//그리고 리스트를 선택할때도 현재 매시가 하이라이팅 되야하는데 아래의 코드가 없으면 그게 안됨.
-					//근데 매번 Iterator를 돌면서 배열을 채우고 문자열을 비교하는게 최선인지는 모르겠음.
-					if (!bIndexIsFound && !StaticMesh->GetName().compare(CurrentMeshName))
-					{
-						CurrentIndex = StaticMeshNameList.Num() - 1;
-						bIndexIsFound = true;
-					}
-				}
-			}
-			for (int Index = 0; Index < StaticMeshNameList.Num(); Index++)
-			{
-
-				const bool bIsSelected = (CurrentIndex == Index);
-
-				//선택되면 true, bool값이 true면 하이라이트
-				if (ImGui::Selectable(StaticMeshNameList[Index].c_str(), bIsSelected))
-				{
-					if (CurrentIndex != Index)
-					{
-						CurrentIndex = Index;
-						Actor->SetStaticMesh(StaticMeshList[CurrentIndex]);
-					}
-					
-				}
-
-				
-				if (bIsSelected)
-					ImGui::SetItemDefaultFocus();
-
-			}
-			ImGui::EndCombo();	
-		}
 		
 
 		
@@ -160,6 +113,148 @@ void UTargetActorTransformWidget::RenderWidget()
 	}
 
 	ImGui::Separator();
+}
+
+void UTargetActorTransformWidget::RenderComponents() 
+{
+	TArray<UActorComponent*> Components = SelectedActor->GetOwnedComponents();
+
+	for (UActorComponent* Component : Components)
+	{
+		if (Component->IsA(UStaticMeshComponent::StaticClass()))
+		{
+			RenderStatitMeshComponent(static_cast<UStaticMeshComponent*>(Component));
+		}
+		else if (Component->IsA(UTextComponent::StaticClass()))
+		{
+
+		}
+	}
+	
+}
+
+void UTargetActorTransformWidget::RenderStatitMeshComponent(UStaticMeshComponent* Component) 
+{
+	if (ImGui::CollapsingHeader("Static Mesh##Header"))
+	{
+
+		const UStaticMesh* CurrentStaticMesh = Component->GetStaticMesh();
+
+		const uint32 CurrentUUID = CurrentStaticMesh->GetUUID();
+
+		if (ImGui::BeginCombo("Static Mesh##Combo", CurrentStaticMesh->GetAssetPathFileName().c_str()))
+		{
+			UpdateStaticMeshListCash();
+			for (int Index = 0; Index < StaticMeshList.Num(); Index++)
+			{
+				const uint32 StaticMeshUUID = StaticMeshList[Index]->GetUUID();
+				const bool bIsSelected = (CurrentUUID == StaticMeshUUID);
+
+				//선택되면 true, bool값이 true면 하이라이트
+				if (ImGui::Selectable(StaticMeshList[Index]->GetAssetPathFileName().c_str(), bIsSelected))
+				{
+					if (CurrentUUID != StaticMeshUUID)
+					{
+						Component->SetStaticMesh(StaticMeshList[Index]);
+					}
+				}
+
+				if (bIsSelected)
+					ImGui::SetItemDefaultFocus();
+
+			}
+			ImGui::EndCombo();
+		}
+	}
+	//Collapsing 헤더가 닫히는 순간부터는 추적이 안되므로 true(헤더를 여는 순간만 1회 업데이트 할 것임)
+	//헤더를 연 상태에서 StaticMeshList가 업데이트 되면 반영 안 됨. 다시 열어야 함.
+	bStaticMeshListDirty = true;
+	RenderMaterials(Component);
+	
+}
+
+void UTargetActorTransformWidget::RenderMaterials(UStaticMeshComponent* Component) 
+{
+	if (ImGui::CollapsingHeader("Materials##Of StaticMesh"))
+	{
+		UpdateMaterialListCash();
+		const TArray<UMaterial*>& MaterialListOfComponent = Component->GetMaterialList();
+		if (!MaterialListOfComponent[0])
+			return;
+		for (int Index = 0; Index < MaterialListOfComponent.Num(); Index++)
+		{
+			const FString& CurrentMaterialName = MaterialListOfComponent[Index]->GetMaterialInfo().Map_Kd;
+			
+			const uint32 CurrentUUID = MaterialListOfComponent[Index]->GetUUID();
+
+			int CurrentIndex = -1;
+			FString Tag = FString("Material ").append(std::to_string(Index));
+			if (ImGui::BeginCombo(Tag.c_str(), CurrentMaterialName.c_str()))
+			{
+				//프로그램 내의 모든 Material에 대한 Index
+				for (int WIndex = 0; WIndex < MaterialList.Num(); WIndex++)
+				{
+					const uint32 MaterialUUID = MaterialList[WIndex]->GetUUID();
+					const bool bIsSelected = (CurrentUUID == MaterialUUID);
+
+					//선택되면 true, bool값이 true면 하이라이트
+					const FString& MaterialKdName = MaterialList[WIndex]->GetKdTextureFilePath();
+					if (MaterialKdName.empty())
+						continue;
+					if (ImGui::Selectable(MaterialKdName.c_str(), bIsSelected))
+					{
+						if (CurrentUUID != MaterialUUID)
+						{
+							Component->SetMaterial(MaterialList[WIndex], Index);
+						}
+					}
+
+					if (bIsSelected)
+						ImGui::SetItemDefaultFocus();
+
+				}
+				ImGui::EndCombo();
+			}
+		}
+	}
+	//Collapsing 헤더가 닫히는 순간부터는 추적이 안되므로 true(헤더를 여는 순간만 1회 업데이트 할 것임)
+	//헤더를 연 상태에서 MaterialList가 업데이트 되면 반영 안 됨. 다시 열어야 함.
+	bMaterialListDirty = true;
+}
+
+void UTargetActorTransformWidget::UpdateMaterialListCash()
+{
+	if (bMaterialListDirty)
+	{
+		MaterialList.clear();
+		for (TObjectIterator<UMaterial> It; It; ++It)
+		{
+			UMaterial* Material = *It;
+			if (Material)
+			{
+				MaterialList.push_back(Material);
+			}
+		}
+	}
+	bMaterialListDirty = false;
+}
+
+void UTargetActorTransformWidget::UpdateStaticMeshListCash()
+{
+
+	if (bStaticMeshListDirty)
+	{
+		StaticMeshList.clear();
+		for (TObjectIterator<UStaticMesh> It; It; ++It)
+		{
+			UStaticMesh* StaticMesh = *It;
+			if (StaticMesh)
+			{
+				StaticMeshList.push_back(StaticMesh);
+			}
+		}
+	}
+	bStaticMeshListDirty = false;
 }
 
 /**
