@@ -65,7 +65,7 @@ void URenderer::Init(HWND InWindowHandle)
 	// Tighter default ortho widths (closer zoom)
 	ViewCameras[1]->SetOrthoWorldWidth(30.f);  // Bottom-Left (Right view)
 	ViewCameras[2]->SetOrthoWorldWidth(30.f);  // Top-Right (Top view)
-	ViewCameras[3]->SetOrthoWorldWidth(60.f);
+	ViewCameras[3]->SetOrthoWorldWidth(30.f);
 
 	// 강제 단일뷰로 시작 보장
 	SetViewportLayout(EViewportLayout::Single);
@@ -292,8 +292,6 @@ case EViewportType::Front:
 		GetDeviceContext()->OMSetRenderTargets(1, rtvs, DeviceResources->GetDepthStencilView());
 	}
 
-	// Draw splitter overlays (lines) before UI so they appear on top
-	DrawSplitterOverlay();
 	UUIManager::GetInstance().Render();
 
 	RenderEnd();
@@ -703,6 +701,7 @@ void URenderer::UpdateSplitDrag()
 	bool LPressed = Input.IsKeyPressed(EKeyInput::MouseLeft);
 	bool LDown    = Input.IsKeyDown(EKeyInput::MouseLeft);
 	bool LRel     = Input.IsKeyReleased(EKeyInput::MouseLeft);
+	bool JustPressed = LDown && !bMouseLeftDownPrevSplit; // edge detect independent of InputManager::Update order
 
 	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
 	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
@@ -710,19 +709,21 @@ void URenderer::UpdateSplitDrag()
 
 	if (!bDragVertical && !bDragHorizontal)
 	{
-		if (LPressed)
+		if (LPressed || JustPressed)
 		{
 			bool nearV = std::abs(MP.X - splitX) <= half;
 			bool nearH = std::abs(MP.Y - splitY) <= half;
-			// Priority: whichever is closer; if both, prefer vertical
-			if (nearV) bDragVertical = true;
-			else if (nearH) bDragHorizontal = true;
+			// If pressing near the intersection, capture both axes simultaneously
+			if (nearV && nearH) { bDragVertical = true; bDragHorizontal = true; }
+			else if (nearV) { bDragVertical = true; bDragHorizontal = false; }
+			else if (nearH) { bDragHorizontal = true; bDragVertical = false; }
 		}
 	}
 	else
 	{
 		if (LDown)
 		{
+			// While dragging, keep the selected axis captured and update continuously
 			if (bDragVertical)
 			{
 				VerticalRatio = std::clamp(MP.X / std::max(1.0f, W), 0.1f, 0.9f);
@@ -732,12 +733,14 @@ void URenderer::UpdateSplitDrag()
 				HorizontalRatio = std::clamp(MP.Y / std::max(1.0f, H), 0.1f, 0.9f);
 			}
 		}
-		if (LRel)
+		if (!LDown)
 		{
 			bDragVertical = false;
 			bDragHorizontal = false;
 		}
 	}
+	// update prev
+	bMouseLeftDownPrevSplit = LDown;
 }
 
 void URenderer::SaveViewportLayout() const
