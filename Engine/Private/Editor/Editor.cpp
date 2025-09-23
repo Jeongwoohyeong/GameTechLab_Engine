@@ -195,6 +195,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	}
 	else
 	{
+		FVector pos;
 		// Determine hovered viewport and build ray using its camera
 		const FVector MousePosPx = InputManager.GetMousePosition();
 		HoverIndex = Renderer.GetHoveredViewportIndex(MousePosPx.X, MousePosPx.Y, HoverRect);
@@ -235,23 +236,23 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		case URenderer::EViewportType::Top:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			/*PickCam->SetLocation(FVector(0, 0, 30));*/
+			PickCam->SetLocation(Pos + FVector(0, 0, CameraDistance));
 			PickCam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
-			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(FVector(0, 0, 30));
+			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(0, 0, CameraDistance));
 			break;
 		case URenderer::EViewportType::Right:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			/*PickCam->SetLocation(FVector(0, 30, 0));*/
+			PickCam->SetLocation(Pos + FVector(0, CameraDistance, 0));
 			PickCam->SetRotation(FVector(0.0f, -90.0f, 0.0f));
-			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(FVector(0, 30, 0));
+			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(0, CameraDistance, 0));
 			break;
 		case URenderer::EViewportType::Front:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			/*PickCam->SetLocation(FVector(-30, 0, 0));*/
+			PickCam->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
 			PickCam->SetRotation(FVector(0.0f, 0.0f, 0.0f));
-			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(FVector(-30, 0, 0));
+			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
 			break;
 		}
 		// Hovered viewport interactive controls (orthographic): pan with WASD/Arrows, zoom with wheel
@@ -264,16 +265,17 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			if (wheel != 0.0f)
 			{
 				float width = PickCam->GetOrthoWorldWidth();
+				
 				float scale = (wheel > 0.0f) ? 0.9f : 1.1f;
 				for (int i = 0; i < (int)std::abs(wheel); ++i) width *= scale;
 				width = std::max(1.0f, std::min(5000.0f, width));
 				PickCam->SetOrthoWorldWidth(width);
+				CameraDistance *= scale;
 			}
 			// Pan (only when RMB is held over this viewport)
 			if (rmbView)
 			{
 				float base = std::max(0.001f, PickCam->GetOrthoWorldWidth() * 0.02f);
-				FVector pos = PickCam->GetLocation();
 				bool keyW = InputForView.IsKeyDown(EKeyInput::W) || InputForView.IsKeyDown(EKeyInput::Up);
 				bool keyS = InputForView.IsKeyDown(EKeyInput::S) || InputForView.IsKeyDown(EKeyInput::Down);
 				bool keyA = InputForView.IsKeyDown(EKeyInput::A) || InputForView.IsKeyDown(EKeyInput::Left);
@@ -281,17 +283,17 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			switch (VType)
 				{
 				case URenderer::EViewportType::Top:
-					if (keyW) pos.X += base; if (keyS) pos.X -= base; if (keyA) pos.Y -= base; if (keyD) pos.Y += base;
+					if (keyW) Pos.X += base; if (keyS) Pos.X -= base; if (keyA) Pos.Y -= base; if (keyD) Pos.Y += base;
 					break;
 				case URenderer::EViewportType::Right:
-					if (keyW) pos.Z += base; if (keyS) pos.Z -= base; if (keyA) pos.X -= base; if (keyD) pos.X += base;
+					if (keyW) Pos.Z += base; if (keyS) Pos.Z -= base; if (keyA) Pos.X -= base; if (keyD) Pos.X += base;
 					break;
 				case URenderer::EViewportType::Front:
-					if (keyW) pos.Z += base; if (keyS) pos.Z -= base; if (keyA) pos.Y -= base; if (keyD) pos.Y += base;
+					if (keyW) Pos.Z += base; if (keyS) Pos.Z -= base; if (keyA) Pos.Y -= base; if (keyD) Pos.Y += base;
 					break;
 				default: break;
 				}
-				PickCam->SetLocation(pos);
+				//PickCam->SetLocation(pos);
 			}
 		}
 

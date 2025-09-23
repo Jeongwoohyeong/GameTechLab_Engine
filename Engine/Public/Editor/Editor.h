@@ -84,6 +84,8 @@ private:
 	FViewportManager* ViewportManager = nullptr;
 
 	const float MinScale = 0.01f;
+	float CameraDistance = 30;
+	FVector Pos{};
 	UGizmo Gizmo;
 	UAxis Axis;
 	UGrid Grid;
