@@ -3,6 +3,8 @@
 #include "Core/Object.h"
 #include "Components/SceneComponent.h"
 #include "Editor/EditorPrimitive.h"
+#include "Render/UI/Layout/SWindow.h"
+#include "Editor/Camera.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -43,6 +45,17 @@ class URenderer : public UObject
 	DECLARE_SINGLETON(URenderer)
 
 public:
+	// Viewport layout modes
+	enum class EViewportLayout : uint8 { Single = 0, Quad = 1 };
+	enum class EViewportType : uint8
+	{
+		Perspective,
+		Top,
+		Right,
+		Front
+	};
+
+public:
 	void Init(HWND InWindowHandle);
 	void Release();
 
@@ -55,15 +68,24 @@ public:
 
 	void Update(UEditor* Editor);
 	void RenderBegin();
+
+// Layout control
+	inline void ToggleViewportLayout() { CurrentLayout = (CurrentLayout == EViewportLayout::Quad ? EViewportLayout::Single : EViewportLayout::Quad); }
+	void SetViewportLayout(EViewportLayout InLayout);
+	EViewportLayout GetViewportLayout() const { return CurrentLayout; }
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, const FPipelineDescKey PipelineDescKey);
 	void RenderEnd() const;
-	
+
 
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);
-	bool GetIsResizing() { return bIsResizing;}
+	bool GetIsResizing() { return bIsResizing; }
 	void SetIsResizing(bool isResizing) { bIsResizing = isResizing; }
+
+	// Viewport layout save/load (editor.ini)
+	void LoadViewportLayout();
+	void SaveViewportLayout() const;
 
 
 	template<typename T>
@@ -74,7 +96,7 @@ public:
 		VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
 		VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA VertexBufferSRD = { InVertices.data()};
+		D3D11_SUBRESOURCE_DATA VertexBufferSRD = { InVertices.data() };
 
 		ID3D11Buffer* VertexBuffer;
 
@@ -91,7 +113,7 @@ public:
 		IndexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
 		IndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA IndexBufferSRD = { InIndices.data()};
+		D3D11_SUBRESOURCE_DATA IndexBufferSRD = { InIndices.data() };
 
 		ID3D11Buffer* IndexBuffer;
 
@@ -101,7 +123,7 @@ public:
 	}
 
 	void CreateInstanceBuffer();
-		
+
 	void UpdateConstant(const FMatrix& InMatrix) const;
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
@@ -119,7 +141,7 @@ public:
 
 	ID3D11Device* GetDevice() const { return DeviceResources->GetDevice(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceResources->GetDeviceContext(); }
-	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
+	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain(); }
 	ID3D11RenderTargetView* GetRenderTargetView() const { return DeviceResources->GetRenderTargetView(); }
 	UDeviceResources* GetDeviceResources() const { return DeviceResources; }
 
@@ -133,6 +155,14 @@ private:
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
+	// Multiview root splitter
+	SWindow* MultiViewRoot = nullptr;
+	EViewportLayout CurrentLayout = EViewportLayout::Single; // default: single view on start
+
+	// Per-viewport cameras and types
+	UCamera* ViewCameras[4] = { nullptr, nullptr, nullptr, nullptr };
+	EViewportType ViewTypes[4] = { EViewportType::Perspective, EViewportType::Top, EViewportType::Right, EViewportType::Front };
+
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;
 	ID3D11DepthStencilState* DisabledDepthStencilState = nullptr;
@@ -145,7 +175,7 @@ private:
 
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
 	/////////////////////////////////////
-	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};
+	FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
 
 
 
@@ -155,7 +185,7 @@ private:
 	uint32 StrideTextVertex = sizeof(FTextVertex);
 	uint32 StrideTextInstance = sizeof(FTextInstance);
 
-	
+
 
 	struct FStructuredBufferResource
 	{

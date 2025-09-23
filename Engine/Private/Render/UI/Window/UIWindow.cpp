@@ -152,7 +152,7 @@ void UUIWindow::RenderWindow()
 		// 윈도우 정보 업데이트
 		UpdateWindowInfo();
 	}
-	//ClampWindow();
+	ClampWindow();
 	if (bIsResized)
 	{
 		OnMainWindowResized();

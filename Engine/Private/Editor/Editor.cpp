@@ -116,6 +116,12 @@ void UEditor::ProcessKeyboardInput()
 		Gizmo.ChangeGizmoMode();
 	}
 
+	// F2: Toggle viewport layout (Single <-> Quad)
+	if (InputManager.IsKeyPressed(EKeyInput::F2))
+	{
+		Renderer.ToggleViewportLayout();
+	}
+
 	// Gizmo 표시 중 Tab: 월드→로컬 토글 (기본: 토글, 최초 누르면 로컬 보장)
 	if (InputManager.IsKeyPressed(EKeyInput::Tab))
 	{
