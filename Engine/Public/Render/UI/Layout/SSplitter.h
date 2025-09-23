@@ -27,8 +27,16 @@ public:
 
 	bool IsSplitter() const override { return true; }
 
+	// Drag support
+	virtual bool HitTestHandle(FPoint p) const = 0;
+	virtual void DragTo(FPoint p) = 0;
+	bool IsDragging() const { return bDragging; }
+	void SetDragging(bool b) { bDragging = b; }
+
 protected:
 	SWindow* SideLT{ nullptr }; // Left or Top
 	SWindow* SideRB{ nullptr }; // Right or Bottom
 	float    SplitRatio{ 0.5f };
+	bool     bDragging{ false };
+	static constexpr float HANDLE_THICKNESS = 4.0f; // px
 };

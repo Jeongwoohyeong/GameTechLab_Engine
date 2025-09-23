@@ -108,6 +108,19 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 	void RenderEnd() const;
 
 
+	// Two-axis split ratios (0..1) for Quad layout
+	float GetVerticalRatio() const { return VerticalRatio; }
+	float GetHorizontalRatio() const { return HorizontalRatio; }
+	void SetVerticalRatio(float R) { VerticalRatio = std::clamp(R, 0.1f, 0.9f); }
+	void SetHorizontalRatio(float R) { HorizontalRatio = std::clamp(R, 0.1f, 0.9f); }
+
+	// Drag state for split lines
+	bool IsDraggingSplitter() const { return bDragVertical || bDragHorizontal; }
+
+	// UI overlay for splitter handles
+	void DrawSplitterOverlay() const;
+
+
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);
 	bool GetIsResizing() { return bIsResizing; }
 	void SetIsResizing(bool isResizing) { bIsResizing = isResizing; }
@@ -178,15 +191,31 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 	UPipeline* GetPipeline() const { return Pipeline; }
 
 private:
+	void UpdateSplitterDragging();
+
+private:
+	void UpdateSplitDrag();
+
+private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
 	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
 
-	// Multiview root splitter
+	// Multiview root splitter (no longer used for layout math, kept for compatibility)
 	SWindow* MultiViewRoot = nullptr;
 	EViewportLayout CurrentLayout = EViewportLayout::Single; // default: single view on start
+
+	// Two split ratios and drag flags
+	float VerticalRatio = 0.5f;   // 0..1, X split
+	float HorizontalRatio = 0.5f; // 0..1, Y split
+	bool  bDragVertical = false;
+	bool  bDragHorizontal = false;
+	static constexpr float SplitHotThickness = 8.0f; // px
+
+	// Per-viewport cameras and types
+	bool bDraggingSplitter = false;
 
 	// Per-viewport cameras and types
 	UCamera* ViewCameras[4] = { nullptr, nullptr, nullptr, nullptr };

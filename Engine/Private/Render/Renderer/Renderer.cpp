@@ -14,6 +14,9 @@
 #include "Render/UI/Layout/MultiViewBuilders.h"
 #include "Render/UI/Layout/SSplitter.h"
 #include "Manager/Path/PathManager.h"
+#include "Manager/Input/InputManager.h"
+#include "ImGui/imgui.h"
+#include <algorithm>
 
 namespace
 {
@@ -143,7 +146,8 @@ void URenderer::Update(UEditor* Editor)
 	}
 	else if (CurrentLayout == EViewportLayout::Quad)
 	{
-		if (!MultiViewRoot) { MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr); }
+		// ratio-based layout; tree not required
+		UpdateSplitDrag();
 	}
 
 	D3D11_VIEWPORT LocalViewports[4] = {};
@@ -154,46 +158,16 @@ void URenderer::Update(UEditor* Editor)
 
 	if (CurrentLayout == EViewportLayout::Quad)
 	{
-		// Ensure multiview tree exists
-		if (!MultiViewRoot)
-		{
-			MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
-		}
-		// Root covers whole swapchain area
-		MultiViewRoot->SetRect({0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height});
-		MultiViewRoot->LayoutChildren();
-		// Follow the tree (RootV -> LeftH/RightH)
-		SSplitter* root = static_cast<SSplitter*>(MultiViewRoot);
-		SSplitter* left = root ? static_cast<SSplitter*>(root->GetLT()) : nullptr;
-		SSplitter* right = root ? static_cast<SSplitter*>(root->GetRB()) : nullptr;
-		if (left && right && left->GetLT() && left->GetRB() && right->GetLT() && right->GetRB())
-		{
-			const FRect& TL = left->GetLT()->GetRect();
-			const FRect& BL = left->GetRB()->GetRect();
-			const FRect& TR = right->GetLT()->GetRect();
-			const FRect& BR = right->GetRB()->GetRect();
-			auto ClampVP = [](const FRect& R){ D3D11_VIEWPORT v = { R.X, R.Y, std::max(2.0f, R.W), std::max(2.0f, R.H), 0.0f, 1.0f }; return v; };
-			LocalViewports[0] = ClampVP(TL);
-			LocalViewports[1] = ClampVP(BL);
-			LocalViewports[2] = ClampVP(TR);
-			LocalViewports[3] = ClampVP(BR);
-			NumViewports = 4;
-			UE_LOG("Viewports TL(%.1f,%.1f,%.1f,%.1f) BL(%.1f,%.1f,%.1f,%.1f) TR(%.1f,%.1f,%.1f,%.1f) BR(%.1f,%.1f,%.1f,%.1f)",
-				LocalViewports[0].TopLeftX, LocalViewports[0].TopLeftY, LocalViewports[0].Width, LocalViewports[0].Height,
-				LocalViewports[1].TopLeftX, LocalViewports[1].TopLeftY, LocalViewports[1].Width, LocalViewports[1].Height,
-				LocalViewports[2].TopLeftX, LocalViewports[2].TopLeftY, LocalViewports[2].Width, LocalViewports[2].Height,
-				LocalViewports[3].TopLeftX, LocalViewports[3].TopLeftY, LocalViewports[3].Width, LocalViewports[3].Height);
-		}
-		else
-		{
-			float WindowWidth = (float)swapchaindesc.BufferDesc.Width;
-			float WindowHeight = (float)swapchaindesc.BufferDesc.Height;
-			LocalViewports[0] = { 0.0f, 0.0f, std::max(2.0f, WindowWidth / 2), std::max(2.0f, WindowHeight / 2), 0.0f, 1.0f };
-			LocalViewports[1] = { 0.0f, WindowHeight / 2, std::max(2.0f, WindowWidth / 2), std::max(2.0f, WindowHeight / 2), 0.0f, 1.0f };
-			LocalViewports[2] = { WindowWidth / 2, 0.0f, std::max(2.0f, WindowWidth / 2), std::max(2.0f, WindowHeight / 2), 0.0f, 1.0f };
-			LocalViewports[3] = { WindowWidth / 2, WindowHeight / 2, std::max(2.0f, WindowWidth / 2), std::max(2.0f, WindowHeight / 2), 0.0f, 1.0f };
-			NumViewports = 4;
-		}
+		float W = (float)swapchaindesc.BufferDesc.Width;
+		float H = (float)swapchaindesc.BufferDesc.Height;
+		float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+		float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+		auto VP = [](float x, float y, float w, float h){ D3D11_VIEWPORT v = { x, y, std::max(2.0f, w), std::max(2.0f, h), 0.0f, 1.0f }; return v; };
+		LocalViewports[0] = VP(0.0f,    0.0f,    splitX,       splitY);       // TL
+		LocalViewports[1] = VP(0.0f,    splitY,  splitX,       H - splitY);   // BL
+		LocalViewports[2] = VP(splitX,  0.0f,    W - splitX,   splitY);       // TR
+		LocalViewports[3] = VP(splitX,  splitY,  W - splitX,   H - splitY);   // BR
+		NumViewports = 4;
 	}
 	else // Single view
 	{
@@ -317,6 +291,8 @@ case EViewportType::Front:
 		GetDeviceContext()->OMSetRenderTargets(1, rtvs, DeviceResources->GetDepthStencilView());
 	}
 
+	// Draw splitter overlays (lines) before UI so they appear on top
+	DrawSplitterOverlay();
 	UUIManager::GetInstance().Render();
 
 	RenderEnd();
@@ -583,6 +559,22 @@ void URenderer::RenderEnd() const
 	GetSwapChain()->Present(0, 0); // 1: VSync 활성화
 }
 
+void URenderer::DrawSplitterOverlay() const
+{
+	if (CurrentLayout != EViewportLayout::Quad) return;
+	DXGI_SWAP_CHAIN_DESC scd = {};
+	GetSwapChain()->GetDesc(&scd);
+	float W = (float)scd.BufferDesc.Width;
+	float H = (float)scd.BufferDesc.Height;
+	float x = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+	float y = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+	ImU32 col = IM_COL32(220, 220, 220, 200);
+	float thick = 2.0f;
+	ImDrawList* dl = ImGui::GetForegroundDrawList();
+	dl->AddLine(ImVec2(x, 0.0f), ImVec2(x, H), col, thick);
+	dl->AddLine(ImVec2(0.0f, y), ImVec2(W, y), col, thick);
+}
+
 void URenderer::CreateInstanceBuffer()
 {
 	uint32 InByteWidth = sizeof(FTextInstance) * 100;
@@ -677,42 +669,16 @@ int URenderer::GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRec
 		}
 		return -1;
 	}
-	// Quad: compute rects either from tree or evenly split
+	// Quad: compute rects from ratios
 	FRect Rects[4] = {};
-	if (MultiViewRoot)
-	{
-		// Layout tree to current window
-		MultiViewRoot->SetRect({0.0f, 0.0f, (float)scd.BufferDesc.Width, (float)scd.BufferDesc.Height});
-		MultiViewRoot->LayoutChildren();
-		SSplitter* root = static_cast<SSplitter*>(MultiViewRoot);
-		SSplitter* left = root ? static_cast<SSplitter*>(root->GetLT()) : nullptr;
-		SSplitter* right = root ? static_cast<SSplitter*>(root->GetRB()) : nullptr;
-		if (left && right && left->GetLT() && left->GetRB() && right->GetLT() && right->GetRB())
-		{
-			Rects[0] = left->GetLT()->GetRect();
-			Rects[1] = left->GetRB()->GetRect();
-			Rects[2] = right->GetLT()->GetRect();
-			Rects[3] = right->GetRB()->GetRect();
-		}
-		else
-		{
-			float W = (float)scd.BufferDesc.Width;
-			float H = (float)scd.BufferDesc.Height;
-			Rects[0] = {0.0f, 0.0f, W * 0.5f, H * 0.5f};
-			Rects[1] = {0.0f, H * 0.5f, W * 0.5f, H * 0.5f};
-			Rects[2] = {W * 0.5f, 0.0f, W * 0.5f, H * 0.5f};
-			Rects[3] = {W * 0.5f, H * 0.5f, W * 0.5f, H * 0.5f};
-		}
-	}
-	else
-	{
-		float W = (float)scd.BufferDesc.Width;
-		float H = (float)scd.BufferDesc.Height;
-		Rects[0] = {0.0f, 0.0f, W * 0.5f, H * 0.5f};
-		Rects[1] = {0.0f, H * 0.5f, W * 0.5f, H * 0.5f};
-		Rects[2] = {W * 0.5f, 0.0f, W * 0.5f, H * 0.5f};
-		Rects[3] = {W * 0.5f, H * 0.5f, W * 0.5f, H * 0.5f};
-	}
+	float W = (float)scd.BufferDesc.Width;
+	float H = (float)scd.BufferDesc.Height;
+	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+	Rects[0] = {0.0f,   0.0f,   splitX,       splitY};
+	Rects[1] = {0.0f,   splitY, splitX,       H - splitY};
+	Rects[2] = {splitX, 0.0f,   W - splitX,   splitY};
+	Rects[3] = {splitX, splitY, W - splitX,   H - splitY};
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -724,6 +690,54 @@ int URenderer::GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRec
 		}
 	}
 	return -1;
+}
+
+void URenderer::UpdateSplitDrag()
+{
+	const UInputManager& Input = UInputManager::GetInstance();
+	DXGI_SWAP_CHAIN_DESC scd = {};
+	GetSwapChain()->GetDesc(&scd);
+	float W = (float)scd.BufferDesc.Width;
+	float H = (float)scd.BufferDesc.Height;
+	FPoint MP{ Input.GetMousePosition().X, Input.GetMousePosition().Y };
+	bool LPressed = Input.IsKeyPressed(EKeyInput::MouseLeft);
+	bool LDown    = Input.IsKeyDown(EKeyInput::MouseLeft);
+	bool LRel     = Input.IsKeyReleased(EKeyInput::MouseLeft);
+
+	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+	float half = SplitHotThickness * 0.5f;
+
+	if (!bDragVertical && !bDragHorizontal)
+	{
+		if (LPressed)
+		{
+			bool nearV = std::abs(MP.X - splitX) <= half;
+			bool nearH = std::abs(MP.Y - splitY) <= half;
+			// Priority: whichever is closer; if both, prefer vertical
+			if (nearV) bDragVertical = true;
+			else if (nearH) bDragHorizontal = true;
+		}
+	}
+	else
+	{
+		if (LDown)
+		{
+			if (bDragVertical)
+			{
+				VerticalRatio = std::clamp(MP.X / std::max(1.0f, W), 0.1f, 0.9f);
+			}
+			if (bDragHorizontal)
+			{
+				HorizontalRatio = std::clamp(MP.Y / std::max(1.0f, H), 0.1f, 0.9f);
+			}
+		}
+		if (LRel)
+		{
+			bDragVertical = false;
+			bDragHorizontal = false;
+		}
+	}
 }
 
 void URenderer::SaveViewportLayout() const

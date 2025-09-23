@@ -16,4 +16,17 @@ public:
 		SideLT->LayoutChildren();
 		SideRB->LayoutChildren();
 	}
+
+	bool HitTestHandle(FPoint p) const override
+	{
+		float y = Rect.Y + Rect.H * SplitRatio;
+		return (p.Y >= y - HANDLE_THICKNESS && p.Y <= y + HANDLE_THICKNESS && p.X >= Rect.X && p.X <= Rect.X + Rect.W);
+	}
+	void DragTo(FPoint p) override
+	{
+		if (Rect.H <= 0.0f) return;
+		float r = (p.Y - Rect.Y) / Rect.H;
+		SetSplitRatio(r);
+		LayoutChildren();
+	}
 };

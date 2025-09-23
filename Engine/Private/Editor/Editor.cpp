@@ -144,6 +144,11 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 {
 	const UInputManager& InputManager = UInputManager::GetInstance();
 	URenderer& Renderer = URenderer::GetInstance();
+	// If user is dragging a splitter, suppress picking/gizmo interactions to avoid conflicts
+	if (Renderer.IsDraggingSplitter())
+	{
+		return;
+	}
 
 	static EGizmoDirection PreviousGizmoDirection = EGizmoDirection::None;
 	AActor* ActorPicked = InLevel->GetSelectedActor();
