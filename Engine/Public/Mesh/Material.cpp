@@ -10,7 +10,6 @@ UMaterial::UMaterial()
 UMaterial::UMaterial(const FObjMaterialInfo& InFObjMaterial)
 {
 	MaterialInfo = InFObjMaterial;
-	SetMaterialName();
 	
 }
 UMaterial::~UMaterial()
@@ -20,33 +19,10 @@ UMaterial::~UMaterial()
 void UMaterial::SetMaterialInfo(const FObjMaterialInfo& InFObjMaterial)
 {
 	MaterialInfo = InFObjMaterial;
-	SetMaterialName();
+
 }
 
-void UMaterial::SetMaterialName()
-{
-	uint32 LastSlashIndex = -1;
-	uint32 LastDotIndex = -1;
 
-	LastSlashIndex = MaterialInfo.Map_Kd.find_last_of("/");
-	LastDotIndex = MaterialInfo.Map_Kd.find_last_of(".");
-
-	//슬래시가 존재, dot이 있든 없든 두가지 케이스 커버(Dot이 없다면 LastDotIndex-LastSlashIndex가 string 끝까지 추출)
-	if (LastSlashIndex != FString::npos && LastSlashIndex < LastDotIndex)
-	{
-		MaterialName = MaterialInfo.Map_Kd.substr(LastSlashIndex + 1, LastDotIndex - LastSlashIndex-1);
-	}
-	//슬래시는 있는데 dot이 없는 경우
-	else if (LastSlashIndex != FString::npos)
-	{
-		MaterialName = MaterialInfo.Map_Kd.substr(LastSlashIndex + 1);
-	}
-	//슬래시 없는 경우.
-	else
-	{
-		MaterialName = MaterialInfo.Map_Kd.substr(0, LastDotIndex-1);
-	}
-}
 
 //const FObjMaterialInfo* UMaterial::GetMaterialInfo(const FString& MtlName) const
 //{

@@ -13,13 +13,12 @@ public:
 	
 
 	const FObjMaterialInfo& GetMaterialInfo() const { return MaterialInfo; }
+	const FString& GetMaterialName() const { return MaterialInfo.MaterialName; }
 	const FString& GetKdTextureFilePath() const { return MaterialInfo.Map_Kd; }
 	const FString& GetKsTextureFilePath() const { return MaterialInfo.Map_Ks; }
 	const FString& GetBumpTextureFilePath() const { return MaterialInfo.Map_bump; }
-	const FString& GetMaterialName() const { return MaterialName; }
 
 private:
-	void SetMaterialName();
 	UMaterial();
 	UMaterial(const FObjMaterialInfo& InFObjMaterial);
 	~UMaterial();
@@ -27,5 +26,4 @@ private:
 	friend class FObjManager;
 	friend class FMtlParser;
 	FObjMaterialInfo MaterialInfo;
-	FString MaterialName;
 };

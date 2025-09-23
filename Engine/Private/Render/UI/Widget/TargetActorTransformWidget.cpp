@@ -187,7 +187,6 @@ void UTargetActorTransformWidget::RenderMaterials(UStaticMeshComponent* Componen
 			
 			const uint32 CurrentUUID = MaterialListOfComponent[Index]->GetUUID();
 
-			int CurrentIndex = -1;
 			FString Tag = FString("Material ").append(std::to_string(Index));
 			if (ImGui::BeginCombo(Tag.c_str(), CurrentMaterialName.c_str()))
 			{

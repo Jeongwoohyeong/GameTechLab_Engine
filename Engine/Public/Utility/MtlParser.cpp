@@ -23,7 +23,6 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 	FString Line;
 	FObjMaterialInfo CurrentMaterialInfo;
 	bool bIsEmpty = true;
-	FString CurrentMtlName{};
 	while (std::getline(File, Line))
 	{
 		// 빈 줄, 주석 제외
@@ -46,14 +45,14 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 		{
 			if (!bIsEmpty)
 			{
-				Materials->emplace(CurrentMtlName, new UMaterial(CurrentMaterialInfo));
+				Materials->emplace(CurrentMaterialInfo.MaterialName, new UMaterial(CurrentMaterialInfo));
 				bIsEmpty = true;
 			}
-
-			Ss >> CurrentMtlName;
 			CurrentMaterialInfo = {};
+			Ss >> CurrentMaterialInfo.MaterialName;
+			
 			bIsEmpty = false;
-			UE_LOG("mtl name %s", CurrentMtlName.c_str());
+			UE_LOG("mtl name %s", CurrentMaterialInfo.MaterialName.c_str());
 		}
 		else if (bIsEmpty)
 		{
@@ -124,7 +123,7 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 
 	if (!bIsEmpty)
 	{
-		Materials->emplace(CurrentMtlName, new UMaterial(CurrentMaterialInfo));
+		Materials->emplace(CurrentMaterialInfo.MaterialName, new UMaterial(CurrentMaterialInfo));
 	}
 
 	return true;
