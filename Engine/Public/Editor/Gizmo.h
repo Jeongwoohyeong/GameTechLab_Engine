@@ -104,6 +104,9 @@ public:
 	void OnMouseDragStart(FVector& CollisionPoint);
 	void OnMouseRelease(EGizmoDirection DirectionReleased) {}
 
+	// Update collision scales based on current camera (used before render-time update)
+	void UpdateCollisionScaleForCamera(const FVector& CameraLocation);
+
 private:
 	static inline int AxisIndex(EGizmoDirection InDirection)
 	{

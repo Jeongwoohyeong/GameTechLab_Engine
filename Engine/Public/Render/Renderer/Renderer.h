@@ -100,6 +100,7 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 	// Viewport hit-testing and camera access
 	int GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRect);
 	UCamera* GetViewCameraAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewCameras[Index] : nullptr; }
+	EViewportType GetViewportTypeAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewTypes[Index] : EViewportType::Perspective; }
 
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);

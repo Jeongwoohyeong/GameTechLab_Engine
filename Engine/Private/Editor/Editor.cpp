@@ -151,6 +151,9 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 
 	// Single-view must behave exactly like before: use global NDC and main camera
 	const bool bIsQuad = (Renderer.GetViewportLayout() == URenderer::EViewportLayout::Quad);
+	// Hovered viewport info (valid only in quad)
+	FRect HoverRect{0,0,0,0};
+	int HoverIndex = -1;
 	UCamera* PickCam = nullptr;
 	FRay WorldRay = {};
 	if (!bIsQuad)
@@ -172,8 +175,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	{
 		// Determine hovered viewport and build ray using its camera
 		const FVector MousePosPx = InputManager.GetMousePosition();
-		FRect HoverRect{0,0,0,0};
-		int HoverIndex = Renderer.GetHoveredViewportIndex(MousePosPx.X, MousePosPx.Y, HoverRect);
+		HoverIndex = Renderer.GetHoveredViewportIndex(MousePosPx.X, MousePosPx.Y, HoverRect);
 		if (HoverIndex < 0)
 		{
 			HoverIndex = 0;
@@ -185,22 +187,57 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		float LocalNdcX = ((MousePosPx.X - HoverRect.X) / HoverRect.W) * 2.0f - 1.0f;
 		float LocalNdcY = 1.0f - ((MousePosPx.Y - HoverRect.Y) / HoverRect.H) * 2.0f;
 
-		if (HoverIndex == 0)
-		{
-			PickCam = &Camera;
-		}
-		else
-		{
-			PickCam = Renderer.GetViewCameraAt(HoverIndex);
-		}
+		// 항상 뷰포트 전용 카메라를 사용 (TL도 ViewCameras[0])
+		PickCam = Renderer.GetViewCameraAt(HoverIndex);
 		if (!PickCam)
 		{
 			PickCam = &Camera;
+		}
+		// 멀티뷰에서는 선택된 뷰포트 타입에 맞춰 카메라 파라미터를 맞춘 뒤 종횡비 반영
+		URenderer::EViewportType VType = URenderer::EViewportType::Perspective;
+		switch (HoverIndex)
+		{
+		case 0: VType = URenderer::EViewportType::Perspective; break; // TL
+		case 1: VType = URenderer::EViewportType::Right; break;       // BL
+		case 2: VType = URenderer::EViewportType::Top; break;         // TR
+		case 3: VType = URenderer::EViewportType::Front; break;       // BR
+		default: break;
+		}
+		switch (VType)
+		{
+		case URenderer::EViewportType::Perspective:
+			PickCam->SetCameraType(ECameraType::ECT_Perspective);
+			PickCam->SetLocation(Camera.GetLocation());
+			PickCam->SetRotation(Camera.GetRotation());
+			break;
+		case URenderer::EViewportType::Top:
+			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
+			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
+			PickCam->SetLocation(FVector(0, 0, 30));
+			PickCam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
+			break;
+		case URenderer::EViewportType::Right:
+			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
+			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
+			PickCam->SetLocation(FVector(0, 30, 0));
+			PickCam->SetRotation(FVector(0.0f, -90.0f, 0.0f));
+			break;
+		case URenderer::EViewportType::Front:
+			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
+			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
+			PickCam->SetLocation(FVector(-30, 0, 0));
+			PickCam->SetRotation(FVector(0.0f, 0.0f, 0.0f));
+			break;
 		}
 		// 선택된 뷰포트 직사각형 기준의 종횡비를 카메라에 적용해 정확한 레이 계산
 		float vpAspect = (HoverRect.H > 0.0f) ? (HoverRect.W / HoverRect.H) : 1.0f;
 		PickCam->SetAspect(vpAspect);
 		if (PickCam->GetCameraType() == ECameraType::ECT_Perspective) PickCam->UpdateMatrixByPers(); else PickCam->UpdateMatrixByOrth();
+		// Update gizmo collision scale using current viewport camera distance (stabilizes rotation ring pick)
+		if (InLevel->GetSelectedActor())
+		{
+			Gizmo.UpdateCollisionScaleForCamera(PickCam->GetLocation());
+		}
 		// 월드 레이
 		WorldRay = PickCam->ConvertToWorldRay(LocalNdcX, LocalNdcY);
 	}
@@ -251,7 +288,13 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		{
 			Gizmo.SetGizmoDirection(EGizmoDirection::None);
 		}
-		if (!ImGui::GetIO().WantCaptureMouse && InputManager.IsKeyPressed(EKeyInput::MouseLeft))
+		// 뷰포트 위에 마우스가 있을 때는 ImGui 캡처 여부와 관계 없이 피킹 허용
+		bool bAllowPicking = true;
+		if (bIsQuad)
+		{
+			bAllowPicking = (HoverIndex >= 0);
+		}
+		if (bAllowPicking && InputManager.IsKeyPressed(EKeyInput::MouseLeft))
 		{
 			TArray<UPrimitiveComponent*> Candidate = FindCandidatePrimitives(InLevel);
 
@@ -327,8 +370,12 @@ FVector UEditor::GetGizmoDragLocation(const FRay& WorldRay, const UCamera& ViewC
 		GizmoAxis = QuatDragStart.RotateVector(AxisLocal);
 	}
 
-	if (ObjectPicker.IsRayCollideWithPlane(WorldRay, PlaneOrigin,
-	                                       ViewCam.CalculatePlaneNormal(GizmoAxis).Cross(GizmoAxis), MouseWorld))
+	// Compute camera forward from view camera rotation (X-forward convention)
+	FVector4 CamForward4 = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(ViewCam.GetRotation()));
+	FVector CamForward = FVector(CamForward4.X, CamForward4.Y, CamForward4.Z);
+	CamForward.Normalize();
+	FVector PlaneNormal = (CamForward.Cross(GizmoAxis)).Cross(GizmoAxis);
+	if (ObjectPicker.IsRayCollideWithPlane(WorldRay, PlaneOrigin, PlaneNormal, MouseWorld))
 	{
 		FVector MouseDistance = MouseWorld - Gizmo.GetDragStartMouseLocation();
 		return Gizmo.GetDragStartActorLocation() + GizmoAxis * MouseDistance.Dot(GizmoAxis);
@@ -389,7 +436,7 @@ FQuat UEditor::GetGizmoDragRotationQuat(const FRay& WorldRay, const UCamera& /*V
 		const FQuat QuatDragStart = Gizmo.GetDragStartActorRotationQuat();
 		// 델타 회전 쿼터니언 구성
 		// 월드: 월드축 기준 델타, 좌곱
-		// 로컬: 로컬축 기준 델타, 우곱
+		// 로컬: 로컬축 기준 델타, 우곱 
 		if (Gizmo.IsWorld())
 		{
 			const FQuat QuatDelta = FQuat::FromAxisAngle(AxisWorld, Angle);
@@ -413,8 +460,12 @@ FVector UEditor::GetGizmoDragScale(const FRay& WorldRay, const UCamera& ViewCam)
 	// 스케일은 항상 로컬 기준으로 작동: 시작 시점 로컬축을 월드로 고정
 	GizmoAxis = Gizmo.GetDragStartActorRotationQuat().RotateVector(GizmoAxis);
 
-	if (ObjectPicker.IsRayCollideWithPlane(WorldRay, PlaneOrigin,
-	                                       ViewCam.CalculatePlaneNormal(GizmoAxis).Cross(GizmoAxis), MouseWorld))
+	// Compute camera forward from view camera rotation (X-forward convention)
+	FVector4 CamForward4 = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(ViewCam.GetRotation()));
+	FVector CamForward = FVector(CamForward4.X, CamForward4.Y, CamForward4.Z);
+	CamForward.Normalize();
+	FVector PlaneNormal = (CamForward.Cross(GizmoAxis)).Cross(GizmoAxis);
+	if (ObjectPicker.IsRayCollideWithPlane(WorldRay, PlaneOrigin, PlaneNormal, MouseWorld))
 	{
 		FVector PlaneOriginToMouse = MouseWorld - PlaneOrigin;
 		FVector PlaneOriginToMouseStart = Gizmo.GetDragStartMouseLocation() - PlaneOrigin;
