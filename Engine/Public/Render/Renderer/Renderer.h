@@ -4,6 +4,7 @@
 #include "Components/SceneComponent.h"
 #include "Editor/EditorPrimitive.h"
 #include "Render/UI/Layout/SWindow.h"
+#include "Render/UI/Layout/MultiViewBuilders.h"
 #include "Editor/Camera.h"
 
 class UPipeline;
@@ -70,8 +71,30 @@ public:
 	void RenderBegin();
 
 // Layout control
-	inline void ToggleViewportLayout() { CurrentLayout = (CurrentLayout == EViewportLayout::Quad ? EViewportLayout::Single : EViewportLayout::Quad); }
-	void SetViewportLayout(EViewportLayout InLayout);
+	inline void ToggleViewportLayout() { SetViewportLayout(CurrentLayout == EViewportLayout::Quad ? EViewportLayout::Single : EViewportLayout::Quad); }
+inline void SetViewportLayout(EViewportLayout InLayout)
+	{
+		if (CurrentLayout == InLayout) return;
+		if (InLayout == EViewportLayout::Quad)
+		{
+			// 즉시 2x2 트리 생성하여 확실하게 멀티뷰 진입
+			if (!MultiViewRoot)
+			{
+				MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
+			}
+			CurrentLayout = EViewportLayout::Quad;
+		}
+		else
+		{
+			// 단일뷰 전환 시 트리 제거
+			if (MultiViewRoot)
+			{
+				delete MultiViewRoot;
+				MultiViewRoot = nullptr;
+			}
+			CurrentLayout = EViewportLayout::Single;
+		}
+	}
 	EViewportLayout GetViewportLayout() const { return CurrentLayout; }
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);

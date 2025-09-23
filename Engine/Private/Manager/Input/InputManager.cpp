@@ -89,12 +89,9 @@ void UInputManager::Update(FAppWindow* InWindow)
 		return;
 	}
 
-	// ImGui Input 받는 경우 다른 시스템 입력 중단
+	// ImGui가 키보드를 잡고 있어도 전역 키(F1~F12 등)는 통과시킨다
 	ImGuiIO& IO = ImGui::GetIO();
-	if (IO.WantCaptureKeyboard)
-	{
-		return;
-	}
+	bool bKeyboardCaptured = IO.WantCaptureKeyboard;
 
 	// 마우스 위치 업데이트
 	UpdateMousePosition(InWindow);
@@ -113,6 +110,14 @@ void UInputManager::Update(FAppWindow* InWindow)
 			EKeyInput::MouseMiddle)
 		{
 			// 마우스 버튼은 ProcessKeyMessage에서 처리
+			continue;
+		}
+
+		// ImGui가 키보드를 캡쳐 중이면 전역키만 폴링 (F1~F12, Esc 등)
+		bool bIsGlobalKey = (KeyInput == EKeyInput::F1 || KeyInput == EKeyInput::F2 || KeyInput == EKeyInput::F3 || KeyInput == EKeyInput::F4 || KeyInput == EKeyInput::Esc);
+		if (bKeyboardCaptured && !bIsGlobalKey)
+		{
+			// 전역키가 아니면 상태 업데이트 스킵
 			continue;
 		}
 
