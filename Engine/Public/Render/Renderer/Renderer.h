@@ -212,6 +212,7 @@ private:
 	float HorizontalRatio = 0.5f; // 0..1, Y split
 	bool  bDragVertical = false;
 	bool  bDragHorizontal = false;
+	bool  bMouseLeftDownPrevSplit = false; // internal edge detect for split dragging
 	static constexpr float SplitHotThickness = 8.0f; // px
 
 	// Per-viewport cameras and types
