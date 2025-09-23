@@ -26,7 +26,7 @@ void UCamera::Update()
 	/**
 	 * @brief 마우스 우클릭을 하고 있는 동안 카메라 제어가 가능합니다.
 	 */
-	if (Input.IsKeyDown(EKeyInput::MouseRight))
+	if (bInputEnabled && Input.IsKeyDown(EKeyInput::MouseRight))
 	{
 		/**
 		 * @brief W, A, S, D 는 각각 카메라의 상, 하, 좌, 우 이동을 담당합니다.

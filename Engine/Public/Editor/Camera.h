@@ -28,6 +28,10 @@ public:
 	void UpdateMatrixByPers();
 	void UpdateMatrixByOrth();
 
+	// Input enable for main editor camera (disable when hovering other viewports)
+	void SetInputEnabled(bool b) { bInputEnabled = b; }
+	bool GetInputEnabled() const { return bInputEnabled; }
+
 	/**
 	 * @brief Setter
 	 */
@@ -137,4 +141,7 @@ private:
 
 	// Dynamic Mouse Sensitivity
 	float CurrentMouseSensitivity;
+
+	// Whether this camera consumes input (movement/rotation). Only used by editor main camera.
+	bool bInputEnabled = true;
 };
