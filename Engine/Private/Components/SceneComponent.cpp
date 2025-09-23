@@ -47,7 +47,13 @@ void USceneComponent::SetParentAttachment(USceneComponent* NewParent)
 
 void USceneComponent::RemoveChild(USceneComponent* ChildDeleted)
 {
-	Children.erase(std::remove(Children.begin(), Children.end(), this), Children.end());
+	/*
+	*	이전 코드는 인자로 비교하지 않았음.this로 비교했었음.
+	*	이 코드가 쓰이는 곳에서는 this로 인자를 받았기 때문에 잘되었던 것.
+	*	따라서 다음과 같이 인자로 비교하도록 수정
+	*/
+	if (!ChildDeleted) return;
+	Children.erase(std::remove(Children.begin(), Children.end(), ChildDeleted), Children.end());
 }
 
 void USceneComponent::MarkAsDirty()
