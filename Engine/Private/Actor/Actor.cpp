@@ -11,7 +11,6 @@ AActor::AActor() = default;
 AActor::AActor(UObject* InOuter)
 {
 	SetOuter(InOuter);
-
 }
 
 AActor::~AActor()
