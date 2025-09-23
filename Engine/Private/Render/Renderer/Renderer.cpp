@@ -43,8 +43,9 @@ void URenderer::Init(HWND InWindowHandle)
 	/** LineBatchRenderer 초기화 */
 	ULineBatchRenderer::GetInstance().Init();
 
-	// Build default 2x2 multiview splitter tree (rects only for now)
-	MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
+	// Start in single-view layout; multiview is built on demand (F2 toggle)
+	MultiViewRoot = nullptr;
+	CurrentLayout = EViewportLayout::Single;
 
 	// Create per-viewport cameras
 	for (int i = 0; i < 4; ++i)
@@ -60,8 +61,11 @@ void URenderer::Init(HWND InWindowHandle)
 	// Tighter default ortho widths (closer zoom)
 	ViewCameras[1]->SetOrthoWorldWidth(30.f);  // Bottom-Left (Right view)
 	ViewCameras[2]->SetOrthoWorldWidth(30.f);  // Top-Right (Top view)
-	ViewCameras[3]->SetOrthoWorldWidth(30.f);  // Bottom-Right (Front view)
+	ViewCameras[3]->SetOrthoWorldWidth(60.f);
 
+	// 강제 단일뷰로 시작 보장
+	SetViewportLayout(EViewportLayout::Single);
+}
 	// Load layout from editor.ini
 	LoadViewportLayout();
 }
@@ -132,17 +136,33 @@ void URenderer::Update(UEditor* Editor)
 {
 	RenderBegin();
 
-	// Compute 2x2 viewports from splitter rects
+	// 레이아웃 강제 보정: Single이면 트리 제거, Quad이면 필요 시 트리 생성
+	if (CurrentLayout == EViewportLayout::Single)
+	{
+		if (MultiViewRoot) { delete MultiViewRoot; MultiViewRoot = nullptr; }
+	}
+	else if (CurrentLayout == EViewportLayout::Quad)
+	{
+		if (!MultiViewRoot) { MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr); }
+	}
+
 	D3D11_VIEWPORT LocalViewports[4] = {};
 	uint32 NumViewports = 0;
-	if (MultiViewRoot)
+
+	DXGI_SWAP_CHAIN_DESC swapchaindesc = {};
+	GetSwapChain()->GetDesc(&swapchaindesc);
+
+	if (CurrentLayout == EViewportLayout::Quad)
 	{
+		// Ensure multiview tree exists
+		if (!MultiViewRoot)
+		{
+			MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
+		}
 		// Root covers whole swapchain area
-		DXGI_SWAP_CHAIN_DESC swapchaindesc = {};
-		GetSwapChain()->GetDesc(&swapchaindesc);
-		MultiViewRoot->SetRect({ 0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height });
+		MultiViewRoot->SetRect({0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height});
 		MultiViewRoot->LayoutChildren();
-		// 트리 구조를 직접 따라가서 사분면을 결정 (RootV -> LeftH/RightH)
+		// Follow the tree (RootV -> LeftH/RightH)
 		SSplitter* root = static_cast<SSplitter*>(MultiViewRoot);
 		SSplitter* left = root ? static_cast<SSplitter*>(root->GetLT()) : nullptr;
 		SSplitter* right = root ? static_cast<SSplitter*>(root->GetRB()) : nullptr;
@@ -152,7 +172,7 @@ void URenderer::Update(UEditor* Editor)
 			const FRect& BL = left->GetRB()->GetRect();
 			const FRect& TR = right->GetLT()->GetRect();
 			const FRect& BR = right->GetRB()->GetRect();
-			auto ClampVP = [](const FRect& R) { D3D11_VIEWPORT v = { R.X, R.Y, std::max(2.0f, R.W), std::max(2.0f, R.H), 0.0f, 1.0f }; return v; };
+			auto ClampVP = [](const FRect& R){ D3D11_VIEWPORT v = { R.X, R.Y, std::max(2.0f, R.W), std::max(2.0f, R.H), 0.0f, 1.0f }; return v; };
 			LocalViewports[0] = ClampVP(TL);
 			LocalViewports[1] = ClampVP(BL);
 			LocalViewports[2] = ClampVP(TR);
@@ -166,7 +186,6 @@ void URenderer::Update(UEditor* Editor)
 		}
 		else
 		{
-			// fallback: 균등 2x2
 			float WindowWidth = (float)swapchaindesc.BufferDesc.Width;
 			float WindowHeight = (float)swapchaindesc.BufferDesc.Height;
 			LocalViewports[0] = { 0.0f, 0.0f, std::max(2.0f, WindowWidth / 2), std::max(2.0f, WindowHeight / 2), 0.0f, 1.0f };
@@ -176,24 +195,25 @@ void URenderer::Update(UEditor* Editor)
 			NumViewports = 4;
 		}
 	}
-	if (NumViewports == 0)
+	else // Single view
 	{
-		DXGI_SWAP_CHAIN_DESC swapchaindesc = {};
-		GetSwapChain()->GetDesc(&swapchaindesc);
-		float WindowWidth = (float)swapchaindesc.BufferDesc.Width;
-		float WindowHeight = (float)swapchaindesc.BufferDesc.Height;
-		LocalViewports[0] = { 0.0f, 0.0f, WindowWidth / 2, WindowHeight / 2, 0.0f, 1.0f };
-		LocalViewports[1] = { WindowWidth / 2, 0.0f, WindowWidth / 2, WindowHeight / 2, 0.0f, 1.0f };
-		LocalViewports[2] = { 0.0f, WindowHeight / 2, WindowWidth / 2, WindowHeight / 2, 0.0f, 1.0f };
-		LocalViewports[3] = { WindowWidth / 2, WindowHeight / 2, WindowWidth / 2, WindowHeight / 2, 0.0f, 1.0f };
-		NumViewports = 4;
+		LocalViewports[0] = { 0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height, 0.0f, 1.0f };
+		NumViewports = 1;
 	}
 
-	// 고정 매핑: 0=TL(Persp),1=BL(Right),2=TR(Top),3=BR(Front)
-	ViewTypes[0] = EViewportType::Perspective;
-	ViewTypes[1] = EViewportType::Right;
-	ViewTypes[2] = EViewportType::Top;
-	ViewTypes[3] = EViewportType::Front;
+	// View types
+	if (CurrentLayout == EViewportLayout::Quad)
+	{
+		// 0=TL(Persp),1=BL(Right),2=TR(Top),3=BR(Front)
+		ViewTypes[0] = EViewportType::Perspective;
+		ViewTypes[1] = EViewportType::Right;
+		ViewTypes[2] = EViewportType::Top;
+		ViewTypes[3] = EViewportType::Front;
+	}
+	else
+	{
+		ViewTypes[0] = EViewportType::Perspective;
+	}
 
 	for (uint32 i = 0; i < NumViewports; ++i)
 	{
@@ -205,14 +225,14 @@ void URenderer::Update(UEditor* Editor)
 			GetSwapChain()->GetDesc(&scd);
 			LONG maxW = (LONG)scd.BufferDesc.Width;
 			LONG maxH = (LONG)scd.BufferDesc.Height;
-			LONG left = (LONG)LocalViewports[i].TopLeftX;
-			LONG top = (LONG)LocalViewports[i].TopLeftY;
-			LONG right = (LONG)(LocalViewports[i].TopLeftX + LocalViewports[i].Width);
+			LONG left   = (LONG)LocalViewports[i].TopLeftX;
+			LONG top    = (LONG)LocalViewports[i].TopLeftY;
+			LONG right  = (LONG)(LocalViewports[i].TopLeftX + LocalViewports[i].Width);
 			LONG bottom = (LONG)(LocalViewports[i].TopLeftY + LocalViewports[i].Height);
-			left = std::max<LONG>(0, std::min<LONG>(left, maxW - 1));
-			top = std::max<LONG>(0, std::min<LONG>(top, maxH - 1));
-			right = std::max<LONG>(left + 1, std::min<LONG>(right, maxW));
-			bottom = std::max<LONG>(top + 1, std::min<LONG>(bottom, maxH));
+			left   = std::max<LONG>(0, std::min<LONG>(left,   maxW - 1));
+			top    = std::max<LONG>(0, std::min<LONG>(top,    maxH - 1));
+			right  = std::max<LONG>(left + 1, std::min<LONG>(right,  maxW));
+			bottom = std::max<LONG>(top + 1,  std::min<LONG>(bottom, maxH));
 			D3D11_RECT r{ left, top, right, bottom };
 			GetDeviceContext()->RSSetScissorRects(1, &r);
 		}
@@ -242,13 +262,13 @@ void URenderer::Update(UEditor* Editor)
 			// Pitch +90 (see RotationMatrixCamera: Pitch(X) rotates around Y). +90 makes forward -Z (top-down)
 			Cam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
 			break;
-		case EViewportType::Right:
+case EViewportType::Right:
 			Cam->SetCameraType(ECameraType::ECT_Orthographic);
 			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
 			Cam->SetLocation(FVector(0, 30, 0));
 			Cam->SetRotation(FVector(0.0f, -90.0f, 0.0f)); // +Y에서 원점(-Y) 바라보기
 			break;
-		case EViewportType::Front:
+case EViewportType::Front:
 			Cam->SetCameraType(ECameraType::ECT_Orthographic);
 			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
 			Cam->SetLocation(FVector(-30, 0, 0));
@@ -278,16 +298,16 @@ void URenderer::Update(UEditor* Editor)
 		D3D11_VIEWPORT fullVp = {};
 		fullVp.TopLeftX = 0.0f;
 		fullVp.TopLeftY = 0.0f;
-		fullVp.Width = (float)scd.BufferDesc.Width;
-		fullVp.Height = (float)scd.BufferDesc.Height;
+		fullVp.Width    = (float)scd.BufferDesc.Width;
+		fullVp.Height   = (float)scd.BufferDesc.Height;
 		fullVp.MinDepth = 0.0f;
 		fullVp.MaxDepth = 1.0f;
 		GetDeviceContext()->RSSetViewports(1, &fullVp);
 
 		D3D11_RECT fullScissor;
-		fullScissor.left = 0;
-		fullScissor.top = 0;
-		fullScissor.right = (LONG)scd.BufferDesc.Width;
+		fullScissor.left   = 0;
+		fullScissor.top    = 0;
+		fullScissor.right  = (LONG)scd.BufferDesc.Width;
 		fullScissor.bottom = (LONG)scd.BufferDesc.Height;
 		GetDeviceContext()->RSSetScissorRects(1, &fullScissor);
 
@@ -302,6 +322,34 @@ void URenderer::Update(UEditor* Editor)
 	RenderEnd();
 }
 
+void URenderer::ToggleViewportLayout()
+{
+	SetViewportLayout(CurrentLayout == EViewportLayout::Quad ? EViewportLayout::Single : EViewportLayout::Quad);
+}
+
+void URenderer::SetViewportLayout(EViewportLayout InLayout)
+{
+	if (CurrentLayout == InLayout) return;
+	if (InLayout == EViewportLayout::Quad)
+	{
+		// Build tree if not exists
+		if (!MultiViewRoot)
+		{
+			MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
+		}
+	}
+	else // Single
+	{
+		// Remove tree (we only use it to compute rects)
+		if (MultiViewRoot)
+		{
+			delete MultiViewRoot;
+			MultiViewRoot = nullptr;
+		}
+	}
+	CurrentLayout = InLayout;
+}
+
 /**
  * @brief Render Prepare Step
  */
@@ -314,7 +362,7 @@ void URenderer::RenderBegin()
 
 	GetDeviceContext()->RSSetViewports(1, &DeviceResources->GetViewportInfo());
 
-	ID3D11RenderTargetView* RenderTargetViews[] = { RenderTargetView }; // 배열 생성
+	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
 
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 	DeviceResources->UpdateViewport();
@@ -416,7 +464,7 @@ void URenderer::RenderLevel()
 						if (TextureSRV)
 						{
 							Pipeline->SetShaderResourceView(1, false, TextureSRV);
-						}
+						}   
 					}
 				}
 				if (!TextureSRV)
@@ -432,7 +480,6 @@ void URenderer::RenderLevel()
 			}
 		}
 
-		Pipeline->DrawIndexedInstanced(StaticMesh->GetIndexNum(), static_cast<uint32>(Instances.Num()), 0, 0, 0);
 	}
 
 	//아래 코드는 헤더파일 참고
@@ -608,7 +655,7 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
 	DeviceResources->CreateDepthBuffer();
 
 	ID3D11RenderTargetView* RenderTargetView = DeviceResources->GetRenderTargetView();
-	ID3D11RenderTargetView* RenderTargetViews[] = { RenderTargetView }; // 배열 생성
+	ID3D11RenderTargetView* RenderTargetViews[] = {RenderTargetView}; // 배열 생성
 	GetDeviceContext()->OMSetRenderTargets(1, RenderTargetViews, DeviceResources->GetDepthStencilView());
 }
 
@@ -633,7 +680,7 @@ void URenderer::LoadViewportLayout()
 		if (S == "Right") return EViewportType::Right;
 		if (S == "Front") return EViewportType::Front;
 		return DefaultType;
-		};
+	};
 	// Rect 수집 순서: 0=TopLeft, 1=BottomLeft, 2=TopRight, 3=BottomRight
 	// 기본 매핑: TL=Perspective, TR=Top, BL=Right, BR=Front
 	ViewTypes[0] = ReadType("TopLeft", EViewportType::Perspective);
@@ -646,17 +693,17 @@ void URenderer::SaveViewportLayout() const
 {
 	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
 	auto WriteType = [&](const char* Key, EViewportType T)
+	{
+		const char* V = "Perspective";
+		switch (T)
 		{
-			const char* V = "Perspective";
-			switch (T)
-			{
-			case EViewportType::Top: V = "Top"; break;
-			case EViewportType::Right: V = "Right"; break;
-			case EViewportType::Front: V = "Front"; break;
-			default: V = "Perspective"; break;
-			}
-			WritePrivateProfileStringA("Viewport", Key, V, ConfigFilePath.string().c_str());
-		};
+		case EViewportType::Top: V = "Top"; break;
+		case EViewportType::Right: V = "Right"; break;
+		case EViewportType::Front: V = "Front"; break;
+		default: V = "Perspective"; break;
+		}
+		WritePrivateProfileStringA("Viewport", Key, V, ConfigFilePath.string().c_str());
+	};
 	WriteType("TopLeft", ViewTypes[0]);
 	WriteType("BottomLeft", ViewTypes[1]);
 	WriteType("TopRight", ViewTypes[2]);
@@ -923,7 +970,7 @@ void URenderer::EnsureStructuredBufferCapacity(FStructuredBufferResource& InReso
 }
 
 void URenderer::UploadStructuredBufferData(FStructuredBufferResource& InResource, const void* InData,
-	uint32 InInstanceCount)
+                                         uint32 InInstanceCount)
 {
 	if (!InResource.Buffer || InInstanceCount == 0)
 	{
