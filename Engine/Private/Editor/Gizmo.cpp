@@ -63,6 +63,19 @@ UGizmo::UGizmo()
 
 UGizmo::~UGizmo() = default;
 
+void UGizmo::UpdateCollisionScaleForCamera(const FVector& CameraLocation)
+{
+	if (!TargetActor) return;
+	float DistanceToCamera = (CameraLocation - TargetActor->GetActorLocation()).Length();
+	float Scale = DistanceToCamera * ScaleFactor;
+	if (DistanceToCamera < MinScaleFactor)
+	{
+		Scale = MinScaleFactor * ScaleFactor;
+	}
+	TranslateCollisionConfig.Scale = Scale;
+	RotateCollisionConfig.Scale = Scale;
+}
+
 void UGizmo::RenderGizmo(AActor* Actor, const FVector& CameraLocation)
 {
     TargetActor = Actor;

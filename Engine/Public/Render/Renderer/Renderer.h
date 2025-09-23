@@ -3,6 +3,9 @@
 #include "Core/Object.h"
 #include "Components/SceneComponent.h"
 #include "Editor/EditorPrimitive.h"
+#include "Render/UI/Layout/SWindow.h"
+#include "Render/UI/Layout/MultiViewBuilders.h"
+#include "Editor/Camera.h"
 
 class UPipeline;
 class UDeviceResources;
@@ -43,6 +46,17 @@ class URenderer : public UObject
 	DECLARE_SINGLETON(URenderer)
 
 public:
+	// Viewport layout modes
+	enum class EViewportLayout : uint8 { Single = 0, Quad = 1 };
+	enum class EViewportType : uint8
+	{
+		Perspective,
+		Top,
+		Right,
+		Front
+	};
+
+public:
 	void Init(HWND InWindowHandle);
 	void Release();
 
@@ -55,15 +69,65 @@ public:
 
 	void Update(UEditor* Editor);
 	void RenderBegin();
+
+// Layout control
+	inline void ToggleViewportLayout() { SetViewportLayout(CurrentLayout == EViewportLayout::Quad ? EViewportLayout::Single : EViewportLayout::Quad); }
+inline void SetViewportLayout(EViewportLayout InLayout)
+	{
+		if (CurrentLayout == InLayout) return;
+		if (InLayout == EViewportLayout::Quad)
+		{
+			// 즉시 2x2 트리 생성하여 확실하게 멀티뷰 진입
+			if (!MultiViewRoot)
+			{
+				MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
+			}
+			CurrentLayout = EViewportLayout::Quad;
+		}
+		else
+		{
+			// 단일뷰 전환 시 트리 제거
+			if (MultiViewRoot)
+			{
+				delete MultiViewRoot;
+				MultiViewRoot = nullptr;
+			}
+			CurrentLayout = EViewportLayout::Single;
+		}
+	}
+	EViewportLayout GetViewportLayout() const { return CurrentLayout; }
+
+	// Viewport hit-testing and camera access
+	int GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRect);
+	UCamera* GetViewCameraAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewCameras[Index] : nullptr; }
+	EViewportType GetViewportTypeAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewTypes[Index] : EViewportType::Perspective; }
+
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);
 	void RenderEditorPrimitive(FEditorPrimitive& Primitive, const FPipelineDescKey PipelineDescKey);
 	void RenderEnd() const;
-	
+
+
+	// Two-axis split ratios (0..1) for Quad layout
+	float GetVerticalRatio() const { return VerticalRatio; }
+	float GetHorizontalRatio() const { return HorizontalRatio; }
+	void SetVerticalRatio(float R) { VerticalRatio = std::clamp(R, 0.1f, 0.9f); }
+	void SetHorizontalRatio(float R) { HorizontalRatio = std::clamp(R, 0.1f, 0.9f); }
+
+	// Drag state for split lines
+	bool IsDraggingSplitter() const { return bDragVertical || bDragHorizontal; }
+
+	// UI overlay for splitter handles
+	void DrawSplitterOverlay() const;
+
 
 	void OnResize(uint32 Inwidth = 0, uint32 InHeight = 0);
-	bool GetIsResizing() { return bIsResizing;}
+	bool GetIsResizing() { return bIsResizing; }
 	void SetIsResizing(bool isResizing) { bIsResizing = isResizing; }
+
+	// Viewport layout save/load (editor.ini)
+	void LoadViewportLayout();
+	void SaveViewportLayout() const;
 
 
 	template<typename T>
@@ -74,7 +138,7 @@ public:
 		VertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
 		VertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA VertexBufferSRD = { InVertices.data()};
+		D3D11_SUBRESOURCE_DATA VertexBufferSRD = { InVertices.data() };
 
 		ID3D11Buffer* VertexBuffer;
 
@@ -91,7 +155,7 @@ public:
 		IndexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated
 		IndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 
-		D3D11_SUBRESOURCE_DATA IndexBufferSRD = { InIndices.data()};
+		D3D11_SUBRESOURCE_DATA IndexBufferSRD = { InIndices.data() };
 
 		ID3D11Buffer* IndexBuffer;
 
@@ -101,7 +165,7 @@ public:
 	}
 
 	void CreateInstanceBuffer();
-		
+
 	void UpdateConstant(const FMatrix& InMatrix) const;
 	void UpdateConstant(const FVector& InPosition, const FVector& InRotation, const FVector& InScale) const;
 	void UpdateConstant(const FViewProjConstants& InViewProjConstants) const;
@@ -119,7 +183,7 @@ public:
 
 	ID3D11Device* GetDevice() const { return DeviceResources->GetDevice(); }
 	ID3D11DeviceContext* GetDeviceContext() const { return DeviceResources->GetDeviceContext(); }
-	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain();}
+	IDXGISwapChain* GetSwapChain() const { return DeviceResources->GetSwapChain(); }
 	ID3D11RenderTargetView* GetRenderTargetView() const { return DeviceResources->GetRenderTargetView(); }
 	UDeviceResources* GetDeviceResources() const { return DeviceResources; }
 
@@ -127,11 +191,35 @@ public:
 	UPipeline* GetPipeline() const { return Pipeline; }
 
 private:
+	void UpdateSplitterDragging();
+
+private:
+	void UpdateSplitDrag();
+
+private:
 	UPipeline* Pipeline = nullptr;
 	UDeviceResources* DeviceResources = nullptr;
 	EViewModeIndex CurrentViewMode = EViewModeIndex::Lit;
 	EEngineShowFlags CurrentShowFlags = EEngineShowFlags::SF_Default;
 	TArray<UPrimitiveComponent*> PrimitiveComponents;
+
+	// Multiview root splitter (no longer used for layout math, kept for compatibility)
+	SWindow* MultiViewRoot = nullptr;
+	EViewportLayout CurrentLayout = EViewportLayout::Single; // default: single view on start
+
+	// Two split ratios and drag flags
+	float VerticalRatio = 0.5f;   // 0..1, X split
+	float HorizontalRatio = 0.5f; // 0..1, Y split
+	bool  bDragVertical = false;
+	bool  bDragHorizontal = false;
+	static constexpr float SplitHotThickness = 8.0f; // px
+
+	// Per-viewport cameras and types
+	bool bDraggingSplitter = false;
+
+	// Per-viewport cameras and types
+	UCamera* ViewCameras[4] = { nullptr, nullptr, nullptr, nullptr };
+	EViewportType ViewTypes[4] = { EViewportType::Perspective, EViewportType::Top, EViewportType::Right, EViewportType::Front };
 
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;
@@ -145,7 +233,7 @@ private:
 
 	ID3D11Buffer* TextInstanceBuffer = nullptr;
 	/////////////////////////////////////
-	FLOAT ClearColor[4] = {0.025f, 0.025f, 0.025f, 1.0f};
+	FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
 
 
 
@@ -155,7 +243,7 @@ private:
 	uint32 StrideTextVertex = sizeof(FTextVertex);
 	uint32 StrideTextInstance = sizeof(FTextInstance);
 
-	
+
 
 	struct FStructuredBufferResource
 	{
