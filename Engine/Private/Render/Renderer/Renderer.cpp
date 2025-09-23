@@ -65,7 +65,7 @@ void URenderer::Init(HWND InWindowHandle)
 
 	// 강제 단일뷰로 시작 보장
 	SetViewportLayout(EViewportLayout::Single);
-}
+
 	// Load layout from editor.ini
 	LoadViewportLayout();
 }
@@ -322,33 +322,6 @@ case EViewportType::Front:
 	RenderEnd();
 }
 
-void URenderer::ToggleViewportLayout()
-{
-	SetViewportLayout(CurrentLayout == EViewportLayout::Quad ? EViewportLayout::Single : EViewportLayout::Quad);
-}
-
-void URenderer::SetViewportLayout(EViewportLayout InLayout)
-{
-	if (CurrentLayout == InLayout) return;
-	if (InLayout == EViewportLayout::Quad)
-	{
-		// Build tree if not exists
-		if (!MultiViewRoot)
-		{
-			MultiViewRoot = BuildQuadView(nullptr, nullptr, nullptr, nullptr);
-		}
-	}
-	else // Single
-	{
-		// Remove tree (we only use it to compute rects)
-		if (MultiViewRoot)
-		{
-			delete MultiViewRoot;
-			MultiViewRoot = nullptr;
-		}
-	}
-	CurrentLayout = InLayout;
-}
 
 /**
  * @brief Render Prepare Step
