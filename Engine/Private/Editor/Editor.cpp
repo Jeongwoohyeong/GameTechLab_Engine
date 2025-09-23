@@ -233,7 +233,35 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			PickCam->SetLocation(Camera.GetLocation());
 			PickCam->SetRotation(Camera.GetRotation());
 			break;
-		case URenderer::EViewportType::Top:
+		default:
+			for (int Index = 1; Index < 4; Index++)
+			{
+				UCamera* PickCam1 = Renderer.GetViewCameraAt(Index);
+				if (Index == 2)
+				{
+					PickCam1->SetCameraType(ECameraType::ECT_Orthographic);
+					PickCam1->SetNearZ(0.1f); PickCam1->SetFarZ(1000.f);
+					PickCam1->SetLocation(Pos + FVector(0, 0, CameraDistance));
+					PickCam1->SetRotation(FVector(90.0f, 0.0f, 0.0f));
+
+				}
+				else if (Index == 1)
+				{
+					PickCam1->SetCameraType(ECameraType::ECT_Orthographic);
+					PickCam1->SetNearZ(0.1f); PickCam1->SetFarZ(1000.f);
+					PickCam1->SetLocation(Pos + FVector(0, CameraDistance, 0));
+					PickCam1->SetRotation(FVector(0.0f, -90.0f, 0.0f));
+				}
+				else
+				{
+					PickCam1->SetCameraType(ECameraType::ECT_Orthographic);
+					PickCam1->SetNearZ(0.1f); PickCam1->SetFarZ(1000.f);
+					PickCam1->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
+					PickCam1->SetRotation(FVector(0.0f, 0.0f, 0.0f));
+				}
+
+			}
+		/*case URenderer::EViewportType::Top:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
 			PickCam->SetLocation(Pos + FVector(0, 0, CameraDistance));
@@ -253,7 +281,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			PickCam->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
 			PickCam->SetRotation(FVector(0.0f, 0.0f, 0.0f));
 			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
-			break;
+			break;*/
 		}
 		// Hovered viewport interactive controls (orthographic): pan with WASD/Arrows, zoom with wheel
 		if (PickCam->GetCameraType() == ECameraType::ECT_Orthographic)
@@ -269,7 +297,8 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 				float scale = (wheel > 0.0f) ? 0.9f : 1.1f;
 				for (int i = 0; i < (int)std::abs(wheel); ++i) width *= scale;
 				width = std::max(1.0f, std::min(5000.0f, width));
-				PickCam->SetOrthoWorldWidth(width);
+				for (int Index = 0; Index < 4;Index++)
+					Renderer.GetViewCameraAt(Index)->SetOrthoWorldWidth(width);
 				CameraDistance *= scale;
 			}
 			// Pan (only when RMB is held over this viewport)
