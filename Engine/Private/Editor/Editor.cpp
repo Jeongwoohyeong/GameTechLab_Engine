@@ -235,21 +235,21 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 		case URenderer::EViewportType::Top:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			PickCam->SetLocation(FVector(0, 0, 30));
+			/*PickCam->SetLocation(FVector(0, 0, 30));*/
 			PickCam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
 			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(FVector(0, 0, 30));
 			break;
 		case URenderer::EViewportType::Right:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			PickCam->SetLocation(FVector(0, 30, 0));
+			/*PickCam->SetLocation(FVector(0, 30, 0));*/
 			PickCam->SetRotation(FVector(0.0f, -90.0f, 0.0f));
 			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(FVector(0, 30, 0));
 			break;
 		case URenderer::EViewportType::Front:
 			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
 			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			PickCam->SetLocation(FVector(-30, 0, 0));
+			/*PickCam->SetLocation(FVector(-30, 0, 0));*/
 			PickCam->SetRotation(FVector(0.0f, 0.0f, 0.0f));
 			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(FVector(-30, 0, 0));
 			break;

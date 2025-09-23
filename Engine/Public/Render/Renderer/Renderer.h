@@ -101,6 +101,9 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 	int GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRect);
 	UCamera* GetViewCameraAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewCameras[Index] : nullptr; }
 	EViewportType GetViewportTypeAt(int Index) const { return (Index >= 0 && Index < 4) ? ViewTypes[Index] : EViewportType::Perspective; }
+	// Current render viewport type (used by grid/axis orientation)
+	EViewportType GetCurrentRenderViewportType() const { return CurrentRenderVType; }
+	void SetCurrentRenderViewportType(EViewportType InT) { CurrentRenderVType = InT; }
 
 	void RenderLevel();
 	void RenderText(const FVector& CameraLocation);
@@ -220,7 +223,10 @@ private:
 
 	// Per-viewport cameras and types
 	UCamera* ViewCameras[4] = { nullptr, nullptr, nullptr, nullptr };
-	EViewportType ViewTypes[4] = { EViewportType::Perspective, EViewportType::Top, EViewportType::Right, EViewportType::Front };
+	// 0=TL(Persp),1=BL(Right),2=TR(Top),3=BR(Front)
+	EViewportType ViewTypes[4] = { EViewportType::Perspective, EViewportType::Right, EViewportType::Top, EViewportType::Front };
+	EViewportType CurrentRenderVType = EViewportType::Perspective;
+	bool bViewInitialized[4] = { false, false, false, false };
 
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;

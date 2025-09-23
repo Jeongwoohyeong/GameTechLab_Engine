@@ -233,21 +233,20 @@ void URenderer::Update(UEditor* Editor)
 		case EViewportType::Top:
 			Cam->SetCameraType(ECameraType::ECT_Orthographic);
 			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
-			// Initialize default location only once; preserve user pan thereafter
-			if (Cam->GetLocation() == FVector()) { Cam->SetLocation(FVector(0, 0, 30)); }
+			if (!bViewInitialized[i]) { Cam->SetLocation(FVector(0, 0, 30)); Cam->SetOrthoWorldWidth(100.f); bViewInitialized[i] = true; }
 			// Pitch +90 (see RotationMatrixCamera: Pitch(X) rotates around Y). +90 makes forward -Z (top-down)
 			Cam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
 			break;
 	case EViewportType::Right:
 			Cam->SetCameraType(ECameraType::ECT_Orthographic);
 			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
-			if (Cam->GetLocation() == FVector()) { Cam->SetLocation(FVector(0, 30, 0)); }
+			if (!bViewInitialized[i]) { Cam->SetLocation(FVector(0, 30, 0)); Cam->SetOrthoWorldWidth(100.f); bViewInitialized[i] = true; }
 			Cam->SetRotation(FVector(0.0f, -90.0f, 0.0f)); // +Y에서 원점(-Y) 바라보기
 			break;
 	case EViewportType::Front:
 			Cam->SetCameraType(ECameraType::ECT_Orthographic);
 			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
-			if (Cam->GetLocation() == FVector()) { Cam->SetLocation(FVector(-30, 0, 0)); }
+			if (!bViewInitialized[i]) { Cam->SetLocation(FVector(-30, 0, 0)); Cam->SetOrthoWorldWidth(100.f); bViewInitialized[i] = true; }
 			Cam->SetRotation(FVector(0.0f, 0.0f, 0.0f)); // -X에서 +X(원점) 바라보기
 			break;
 		}
