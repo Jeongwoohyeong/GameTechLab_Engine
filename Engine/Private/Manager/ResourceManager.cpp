@@ -115,7 +115,10 @@ ID3D11ShaderResourceView* UResourceManager::LoadTexture(const FString& Path)
 	ID3D11ShaderResourceView* NewResourceView;
 	HRESULT Hr = DirectX::CreateDDSTextureFromFile(Device, WidePath.c_str(), &Texture, &NewResourceView);
 
-	Texture->Release();
+	if (Texture)
+	{
+		Texture->Release();
+	}
 
 	return NewResourceView;
 }
