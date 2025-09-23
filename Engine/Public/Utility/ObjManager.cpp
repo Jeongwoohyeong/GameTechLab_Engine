@@ -63,6 +63,8 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 	if (Result == nullptr)
 	{
 		FStaticMesh* Asset = FObjManager::LoadObjStaticMeshAsset(PathFileName);
+		if (!Asset)
+			return nullptr;
 		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
 		StaticMesh->SetStaticMeshAsset(Asset);
 		Result = StaticMesh;
@@ -95,7 +97,9 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& pathFileName)
 	{
 		return (*It).second;
 	}
-	FStaticMesh* NewStaticMesh = FObjManager::LoadObj(pathFileName);	
+	FStaticMesh* NewStaticMesh = FObjManager::LoadObj(pathFileName);
+	if (!NewStaticMesh)
+		return nullptr;
 	ObjStaticMap.emplace(pathFileName, NewStaticMesh);
 
 	if (!MtlManager->ParseMtl(NewStaticMesh->Mtllib))

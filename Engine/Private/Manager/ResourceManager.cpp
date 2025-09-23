@@ -17,15 +17,16 @@ void UResourceManager::Initialize()
 {
 	URenderer& Renderer = URenderer::GetInstance();
 	FObjManager& ObjManager = FObjManager::GetInstance();
+	//ObjManager는 Obj뿐만 아니라 material도 관리함. material만 따로 필요한 경우가 있음(지금은 아무런 정보 없는, WhiteSpace material이 필요)
 	ObjManager.LoadPresetMaterial();
 	for (FString& Path : DefaultAssetPaths)
 	{
 		UStaticMesh* StaticMesh = ObjManager.LoadObjStaticMesh(Path);
-		if (!StaticMesh->GetStaticMeshAsset())
+		if (!StaticMesh || !StaticMesh->GetStaticMeshAsset())
 			continue;
 		StaticMeshes.emplace(Path, StaticMesh);
 	}
-	//ObjManager는 Obj뿐만 아니라 material도 관리함. material만 따로 필요한 경우가 있음(지금은 아무런 정보 없는, WhiteSpace material이 필요)
+	
 	
 
 	////////////////////////////////////////////For Gizmo////////////////////////////////////

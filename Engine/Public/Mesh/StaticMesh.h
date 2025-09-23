@@ -22,7 +22,7 @@ public:
 	EPrimitiveType GetPrimitiveType() const { return PrimitiveType; }
 
 	void SetStaticMeshAsset(FStaticMesh* InStaticMeshAsset);
-	void SetPrimtiveType(EPrimitiveType Type) { PrimitiveType = Type; }
+	void SetPrimtiveType(EPrimitiveType Type) { PrimitiveType = Type; } 
 
 
 private:
