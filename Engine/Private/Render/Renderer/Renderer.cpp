@@ -701,7 +701,8 @@ void URenderer::UpdateSplitDrag()
 	bool LPressed = Input.IsKeyPressed(EKeyInput::MouseLeft);
 	bool LDown    = Input.IsKeyDown(EKeyInput::MouseLeft);
 	bool LRel     = Input.IsKeyReleased(EKeyInput::MouseLeft);
-	bool JustPressed = LDown && !bMouseLeftDownPrevSplit; // edge detect independent of InputManager::Update order
+	static bool PrevDownSplit = false; // local edge-detect state
+	bool JustPressed = LDown && !PrevDownSplit; // edge detect independent of InputManager::Update order
 
 	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
 	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
@@ -740,7 +741,7 @@ void URenderer::UpdateSplitDrag()
 		}
 	}
 	// update prev
-	bMouseLeftDownPrevSplit = LDown;
+	PrevDownSplit = LDown;
 }
 
 void URenderer::SaveViewportLayout() const
