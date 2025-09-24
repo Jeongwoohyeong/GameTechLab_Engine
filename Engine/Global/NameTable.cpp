@@ -89,10 +89,11 @@ void FNameTable::Reset()
 		AActor* Actor = *It;
 		if (Actor)
 		{
-			FString LowerName = ToLower(Actor->GetClass()->GetName());
 			FString ActorName = Actor->GetClass()->GetName();
+			FString LowerName = ToLower(ActorName);
+
 			int32* index = ComparisonMap.Find(LowerName);
-			if(index == nullptr)
+			if (index == nullptr)
 			{
 				continue;
 			}
@@ -100,7 +101,7 @@ void FNameTable::Reset()
 			DisplayStringPool.erase(DisplayStringPool.begin() + *index);
 			ComparisonMap.erase(LowerName);
 			DisplayMap.erase(ActorName);
-			NextNumberMap.erase(Actor->GetClass()->GetName());
+			NextNumberMap.erase(ActorName);
 		}
 	}
 }
