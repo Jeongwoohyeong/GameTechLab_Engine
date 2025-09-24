@@ -27,8 +27,15 @@ TPair<int32, int32> FNameTable::FindOrAddName(const FString& Str)
 	}
 	else
 	{
-		ComparisonIndex = ComparisonStringPool.size();
-		ComparisonStringPool.push_back(LowerStr);
+		if (!FreeComparisonIndices.Dequeue(ComparisonIndex))
+		{
+			ComparisonIndex = ComparisonStringPool.size();
+			ComparisonStringPool.push_back(LowerStr);
+		}
+		else
+		{
+			ComparisonStringPool[ComparisonIndex] = LowerStr;
+		}
 		ComparisonMap[LowerStr] = ComparisonIndex;
 	}
 
@@ -40,8 +47,15 @@ TPair<int32, int32> FNameTable::FindOrAddName(const FString& Str)
 	}
 	else
 	{
-		DisplayIndex = DisplayStringPool.size();
-		DisplayStringPool.push_back(Str);
+		if (!FreeDisplayIndices.Dequeue(DisplayIndex))
+		{
+			DisplayIndex = DisplayStringPool.size();
+			DisplayStringPool.push_back(Str);
+		}
+		else
+		{
+			DisplayStringPool[DisplayIndex] = Str;
+		}
 		DisplayMap[Str] = DisplayIndex;
 	}
 
@@ -82,8 +96,6 @@ FString FNameTable::ToLower(const FString& Str) const
 // 해당 인덱스만 지움
 void FNameTable::Reset()
 {
-
-
 	for (TObjectIterator<AActor> It; It; ++It)
 	{
 		AActor* Actor = *It;
@@ -92,13 +104,15 @@ void FNameTable::Reset()
 			FString ActorName = Actor->GetClass()->GetName();
 			FString LowerName = ToLower(ActorName);
 
-			int32* index = ComparisonMap.Find(LowerName);
-			if (index == nullptr)
+			int32* ComparisonIndex = ComparisonMap.Find(LowerName);
+			int32* DisplayIndex = DisplayMap.Find(ActorName);
+			if (ComparisonIndex == nullptr)
 			{
 				continue;
 			}
-			ComparisonStringPool.erase(ComparisonStringPool.begin() + *index);
-			DisplayStringPool.erase(DisplayStringPool.begin() + *index);
+			FreeComparisonIndices.Enqueue(*ComparisonIndex);
+			FreeDisplayIndices.Enqueue(*DisplayIndex);
+
 			ComparisonMap.erase(LowerName);
 			DisplayMap.erase(ActorName);
 			NextNumberMap.erase(ActorName);
