@@ -331,7 +331,10 @@ void URenderer::RenderLevel()
 	{
 		if (!StaticMeshComponent) { continue; }
 
-
+		/////////////////////////////////////////////////////////////////최적화 방안//////////////////////////////////////////////////////////
+		//다중 머티리얼을 적용하려면 Component를 가지고 렌더링을 해야하는데 Component를 batch하면 중복이 생기지 않아서 batch의 의미가 하나도 없어짐
+		//UStaticMesh로 배치하고 Component를 식별할 수 있게 된다고 해도 섹션마다 다른 텍스처를 렌더링 해야하므로 결국 서브매쉬를 배치해야 할 것 같음.
+		/////////////////////////////////////////////////////////////////최적화 방안//////////////////////////////////////////////////////////
 		InstanceBatches[StaticMeshComponent].Emplace(StaticMeshComponent->GetWorldTransformMatrix(), StaticMeshComponent->GetColor());
 	}
 
