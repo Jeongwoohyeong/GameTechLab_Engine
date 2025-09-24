@@ -63,9 +63,18 @@ void URenderer::Init(HWND InWindowHandle)
 	// 오쏘 월드 단위 폭(씬 스케일에 따라 조정)
 	// Default ortho widths: make bottom views closer by default
 	// Tighter default ortho widths (closer zoom)
-	ViewCameras[1]->SetOrthoWorldWidth(30.f);  // Bottom-Left (Right view)
-	ViewCameras[2]->SetOrthoWorldWidth(30.f);  // Top-Right (Top view)
+	ViewCameras[1]->SetOrthoWorldWidth(30.f);  // Top-Right (Top view)
+	ViewCameras[1]->SetLocation(FVector(0, 30, 0));
+	ViewCameras[1]->SetRotation(FVector(0, -90, 0));
+	ViewCameras[1]->SetNearZ(0.1f); ViewCameras[1]->SetFarZ(1000.f);
+	ViewCameras[2]->SetOrthoWorldWidth(30.f);  // Bottom-Left (Right view)
+	ViewCameras[2]->SetLocation(FVector(0, 0, 30));
+	ViewCameras[2]->SetRotation(FVector(90, 0, 0));
+	ViewCameras[2]->SetNearZ(0.1f); ViewCameras[2]->SetFarZ(1000.f);
 	ViewCameras[3]->SetOrthoWorldWidth(30.f);
+	ViewCameras[3]->SetLocation(FVector(-30, 0, 0));
+	ViewCameras[3]->SetRotation(FVector(0, 0, 0));
+	ViewCameras[3]->SetNearZ(0.1f); ViewCameras[3]->SetFarZ(1000.f);
 
 	// 강제 단일뷰로 시작 보장
 	SetViewportLayout(EViewportLayout::Single);
@@ -157,6 +166,9 @@ void URenderer::Update(UEditor* Editor)
 	DXGI_SWAP_CHAIN_DESC swapchaindesc = {};
 	GetSwapChain()->GetDesc(&swapchaindesc);
 
+	ViewCameras[0]->SetLocation(Editor->GetCameraLocation());
+	ViewCameras[0]->SetRotation(Editor->GetCamera().GetRotation());
+
 	if (CurrentLayout == EViewportLayout::Quad)
 	{
 		float W = (float)swapchaindesc.BufferDesc.Width;
@@ -174,20 +186,6 @@ void URenderer::Update(UEditor* Editor)
 	{
 		LocalViewports[0] = { 0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height, 0.0f, 1.0f };
 		NumViewports = 1;
-	}
-
-	// View types
-	if (CurrentLayout == EViewportLayout::Quad)
-	{
-		// 0=TL(Persp),1=BL(Right),2=TR(Top),3=BR(Front)
-		ViewTypes[0] = EViewportType::Perspective;
-		ViewTypes[1] = EViewportType::Right;
-		ViewTypes[2] = EViewportType::Top;
-		ViewTypes[3] = EViewportType::Front;
-	}
-	else
-	{
-		ViewTypes[0] = EViewportType::Perspective;
 	}
 
 	for (uint32 i = 0; i < NumViewports; ++i)
@@ -222,34 +220,6 @@ void URenderer::Update(UEditor* Editor)
 
 		// Select camera per viewport
 		UCamera* Cam = (CurrentLayout == EViewportLayout::Single) ? &Editor->GetCamera() : ViewCameras[i];
-		switch (ViewTypes[i])
-		{
-		case EViewportType::Perspective:
-			// Mirror editor camera
-			Cam->SetCameraType(ECameraType::ECT_Perspective);
-			Cam->SetLocation(Editor->GetCameraLocation());
-			Cam->SetRotation(Editor->GetCamera().GetRotation());
-			break;
-		case EViewportType::Top:
-			Cam->SetCameraType(ECameraType::ECT_Orthographic);
-			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
-			if (!bViewInitialized[i]) { Cam->SetLocation(FVector(0, 0, 30)); Cam->SetOrthoWorldWidth(100.f); bViewInitialized[i] = true; }
-			// Pitch +90 (see RotationMatrixCamera: Pitch(X) rotates around Y). +90 makes forward -Z (top-down)
-			Cam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
-			break;
-	case EViewportType::Right:
-			Cam->SetCameraType(ECameraType::ECT_Orthographic);
-			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
-			if (!bViewInitialized[i]) { Cam->SetLocation(FVector(0, 30, 0)); Cam->SetOrthoWorldWidth(100.f); bViewInitialized[i] = true; }
-			Cam->SetRotation(FVector(0.0f, -90.0f, 0.0f)); // +Y에서 원점(-Y) 바라보기
-			break;
-	case EViewportType::Front:
-			Cam->SetCameraType(ECameraType::ECT_Orthographic);
-			Cam->SetNearZ(0.1f); Cam->SetFarZ(100.f);
-			if (!bViewInitialized[i]) { Cam->SetLocation(FVector(-30, 0, 0)); Cam->SetOrthoWorldWidth(100.f); bViewInitialized[i] = true; }
-			Cam->SetRotation(FVector(0.0f, 0.0f, 0.0f)); // -X에서 +X(원점) 바라보기
-			break;
-		}
 
 		// Update aspect from viewport size and upload constants
 		if (Cam)

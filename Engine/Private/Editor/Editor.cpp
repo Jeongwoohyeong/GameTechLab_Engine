@@ -58,7 +58,7 @@ void UEditor::Update()
 		const FVector mp = Input.GetMousePosition();
 		FRect rect{};
 		int hover = Renderer.GetHoveredViewportIndex(mp.X, mp.Y, rect);
-		bool enableMain = !(!Camera.IsDragging() && hover >= 0 && hover != 0);
+		bool enableMain = !(!Camera.IsDragging() && hover > 0 );
 		Camera.SetInputEnabled(enableMain);
 	}
 	else

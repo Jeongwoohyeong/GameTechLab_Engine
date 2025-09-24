@@ -226,7 +226,6 @@ private:
 	// 0=TL(Persp),1=BL(Right),2=TR(Top),3=BR(Front)
 	EViewportType ViewTypes[4] = { EViewportType::Perspective, EViewportType::Right, EViewportType::Top, EViewportType::Front };
 	EViewportType CurrentRenderVType = EViewportType::Perspective;
-	bool bViewInitialized[4] = { false, false, false, false };
 
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;

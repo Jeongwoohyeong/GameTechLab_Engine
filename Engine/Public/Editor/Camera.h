@@ -66,7 +66,6 @@ public:
 	const float GetFarZ() const { return FarZ; }
 	const ECameraType GetCameraType() const { return CameraType; }
 	const bool IsDragging() const { return bIsMainDrraging; }
-
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
 	{
