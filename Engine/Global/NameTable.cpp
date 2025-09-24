@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Global/NameTable.h"
-
+#include "Core/ObjectIterator.h"
+#include "Actor/Actor.h"
 IMPLEMENT_SINGLETON(FNameTable);
 
 FNameTable::FNameTable()
@@ -76,12 +77,30 @@ FString FNameTable::ToLower(const FString& Str) const
 		[](unsigned char C) { return std::tolower(C); });
 	return LowerStr;
 }
-
+// 이터레이터로 돌아서 액터 목록 순회해서, 액터 이름 빼옴.
+// 액터 이름갖고 Pool에서 찾음. -> 인덱스 나와서
+// 해당 인덱스만 지움
 void FNameTable::Reset()
 {
-	ComparisonStringPool.clear();
-	DisplayStringPool.clear();
-	ComparisonMap.clear();
-	DisplayMap.clear();
-	NextNumberMap.clear(); // 번호 리셋 필수
+
+
+	for (TObjectIterator<AActor> It; It; ++It)
+	{
+		AActor* Actor = *It;
+		if (Actor)
+		{
+			FString LowerName = ToLower(Actor->GetClass()->GetName());
+			FString ActorName = Actor->GetClass()->GetName();
+			int32* index = ComparisonMap.Find(LowerName);
+			if(index == nullptr)
+			{
+				continue;
+			}
+			ComparisonStringPool.erase(ComparisonStringPool.begin() + *index);
+			DisplayStringPool.erase(DisplayStringPool.begin() + *index);
+			ComparisonMap.erase(LowerName);
+			DisplayMap.erase(ActorName);
+			NextNumberMap.erase(Actor->GetClass()->GetName());
+		}
+	}
 }
