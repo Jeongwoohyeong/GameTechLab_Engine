@@ -166,12 +166,20 @@
     <ClInclude Include="Public\Components\StaticMeshComponent.h" />
     <ClInclude Include="Public\Components\TextComponent.h" />
     <ClInclude Include="Public\Components\MeshComponent.h" />
+    <ClInclude Include="Public\Render\UI\Layout\MultiViewBuilders.h" />
+    <ClInclude Include="Public\Render\UI\Layout\SSplitter.h" />
+    <ClInclude Include="Public\Render\UI\Layout\SSplitterH.h" />
+    <ClInclude Include="Public\Render\UI\Layout\SSplitterV.h" />
+    <ClInclude Include="Public\Render\UI\Layout\SViewportWindow.h" />
+    <ClInclude Include="Public\Render\UI\Layout\SWindow.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorDetailWidget.h" />
     <ClInclude Include="Public\Render\UI\Widget\ActorListWidget.h" />
     <ClInclude Include="Public\DirectXTK\DDSTextureLoader.h" />
     <ClInclude Include="Public\DirectXTK\DirectXHelpers.h" />
     <ClInclude Include="Public\Render\UI\Widget\ViewSettingsWidget.h" />
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
+    <ClInclude Include="Public\Render\Viewport\FViewport.h" />
+    <ClInclude Include="Public\Render\Viewport\FViewportClient.h" />
     <ClInclude Include="Public\Utility\Archive.h" />
     <ClInclude Include="Public\Utility\ArchiveFileReader.h" />
     <ClInclude Include="Public\Utility\ArchiveFileWriter.h" />
@@ -252,10 +260,14 @@
     <ClCompile Include="Private\Components\StaticMeshComponent.cpp" />
     <ClCompile Include="Private\Components\TextComponent.cpp" />
     <ClCompile Include="Private\Components\MeshComponent.cpp" />
+    <ClCompile Include="Private\Render\UI\Layout\SSplitter.cpp" />
+    <ClCompile Include="Private\Render\UI\Layout\SViewportWindow.cpp" />
+    <ClCompile Include="Private\Render\UI\Layout\SWindow.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorDetailWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ActorListWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Widget\ViewSettingsWidget.cpp" />
     <ClCompile Include="Private\Render\UI\Window\DetailWindow.cpp" />
+    <ClCompile Include="Private\Render\Viewport\FViewport.cpp" />
     <ClCompile Include="Private\\Core\\Class.cpp" />
     <ClCompile Include="Private\\Core\\Object.cpp" />
     <ClCompile Include="Private\\Editor\\Axis.cpp" />
@@ -355,7 +367,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Asset\Font\Roboto-Medium.dds" />
-    <Image Include="Data\whitespace.dds">
+    <Image Include="Data\None.dds">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </Image>

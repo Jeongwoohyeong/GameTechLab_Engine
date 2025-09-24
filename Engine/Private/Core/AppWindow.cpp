@@ -106,14 +106,10 @@ FAppWindow* FAppWindow::GetWindowInstance(HWND InWindowHandle, uint32 InMessage,
 LRESULT CALLBACK FAppWindow::WndProc(HWND InWindowHandle, uint32 InMessage, WPARAM InWParam,
                                      LPARAM InLParam)
 {
-	if (UUIManager::WndProcHandler(InWindowHandle, InMessage, InWParam, InLParam))
-	{
-		if (ImGui::GetIO().WantCaptureMouse)
-		{
-			return true;
-		}
-	}
+	// Let ImGui process first, but do not swallow mouse messages; we'll decide in higher-level code
+	UUIManager::WndProcHandler(InWindowHandle, InMessage, InWParam, InLParam);
 
+	// Always forward to our input layer so editor can see mouse buttons even if ImGui wants capture
 	UInputManager::GetInstance().ProcessKeyMessage(InMessage, InWParam, InLParam);
 
 	switch (InMessage)

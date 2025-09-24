@@ -98,19 +98,19 @@ void UPipeline::SetConstantBuffer(uint32 Slot, bool bIsVS, ID3D11Buffer* Constan
 /// @brief 셰이더 리소스 뷰 설정
 void UPipeline::SetShaderResourceView(uint32 Slot, bool bIsVS, ID3D11ShaderResourceView* ShaderResourceView)
 {
-		if (bIsVS)
-			DeviceContext->VSSetShaderResources(Slot, 1, &ShaderResourceView);
-		else
-			DeviceContext->PSSetShaderResources(Slot, 1, &ShaderResourceView);
+	if (bIsVS)
+		DeviceContext->VSSetShaderResources(Slot, 1, &ShaderResourceView);
+	else
+		DeviceContext->PSSetShaderResources(Slot, 1, &ShaderResourceView);
 }
 
 /// @brief 샘플러 상태를 설정
 void UPipeline::SetSamplerState(uint32 Slot, bool bIsVS, ID3D11SamplerState* SamplerState)
 {
-		if (bIsVS)
-			DeviceContext->VSSetSamplers(Slot, 1, &SamplerState);
-		else
-			DeviceContext->PSSetSamplers(Slot, 1, &SamplerState);
+	if (bIsVS)
+		DeviceContext->VSSetSamplers(Slot, 1, &SamplerState);
+	else
+		DeviceContext->PSSetSamplers(Slot, 1, &SamplerState);
 }
 
 /// @brief 정점 개수를 기반으로 드로우 호출
@@ -237,6 +237,7 @@ ID3D11RasterizerState* UPipeline::GetOrCreateRasterizerState(const FRasterizerKe
 	RasterizerDesc.FillMode = InRasterizerKey.FillMode;
 	RasterizerDesc.CullMode = InRasterizerKey.CullMode;
 	RasterizerDesc.DepthClipEnable = TRUE; // ✅ 근/원거리 평면 클리핑 활성화 (핵심)
+	RasterizerDesc.ScissorEnable = TRUE;   // ✅ RSSetScissorRects 사용
 
 	HRESULT Hr = Device->CreateRasterizerState(&RasterizerDesc, &RasterizerState);
 

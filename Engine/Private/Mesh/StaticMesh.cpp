@@ -103,9 +103,7 @@ void UStaticMesh::CalculateLocalAABB()
 
 	switch (PrimitiveType)
 	{
-	case EPrimitiveType::None:
-	case EPrimitiveType::Triangle:
-	case EPrimitiveType::Square:
+	default:
 		for (int Index = 0; Index < Vertices.Num();Index++)
 		{
 			AABB.AddPoint(Vertices[Index].Position);

@@ -6,6 +6,7 @@
 #include "Render/UI/Window/ExperimentalFeatureWindow.h"
 #include "Render/UI/ImGui/ImGuiHelper.h"
 #include "Render/UI/Widget/Widget.h"
+#include "Render/Renderer/Renderer.h"
 
 
 IMPLEMENT_CLASS(UUIManager, UObject)
@@ -157,6 +158,9 @@ void UUIManager::Render()
 			Window->RenderWindow();
 		}
 	}
+
+	// Renderer overlay (splitter lines) inside the ImGui frame so they render reliably
+	URenderer::GetInstance().DrawSplitterOverlay();
 
 	// ImGui 프레임 종료
 	ImGuiHelper->EndFrame();

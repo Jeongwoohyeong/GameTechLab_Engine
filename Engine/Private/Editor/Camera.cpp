@@ -15,7 +15,7 @@ void UCamera::Update()
 	/*
 	 * QE 상하는 카메라가 보는 방향과 관계 없이 월드 기준으로 상하로 움직인다.
 	 */
-	// UE 기준(X-forward, Z-up)으로 Forward 기준축을 X로 변경
+	 // UE 기준(X-forward, Z-up)으로 Forward 기준축을 X로 변경
 	Forward = FVector4(1, 0, 0, 1) * FMatrix::RotationMatrixCamera(FVector::GetDegreeToRadian(RelativeRotation));
 	Forward.Normalize();
 	// UE 기준 Up 축: Z
@@ -25,13 +25,16 @@ void UCamera::Update()
 
 	/**
 	 * @brief 마우스 우클릭을 하고 있는 동안 카메라 제어가 가능합니다.
+	 * 마우스 우클릭하고 있고, 다른 viewport를 조작하지 않고 있고, Gui도 입력받지 않고 있어야 움직임, GUI입력을 무시할 것인지는 선택.
 	 */
-	if (Input.IsKeyDown(EKeyInput::MouseRight))
+	if (bInputEnabled && Input.IsKeyDown(EKeyInput::MouseRight) && !ImGui::GetIO().WantCaptureMouse)
 	{
+		
 		/**
 		 * @brief W, A, S, D 는 각각 카메라의 상, 하, 좌, 우 이동을 담당합니다.
 		 */
-		FVector Direction = {0, 0, 0};
+		bIsMainDrraging = true;
+		FVector Direction = { 0, 0, 0 };
 
 		if (Input.IsKeyDown(EKeyInput::A)) { Direction += -Right; }
 		if (Input.IsKeyDown(EKeyInput::D)) { Direction += Right; }
@@ -70,6 +73,10 @@ void UCamera::Update()
 		// Pitch 클램프(짐벌 플립 방지)
 		RelativeRotation.X = std::min(RelativeRotation.X, 89.0f);
 		RelativeRotation.X = std::max(RelativeRotation.X, -89.0f);
+	}
+	if (Input.IsKeyReleased(EKeyInput::MouseRight))
+	{
+		bIsMainDrraging = false;
 	}
 
 	if (URenderer::GetInstance().GetDeviceResources())
@@ -138,9 +145,9 @@ void UCamera::UpdateMatrixByOrth()
 	ViewProjConstants.View = T * (R * FMatrix::BasisLHYToUE());
 
 	/**
-	 * @brief Projection 행렬 연산
+	 * @brief Projection 행렬 연산 (월드 단위 기반)
 	 */
-	OrthoWidth = 2.0f * std::tanf(FVector::GetDegreeToRadian(FovY) * 0.5f);
+	OrthoWidth = OrthoWorldWidth;
 	const float OrthoHeight = OrthoWidth / Aspect;
 	const float Left = -OrthoWidth * 0.5f;
 	const float Right1 = OrthoWidth * 0.5f;
@@ -274,12 +281,12 @@ FRay UCamera::ConvertToWorldRay(float NdcX, float NdcY) const
 	return Ray;
 }
 
-FVector UCamera::CalculatePlaneNormal(const FVector4& Axis)
+FVector UCamera::CalculatePlaneNormal(const FVector4& Axis) const
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
 }
 
-FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
+FVector UCamera::CalculatePlaneNormal(const FVector& Axis) const
 {
 	return Forward.Cross(FVector(Axis.X, Axis.Y, Axis.Z));
 }

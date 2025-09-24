@@ -12,6 +12,12 @@
 #include "Components/TextComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Mesh/Material.h"
+#include "Render/UI/Layout/MultiViewBuilders.h"
+#include "Render/UI/Layout/SSplitter.h"
+#include "Manager/Path/PathManager.h"
+#include "Manager/Input/InputManager.h"
+#include "ImGui/imgui.h"
+#include <algorithm>
 
 namespace
 {
@@ -40,6 +46,41 @@ void URenderer::Init(HWND InWindowHandle)
 
 	/** LineBatchRenderer 초기화 */
 	ULineBatchRenderer::GetInstance().Init();
+
+	// Start in single-view layout; multiview is built on demand (F2 toggle)
+	MultiViewRoot = nullptr;
+	CurrentLayout = EViewportLayout::Single;
+
+	// Create per-viewport cameras
+	for (int i = 0; i < 4; ++i)
+	{
+		ViewCameras[i] = new UCamera();
+	}
+	ViewCameras[0]->SetCameraType(ECameraType::ECT_Perspective);
+	ViewCameras[1]->SetCameraType(ECameraType::ECT_Orthographic); // Top
+	ViewCameras[2]->SetCameraType(ECameraType::ECT_Orthographic); // Right
+	ViewCameras[3]->SetCameraType(ECameraType::ECT_Orthographic); // Front
+	// 오쏘 월드 단위 폭(씬 스케일에 따라 조정)
+	// Default ortho widths: make bottom views closer by default
+	// Tighter default ortho widths (closer zoom)
+	ViewCameras[1]->SetOrthoWorldWidth(30.f);  // Top-Right (Top view)
+	ViewCameras[1]->SetLocation(FVector(0, 30, 0));
+	ViewCameras[1]->SetRotation(FVector(0, -90, 0));
+	ViewCameras[1]->SetNearZ(0.1f); ViewCameras[1]->SetFarZ(1000.f);
+	ViewCameras[2]->SetOrthoWorldWidth(30.f);  // Bottom-Left (Right view)
+	ViewCameras[2]->SetLocation(FVector(0, 0, 30));
+	ViewCameras[2]->SetRotation(FVector(90, 0, 0));
+	ViewCameras[2]->SetNearZ(0.1f); ViewCameras[2]->SetFarZ(1000.f);
+	ViewCameras[3]->SetOrthoWorldWidth(30.f);
+	ViewCameras[3]->SetLocation(FVector(-30, 0, 0));
+	ViewCameras[3]->SetRotation(FVector(0, 0, 0));
+	ViewCameras[3]->SetNearZ(0.1f); ViewCameras[3]->SetFarZ(1000.f);
+
+	// 강제 단일뷰로 시작 보장
+	SetViewportLayout(EViewportLayout::Single);
+
+	// Load layout from editor.ini
+	LoadViewportLayout();
 }
 
 void URenderer::Release()
@@ -47,11 +88,24 @@ void URenderer::Release()
 	/** LineBatchRenderer 해제 */
 	ULineBatchRenderer::GetInstance().Release();
 
+	// Save current layout to editor.ini
+	SaveViewportLayout();
+
 	ReleaseConstantBuffer();
 
 	ReleaseResource();
 	ReleaseInstanceBuffer();
 
+	if (MultiViewRoot)
+	{
+		delete MultiViewRoot;
+		MultiViewRoot = nullptr;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		SafeDelete(ViewCameras[i]);
+	}
 
 	SafeDelete(Pipeline);
 	SafeDelete(DeviceResources);
@@ -73,20 +127,151 @@ void URenderer::ReleaseResource()
 
 
 
+namespace
+{
+	static void CollectLeafRects(SWindow* Node, TArray<FRect>& Out)
+	{
+		if (!Node) return;
+		if (Node->IsSplitter())
+		{
+			SSplitter* Split = static_cast<SSplitter*>(Node);
+			CollectLeafRects(Split->GetLT(), Out);
+			CollectLeafRects(Split->GetRB(), Out);
+		}
+		else
+		{
+			Out.Add(Node->GetRect());
+		}
+	}
+}
+
 void URenderer::Update(UEditor* Editor)
 {
 	RenderBegin();
+	
+	// 레이아웃 강제 보정: Single이면 트리 제거, Quad이면 필요 시 트리 생성
+	if (CurrentLayout == EViewportLayout::Single)
+	{
+		if (MultiViewRoot) { delete MultiViewRoot; MultiViewRoot = nullptr; }
+	}
+	else if (CurrentLayout == EViewportLayout::Quad)
+	{
+		// ratio-based layout; tree not required
+		UpdateSplitDrag();
+	}
+	ViewCameras[1]->SetOrthoWorldWidth(OrthoWidthConst *(VerticalRatio * 2 ));
+	for (int Index = 2; Index < 4;Index++)
+	{
+		ViewCameras[Index]->SetOrthoWorldWidth(OrthoWidthConst * (2 - VerticalRatio * 2));
+	}
 
-	RenderLevel();
-	// Editor->RenderEditor();
-	Editor->RenderEditorBatched();
-	RenderText(Editor->GetCameraLocation());
-	//RenderLines();
+	D3D11_VIEWPORT LocalViewports[4] = {};
+	uint32 NumViewports = 0;
+
+	DXGI_SWAP_CHAIN_DESC swapchaindesc = {};
+	GetSwapChain()->GetDesc(&swapchaindesc);
+
+	ViewCameras[0]->SetLocation(Editor->GetCameraLocation());
+	ViewCameras[0]->SetRotation(Editor->GetCamera().GetRotation());
+
+	if (CurrentLayout == EViewportLayout::Quad)
+	{
+		float W = (float)swapchaindesc.BufferDesc.Width;
+		float H = (float)swapchaindesc.BufferDesc.Height;
+		float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+		float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+		auto VP = [](float x, float y, float w, float h){ D3D11_VIEWPORT v = { x, y, std::max(2.0f, w), std::max(2.0f, h), 0.0f, 1.0f }; return v; };
+		LocalViewports[0] = VP(0.0f,    0.0f,    splitX,       splitY);       // TL
+		LocalViewports[1] = VP(0.0f,    splitY,  splitX,       H - splitY);   // BL
+		LocalViewports[2] = VP(splitX,  0.0f,    W - splitX,   splitY);       // TR
+		LocalViewports[3] = VP(splitX,  splitY,  W - splitX,   H - splitY);   // BR
+		NumViewports = 4;
+	}
+	else // Single view
+	{
+		LocalViewports[0] = { 0.0f, 0.0f, (float)swapchaindesc.BufferDesc.Width, (float)swapchaindesc.BufferDesc.Height, 0.0f, 1.0f };
+		NumViewports = 1;
+	}
+
+	for (uint32 i = 0; i < NumViewports; ++i)
+	{
+		GetDeviceContext()->RSSetViewports(1, &LocalViewports[i]);
+		// 뷰포트 대응 스키서(Rect) 지정
+		{
+			// Robust scissor: clamp to swapchain bounds and ensure positive area
+			DXGI_SWAP_CHAIN_DESC scd = {};
+			GetSwapChain()->GetDesc(&scd);
+			LONG maxW = (LONG)scd.BufferDesc.Width;
+			LONG maxH = (LONG)scd.BufferDesc.Height;
+			LONG left   = (LONG)LocalViewports[i].TopLeftX;
+			LONG top    = (LONG)LocalViewports[i].TopLeftY;
+			LONG right  = (LONG)(LocalViewports[i].TopLeftX + LocalViewports[i].Width);
+			LONG bottom = (LONG)(LocalViewports[i].TopLeftY + LocalViewports[i].Height);
+			left   = std::max<LONG>(0, std::min<LONG>(left,   maxW - 1));
+			top    = std::max<LONG>(0, std::min<LONG>(top,    maxH - 1));
+			right  = std::max<LONG>(left + 1, std::min<LONG>(right,  maxW));
+			bottom = std::max<LONG>(top + 1,  std::min<LONG>(bottom, maxH));
+			D3D11_RECT r{ left, top, right, bottom };
+			GetDeviceContext()->RSSetScissorRects(1, &r);
+		}
+		// 뷰포트별 깊이 클리어(서브패스 간 간섭 방지)
+		GetDeviceContext()->ClearDepthStencilView(DeviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+		// RTV/DSV 바인딩 보강
+		{
+			ID3D11RenderTargetView* rtv = DeviceResources->GetRenderTargetView();
+			ID3D11RenderTargetView* rtvs[] = { rtv };
+			GetDeviceContext()->OMSetRenderTargets(1, rtvs, DeviceResources->GetDepthStencilView());
+		}
+
+		// Select camera per viewport
+		UCamera* Cam = (CurrentLayout == EViewportLayout::Single) ? &Editor->GetCamera() : ViewCameras[i];
+
+		// Update aspect from viewport size and upload constants
+		if (Cam)
+		{
+			Cam->SetAspect(LocalViewports[i].Width / LocalViewports[i].Height);
+			if (Cam->GetCameraType() == ECameraType::ECT_Perspective) Cam->UpdateMatrixByPers(); else Cam->UpdateMatrixByOrth();
+			UpdateConstant(Cam->GetFViewProjConstants());
+		}
+
+		RenderLevel();
+		Editor->RenderEditorBatched(Cam ? Cam->GetLocation() : Editor->GetCameraLocation());
+		// For text sorting, use per-viewport camera location if available
+		RenderText(Cam ? Cam->GetLocation() : Editor->GetCameraLocation());
+	}
+
+	// Reset viewport/scissor to full window before UI/overlay pass
+	{
+		DXGI_SWAP_CHAIN_DESC scd = {};
+		GetSwapChain()->GetDesc(&scd);
+
+		D3D11_VIEWPORT fullVp = {};
+		fullVp.TopLeftX = 0.0f;
+		fullVp.TopLeftY = 0.0f;
+		fullVp.Width    = (float)scd.BufferDesc.Width;
+		fullVp.Height   = (float)scd.BufferDesc.Height;
+		fullVp.MinDepth = 0.0f;
+		fullVp.MaxDepth = 1.0f;
+		GetDeviceContext()->RSSetViewports(1, &fullVp);
+
+		D3D11_RECT fullScissor;
+		fullScissor.left   = 0;
+		fullScissor.top    = 0;
+		fullScissor.right  = (LONG)scd.BufferDesc.Width;
+		fullScissor.bottom = (LONG)scd.BufferDesc.Height;
+		GetDeviceContext()->RSSetScissorRects(1, &fullScissor);
+
+		// Re-bind RTV/DSV for safety
+		ID3D11RenderTargetView* rtv = DeviceResources->GetRenderTargetView();
+		ID3D11RenderTargetView* rtvs[] = { rtv };
+		GetDeviceContext()->OMSetRenderTargets(1, rtvs, DeviceResources->GetDepthStencilView());
+	}
 
 	UUIManager::GetInstance().Render();
 
 	RenderEnd();
 }
+
 
 /**
  * @brief Render Prepare Step
@@ -107,7 +292,7 @@ void URenderer::RenderBegin()
 }
 
 void URenderer::RenderLevel()
-{
+{ 
 	//
 	// 여기에 카메라 VP 업데이트 한 번 싹
 	//
@@ -206,7 +391,7 @@ void URenderer::RenderLevel()
 
 				if (!TextureSRV)
 				{
-					//에셋에 텍스쳐 없는 경우 흰색 텍스쳐 써서 기본 vertex 컬러 출력되도록 함.
+					//매터리얼에 텍스쳐가 없거나 텍스처를 로드하지 못한 경우 흰색 텍스쳐 써서 기본 vertex 컬러 출력되도록 함.
 					TextureSRV = ResourceManager.GetTexture("Data/None.dds");
 					if (TextureSRV)
 					{
@@ -347,6 +532,22 @@ void URenderer::RenderEnd() const
 	GetSwapChain()->Present(0, 0); // 1: VSync 활성화
 }
 
+void URenderer::DrawSplitterOverlay() const
+{
+	if (CurrentLayout != EViewportLayout::Quad) return;
+	DXGI_SWAP_CHAIN_DESC scd = {};
+	GetSwapChain()->GetDesc(&scd);
+	float W = (float)scd.BufferDesc.Width;
+	float H = (float)scd.BufferDesc.Height;
+	float x = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+	float y = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+	ImU32 col = IM_COL32(220, 220, 220, 200);
+	float thick = 2.0f;
+	ImDrawList* dl = ImGui::GetForegroundDrawList();
+	dl->AddLine(ImVec2(x, 0.0f), ImVec2(x, H), col, thick);
+	dl->AddLine(ImVec2(0.0f, y), ImVec2(W, y), col, thick);
+}
+
 void URenderer::CreateInstanceBuffer()
 {
 	uint32 InByteWidth = sizeof(FTextInstance) * 100;
@@ -403,6 +604,141 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight)
 void URenderer::ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer)
 {
 	if (InVertexBuffer) { InVertexBuffer->Release(); }
+}
+
+void URenderer::LoadViewportLayout()
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	char Buffer[32] = {};
+	auto ReadType = [&](const char* Key, EViewportType DefaultType) {
+		GetPrivateProfileStringA("Viewport", Key, "", Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+		std::string S = Buffer;
+		if (S == "Perspective") return EViewportType::Perspective;
+		if (S == "Top") return EViewportType::Top;
+		if (S == "Right") return EViewportType::Right;
+		if (S == "Front") return EViewportType::Front;
+		return DefaultType;
+	};
+	// Rect 수집 순서: 0=TopLeft, 1=BottomLeft, 2=TopRight, 3=BottomRight
+	// 기본 매핑: TL=Perspective, TR=Top, BL=Right, BR=Front
+	ViewTypes[0] = ReadType("TopLeft", EViewportType::Perspective);
+	ViewTypes[1] = ReadType("BottomLeft", EViewportType::Right);
+	ViewTypes[2] = ReadType("TopRight", EViewportType::Top);
+	ViewTypes[3] = ReadType("BottomRight", EViewportType::Front);
+}
+
+int URenderer::GetHoveredViewportIndex(float MouseX, float MouseY, FRect& OutRect)
+{
+	DXGI_SWAP_CHAIN_DESC scd = {};
+	GetSwapChain()->GetDesc(&scd);
+
+	if (CurrentLayout == EViewportLayout::Single)
+	{
+		FRect R{0.0f, 0.0f, (float)scd.BufferDesc.Width, (float)scd.BufferDesc.Height};
+		OutRect = R;
+		if (MouseX >= R.X && MouseX < (R.X + R.W) && MouseY >= R.Y && MouseY < (R.Y + R.H))
+		{
+			return 0;
+		}
+		return -1;
+	}
+	// Quad: compute rects from ratios
+	FRect Rects[4] = {};
+	float W = (float)scd.BufferDesc.Width;
+	float H = (float)scd.BufferDesc.Height;
+	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+	Rects[0] = {0.0f,   0.0f,   splitX,       splitY};
+	Rects[1] = {0.0f,   splitY, splitX,       H - splitY};
+	Rects[2] = {splitX, 0.0f,   W - splitX,   splitY};
+	Rects[3] = {splitX, splitY, W - splitX,   H - splitY};
+
+	for (int i = 0; i < 4; ++i)
+	{
+		const FRect& R = Rects[i];
+		if (MouseX >= R.X && MouseX < (R.X + R.W) && MouseY >= R.Y && MouseY < (R.Y + R.H))
+		{
+			OutRect = R;
+			return i;
+		}
+	}
+	return -1;
+}
+
+void URenderer::UpdateSplitDrag()
+{
+	const UInputManager& Input = UInputManager::GetInstance();
+	DXGI_SWAP_CHAIN_DESC scd = {};
+	GetSwapChain()->GetDesc(&scd);
+	float W = (float)scd.BufferDesc.Width;
+	float H = (float)scd.BufferDesc.Height;
+	FPoint MP{ Input.GetMousePosition().X, Input.GetMousePosition().Y };
+	bool LPressed = Input.IsKeyPressed(EKeyInput::MouseLeft);
+	bool LDown    = Input.IsKeyDown(EKeyInput::MouseLeft);
+	bool LRel     = Input.IsKeyReleased(EKeyInput::MouseLeft);
+	static bool PrevDownSplit = false; // local edge-detect state
+	bool JustPressed = LDown && !PrevDownSplit; // edge detect independent of InputManager::Update order
+
+	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
+	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
+	float half = SplitHotThickness * 0.5f;
+	if (!bDragVertical && !bDragHorizontal)
+	{
+		if (LPressed || JustPressed)
+		{
+			bool nearV = std::abs(MP.X - splitX) <= half;
+			bool nearH = std::abs(MP.Y - splitY) <= half;
+			// If pressing near the intersection, capture both axes simultaneously
+			if (nearV && nearH) { bDragVertical = true; bDragHorizontal = true; }
+			else if (nearV) { bDragVertical = true; bDragHorizontal = false; }
+			else if (nearH) { bDragHorizontal = true; bDragVertical = false; }
+		}
+	}
+	else
+	{
+		if (LDown)
+		{
+			
+			// While dragging, keep the selected axis captured and update continuously
+			if (bDragVertical)
+			{
+				VerticalRatio = std::clamp(MP.X / std::max(1.0f, W), 0.1f, 0.9f);
+			}
+			if (bDragHorizontal)
+			{
+				HorizontalRatio = std::clamp(MP.Y / std::max(1.0f, H), 0.1f, 0.9f);
+			}
+		}
+		if (!LDown)
+		{
+			bDragVertical = false;
+			bDragHorizontal = false;
+		}
+	}
+
+	// update prev
+	PrevDownSplit = LDown;
+}
+
+void URenderer::SaveViewportLayout() const
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	auto WriteType = [&](const char* Key, EViewportType T)
+	{
+		const char* V = "Perspective";
+		switch (T)
+		{
+		case EViewportType::Top: V = "Top"; break;
+		case EViewportType::Right: V = "Right"; break;
+		case EViewportType::Front: V = "Front"; break;
+		default: V = "Perspective"; break;
+		}
+		WritePrivateProfileStringA("Viewport", Key, V, ConfigFilePath.string().c_str());
+	};
+	WriteType("TopLeft", ViewTypes[0]);
+	WriteType("BottomLeft", ViewTypes[1]);
+	WriteType("TopRight", ViewTypes[2]);
+	WriteType("BottomRight", ViewTypes[3]);
 }
 
 /**

@@ -41,6 +41,16 @@ FObjManager::~FObjManager()
 	}
 }
 
+void FObjManager::LoadPresetMaterial()
+{
+	//아무런 정보 없이 (1,1,1,1)텍스처만 가진 매터리얼
+	FObjMaterialInfo MaterialInfo = {};
+	MaterialInfo.Map_Kd = "Data/None.dds";
+	MaterialInfo.MaterialName = "None";
+	Materials.emplace("None", new UMaterial(MaterialInfo));
+
+}
+
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 {	
 	UStaticMesh* Result = nullptr;	
@@ -56,8 +66,10 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 
 	if(Result == nullptr)
 	{
-		FStaticMesh* Asset = FObjManager::LoadObjStaticMeshAsset(PathFileName);		
-		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();		
+		FStaticMesh* Asset = FObjManager::LoadObjStaticMeshAsset(PathFileName);
+		if (!Asset)
+			return nullptr;
+		UStaticMesh* StaticMesh = NewObject<UStaticMesh>();
 		StaticMesh->SetStaticMeshAsset(Asset);
 		Result = StaticMesh;
 	}

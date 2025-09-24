@@ -38,7 +38,7 @@ public:
 	{
 		return RootComponent;
 	}
-	TArray<UActorComponent*> GetOwnedComponents() const
+	const TArray<UActorComponent*>& GetOwnedComponents() const
 	{
 		return OwnedComponents;
 	}

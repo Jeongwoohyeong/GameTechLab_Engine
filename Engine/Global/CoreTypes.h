@@ -190,6 +190,7 @@ struct FStaticMesh
 
 struct FObjMaterialInfo
 {
+	FString MaterialName;
 	FVector Ka, Kd, Ks, Ke;
 	float Ns, Ni, d;
 	uint32 illum;

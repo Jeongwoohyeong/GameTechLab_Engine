@@ -12,14 +12,14 @@ class UCamera : public UObject
 	DECLARE_CLASS(UCamera, UObject)
 
 public:
-    UCamera() :
-        ViewProjConstants(FViewProjConstants()),
-        // UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
-        RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
-        FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
-        NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective),
-        CurrentMoveSpeed(DEFAULT_CAMERA_SPEED), CurrentMouseSensitivity(DEFAULT_MOUSE_SENSITIVITY)
-    {
+	UCamera() :
+		ViewProjConstants(FViewProjConstants()),
+		// UE 기준(X-forward) 원점 바라보도록 -X로 초기 위치 설정
+		RelativeLocation(FVector(-10.0f, 0.0f, 0.0f)), RelativeRotation(FVector(0, 0, 0)),
+		FovY(90.f), Aspect(float(Render::INIT_SCREEN_WIDTH) / Render::INIT_SCREEN_HEIGHT),
+		NearZ(0.1f), FarZ(100.f), CameraType(ECameraType::ECT_Perspective),
+		CurrentMoveSpeed(DEFAULT_CAMERA_SPEED), CurrentMouseSensitivity(DEFAULT_MOUSE_SENSITIVITY)
+	{
 		LoadCameraSettings();
 	}
 	~UCamera() override {}
@@ -27,6 +27,10 @@ public:
 	void Update();
 	void UpdateMatrixByPers();
 	void UpdateMatrixByOrth();
+
+	// Input enable for main editor camera (disable when hovering other viewports)
+	void SetInputEnabled(bool b) { bInputEnabled = b; }
+	bool GetInputEnabled() const { return bInputEnabled; }
 
 	/**
 	 * @brief Setter
@@ -47,10 +51,12 @@ public:
 
 	FRay ConvertToWorldRay(float NdcX, float NdcY) const;
 
-	FVector CalculatePlaneNormal(const FVector4& Axis);
-	FVector CalculatePlaneNormal(const FVector& Axis);
+	FVector CalculatePlaneNormal(const FVector4& Axis) const;
+	FVector CalculatePlaneNormal(const FVector& Axis) const;
 	FVector& GetLocation() { return RelativeLocation; }
 	FVector& GetRotation() { return RelativeRotation; }
+	const FVector& GetLocation() const { return RelativeLocation; }
+	const FVector& GetRotation() const { return RelativeRotation; }
 	const FVector& GetForward() const { return Forward; }
 	const FVector& GetUp() const { return Up; }
 	const FVector& GetRight() const { return Right; }
@@ -59,7 +65,7 @@ public:
 	const float GetNearZ() const { return NearZ; }
 	const float GetFarZ() const { return FarZ; }
 	const ECameraType GetCameraType() const { return CameraType; }
-
+	const bool IsDragging() const { return bIsMainDrraging; }
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
 	{
@@ -77,6 +83,10 @@ public:
 		SaveCameraSettings();
 	}
 	void AdjustMouseSensitivity(float InDelta) { SetMouseSensitivity(CurrentMouseSensitivity + InDelta); }
+
+	// Ortho control (world-units width on X axis)
+	void SetOrthoWorldWidth(float InWidth) { OrthoWorldWidth = InWidth; }
+	float GetOrthoWorldWidth() const { return OrthoWorldWidth; }
 
 	/* *
 	 * @brief Camera Settings Save/Load
@@ -114,8 +124,8 @@ private:
 	FViewProjConstants ViewProjConstants = {};
 	FVector RelativeLocation = {};
 	FVector RelativeRotation = {};
-    // UE 기준: X-forward
-    FVector Forward = { 1,0,0 };
+	// UE 기준: X-forward
+	FVector Forward = { 1,0,0 };
 	FVector Up = {};
 	FVector Right = {};
 	float FovY = {};
@@ -123,6 +133,7 @@ private:
 	float NearZ = {};
 	float FarZ = {};
 	float OrthoWidth = {};
+	float OrthoWorldWidth = 50.0f; // world-units width of ortho view (x axis)
 	ECameraType CameraType = {};
 
 	// Dynamic Movement Speed
@@ -130,4 +141,8 @@ private:
 
 	// Dynamic Mouse Sensitivity
 	float CurrentMouseSensitivity;
+
+	// Whether this camera consumes input (movement/rotation). Only used by editor main camera.
+	bool bInputEnabled = true;
+	bool bIsMainDrraging = false;
 };

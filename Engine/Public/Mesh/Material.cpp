@@ -10,6 +10,7 @@ UMaterial::UMaterial()
 UMaterial::UMaterial(const FObjMaterialInfo& InFObjMaterial)
 {
 	MaterialInfo = InFObjMaterial;
+	
 }
 UMaterial::~UMaterial()
 {
@@ -18,7 +19,10 @@ UMaterial::~UMaterial()
 void UMaterial::SetMaterialInfo(const FObjMaterialInfo& InFObjMaterial)
 {
 	MaterialInfo = InFObjMaterial;
+
 }
+
+
 
 //const FObjMaterialInfo* UMaterial::GetMaterialInfo(const FString& MtlName) const
 //{
