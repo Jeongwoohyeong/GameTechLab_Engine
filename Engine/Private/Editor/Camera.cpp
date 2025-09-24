@@ -28,9 +28,11 @@ void UCamera::Update()
 	 */
 	if (bInputEnabled && Input.IsKeyDown(EKeyInput::MouseRight))
 	{
+		
 		/**
 		 * @brief W, A, S, D 는 각각 카메라의 상, 하, 좌, 우 이동을 담당합니다.
 		 */
+		bIsMainDrraging = true;
 		FVector Direction = { 0, 0, 0 };
 
 		if (Input.IsKeyDown(EKeyInput::A)) { Direction += -Right; }
@@ -70,6 +72,10 @@ void UCamera::Update()
 		// Pitch 클램프(짐벌 플립 방지)
 		RelativeRotation.X = std::min(RelativeRotation.X, 89.0f);
 		RelativeRotation.X = std::max(RelativeRotation.X, -89.0f);
+	}
+	if (Input.IsKeyReleased(EKeyInput::MouseRight))
+	{
+		bIsMainDrraging = false;
 	}
 
 	if (URenderer::GetInstance().GetDeviceResources())

@@ -65,6 +65,7 @@ public:
 	const float GetNearZ() const { return NearZ; }
 	const float GetFarZ() const { return FarZ; }
 	const ECameraType GetCameraType() const { return CameraType; }
+	const bool IsDragging() const { return bIsMainDrraging; }
 
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
@@ -144,4 +145,5 @@ private:
 
 	// Whether this camera consumes input (movement/rotation). Only used by editor main camera.
 	bool bInputEnabled = true;
+	bool bIsMainDrraging = true;
 };

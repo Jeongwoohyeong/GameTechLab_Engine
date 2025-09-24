@@ -58,8 +58,7 @@ void UEditor::Update()
 		const FVector mp = Input.GetMousePosition();
 		FRect rect{};
 		int hover = Renderer.GetHoveredViewportIndex(mp.X, mp.Y, rect);
-		bool rmb = Input.IsKeyDown(EKeyInput::MouseRight);
-		bool enableMain = !(rmb && hover >= 0 && hover != 0);
+		bool enableMain = !(!Camera.IsDragging() && hover >= 0 && hover != 0);
 		Camera.SetInputEnabled(enableMain);
 	}
 	else
@@ -212,7 +211,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 
 		// 항상 뷰포트 전용 카메라를 사용 (TL도 ViewCameras[0])
 		PickCam = Renderer.GetViewCameraAt(HoverIndex);
-		if (!PickCam)
+		if (!PickCam || Camera.IsDragging())
 		{
 			PickCam = &Camera;
 		}
@@ -261,30 +260,9 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 				}
 
 			}
-		/*case URenderer::EViewportType::Top:
-			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
-			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			PickCam->SetLocation(Pos + FVector(0, 0, CameraDistance));
-			PickCam->SetRotation(FVector(90.0f, 0.0f, 0.0f));
-			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(0, 0, CameraDistance));
-			break;
-		case URenderer::EViewportType::Right:
-			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
-			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			PickCam->SetLocation(Pos + FVector(0, CameraDistance, 0));
-			PickCam->SetRotation(FVector(0.0f, -90.0f, 0.0f));
-			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(0, CameraDistance, 0));
-			break;
-		case URenderer::EViewportType::Front:
-			PickCam->SetCameraType(ECameraType::ECT_Orthographic);
-			PickCam->SetNearZ(0.1f); PickCam->SetFarZ(100.f);
-			PickCam->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
-			PickCam->SetRotation(FVector(0.0f, 0.0f, 0.0f));
-			if (PickCam->GetLocation() == FVector()) PickCam->SetLocation(Pos + FVector(-CameraDistance, 0, 0));
-			break;*/
 		}
 		// Hovered viewport interactive controls (orthographic): pan with WASD/Arrows, zoom with wheel
-		if (PickCam->GetCameraType() == ECameraType::ECT_Orthographic)
+		if (PickCam->GetCameraType() == ECameraType::ECT_Orthographic )
 		{
 			const UInputManager& InputForView = UInputManager::GetInstance();
 			bool rmbView = InputForView.IsKeyDown(EKeyInput::MouseRight);
