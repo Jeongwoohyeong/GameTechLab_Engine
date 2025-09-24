@@ -237,7 +237,7 @@ path USceneIOWidget::OpenSaveFileDialog()
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = nullptr;
     ofn.lpstrTitle = L"Save Level File";
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR; // CWD 초기화 방지, 덮어쓰기 확인
     ofn.lpstrDefExt = L"json";
 
     // Modal 다이얼로그 표시 - 이 함수가 리턴될 때까지 다른 입력 차단
@@ -274,7 +274,7 @@ path USceneIOWidget::OpenLoadFileDialog()
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = nullptr;
     ofn.lpstrTitle = L"Load Level File";
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_HIDEREADONLY;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR; // CWD 초기화 방지, 덮어쓰기 확인
 
     UE_LOG("SceneIO: Opening Load Dialog (Modal)...");
 
