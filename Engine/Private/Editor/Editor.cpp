@@ -215,7 +215,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			PickCam = Renderer.GetViewCameraAt(HoverIndex);
 			if (!PickCam || Camera.IsDragging())
 			{
-				PickCam = &Camera;
+				PickCam = Renderer.GetViewCameraAt(0);
 			}
 			// 멀티뷰에서는 선택된 뷰포트 타입에 맞춰 카메라 파라미터를 맞춘 뒤 종횡비 반영
 			URenderer::EViewportType VType = URenderer::EViewportType::Perspective;

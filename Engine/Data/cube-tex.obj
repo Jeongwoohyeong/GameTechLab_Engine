@@ -19,26 +19,26 @@ mtllib cube.mtl
 g cube
 
 # Vertices
-v 0.0 0.0 0.0  # 1 a
-v 0.0 1.0 0.0  # 2 b
-v 1.0 1.0 0.0  # 3 c
-v 1.0 0.0 0.0  # 4 d
-v 0.0 0.0 1.0  # 5 e
-v 0.0 1.0 1.0  # 6 f
-v 1.0 1.0 1.0  # 7 g
-v 1.0 0.0 1.0  # 8 h
+v -0.5 -0.5 -0.5  # 1 a
+v -0.5 0.5 -0.5  # 2 b
+v 0.5 0.5 -0.5  # 3 c
+v 0.5 -0.5 -0.5  # 4 d
+v -0.5 -0.5 0.5  # 5 e
+v -0.5 0.5 0.5  # 6 f
+v 0.5 0.5 0.5  # 7 g
+v 0.5 -0.5 0.5  # 8 h
 
 # Normal vectors
 # One for each face. Shared by all vertices in that face.
-vn  1.0  0.0  0.0  # 1 cghd
-vn -1.0  0.0  0.0  # 2 aefb
-vn  0.0  1.0  0.0  # 3 gcbf
-vn  0.0 -1.0  0.0  # 4 dhea
-vn  0.0  0.0  1.0  # 5 hgfe
-vn  0.0  0.0 -1.0  # 6 cdab
+vn  0.5  -0.5  -0.5  # 1 cghd
+vn -0.5  -0.5  -0.5  # 2 aefb
+vn  -0.5  0.5  -0.5  # 3 gcbf
+vn  -0.5 -0.5  -0.5  # 4 dhea
+vn  -0.5  -0.5  0.5  # 5 hgfe
+vn  -0.5  -0.5 -0.5  # 6 cdab
 
 # Texture
-# (u,v) coordinate into texture map image, ranging from 0.0 - 1.0.
+# (u,v) coordinate into texture map image, ranging from -0.5 - 0.5.
 #  +---f---g---+---+
 #  |   | 5 |   |   |
 #  f---e---h---g---+
