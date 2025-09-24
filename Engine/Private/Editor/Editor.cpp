@@ -73,6 +73,7 @@ void UEditor::Update()
 		if (i == 0)
 		{
 			Camera.GetCameraType() == ECameraType::ECT_Perspective ? Cam->SetCameraType(ECameraType::ECT_Perspective) : Cam->SetCameraType(ECameraType::ECT_Orthographic);
+			Cam->SetFovY(Camera.GetFovY());
 		}
 		Cam->SetNearZ(Camera.GetNearZ());
 		Cam->SetFarZ(Camera.GetFarZ());
@@ -294,7 +295,8 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 				// Pan (only when RMB is held over this viewport)
 				if (rmbView)
 				{
-					float base = std::max(0.001f, PickCam->GetOrthoWorldWidth() * 0.02f);
+					float PickCameraSpeed = Camera.GetMoveSpeed();
+					float base = std::max(0.001f, PickCam->GetOrthoWorldWidth() * 0.06f) * PickCameraSpeed * DT;
 					bool keyW = InputForView.IsKeyDown(EKeyInput::W) || InputForView.IsKeyDown(EKeyInput::Up);
 					bool keyS = InputForView.IsKeyDown(EKeyInput::S) || InputForView.IsKeyDown(EKeyInput::Down);
 					bool keyA = InputForView.IsKeyDown(EKeyInput::A) || InputForView.IsKeyDown(EKeyInput::Left);
