@@ -412,7 +412,7 @@ void URenderer::RenderLevel()
 
 void URenderer::RenderText(const FVector& CameraLocation)
 {
-	//if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
 	//shader, rasterizaer state, depth stencil state, input layout 설정///////////////////
 	FPipelineDescKey PipelineDescKey;
@@ -676,7 +676,6 @@ void URenderer::UpdateSplitDrag()
 	bool LPressed = Input.IsKeyPressed(EKeyInput::MouseLeft);
 	bool LDown    = Input.IsKeyDown(EKeyInput::MouseLeft);
 	bool LRel     = Input.IsKeyReleased(EKeyInput::MouseLeft);
-	static FPoint PrevMP{ 0,0 };
 	static bool PrevDownSplit = false; // local edge-detect state
 	bool JustPressed = LDown && !PrevDownSplit; // edge detect independent of InputManager::Update order
 
@@ -717,7 +716,6 @@ void URenderer::UpdateSplitDrag()
 		}
 	}
 
-	PrevMP = MP;
 	// update prev
 	PrevDownSplit = LDown;
 }

@@ -100,7 +100,6 @@ void UTargetActorTransformWidget::RenderWidget()
 
 
 		RenderComponents();
-		ImGui::ShowDemoWindow();
 
 		//현재 선택된 Actor의 Mesh의 index
 		
