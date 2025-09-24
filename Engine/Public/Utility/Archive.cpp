@@ -178,6 +178,7 @@ FArchive& operator<<(FArchive& Ar, FStaticMesh& Value)
 
 FArchive& operator<<(FArchive& Ar, FObjMaterialInfo& Value)
 {
+	Ar << Value.MaterialName;
 	Ar << Value.Ka;
 	Ar << Value.Kd;
 	Ar << Value.Ks;

@@ -13,14 +13,14 @@ IFileManager::~IFileManager()
 
 }
 
-FArchive* IFileManager::CreateFileWriter(const FString& OriginalPath, const FString& BinFilePath)
+FArchive* IFileManager::CreateFileWriter(const FString& BinFilePath)
 {
-	FArchive* Writer = new FArchiveFileWriter(OriginalPath, BinFilePath);
+	FArchive* Writer = new FArchiveFileWriter(BinFilePath);
 	return Writer;
 }
 
-FArchive* IFileManager::CreateFileReader(const FString& FilePath)
+FArchive* IFileManager::CreateFileReader(const FString& BinFilePath)
 {
-	FArchive* Reader = new FArchiveFileReader(FilePath);
+	FArchive* Reader = new FArchiveFileReader(BinFilePath);
 	return Reader;
 }

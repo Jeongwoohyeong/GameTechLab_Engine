@@ -1,18 +1,10 @@
 #include "pch.h"
 #include "ArchiveFileWriter.h"
 
-FArchiveFileWriter::FArchiveFileWriter(const FString& OriginalPath, const FString& BinFilePath)
+FArchiveFileWriter::FArchiveFileWriter(const FString& BinFilePath)
 {
-	// 이진파일 쓰기
-	if (CheckDirectory(BinFilePath) && IsBinOld(OriginalPath, BinFilePath))
-	{
-		fopen_s(&FilePointer, BinFilePath.c_str(), "wb");
-	}
+	CheckDirectory(BinFilePath);
 	
-	if (FilePointer == nullptr)
-	{
-		assert("FArchiveFileWriter File Open 실패");
-	}
 }
 
 void FArchiveFileWriter::Serialize(void* Data, uint64 Length)
@@ -23,24 +15,30 @@ void FArchiveFileWriter::Serialize(void* Data, uint64 Length)
 	}
 }
 
+bool FArchiveFileWriter::FileOpen(const FString& FilePath)
+{
+	fopen_s(&FilePointer, FilePath.c_str(), "ab");
+	return FilePointer != nullptr;
+}
+
 void FArchiveFileWriter::FileClose()
 {
 	if (FilePointer)
-	{
+	{		
 		if (fclose(FilePointer) != 0)
 		{
-			assert("File Close Fail");
+			// 여전히 열려있으면 로그 출력
+			UE_LOG("File Close Fail");
 		}
 		FilePointer = nullptr;
-	}	
+	}
 }
 
 bool FArchiveFileWriter::CheckDirectory(const FString& FilePath)
 {
 	filesystem::path FilePathName(FilePath.c_str());
 	filesystem::path ParentDirectory = FilePathName.parent_path();
-
-	UE_LOG("check dir %s", FilePath.c_str());
+	
 	if (!filesystem::exists(ParentDirectory))
 	{
 		try
@@ -70,16 +68,16 @@ bool FArchiveFileWriter::IsFileExist(const FString& FilePath)
 	return true;
 }
 
-bool FArchiveFileWriter::IsBinOld(const FString& OriginalFile, const FString& BinFile)
+bool FArchiveFileWriter::IsBinOld(const FString& OriginalFile, const FString& BinFile, EFileFormat Format)
 {
-	// .obj가 존재하지 않고 .bin이 존재하면 bin파일 삭제
+	// 원본이 존재하지 않고 .bin이 존재하면 bin파일 삭제
 	if (!IsFileExist(OriginalFile) && IsFileExist(BinFile))
 	{
 		filesystem::remove(BinFile);
 		return false;
 	}
 
-	// obj파일이 최신이면 bin 작성
+
 	try
 	{
 		auto BinFileTime = filesystem::last_write_time(BinFile);
@@ -87,14 +85,16 @@ bool FArchiveFileWriter::IsBinOld(const FString& OriginalFile, const FString& Bi
 
 		if (ObjFileTime > BinFileTime)
 		{
+			fopen_s(&FilePointer, BinFile.c_str(), "wb");
 			UE_LOG("%s 갱신", BinFile.c_str());
 			return true;
 		}
+		
 	}
 	// try 구문이 실패하면 무조건 bin 작성
 	catch (const filesystem::filesystem_error& ex)
 	{
-		UE_LOG("파일 시간 비교 중 오류 발생 %s", ex.what());
+		fopen_s(&FilePointer, BinFile.c_str(), "wb");
 		return true;
 	}
 

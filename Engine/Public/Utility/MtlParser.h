@@ -15,3 +15,5 @@ public:
 private:
 	TMap<FString, UMaterial*>* Materials = nullptr;
 };
+
+void ParseToBinFormat(const FString& PathFileName, FString& OutPathFile, EFileFormat Format);

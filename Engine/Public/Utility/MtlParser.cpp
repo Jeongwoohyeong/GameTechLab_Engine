@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "MtlParser.h"
 #include "Mesh/Material.h"
+#include "Utility/FileManager.h"
+#include "Utility/Archive.h"
 
 FMtlParser::FMtlParser(TMap<FString, UMaterial*>* InMaterials)
 {
@@ -9,20 +11,17 @@ FMtlParser::FMtlParser(TMap<FString, UMaterial*>* InMaterials)
 
 bool FMtlParser::ParseMtl(const FString& PathFileName)
 {
-	ifstream File(PathFileName);	
-
+	ifstream File(PathFileName);
 	
+	// .mtl파일이 제거되면 return 된다.
 	if (!File.is_open())
 	{
 		UE_LOG("Mtl 파일 열기 실패");
 		return false;
 	}
-	UE_LOG("mtl file name %s", PathFileName.c_str());
-
 
 	uint32 Pos = PathFileName.find_last_of("/\\");
 	FString	Path = PathFileName.substr(0, Pos + 1);
-	
 	
 	FString Line;
 	FObjMaterialInfo CurrentMaterialInfo;
@@ -56,7 +55,6 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 			Ss >> CurrentMaterialInfo.MaterialName;
 			
 			bIsEmpty = false;
-			UE_LOG("mtl name %s", CurrentMaterialInfo.MaterialName.c_str());
 		}
 		else if (bIsEmpty)
 		{
@@ -131,4 +129,24 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 	}
 
 	return true;
+}
+
+void ParseToBinFormat(const FString& PathFileName, FString& OutPathFile, EFileFormat Format)
+{
+	uint32 PathPos = PathFileName.find_last_of("/\\");
+	uint32 FormatPos = PathFileName.find_last_of('.');
+	FString BinFilePath = PathFileName.substr(0, PathPos + 1) + "Bin/";
+
+	switch (Format)
+	{
+	case EFileFormat::EFF_Obj:
+		OutPathFile = BinFilePath + PathFileName.substr(PathPos + 1, FormatPos - (PathPos + 1)) + ".bin";
+		break;
+	case EFileFormat::EFF_Mtl:
+		//OutPathFile = BinFilePath + PathFileName.substr(PathPos + 1, FormatPos - (PathPos + 1)) + "_mtl" + ".bin";
+		OutPathFile = BinFilePath + "Materials" + ".bin";
+		break;
+	default:
+		break;
+	}
 }

@@ -14,13 +14,14 @@ TMap<FString, UMaterial*> FObjManager::Materials{};
 
 FMtlParser* FObjManager::MtlManager{};
 
+
 bool FObjManager::bIsObjParsing = false;
 
 IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager()
 {
-	MtlManager = new FMtlParser(&Materials);
+	MtlManager = new FMtlParser(&Materials);		
 }
 
 FObjManager::~FObjManager()
@@ -112,13 +113,13 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 
 	ObjStaticMap.emplace(PathFileName, NewStaticMesh);
 
+
+	// loadmtlbin 위치, loadmtlbin 함수 내부에서 TMap에 저장
 	if (!MtlManager->ParseMtl(NewStaticMesh->Mtllib))
 	{
 		UE_LOG("LoadObjStaticMeshAsset : Mtl Parsing 실패");
 	}	
-
-	SaveToBinFile(PathFileName, *NewStaticMesh, EFileFormat::EFF_Obj);
-	SaveToBinFile(PathFileName, *NewStaticMesh, EFileFormat::EFF_Mtl);
+	SaveToObjBinFile(PathFileName, *NewStaticMesh, EFileFormat::EFF_Obj);
 
 	return NewStaticMesh;
 }
@@ -129,7 +130,6 @@ FStaticMesh* FObjManager::LoadObj(const FString& PathFileName)
 
 	if (!ParseObjRaw(PathFileName, Raw))
 	{
-		UE_LOG("obj 파싱 실패");
 		return nullptr;
 	}
 
@@ -140,7 +140,6 @@ FStaticMesh* FObjManager::LoadObj(const FString& PathFileName)
 
 	if (!CookObjToStaticMesh(Raw, Opt, *NewStaticMesh))
 	{
-		UE_LOG("obj cook 실패");
 		delete NewStaticMesh;
 		return nullptr;
 	}
@@ -347,12 +346,9 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 				CurrentSection = &OutRawData.Sections.back();
 			}
 			// usemtl이 시작되면 새로운 섹션 추가
-			// 원래 코드
-			/*OutRawData.Sections.Emplace();
-			CurrentSection = &OutRawData.Sections.back();*/
+
 			// 현재 섹션의 mtl명 저장
 			Ss >> CurrentSection->MaterialName;
-			//UE_LOG("mtl name %s", CurrentSection->MaterialName.c_str());
 
 		}
 		else if (Token == "mtllib")
@@ -361,7 +357,6 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 			FString MtlName;
 			Ss >> MtlName;
 			OutRawData.Mtllib = Path.append(MtlName);
-			//UE_LOG("Mtllib %s", OutRawData.Mtllib.c_str());
 		}
 		else
 		{
@@ -497,22 +492,7 @@ bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOptio
 		}
 	}
 	OutMesh.IndexNum = OutMesh.Indices.Num();
-	for (auto& Section : OutMesh.Sections)
-	{
-		UE_LOG("mtl name %s", Section.MaterialName.c_str());
-		UE_LOG("Start Index %d", Section.IndexStart);
-		UE_LOG("Index Count %d", Section.IndexCount);
-	}
-
-	/*if (OutMesh.Mtllib == "Data/minion.mtl")
-	{
-		for (const auto& e : OutMesh.Sections)
-		{
-			UE_LOG("mtl name %s", e.MaterialName.c_str());
-			UE_LOG("group name %s", e.Name.c_str());
-		}
-	}*/
-
+	
 	// 필요하면 노말 재계산 
 	/*if (opt.bIsRecalculateNormals)
 	{
@@ -546,29 +526,8 @@ void FObjManager::ReleaseMtlInfo()
 	Materials.Empty();
 }
 
-void FObjManager::ParseToBinFormat(const FString& PathFileName, FString& OutPathFile, EFileFormat Format)
-{
-	uint32 PathPos = PathFileName.find_last_of("/\\");
-	uint32 FormatPos = PathFileName.find_last_of('.');
-	FString BinFilePath = PathFileName.substr(0, PathPos + 1) + "Bin/";
 
-	switch (Format)
-	{
-	case EFileFormat::EFF_Obj:
-		OutPathFile = BinFilePath + PathFileName.substr(PathPos + 1, FormatPos - (PathPos + 1)) + ".bin";
-		break;
-	case EFileFormat::EFF_Mtl:
-		//OutPathFile = BinFilePath + PathFileName.substr(PathPos + 1, FormatPos - (PathPos + 1)) + "_mtl" + ".bin";
-		OutPathFile = BinFilePath + "Materials" + ".bin";
-		break;
-	default:
-		break;
-	}
-
-	UE_LOG("parse obj format to bin format %s", OutPathFile.c_str());
-}
-
-void FObjManager::SaveToBinFile(const FString& PathFileName, FStaticMesh& NewMesh, EFileFormat Format)
+void FObjManager::SaveToObjBinFile(const FString& PathFileName, FStaticMesh& NewMesh, EFileFormat Format)
 {
 	// obj 파싱중이면 return
 	if (bIsObjParsing)
@@ -579,17 +538,21 @@ void FObjManager::SaveToBinFile(const FString& PathFileName, FStaticMesh& NewMes
 	FString BinFileFormat{};
 	ParseToBinFormat(PathFileName, BinFileFormat, Format);
 
-	FArchive* Archive = IFileManager::GetInstance().CreateFileWriter(PathFileName, BinFileFormat);
+	FArchive* Archive = IFileManager::GetInstance().CreateFileWriter(BinFileFormat);
 	// 아카이브가 존재하고 파일포인터가 열리면 bin 저장 시작
-	if (Archive && Archive->IsFileOpen())
+	if (Archive->IsBinOld(PathFileName, BinFileFormat, EFileFormat::EFF_Obj))
 	{
-		*Archive << NewMesh;
-		Archive->FileClose();
-		if (Archive->IsFileClose())
+		if (Archive && Archive->IsFileOpen())
 		{
-			delete Archive;
-			Archive = nullptr;
+			*Archive << NewMesh;
+			Archive->FileClose();
 		}
+	}
+	
+	if (Archive->IsFileClose())
+	{
+		delete Archive;
+		Archive = nullptr;
 	}
 }
 
@@ -619,7 +582,6 @@ FStaticMesh* FObjManager::LoadFromObjBinFile(const FString& PathFileName)
 		}
 		// 로드된 데이터 반환용 변수에 저장
 		return NewMesh;
-		UE_LOG("%s bin load", PathFileName.c_str());		
 	}
 
 	if (Archive && Archive->IsFileClose())
@@ -629,18 +591,4 @@ FStaticMesh* FObjManager::LoadFromObjBinFile(const FString& PathFileName)
 	
 
 	return nullptr;
-}
-
-bool FObjManager::LoadFromMtlBinFile(const FString& PathFileName)
-{
-	FString BinFileFormat{};
-	ParseToBinFormat(PathFileName, BinFileFormat, EFileFormat::EFF_Mtl);
-
-	FArchive* Archive = IFileManager::GetInstance().CreateFileReader(BinFileFormat);
-	if (Archive && Archive->IsFileOpen())
-	{
-
-	}
-
-	return true;
 }

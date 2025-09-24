@@ -203,6 +203,12 @@ struct FObjMaterialInfo
 		float _Ns, float _Ni, float _d, uint32 _illum)
 		:Ka(_Ka), Kd(_Kd), Ks(_Ks), Ke(_Ke), Ns(_Ns), Ni(_Ni), d(_d), illum(_illum) {}
 };
+
+enum class EFileFormat : uint8
+{
+	EFF_Obj,
+	EFF_Mtl
+};
 #pragma endregion
 
 //TMap<char, FCharacterInfo> CharInfoMap;

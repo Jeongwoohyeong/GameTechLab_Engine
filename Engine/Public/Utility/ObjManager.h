@@ -24,10 +24,8 @@ private:
 	static bool CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOption& Opt, FStaticMesh& OutMesh);
 	void ReleaseStaticMesh();
 	void ReleaseMtlInfo();
-	static void ParseToBinFormat(const FString& PathFileName, FString& OutPathFile, EFileFormat Format);
-	static void SaveToBinFile(const FString& PathFileName, FStaticMesh& NewMesh, EFileFormat Format);
+	static void SaveToObjBinFile(const FString& PathFileName, FStaticMesh& NewMesh, EFileFormat Format);
 	static FStaticMesh* LoadFromObjBinFile(const FString& PathFileName);
-	static bool LoadFromMtlBinFile(const FString& PathFileName);
 	
 
 private:

@@ -21,6 +21,11 @@ void FArchiveFileReader::Serialize(void* Data, uint64 Length)
 	}
 }
 
+bool FArchiveFileReader::FileOpen(const FString& FilePath)
+{
+	return false;
+}
+
 void FArchiveFileReader::FileClose()
 {
 	if (FilePointer)
@@ -46,7 +51,7 @@ bool FArchiveFileReader::IsFileExist(const FString& FilePath)
 	return true;
 }
 
-bool FArchiveFileReader::IsBinOld(const FString& OriginalFile, const FString& BinFile)
+bool FArchiveFileReader::IsBinOld(const FString& OriginalFile, const FString& BinFile, EFileFormat Format)
 {
 	return false;
 }
