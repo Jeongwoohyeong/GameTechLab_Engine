@@ -19,19 +19,9 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 	}
 	UE_LOG("mtl file name %s", PathFileName.c_str());
 
-	FString Path{};
-	if (PathFileName.find(".bin"))
-	{
-		uint32 Pos = PathFileName.find_first_of("/\\");
-		Path = PathFileName.substr(0, Pos + 1);
-		UE_LOG("------------ %s", Path.c_str());
-	}
-	else
-	{
-		uint32 Pos = PathFileName.find_last_of("/\\");
-		Path = PathFileName.substr(0, Pos + 1);
-		//UE_LOG("------------ %s", Path.c_str());
-	}
+
+	uint32 Pos = PathFileName.find_last_of("/\\");
+	FString	Path = PathFileName.substr(0, Pos + 1);
 	
 	
 	FString Line;
@@ -67,7 +57,7 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 			Ss >> CurrentMtlName;
 			CurrentMaterialInfo = {};
 			bIsEmpty = false;
-			UE_LOG("mtl name %s", CurrentMtlName.c_str());
+			//UE_LOG("mtl name %s", CurrentMtlName.c_str());
 		}
 		else if (bIsEmpty)
 		{
@@ -76,63 +66,63 @@ bool FMtlParser::ParseMtl(const FString& PathFileName)
 		else if (Token == "Ka")
 		{
 			Ss >> CurrentMaterialInfo.Ka.X >> CurrentMaterialInfo.Ka.Y >> CurrentMaterialInfo.Ka.Z;
-			UE_LOG("%f %f %f", CurrentMaterialInfo.Ka.X, CurrentMaterialInfo.Ka.Y, CurrentMaterialInfo.Ka.Z);
+			//UE_LOG("%f %f %f", CurrentMaterialInfo.Ka.X, CurrentMaterialInfo.Ka.Y, CurrentMaterialInfo.Ka.Z);
 		}
 		else if (Token == "Kd")
 		{
 			Ss >> CurrentMaterialInfo.Kd.X >> CurrentMaterialInfo.Kd.Y >> CurrentMaterialInfo.Kd.Z;
-			UE_LOG("%f %f %f", CurrentMaterialInfo.Kd.X, CurrentMaterialInfo.Kd.Y, CurrentMaterialInfo.Kd.Z);
+			//UE_LOG("%f %f %f", CurrentMaterialInfo.Kd.X, CurrentMaterialInfo.Kd.Y, CurrentMaterialInfo.Kd.Z);
 		}
 		else if (Token == "Ks")
 		{
 			Ss >> CurrentMaterialInfo.Ks.X >> CurrentMaterialInfo.Ks.Y >> CurrentMaterialInfo.Ks.Z;
-			UE_LOG("%f %f %f", CurrentMaterialInfo.Ks.X, CurrentMaterialInfo.Ks.Y, CurrentMaterialInfo.Ks.Z);
+			//UE_LOG("%f %f %f", CurrentMaterialInfo.Ks.X, CurrentMaterialInfo.Ks.Y, CurrentMaterialInfo.Ks.Z);
 		}
 		else if (Token == "Ke")
 		{
 			Ss >> CurrentMaterialInfo.Ke.X >> CurrentMaterialInfo.Ke.Y >> CurrentMaterialInfo.Ke.Z;
-			UE_LOG("%f %f %f", CurrentMaterialInfo.Ke.X, CurrentMaterialInfo.Ke.Y, CurrentMaterialInfo.Ke.Z);
+			//UE_LOG("%f %f %f", CurrentMaterialInfo.Ke.X, CurrentMaterialInfo.Ke.Y, CurrentMaterialInfo.Ke.Z);
 		}
 		else if (Token == "Ns")
 		{
 			Ss >> CurrentMaterialInfo.Ns;
-			UE_LOG("Ns %f", CurrentMaterialInfo.Ns);
+			//UE_LOG("Ns %f", CurrentMaterialInfo.Ns);
 		}
 		else if (Token == "Ni")
 		{
 			Ss >> CurrentMaterialInfo.Ni;
-			UE_LOG("Ni %f", CurrentMaterialInfo.Ni);
+			//UE_LOG("Ni %f", CurrentMaterialInfo.Ni);
 		}
 		else if (Token == "d")
 		{
 			Ss >> CurrentMaterialInfo.d;
-			UE_LOG("d %f", CurrentMaterialInfo.d);
+			//UE_LOG("d %f", CurrentMaterialInfo.d);
 		}
 		else if (Token == "illum")
 		{
 			Ss >> CurrentMaterialInfo.illum;
-			UE_LOG("illum %d", CurrentMaterialInfo.illum);
+			//UE_LOG("illum %d", CurrentMaterialInfo.illum);
 		}
 		else if (Token == "map_Kd")
 		{
 			Ss >> MapFileName;
 			MapFileName = Path + MapFileName;
 			CurrentMaterialInfo.Map_Kd = MapFileName;
-			UE_LOG("Map Kd %s", CurrentMaterialInfo.Map_Kd.c_str());
+			//UE_LOG("Map Kd %s", CurrentMaterialInfo.Map_Kd.c_str());
 		}
 		else if (Token == "map_Ks")
 		{
 			Ss >> MapFileName;
 			MapFileName = Path + MapFileName;
 			CurrentMaterialInfo.Map_Ks = MapFileName;
-			UE_LOG("Map Ks %s", CurrentMaterialInfo.Map_Ks.c_str());
+			//UE_LOG("Map Ks %s", CurrentMaterialInfo.Map_Ks.c_str());
 		}
 		else if (Token == "map_bump")
 		{
 			Ss >> MapFileName;
 			MapFileName = Path + MapFileName;
 			CurrentMaterialInfo.Map_bump = MapFileName;
-			UE_LOG("Map bump %s", CurrentMaterialInfo.Map_bump.c_str());
+			//UE_LOG("Map bump %s", CurrentMaterialInfo.Map_bump.c_str());
 		}
 	}
 

@@ -14,6 +14,7 @@ public:
 	virtual bool IsFileClose() = 0;
 	virtual void FileClose() = 0;
 	virtual bool IsFileExist(const FString& FilePath) = 0;
+	virtual bool IsBinOld(const FString& OriginalFile, const FString& BinFile) = 0;
 
 private:
 
@@ -60,3 +61,11 @@ FArchive& operator<<(FArchive& Ar, FStaticMesh& Value);
 FArchive& operator<<(FArchive& Ar, FObjMaterialInfo& Value);
 
 #pragma endregion
+
+/*
+.obj 파싱 -> mtl 이름 배열 저장 -> obj .bin으로 저장 -> 배열에 존재하는 mtl만 캐싱 -> mtl .bin으로 저장
+.obj 수정 -> pathfilename이 존재하지 않는데 binfileformat 존재하면 .bin 삭제 -> 둘 다 존재하고 obj가 최신 -> .obj 파싱 -> mtl 이름 배열 저장
+-> obj .bin으로 저장 -> mtl .bin으로 저장
+.mtl 수정 -> obj의 mtllib과 비교해서 mtl파일이 없으면 mtl .bin 수정 시작 -> 둘 다 존재 .mtl이 최신 -> .obj의 mtllib으로 새롭게 .bin 작성
+
+*/

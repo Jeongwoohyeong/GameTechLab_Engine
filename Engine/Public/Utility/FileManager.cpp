@@ -13,9 +13,9 @@ IFileManager::~IFileManager()
 
 }
 
-FArchive* IFileManager::CreateFileWriter(const FString& FilePath)
+FArchive* IFileManager::CreateFileWriter(const FString& OriginalPath, const FString& BinFilePath)
 {
-	FArchive* Writer = new FArchiveFileWriter(FilePath);
+	FArchive* Writer = new FArchiveFileWriter(OriginalPath, BinFilePath);
 	return Writer;
 }
 

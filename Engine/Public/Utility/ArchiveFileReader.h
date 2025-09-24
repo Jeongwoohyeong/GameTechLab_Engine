@@ -11,6 +11,7 @@ public:
 	virtual bool IsFileClose() override { return FilePointer == nullptr; }
 	virtual void FileClose() override;
 	virtual bool IsFileExist(const FString& FilePath) override;
+	virtual bool IsBinOld(const FString& OriginalFile, const FString& BinFile) override;
 
 private:
 

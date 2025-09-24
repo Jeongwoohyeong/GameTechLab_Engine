@@ -13,6 +13,6 @@ class IFileManager
 	DECLARE_SINGLETON(IFileManager);
 
 public:
-	FArchive* CreateFileWriter(const FString& FilePath);
+	FArchive* CreateFileWriter(const FString& OriginalPath, const FString& BinFilePath);
 	FArchive* CreateFileReader(const FString& FilePath);
 };

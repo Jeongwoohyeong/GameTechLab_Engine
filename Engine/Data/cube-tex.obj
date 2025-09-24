@@ -12,7 +12,7 @@
 #   a-------d         +---- x          +-------+
 #                                           6
 #                                        bottom
-
+##
 # Material defined in separate file.
 mtllib cube.mtl
 

@@ -45,3 +45,8 @@ bool FArchiveFileReader::IsFileExist(const FString& FilePath)
 
 	return true;
 }
+
+bool FArchiveFileReader::IsBinOld(const FString& OriginalFile, const FString& BinFile)
+{
+	return false;
+}
