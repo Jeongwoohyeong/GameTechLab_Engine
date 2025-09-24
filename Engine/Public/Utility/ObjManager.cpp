@@ -5,6 +5,8 @@
 #include "Public/Core/ObjectIterator.h"
 #include "Public/Utility/MtlParser.h"
 #include "Mesh/Material.h"
+#include "Utility/Archive.h"
+#include "Utility/FileManager.h"
 
 TMap<FString, FStaticMesh*> FObjManager::ObjStaticMap{};
 
@@ -12,11 +14,14 @@ TMap<FString, UMaterial*> FObjManager::Materials{};
 
 FMtlParser* FObjManager::MtlManager{};
 
+
+bool FObjManager::bIsObjParsing = false;
+
 IMPLEMENT_SINGLETON(FObjManager)
 
 FObjManager::FObjManager()
 {
-	MtlManager = new FMtlParser(&Materials);
+	MtlManager = new FMtlParser(&Materials);		
 }
 
 FObjManager::~FObjManager()
@@ -48,8 +53,8 @@ void FObjManager::LoadPresetMaterial()
 }
 
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
-{
-	UStaticMesh* Result = nullptr;
+{	
+	UStaticMesh* Result = nullptr;	
 	for (TObjectIterator<UStaticMesh> It; It; ++It)
 	{
 		UStaticMesh* StaticMesh = *It;
@@ -60,7 +65,7 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 		}
 	}
 
-	if (Result == nullptr)
+	if(Result == nullptr)
 	{
 		FStaticMesh* Asset = FObjManager::LoadObjStaticMeshAsset(PathFileName);
 		if (!Asset)
@@ -90,77 +95,62 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 	return Result;
 }
 
-FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& pathFileName)
-{	
-	auto It = ObjStaticMap.find(pathFileName);	
+FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
+{
+	
+	auto It = ObjStaticMap.find(PathFileName);	
 	if (It != ObjStaticMap.end())
 	{
 		return (*It).second;
 	}
-	FStaticMesh* NewStaticMesh = FObjManager::LoadObj(pathFileName);
-	if (!NewStaticMesh)
-		return nullptr;
-	ObjStaticMap.emplace(pathFileName, NewStaticMesh);
 
+	FStaticMesh* NewStaticMesh = LoadFromObjBinFile(PathFileName);
+
+	if (NewStaticMesh == nullptr)
+	{
+		NewStaticMesh = FObjManager::LoadObj(PathFileName);
+	}
+
+	ObjStaticMap.emplace(PathFileName, NewStaticMesh);
+
+
+	// loadmtlbin 위치, loadmtlbin 함수 내부에서 TMap에 저장
 	if (!MtlManager->ParseMtl(NewStaticMesh->Mtllib))
 	{
 		UE_LOG("LoadObjStaticMeshAsset : Mtl Parsing 실패");
-	}
-
-	// 디버깅용 로그
-	{
-		/*if (!NewStaticMesh->PathFileName.empty())
-		{
-			UE_LOG("PathFileName %s", NewStaticMesh->PathFileName.c_str());
-			UE_LOG("Mtllib %s", NewStaticMesh->Mtllib.c_str());
-			if (!NewStaticMesh->Sections.empty())
-			{
-				for (const auto& Section : NewStaticMesh->Sections)
-				{
-					if (!Section.Name.empty())
-					{
-						UE_LOG("Section name %s", Section.Name.c_str());
-					}
-
-					if (!Section.MaterialName.empty())
-					{
-						UE_LOG("Material name %s", Section.MaterialName.c_str());
-					}
-				}
-			}
-		}*/
-	}
+	}	
+	SaveToObjBinFile(PathFileName, *NewStaticMesh, EFileFormat::EFF_Obj);
 
 	return NewStaticMesh;
 }
 
-FStaticMesh* FObjManager::LoadObj(const FString& filePath)
+FStaticMesh* FObjManager::LoadObj(const FString& PathFileName)
 {	
 	FObjInfo Raw{};
 
-	if (!ParseObjRaw(filePath, Raw))
+	if (!ParseObjRaw(PathFileName, Raw))
 	{
-		UE_LOG("obj 파싱 실패");
 		return nullptr;
 	}
 
 	FStaticMesh* NewStaticMesh = new FStaticMesh();
-	NewStaticMesh->PathFileName = filePath;
+	NewStaticMesh->PathFileName = PathFileName;
 
 	FObjImportOption Opt{};
 
 	if (!CookObjToStaticMesh(Raw, Opt, *NewStaticMesh))
 	{
-		UE_LOG("obj cook 실패");
 		delete NewStaticMesh;
 		return nullptr;
 	}
 
 	{
-		uint32 Pos = filePath.find_last_of("/\\");
-		FString Name = filePath.substr(Pos + 1);
+		uint32 Pos = PathFileName.find_last_of("/\\");
+		FString Name = PathFileName.substr(Pos + 1);
 		UE_LOG("FObjManager: %s 로드 완료", Name.c_str());
 	}
+
+	
 
 	return NewStaticMesh;
 }
@@ -356,12 +346,9 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 				CurrentSection = &OutRawData.Sections.back();
 			}
 			// usemtl이 시작되면 새로운 섹션 추가
-			// 원래 코드
-			/*OutRawData.Sections.Emplace();
-			CurrentSection = &OutRawData.Sections.back();*/
+
 			// 현재 섹션의 mtl명 저장
 			Ss >> CurrentSection->MaterialName;
-			//UE_LOG("mtl name %s", CurrentSection->MaterialName.c_str());
 
 		}
 		else if (Token == "mtllib")
@@ -370,7 +357,6 @@ bool FObjManager::ParseObjRaw(const FString& FilePath, FObjInfo& OutRawData)
 			FString MtlName;
 			Ss >> MtlName;
 			OutRawData.Mtllib = Path.append(MtlName);
-			//UE_LOG("Mtllib %s", OutRawData.Mtllib.c_str());
 		}
 		else
 		{
@@ -386,7 +372,10 @@ bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOptio
 	OutMesh.Vertices.clear();
 	OutMesh.Indices.clear();
 	OutMesh.Sections.clear();
-	OutMesh.Mtllib = Raw.Mtllib;	
+	OutMesh.Mtllib = Raw.Mtllib;
+
+	// 파싱 시작 플래그
+	bIsObjParsing = true;
 	
 	// .obj의 raw data의 section 순회
 	for (const FObjSection& Section : Raw.Sections)
@@ -503,54 +492,18 @@ bool FObjManager::CookObjToStaticMesh(const FObjInfo& Raw, const FObjImportOptio
 		}
 	}
 	OutMesh.IndexNum = OutMesh.Indices.Num();
-	for (auto& Section : OutMesh.Sections)
-	{
-		UE_LOG("mtl name %s", Section.MaterialName.c_str());
-		UE_LOG("Start Index %d", Section.IndexStart);
-		UE_LOG("Index Count %d", Section.IndexCount);
-	}
-
-	/*if (OutMesh.Mtllib == "Data/minion.mtl")
-	{
-		for (const auto& e : OutMesh.Sections)
-		{
-			UE_LOG("mtl name %s", e.MaterialName.c_str());
-			UE_LOG("group name %s", e.Name.c_str());
-		}
-	}*/
-
+	
 	// 필요하면 노말 재계산 
 	/*if (opt.bIsRecalculateNormals)
 	{
 
 	}*/
 
+	bIsObjParsing = false;
+
 	return true;
 }
 
-//bool FObjManager::LoadMtlMap(const FString& MtlFileName)
-//{
-//	//UE_LOG("mtlfilename %s", MtlFileName.c_str());
-//
-//	// find의 결과가 end가 아니면 존재
-//	bool bIsExist = (MtlFileMap.find(MtlFileName) != MtlFileMap.end());
-//
-//	// 존재하지 않으면 mtlfile parsing
-//	if (!bIsExist)
-//	{
-//		// 파싱 성공 여부 저장
-//		// 성공 : true
-//		// 실패 : false
-//		bIsExist = MtlManager->ParseMtl(MtlFileName);		
-//	}
-//
-//	if (!bIsExist)
-//	{
-//		UE_LOG("%s Parsing Fail", MtlFileName.c_str());
-//	}
-//
-//	return bIsExist;
-//}
 
 void FObjManager::ReleaseStaticMesh()
 {
@@ -571,4 +524,71 @@ void FObjManager::ReleaseMtlInfo()
 		delete Pair.second;
 	}
 	Materials.Empty();
+}
+
+
+void FObjManager::SaveToObjBinFile(const FString& PathFileName, FStaticMesh& NewMesh, EFileFormat Format)
+{
+	// obj 파싱중이면 return
+	if (bIsObjParsing)
+	{
+		return;
+	}
+
+	FString BinFileFormat{};
+	ParseToBinFormat(PathFileName, BinFileFormat, Format);
+
+	FArchive* Archive = IFileManager::GetInstance().CreateFileWriter(BinFileFormat);
+	// 아카이브가 존재하고 파일포인터가 열리면 bin 저장 시작
+	if (Archive->IsBinOld(PathFileName, BinFileFormat, EFileFormat::EFF_Obj))
+	{
+		if (Archive && Archive->IsFileOpen())
+		{
+			*Archive << NewMesh;
+			Archive->FileClose();
+		}
+	}
+	
+	if (Archive->IsFileClose())
+	{
+		delete Archive;
+		Archive = nullptr;
+	}
+}
+
+FStaticMesh* FObjManager::LoadFromObjBinFile(const FString& PathFileName)
+{
+	if (bIsObjParsing)
+	{
+		return nullptr;
+	}
+
+	FString BinFileFormat{};
+	ParseToBinFormat(PathFileName, BinFileFormat, EFileFormat::EFF_Obj);
+	
+	FArchive* Archive = IFileManager::GetInstance().CreateFileReader(BinFileFormat);
+	if (Archive && Archive->IsFileOpen())
+	{
+		// .bin에서 로드한 데이터 저장용 변수
+		FStaticMesh* NewMesh = new FStaticMesh();
+		// .bin 로드 시작
+		*Archive << *NewMesh;
+		Archive->FileClose();
+		// 파일 닫힘 검사 후 메모리 해제
+		if (Archive->IsFileClose())
+		{
+			delete Archive;
+			Archive = nullptr;
+		}
+		// 로드된 데이터 반환용 변수에 저장
+		return NewMesh;
+	}
+
+	if (Archive && Archive->IsFileClose())
+	{
+		delete Archive;
+	}
+	
+
+	return nullptr;
 }

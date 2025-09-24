@@ -180,6 +180,10 @@
     <ClInclude Include="Public\Render\UI\Window\DetailWindow.h" />
     <ClInclude Include="Public\Render\Viewport\FViewport.h" />
     <ClInclude Include="Public\Render\Viewport\FViewportClient.h" />
+    <ClInclude Include="Public\Utility\Archive.h" />
+    <ClInclude Include="Public\Utility\ArchiveFileReader.h" />
+    <ClInclude Include="Public\Utility\ArchiveFileWriter.h" />
+    <ClInclude Include="Public\Utility\FileManager.h" />
     <ClInclude Include="Public\Utility\MtlParser.h" />
     <ClInclude Include="Public\Utility\ObjManager.h" />
     <ClInclude Include="Public\\Core\\Class.h" />
@@ -322,6 +326,10 @@
     <ClCompile Include="Private\\Render\UI\Window\\UIWindow.cpp" />
     <ClCompile Include="Private\\Utility\\LevelSerializer.cpp" />
     <ClCompile Include="Public\Mesh\Material.cpp" />
+    <ClCompile Include="Public\Utility\Archive.cpp" />
+    <ClCompile Include="Public\Utility\ArchiveFileReader.cpp" />
+    <ClCompile Include="Public\Utility\ArchiveFileWriter.cpp" />
+    <ClCompile Include="Public\Utility\FileManager.cpp" />
     <ClCompile Include="Public\Utility\MtlParser.cpp" />
     <ClCompile Include="Public\Utility\ObjManager.cpp" />
   </ItemGroup>

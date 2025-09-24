@@ -92,6 +92,10 @@
     <ClCompile Include="Public\Utility\ObjManager.cpp" />
     <ClCompile Include="Public\Utility\MtlParser.cpp" />
     <ClCompile Include="Public\Mesh\Material.cpp" />
+    <ClCompile Include="Public\Utility\FileManager.cpp" />
+    <ClCompile Include="Public\Utility\ArchiveFileReader.cpp" />
+    <ClCompile Include="Public\Utility\ArchiveFileWriter.cpp" />
+    <ClCompile Include="Public\Utility\Archive.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\\Core\\Object.h" />
@@ -189,6 +193,11 @@
     <ClInclude Include="Public\Mesh\VertexDatas.h" />
     <ClInclude Include="Public\Utility\MtlParser.h" />
     <ClInclude Include="Public\Mesh\Material.h" />
+    <ClInclude Include="Global\PipelineType.h" />
+    <ClInclude Include="Public\Utility\Archive.h" />
+    <ClInclude Include="Public\Utility\FileManager.h" />
+    <ClInclude Include="Public\Utility\ArchiveFileWriter.h" />
+    <ClInclude Include="Public\Utility\ArchiveFileReader.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
