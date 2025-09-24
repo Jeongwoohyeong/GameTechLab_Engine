@@ -354,3 +354,252 @@ void UCamera::LoadCameraSettings()
 	CurrentMouseSensitivity = max(LoadedSensitivity, MIN_MOUSE_SENSITIVITY);
 	CurrentMouseSensitivity = min(CurrentMouseSensitivity, MAX_MOUSE_SENSITIVITY);
 }
+
+void UCamera::SaveMultiViewCameraSettings(const char* ViewportType) const
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetRootPath() / "Editor.ini";
+
+	// 각 뷰포트별로 섹션을 구분 (예: "Camera_Perspective", "Camera_Top" 등)
+	std::string SectionName = std::string("Camera_") + ViewportType;
+
+	// 카메라 위치 저장
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"LocationX",
+		std::to_string(RelativeLocation.X).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"LocationY",
+		std::to_string(RelativeLocation.Y).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"LocationZ",
+		std::to_string(RelativeLocation.Z).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+
+	// 카메라 회전 저장
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"RotationX",
+		std::to_string(RelativeRotation.X).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"RotationY",
+		std::to_string(RelativeRotation.Y).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"RotationZ",
+		std::to_string(RelativeRotation.Z).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+
+	// FOV 저장 (Perspective 뷰포트에만 적용)
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"FovY",
+		std::to_string(FovY).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+
+	// 카메라 타입 저장
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"CameraType",
+		(CameraType == ECameraType::ECT_Perspective) ? "Perspective" : "Orthographic",
+		ConfigFilePath.string().c_str()
+	);
+
+	// Orthographic 전용: 월드 너비 저장
+	WritePrivateProfileStringA(
+		SectionName.c_str(),
+		"OrthoWorldWidth",
+		std::to_string(OrthoWorldWidth).c_str(),
+		ConfigFilePath.string().c_str()
+	);
+}
+
+void UCamera::LoadMultiViewCameraSettings(const char* ViewportType)
+{
+	const path ConfigFilePath = UPathManager::GetInstance().GetRootPath() / "Editor.ini";
+
+	// 파일이 존재하지 않으면 기본값 유지
+	if (!std::filesystem::exists(ConfigFilePath))
+	{
+		return;
+	}
+
+	std::string SectionName = std::string("Camera_") + ViewportType;
+	char Buffer[64];
+
+	// 카메라 위치 로드
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"LocationX",
+		std::to_string(RelativeLocation.X).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	RelativeLocation.X = std::stof(Buffer);
+
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"LocationY",
+		std::to_string(RelativeLocation.Y).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	RelativeLocation.Y = std::stof(Buffer);
+
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"LocationZ",
+		std::to_string(RelativeLocation.Z).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	RelativeLocation.Z = std::stof(Buffer);
+
+	// 카메라 회전 로드
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"RotationX",
+		std::to_string(RelativeRotation.X).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	RelativeRotation.X = std::stof(Buffer);
+
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"RotationY",
+		std::to_string(RelativeRotation.Y).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	RelativeRotation.Y = std::stof(Buffer);
+
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"RotationZ",
+		std::to_string(RelativeRotation.Z).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	RelativeRotation.Z = std::stof(Buffer);
+
+	// FOV 로드
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"FovY",
+		std::to_string(FovY).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	FovY = std::stof(Buffer);
+
+	// 카메라 타입 로드
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"CameraType",
+		"Perspective",
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	std::string CamType = Buffer;
+	CameraType = (CamType == "Perspective") ? ECameraType::ECT_Perspective : ECameraType::ECT_Orthographic;
+
+	// Orthographic 전용: 월드 너비 로드
+	GetPrivateProfileStringA(
+		SectionName.c_str(),
+		"OrthoWorldWidth",
+		std::to_string(OrthoWorldWidth).c_str(),
+		Buffer,
+		sizeof(Buffer),
+		ConfigFilePath.string().c_str()
+	);
+	OrthoWorldWidth = std::stof(Buffer);
+}
+
+void UCamera::SaveMultiViewCameraState(const UCamera* Camera, const char* ViewportType)
+{
+	if (!Camera) return;
+
+	const path ConfigFilePath = UPathManager::GetInstance().GetRootPath() / "Editor.ini";
+	std::string SectionName = std::string("Camera_") + ViewportType;
+
+	// 정적 함수에서는 카메라 객체의 상태를 직접 저장
+	WritePrivateProfileStringA(SectionName.c_str(), "LocationX", std::to_string(Camera->GetLocation().X).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "LocationY", std::to_string(Camera->GetLocation().Y).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "LocationZ", std::to_string(Camera->GetLocation().Z).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "RotationX", std::to_string(Camera->GetRotation().X).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "RotationY", std::to_string(Camera->GetRotation().Y).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "RotationZ", std::to_string(Camera->GetRotation().Z).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "FovY", std::to_string(Camera->GetFovY()).c_str(), ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "CameraType", (Camera->GetCameraType() == ECameraType::ECT_Perspective) ? "Perspective" : "Orthographic", ConfigFilePath.string().c_str());
+	WritePrivateProfileStringA(SectionName.c_str(), "OrthoWorldWidth", std::to_string(Camera->GetOrthoWorldWidth()).c_str(), ConfigFilePath.string().c_str());
+}
+
+void UCamera::LoadMultiViewCameraState(UCamera* Camera, const char* ViewportType)
+{
+	if (!Camera) return;
+
+	const path ConfigFilePath = UPathManager::GetInstance().GetRootPath() / "Editor.ini";
+
+	if (!std::filesystem::exists(ConfigFilePath))
+	{
+		return;
+	}
+
+	std::string SectionName = std::string("Camera_") + ViewportType;
+	char Buffer[64];
+
+	// 위치 로드
+	FVector LoadedLocation;
+	GetPrivateProfileStringA(SectionName.c_str(), "LocationX", std::to_string(Camera->GetLocation().X).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	LoadedLocation.X = std::stof(Buffer);
+	GetPrivateProfileStringA(SectionName.c_str(), "LocationY", std::to_string(Camera->GetLocation().Y).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	LoadedLocation.Y = std::stof(Buffer);
+	GetPrivateProfileStringA(SectionName.c_str(), "LocationZ", std::to_string(Camera->GetLocation().Z).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	LoadedLocation.Z = std::stof(Buffer);
+	Camera->SetLocation(LoadedLocation);
+
+	// 회전 로드
+	FVector LoadedRotation;
+	GetPrivateProfileStringA(SectionName.c_str(), "RotationX", std::to_string(Camera->GetRotation().X).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	LoadedRotation.X = std::stof(Buffer);
+	GetPrivateProfileStringA(SectionName.c_str(), "RotationY", std::to_string(Camera->GetRotation().Y).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	LoadedRotation.Y = std::stof(Buffer);
+	GetPrivateProfileStringA(SectionName.c_str(), "RotationZ", std::to_string(Camera->GetRotation().Z).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	LoadedRotation.Z = std::stof(Buffer);
+	Camera->SetRotation(LoadedRotation);
+
+	// FOV 로드
+	GetPrivateProfileStringA(SectionName.c_str(), "FovY", std::to_string(Camera->GetFovY()).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	Camera->SetFovY(std::stof(Buffer));
+
+	// 카메라 타입 로드
+	GetPrivateProfileStringA(SectionName.c_str(), "CameraType", "Perspective", Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	std::string CamType = Buffer;
+	Camera->SetCameraType((CamType == "Perspective") ? ECameraType::ECT_Perspective : ECameraType::ECT_Orthographic);
+
+	// Orthographic 전용: 월드 너비 로드
+	GetPrivateProfileStringA(SectionName.c_str(), "OrthoWorldWidth", std::to_string(Camera->GetOrthoWorldWidth()).c_str(), Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
+	Camera->SetOrthoWorldWidth(std::stof(Buffer));
+}

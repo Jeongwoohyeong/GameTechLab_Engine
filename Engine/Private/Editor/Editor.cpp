@@ -40,6 +40,17 @@ void UEditor::Initialize()
 {
 	ULevelManager::GetInstance().CreateNewLevel("Default");
 }
+
+void UEditor::Shutdown()
+{
+	// 종료 시 매인 카메라 설정 저장
+	Camera.SaveCameraSettings();
+
+	// 렌더러에서 멀티뷰 카메라 설정을 저장할 것이지만,
+	// 추가적으로 여기서도 저장하여 안전성 확보
+	auto& Renderer = URenderer::GetInstance();
+	Renderer.SaveMultiViewCameraSettings();
+}
 void UEditor::Update()
 {
 	auto& Renderer = URenderer::GetInstance();
@@ -66,7 +77,23 @@ void UEditor::Update()
 		Camera.SetInputEnabled(true);
 	}
 
+	// 이전 프레임의 카메라 상태 저장
+	static FVector PrevCameraLocation = Camera.GetLocation();
+	static FVector PrevCameraRotation = Camera.GetRotation();
+
 	Camera.Update();
+	
+	// 카메라 상태 변경 감지 및 자동 저장 요청
+	FVector CurrentLocation = Camera.GetLocation();
+	FVector CurrentRotation = Camera.GetRotation();
+	if ((CurrentLocation - PrevCameraLocation).Length() > 0.1f || 
+	    (CurrentRotation - PrevCameraRotation).Length() > 0.1f)
+	{
+		Renderer.RequestCameraSave();
+		PrevCameraLocation = CurrentLocation;
+		PrevCameraRotation = CurrentRotation;
+	}
+
 	for(int i = 0; i < 4; ++i)
 	{
 		UCamera* Cam = Renderer.GetViewCameraAt(i);

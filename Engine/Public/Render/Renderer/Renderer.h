@@ -132,6 +132,14 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 	void LoadViewportLayout();
 	void SaveViewportLayout() const;
 
+	// MultiView camera settings save/load (editor.ini)
+	void LoadMultiViewCameraSettings();
+	void SaveMultiViewCameraSettings() const;
+
+	// Auto-save camera settings when changed
+	void CheckAndSaveCameraSettings();
+	void RequestCameraSave() { bCameraSaveRequested = true; }
+
 
 	template<typename T>
 	ID3D11Buffer* CreateVertexBuffer(TArray<T>& InVertices) const
@@ -229,6 +237,11 @@ private:
 	// 0=TL(Persp),1=BL(Right),2=TR(Top),3=BR(Front)
 	EViewportType ViewTypes[4] = { EViewportType::Perspective, EViewportType::Right, EViewportType::Top, EViewportType::Front };
 	EViewportType CurrentRenderVType = EViewportType::Perspective;
+
+	// Camera auto-save system
+	bool bCameraSaveRequested = false;
+	float CameraSaveTimer = 0.0f;
+	static constexpr float CAMERA_SAVE_DELAY = 2.0f; // 2초 후 자동 저장
 
 private:
 	ID3D11DepthStencilState* DefaultDepthStencilState = nullptr;

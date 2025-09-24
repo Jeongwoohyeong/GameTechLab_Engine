@@ -181,6 +181,12 @@ void FClientApp::MainLoop()
  */
 void FClientApp::ShutdownSystem()
 {
+	// Editor shutdown with settings save
+	if (Editor)
+	{
+		Editor->Shutdown();
+	}
+
 	UUIManager::GetInstance().Release();
 	URenderer::GetInstance().Release();
 	ULevelManager::GetInstance().Release();

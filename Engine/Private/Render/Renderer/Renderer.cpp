@@ -81,6 +81,9 @@ void URenderer::Init(HWND InWindowHandle)
 
 	// Load layout from editor.ini
 	LoadViewportLayout();
+
+	// Load multi-view camera settings from editor.ini
+	LoadMultiViewCameraSettings();
 }
 
 void URenderer::Release()
@@ -90,6 +93,9 @@ void URenderer::Release()
 
 	// Save current layout to editor.ini
 	SaveViewportLayout();
+
+	// Save multi-view camera settings to editor.ini
+	SaveMultiViewCameraSettings();
 
 	ReleaseConstantBuffer();
 
@@ -193,10 +199,13 @@ void URenderer::Update(UEditor* Editor)
 		NumViewports = 1;
 	}
 
+	// Check and save camera settings if needed (auto-save after delay)
+	CheckAndSaveCameraSettings();
+
 	for (uint32 i = 0; i < NumViewports; ++i)
 	{
 		GetDeviceContext()->RSSetViewports(1, &LocalViewports[i]);
-		// 뷰포트 대응 스키서(Rect) 지정
+		// 뷰포트 대응 스킬서(Rect) 지정
 		{
 			// Robust scissor: clamp to swapchain bounds and ensure positive area
 			DXGI_SWAP_CHAIN_DESC scd = {};
@@ -768,6 +777,7 @@ void URenderer::UpdateSplitDrag()
 	if (wasDragging && !LDown)
 	{
 		SaveViewportLayout();
+		SaveMultiViewCameraSettings();
 	}
 
 	// update prev
@@ -803,6 +813,58 @@ void URenderer::SaveViewportLayout() const
 	WriteType("BottomLeft", ViewTypes[1]);
 	WriteType("TopRight", ViewTypes[2]);
 	WriteType("BottomRight", ViewTypes[3]);
+}
+
+void URenderer::LoadMultiViewCameraSettings()
+{
+	// 뷰포트 타입에 따른 이름 매핑
+	const char* ViewportNames[4] = { "Perspective", "Right", "Top", "Front" };
+
+	// 각 뷰포트의 카메라 설정 로드
+	for (int i = 0; i < 4; ++i)
+	{
+		if (ViewCameras[i])
+		{
+			UCamera::LoadMultiViewCameraState(ViewCameras[i], ViewportNames[i]);
+		}
+	}
+}
+
+void URenderer::SaveMultiViewCameraSettings() const
+{
+	// 뷰포트 타입에 따른 이름 매핑
+	const char* ViewportNames[4] = { "Perspective", "Right", "Top", "Front" };
+
+	// 각 뷰포트의 카메라 설정 저장
+	for (int i = 0; i < 4; ++i)
+	{
+		if (ViewCameras[i])
+		{
+			UCamera::SaveMultiViewCameraState(ViewCameras[i], ViewportNames[i]);
+		}
+	}
+}
+
+void URenderer::CheckAndSaveCameraSettings()
+{
+	if (bCameraSaveRequested)
+	{
+		// DT 대신 타이머 매니저에서 델타 타임을 가져옴니다
+		CameraSaveTimer += DT; // DT는 글로벌 매크로로 정의된 것으로 가정
+		
+		if (CameraSaveTimer >= CAMERA_SAVE_DELAY)
+		{
+			// 설정 저장 실행
+			SaveMultiViewCameraSettings();
+			
+			// 타이머 및 플래그 초기화
+			bCameraSaveRequested = false;
+			CameraSaveTimer = 0.0f;
+			
+			// 디버그 로그 (선택사항)
+			// UE_LOG("MultiView camera settings auto-saved");
+		}
+	}
 }
 
 /**

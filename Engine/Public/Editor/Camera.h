@@ -95,6 +95,19 @@ public:
 	void LoadCameraSettings();
 
 	/* *
+	 * @brief MultiView Camera Settings Save/Load
+	 * @param ViewportType 뷰포트 타입 ("Perspective", "Top", "Right", "Front")
+	 */
+	void SaveMultiViewCameraSettings(const char* ViewportType) const;
+	void LoadMultiViewCameraSettings(const char* ViewportType);
+
+	/* *
+	 * @brief 현재 카메라 상태를 특정 뷰포트 타입으로 저장/복원
+	 */
+	static void SaveMultiViewCameraState(const UCamera* Camera, const char* ViewportType);
+	static void LoadMultiViewCameraState(UCamera* Camera, const char* ViewportType);
+
+	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
 	 */
 	inline FVector4 MultiplyPointWithMatrix(const FVector4& Point, const FMatrix& Matrix) const
