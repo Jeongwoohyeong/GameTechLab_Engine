@@ -148,7 +148,7 @@ namespace
 void URenderer::Update(UEditor* Editor)
 {
 	RenderBegin();
-
+	
 	// 레이아웃 강제 보정: Single이면 트리 제거, Quad이면 필요 시 트리 생성
 	if (CurrentLayout == EViewportLayout::Single)
 	{
@@ -158,6 +158,11 @@ void URenderer::Update(UEditor* Editor)
 	{
 		// ratio-based layout; tree not required
 		UpdateSplitDrag();
+	}
+	ViewCameras[1]->SetOrthoWorldWidth(OrthoWidthConst *(VerticalRatio * 2 ));
+	for (int Index = 2; Index < 4;Index++)
+	{
+		ViewCameras[Index]->SetOrthoWorldWidth(OrthoWidthConst * (2 - VerticalRatio * 2));
 	}
 
 	D3D11_VIEWPORT LocalViewports[4] = {};
@@ -407,7 +412,7 @@ void URenderer::RenderLevel()
 
 void URenderer::RenderText(const FVector& CameraLocation)
 {
-	if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
+	//if (IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText) == false) { return; }
 
 	//shader, rasterizaer state, depth stencil state, input layout 설정///////////////////
 	FPipelineDescKey PipelineDescKey;
@@ -671,13 +676,13 @@ void URenderer::UpdateSplitDrag()
 	bool LPressed = Input.IsKeyPressed(EKeyInput::MouseLeft);
 	bool LDown    = Input.IsKeyDown(EKeyInput::MouseLeft);
 	bool LRel     = Input.IsKeyReleased(EKeyInput::MouseLeft);
+	static FPoint PrevMP{ 0,0 };
 	static bool PrevDownSplit = false; // local edge-detect state
 	bool JustPressed = LDown && !PrevDownSplit; // edge detect independent of InputManager::Update order
 
 	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
 	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
 	float half = SplitHotThickness * 0.5f;
-
 	if (!bDragVertical && !bDragHorizontal)
 	{
 		if (LPressed || JustPressed)
@@ -694,6 +699,7 @@ void URenderer::UpdateSplitDrag()
 	{
 		if (LDown)
 		{
+			
 			// While dragging, keep the selected axis captured and update continuously
 			if (bDragVertical)
 			{
@@ -710,6 +716,8 @@ void URenderer::UpdateSplitDrag()
 			bDragHorizontal = false;
 		}
 	}
+
+	PrevMP = MP;
 	// update prev
 	PrevDownSplit = LDown;
 }

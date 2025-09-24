@@ -176,6 +176,7 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 	void UpdateInstance(const TArray<FTextInstance>* Instance);
 
 	void SetViewMode(EViewModeIndex InViewMode) { CurrentViewMode = InViewMode; }
+	void SetOrthoWorldWidthConst(float InWidth) { OrthoWidthConst = InWidth; }
 	EViewModeIndex GetViewMode(EViewModeIndex InViewMode) const { return CurrentViewMode; }
 
 	/** Show Flags management */
@@ -192,6 +193,7 @@ inline void SetViewportLayout(EViewportLayout InLayout)
 
 	/** LineBatchRenderer에서 사용할 공개 메서드 */
 	UPipeline* GetPipeline() const { return Pipeline; }
+	float GetOrthoWorldWidthConst(){ return OrthoWidthConst; }
 
 private:
 	void UpdateSplitterDragging();
@@ -211,6 +213,7 @@ private:
 	EViewportLayout CurrentLayout = EViewportLayout::Single; // default: single view on start
 
 	// Two split ratios and drag flags
+	float OrthoWidthConst = 30.0f;
 	float VerticalRatio = 0.5f;   // 0..1, X split
 	float HorizontalRatio = 0.5f; // 0..1, Y split
 	bool  bDragVertical = false;

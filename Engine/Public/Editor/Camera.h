@@ -144,5 +144,5 @@ private:
 
 	// Whether this camera consumes input (movement/rotation). Only used by editor main camera.
 	bool bInputEnabled = true;
-	bool bIsMainDrraging = true;
+	bool bIsMainDrraging = false;
 };

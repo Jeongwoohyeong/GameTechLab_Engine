@@ -246,7 +246,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 						PickCam1->SetRotation(FVector(90.0f, 0.0f, 0.0f));
 
 					}
-					else if (Index == 1)
+					else if (Index == 1)	//Right
 					{
 						PickCam1->SetCameraType(ECameraType::ECT_Orthographic);
 						PickCam1->SetNearZ(0.1f); PickCam1->SetFarZ(1000.f);
@@ -269,16 +269,16 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 				const UInputManager& InputForView = UInputManager::GetInstance();
 				bool rmbView = InputForView.IsKeyDown(EKeyInput::MouseRight);
 				// Zoom (wheel always active)
-				float wheel = UInputManager::GetInstance().GetMouseWheelDelta();
+				float wheel = InputForView.GetMouseWheelDelta();
 				if (wheel != 0.0f)
 				{
-					float width = PickCam->GetOrthoWorldWidth();
+					float width = Renderer.GetOrthoWorldWidthConst();
 
 					float scale = (wheel > 0.0f) ? 0.9f : 1.1f;
 					for (int i = 0; i < (int)std::abs(wheel); ++i) width *= scale;
 					width = std::max(1.0f, std::min(5000.0f, width));
-					for (int Index = 0; Index < 4;Index++)
-						Renderer.GetViewCameraAt(Index)->SetOrthoWorldWidth(width);
+					//for (int Index = 0; Index < 4;Index++)
+						Renderer.SetOrthoWorldWidthConst(width);
 					CameraDistance *= scale;
 				}
 				// Pan (only when RMB is held over this viewport)

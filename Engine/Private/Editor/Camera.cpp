@@ -25,8 +25,9 @@ void UCamera::Update()
 
 	/**
 	 * @brief 마우스 우클릭을 하고 있는 동안 카메라 제어가 가능합니다.
+	 * 마우스 우클릭하고 있고, 다른 viewport를 조작하지 않고 있고, Gui도 입력받지 않고 있어야 움직임, GUI입력을 무시할 것인지는 선택.
 	 */
-	if (bInputEnabled && Input.IsKeyDown(EKeyInput::MouseRight))
+	if (bInputEnabled && Input.IsKeyDown(EKeyInput::MouseRight) && !ImGui::GetIO().WantCaptureMouse)
 	{
 		
 		/**
