@@ -611,15 +611,59 @@ void URenderer::ReleaseVertexBuffer(ID3D11Buffer* InVertexBuffer)
 
 void URenderer::LoadViewportLayout()
 {
-	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
-	char Buffer[32] = {};
-	auto ReadType = [&](const char* Key, EViewportType DefaultType) {
-		GetPrivateProfileStringA("Viewport", Key, "", Buffer, sizeof(Buffer), ConfigFilePath.string().c_str());
-		std::string S = Buffer;
+	const path PrimaryIni   = UPathManager::GetInstance().GetRootPath()   / "Editor.ini";     // 실행 파일 폴더
+	const path SecondaryIni = UPathManager::GetInstance().GetConfigPath() / "editor.ini";     // 과거 호환(Asset/Config)
+
+	// One-time migration: if only the legacy file exists, move it to the new canonical path and remove legacy
+	auto FileExists = [](const path& P) -> bool
+	{
+		DWORD attrs = GetFileAttributesW(P.wstring().c_str());
+		return (attrs != INVALID_FILE_ATTRIBUTES) && !(attrs & FILE_ATTRIBUTE_DIRECTORY);
+	};
+	if (!FileExists(PrimaryIni) && FileExists(SecondaryIni))
+	{
+		CopyFileW(SecondaryIni.wstring().c_str(), PrimaryIni.wstring().c_str(), FALSE);
+		DeleteFileW(SecondaryIni.wstring().c_str());
+	}
+
+	char Buffer[64] = {};
+	auto ReadKey = [&](const char* Key, char* OutBuf, DWORD OutSize) -> bool
+	{
+		OutBuf[0] = '\0';
+		GetPrivateProfileStringA("Viewport", Key, "", OutBuf, OutSize, PrimaryIni.string().c_str());
+		return OutBuf[0] != '\0';
+	};
+	// Layout mode (Single/Quad)
+	if (ReadKey("Layout", Buffer, sizeof(Buffer)))
+	{
+		std::string L = Buffer;
+		if (L == "Quad")      SetViewportLayout(EViewportLayout::Quad);
+		else if (L == "Single") SetViewportLayout(EViewportLayout::Single);
+	}
+	// Split ratios
+	if (ReadKey("VerticalRatio", Buffer, sizeof(Buffer)))
+	{
+		float R = static_cast<float>(atof(Buffer));
+		SetVerticalRatio(std::clamp(R, 0.1f, 0.9f));
+	}
+	if (ReadKey("HorizontalRatio", Buffer, sizeof(Buffer)))
+	{
+		float R = static_cast<float>(atof(Buffer));
+		SetHorizontalRatio(std::clamp(R, 0.1f, 0.9f));
+	}
+	// Viewport type mapping
+	char TypeBuf[32] = {};
+	auto ReadType = [&](const char* Key, EViewportType DefaultType)
+	{
+		if (!ReadKey(Key, TypeBuf, sizeof(TypeBuf)))
+		{
+			return DefaultType;
+		}
+		std::string S = TypeBuf;
 		if (S == "Perspective") return EViewportType::Perspective;
-		if (S == "Top") return EViewportType::Top;
-		if (S == "Right") return EViewportType::Right;
-		if (S == "Front") return EViewportType::Front;
+		if (S == "Top")         return EViewportType::Top;
+		if (S == "Right")       return EViewportType::Right;
+		if (S == "Front")       return EViewportType::Front;
 		return DefaultType;
 	};
 	// Rect 수집 순서: 0=TopLeft, 1=BottomLeft, 2=TopRight, 3=BottomRight
@@ -685,6 +729,7 @@ void URenderer::UpdateSplitDrag()
 	float splitX = std::clamp(VerticalRatio, 0.1f, 0.9f) * W;
 	float splitY = std::clamp(HorizontalRatio, 0.1f, 0.9f) * H;
 	float half = SplitHotThickness * 0.5f;
+	bool wasDragging = (bDragVertical || bDragHorizontal);
 	if (!bDragVertical && !bDragHorizontal)
 	{
 		if (LPressed || JustPressed)
@@ -719,13 +764,29 @@ void URenderer::UpdateSplitDrag()
 		}
 	}
 
+	// If a drag just ended, persist the new ratios
+	if (wasDragging && !LDown)
+	{
+		SaveViewportLayout();
+	}
+
 	// update prev
 	PrevDownSplit = LDown;
 }
 
 void URenderer::SaveViewportLayout() const
 {
-	const path ConfigFilePath = UPathManager::GetInstance().GetConfigPath() / "editor.ini";
+	// 실행 파일 폴더의 Editor.ini에 저장
+	const path ConfigFilePath = UPathManager::GetInstance().GetRootPath() / "Editor.ini";
+	// Layout mode
+	WritePrivateProfileStringA("Viewport", "Layout", (GetViewportLayout() == EViewportLayout::Quad) ? "Quad" : "Single", ConfigFilePath.string().c_str());
+	// Split ratios
+	char Buf[64];
+	snprintf(Buf, sizeof(Buf), "%.6f", std::clamp(VerticalRatio, 0.1f, 0.9f));
+	WritePrivateProfileStringA("Viewport", "VerticalRatio", Buf, ConfigFilePath.string().c_str());
+	snprintf(Buf, sizeof(Buf), "%.6f", std::clamp(HorizontalRatio, 0.1f, 0.9f));
+	WritePrivateProfileStringA("Viewport", "HorizontalRatio", Buf, ConfigFilePath.string().c_str());
+	// View types
 	auto WriteType = [&](const char* Key, EViewportType T)
 	{
 		const char* V = "Perspective";
