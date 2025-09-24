@@ -159,6 +159,7 @@ bool ULevelManager::LoadLevel(const FString& InLevelName, const FString& InFileP
 }
 void ULevelManager::ClearAllLevels()
 {
+	FNameTable::GetInstance().Reset();      // 이름/넘버링 초기화
 	// 1) 현재 레벨 포함 모든 레벨 파괴
 	if (CurrentLevel)
 	{
@@ -168,7 +169,7 @@ void ULevelManager::ClearAllLevels()
 		CurrentLevel = nullptr;
 	}
 	// 2) 넘버링 리셋
-	FNameTable::GetInstance().Reset();      // 이름/넘버링 초기화
+	
 	UEngineStatics::ResetUUID();            // NextUUID = 0 등
 }
 void ULevelManager::Release()

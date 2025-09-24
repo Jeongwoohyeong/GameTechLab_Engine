@@ -67,6 +67,17 @@ void UEditor::Update()
 	}
 
 	Camera.Update();
+	for(int i = 0; i < 4; ++i)
+	{
+		UCamera* Cam = Renderer.GetViewCameraAt(i);
+		if (i == 0)
+		{
+			Camera.GetCameraType() == ECameraType::ECT_Perspective ? Cam->SetCameraType(ECameraType::ECT_Perspective) : Cam->SetCameraType(ECameraType::ECT_Orthographic);
+		}
+		Cam->SetNearZ(Camera.GetNearZ());
+		Cam->SetFarZ(Camera.GetFarZ());
+	}
+
 	Renderer.UpdateConstant(Camera.GetFViewProjConstants());
 }
 
@@ -215,7 +226,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 			PickCam = Renderer.GetViewCameraAt(HoverIndex);
 			if (!PickCam || Camera.IsDragging())
 			{
-				PickCam = &Camera;
+				PickCam = Renderer.GetViewCameraAt(0);
 			}
 			// 멀티뷰에서는 선택된 뷰포트 타입에 맞춰 카메라 파라미터를 맞춘 뒤 종횡비 반영
 			URenderer::EViewportType VType = URenderer::EViewportType::Perspective;
@@ -244,7 +255,6 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 						PickCam1->SetNearZ(0.1f); PickCam1->SetFarZ(1000.f);
 						PickCam1->SetLocation(Pos + FVector(0, 0, CameraDistance));
 						PickCam1->SetRotation(FVector(90.0f, 0.0f, 0.0f));
-
 					}
 					else if (Index == 1)	//Right
 					{
