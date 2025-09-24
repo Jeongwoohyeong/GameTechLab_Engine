@@ -214,14 +214,13 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	// Hovered viewport info (valid only in quad)
 	FRect HoverRect{0,0,0,0};
 	int HoverIndex = -1;
-	UCamera* PickCam = nullptr;
+	UCamera* PickCam = &Camera;
 	FRay WorldRay = {};
 	if (!ImGui::GetIO().WantCaptureMouse)
 	{
 		if (!bIsQuad)
 		{
 			FVector MousePositionNdc = InputManager.GetMouseNDCPosition();
-			PickCam = &Camera;
 			// 싱글뷰는 기존대로 전체 화면 NDC를 사용하지만, 멀티뷰 대비 안전을 위해 종횡비와 행렬 업데이트
 			if (URenderer::GetInstance().GetViewportLayout() == URenderer::EViewportLayout::Quad)
 			{
@@ -397,7 +396,7 @@ void UEditor::ProcessMouseInput(ULevel* InLevel)
 	{
 		FVector CollisionPoint;
 		/** 기즈모가 출력되고있음. 레이캐스팅을 계속 해야함. */
-		if (InLevel->GetSelectedActor())
+		if (InLevel->GetSelectedActor() && !ImGui::GetIO().WantCaptureMouse)
 		{
 			ObjectPicker.PickGizmo(WorldRay, Gizmo, CollisionPoint);
 		}
