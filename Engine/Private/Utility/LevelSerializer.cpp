@@ -88,7 +88,7 @@ FVector FLevelSerializer::JsonToVector(const JSON& InJsonData)
 {
 	if (InJsonData.JSONType() != JSON::Class::Array || InJsonData.size() != 3)
 	{
-		return {0.0f, 0.0f, 0.0f};
+		return { static_cast<float>(InJsonData.at(0).ToFloat()), 0.0f, 0.0f };
 	}
 
 	try
@@ -306,9 +306,9 @@ FCameraMetadata FLevelSerializer::JsonToCamera(const JSON& InJson)
 			if (InJson.hasKey("Location")) Cam.Location = JsonToVector(InJson.at("Location"));
 			if (InJson.hasKey("Rotation")) Cam.Rotation = JsonToVector(InJson.at("Rotation"));
 
-			if (InJson.hasKey("FOV"))      Cam.Fov = static_cast<float>(InJson.at("FOV").ToFloat());
-			if (InJson.hasKey("NearClip")) Cam.NearZ = static_cast<float>(InJson.at("NearClip").ToFloat());
-			if (InJson.hasKey("FarClip"))  Cam.FarZ = static_cast<float>(InJson.at("FarClip").ToFloat());
+			if (InJson.hasKey("FOV"))      Cam.Fov = JsonToVector(InJson.at("FOV")).X;
+			if (InJson.hasKey("NearClip")) Cam.NearZ = JsonToVector(InJson.at("NearClip")).X;
+			if (InJson.hasKey("FarClip"))  Cam.FarZ = JsonToVector(InJson.at("FarClip")).X;
 		}
 	}
 	catch (const exception&)
