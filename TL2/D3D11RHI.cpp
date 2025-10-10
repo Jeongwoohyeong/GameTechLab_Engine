@@ -65,6 +65,13 @@ struct ColorBufferType
     FVector4 Color;
 };
 
+// b4: Decal
+struct DecalBufferType
+{
+    FMatrix WorldMVP;
+    FMatrix DecalMVP;
+};
+
 // b5: Viewport 정보 (데칼용 Screen-Space UV 계산)
 struct ViewportBufferType
 {
@@ -121,7 +128,7 @@ void D3D11RHI::Release()
     if (BillboardCB) { BillboardCB->Release(); BillboardCB = nullptr; }
     if (PixelConstCB) { PixelConstCB->Release(); PixelConstCB = nullptr; }
     if (UVScrollCB) { UVScrollCB->Release(); UVScrollCB = nullptr; }
-    if (InvWorldCB) { InvWorldCB->Release(); InvWorldCB = nullptr; }
+    if (DecalCB) { DecalCB->Release(); DecalCB = nullptr; }
     if (ViewportCB) { ViewportCB->Release(); ViewportCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
 
@@ -326,6 +333,20 @@ void D3D11RHI::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix&
     DeviceContext->VSSetConstantBuffers(0, 1, &BillboardCB); // b0 슬롯
 }
 
+void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(DecalCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    auto* dataPtr = reinterpret_cast<DecalBufferType*>(mapped.pData);
+
+    // HLSL 기본 row-major와 맞추기 위해 전치
+    dataPtr->WorldMVP = InWorldMVP;
+    dataPtr->DecalMVP = InDecalMVP;
+
+    DeviceContext->Unmap(DecalCB, 0);
+    DeviceContext->VSSetConstantBuffers(6, 1, &DecalCB); // b6 슬롯
+}
+
 void D3D11RHI::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
@@ -435,7 +456,7 @@ void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
 void D3D11RHI::Present()
 {
     // Draw any Direct2D overlays before present
-    UStatsOverlayD2D::Get().Draw();
+    // UStatsOverlayD2D::Get().Draw();
     SwapChain->Present(1, 0); // vsync on
 }
 
@@ -628,13 +649,13 @@ void D3D11RHI::CreateConstantBuffer()
         DeviceContext->PSSetConstantBuffers(5, 1, &UVScrollCB);
     }
 
-    // b4 : InvWorldBuffer (데칼용 - InvWorld + InvViewProj)
-    D3D11_BUFFER_DESC invWorldDesc = {};
-    invWorldDesc.Usage = D3D11_USAGE_DYNAMIC;
-    invWorldDesc.ByteWidth = sizeof(FMatrix) * 2; // InvWorldMatrix + InvViewProjMatrix
-    invWorldDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    invWorldDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    Device->CreateBuffer(&invWorldDesc, nullptr, &InvWorldCB);
+    // b6 : InvWorldBuffer (데칼용 - InvWorld + InvViewProj)
+    D3D11_BUFFER_DESC DecalDesc = {};
+    DecalDesc.Usage = D3D11_USAGE_DYNAMIC;
+    DecalDesc.ByteWidth = sizeof(FMatrix) * 2; // InvWorldMatrix + InvViewProjMatrix
+    DecalDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    DecalDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&DecalDesc, nullptr, &DecalCB);
 
     // b5 : ViewportBuffer (데칼용 - Viewport 정보)
     D3D11_BUFFER_DESC viewportDesc = {};
@@ -662,7 +683,7 @@ void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeS
 
 void D3D11RHI::UpdateInvWorldConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewProjMatrix)
 {
-    if (!InvWorldCB) return;
+    if (!DecalCB) return;
 
     struct InvWorldBufferType
     {
@@ -675,11 +696,11 @@ void D3D11RHI::UpdateInvWorldConstantBuffer(const FMatrix& InvWorldMatrix, const
     data.InvViewProj = InvViewProjMatrix;
 
     D3D11_MAPPED_SUBRESOURCE mapped;
-    if (SUCCEEDED(DeviceContext->Map(InvWorldCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    if (SUCCEEDED(DeviceContext->Map(DecalCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
     {
         memcpy(mapped.pData, &data, sizeof(InvWorldBufferType));
-        DeviceContext->Unmap(InvWorldCB, 0);
-        DeviceContext->PSSetConstantBuffers(4, 1, &InvWorldCB);
+        DeviceContext->Unmap(DecalCB, 0);
+        DeviceContext->PSSetConstantBuffers(4, 1, &DecalCB);
     }
 }
 

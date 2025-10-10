@@ -1,5 +1,5 @@
 // C++에서 상수 버퍼를 통해 전달될 데이터
-cbuffer CameraInfo : register(b0)
+cbuffer DecalInfo : register(b6)
 {
     row_major matrix worldMVP;
     row_major matrix decalMVP;
@@ -8,12 +8,9 @@ cbuffer CameraInfo : register(b0)
 struct VS_INPUT
 {
     float3 position : POSITION; // Input position from vertex buffer
-    float4 decalNDC : TEXCOORD0;
-
-    // 추후 decal이 추가 정보를 입력받을 경우를 대비한 주석
-    // float3 normal : NORMAL0;
-    // float4 color : COLOR; // Input color from vertex buffer
-    // float2 texCoord : TEXCOORD1;
+    float3 normal : NORMAL0;
+    float4 color : COLOR; // Input color from vertex buffer
+    float2 texCoord : TEXCOORD0;
 };
 
 struct PS_INPUT
@@ -43,7 +40,7 @@ PS_INPUT mainVS(VS_INPUT input)
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
     // Lerp the incoming color with the global LerpColor
-    float4 finalColor = input.color;
+    float4 finalColor;
     
     if (
         input.decalNDC.x <= -1.0f ||
@@ -62,7 +59,8 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     uv.y = 1.0f - input.decalNDC.y * 0.5f + 0.5f;
     finalColor.rgb = g_DecalTexture.Sample(g_Sample, uv);
     
+    // return finalColor;
     
-    return finalColor;
+    // test code
+    return float4(1.0f, 0.0f, 0.0f, 1.0f);
 }
-

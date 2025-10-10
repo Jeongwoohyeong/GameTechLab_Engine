@@ -17,7 +17,8 @@
 #include "Frustum.h"
 #include "Octree.h"
 #include "BVH.h"
-#include"UEContainer.h"
+#include "UEContainer.h"
+#include "DecalComponent.h"
 
 
 extern float CLIENTWIDTH;
@@ -271,88 +272,120 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     Renderer->BeginLineBatch();
     Renderer->SetViewModeType(ViewModeIndex);
 
-        int AllActorCount = 0;
-        int FrustumCullCount = 0;
+    int AllActorCount = 0;
+    int FrustumCullCount = 0;
 
-        const TArray<AActor*>& LevelActors = Level ? Level->GetActors() : TArray<AActor*>();
+    const TArray<AActor*>& LevelActors = Level ? Level->GetActors() : TArray<AActor*>();
 
-        // Pass 1: 데칼을 제외한 모든 오브젝트 렌더링 (Depth 버퍼 채우기)
-        for (AActor* Actor : LevelActors)
+    // Pass 2를 위해 Decal을 미리 저장하기 위한 컨테이너
+    TArray<UDecalComponent*> DecalVolumes;
+    // Pass 2를 위해 StaticMesh를 미리 저장하기 위한 컨테이너
+    TArray<UStaticMeshComponent*> StaticMeshes;
+
+    // Pass 1: 데칼을 제외한 모든 오브젝트 렌더링 (Depth 버퍼 채우기)
+    for (AActor* Actor : LevelActors)
+    {
+        // 일반 액터들 렌더링
+        if (!Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
         {
-            // 일반 액터들 렌더링
-            if (!Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
-            {
-                continue;
-            }
-            if (!Actor)
-            {
-                continue;
-            }
-            if (Actor->GetActorHiddenInGame())
-            {
-                continue;
-            }
-            if (Cast<AStaticMeshActor>(Actor) &&
-                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes))
-            {
-                continue;
-            }
-            AllActorCount++;
-            for (UActorComponent* Component : Actor->GetComponents())
-            {
-                if (!Component)
-                {
-                    continue;
-                }
-
-                if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
-                {
-                    if (!ActorComp->IsActive())
-                    {
-                        continue;
-                    }
-                }
-
-                if (Cast<UTextRenderComponent>(Component) &&
-                    !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText))
-                {
-                    continue;
-                }
-
-                if (Cast<UAABoundingBoxComponent>(Component) &&
-                    !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes))
-                {
-                    continue;
-                }
-
-                if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
-                {
-                    bool bIsSelected = SelectionManager.IsActorSelected(Actor);
-
-                    //// 선택된 액터는 항상 앞에 보이도록 depth test를 Always로 설정
-                    //if (bIsSelected)//나중에 추가구현
-                    //{
-                    //    Renderer->OMSetDepthStencilState(EComparisonFunc::Always);
-                    //}
-
-                    Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
-                    Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);
-
-                    //// depth test 원래대로 복원
-                    //if (bIsSelected)
-                    //{
-                    //    Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
-                    //}
-                }
-            }
-            Renderer->OMSetBlendState(false);
+            continue;
         }
+        if (!Actor)
+        {
+            continue;
+        }
+        if (Actor->GetActorHiddenInGame())
+        {
+            continue;
+        }
+        if (Cast<AStaticMeshActor>(Actor) &&
+            !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes))
+        {
+            continue;
+        }
+        AllActorCount++;
+        for (UActorComponent* Component : Actor->GetComponents())
+        {
+            if (!Component)
+            {
+                continue;
+            }
+
+            if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
+            {
+                if (!ActorComp->IsActive())
+                {
+                    continue;
+                }
+            }
+
+            if (Cast<UTextRenderComponent>(Component) &&
+                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText))
+            {
+                continue;
+            }
+
+            if (Cast<UAABoundingBoxComponent>(Component) &&
+                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes))
+            {
+                continue;
+            }
+
+            // TODO : Decal Show Flag 구현
+            UDecalComponent* DecalComponent = Cast<UDecalComponent>(Component);
+            if (DecalComponent/* &&
+                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal)*/)
+            {
+                DecalVolumes.Push(DecalComponent);
+            }
+
+            UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
+            if (StaticMeshComponent/* &&
+                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal)*/)
+            {
+                StaticMeshes.Push(StaticMeshComponent);
+            }
+
+            if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
+            {
+                bool bIsSelected = SelectionManager.IsActorSelected(Actor);
+
+                //// 선택된 액터는 항상 앞에 보이도록 depth test를 Always로 설정
+                //if (bIsSelected)//나중에 추가구현
+                //{
+                //    Renderer->OMSetDepthStencilState(EComparisonFunc::Always);
+                //}
+
+                Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
+                Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);
+
+                //// depth test 원래대로 복원
+                //if (bIsSelected)
+                //{
+                //    Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
+                //}
+            }
+        }
+        Renderer->OMSetBlendState(false);
+    }
 
     // 엔진 액터들 (그리드 등) 렌더링
     RenderEngineActors(ViewMatrix, ProjectionMatrix, Viewport);
 
     // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
-    for (AActor* Actor : LevelActors)
+    for (UDecalComponent* DecalVolume : DecalVolumes)
+    {
+        for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+        {
+            DecalVolume->ProjectDecal(
+                Renderer,
+                StaticMesh,
+                ViewMatrix,
+                ProjectionMatrix
+            );
+        }
+    }
+    /*for (AActor* Actor : LevelActors)
     {
         if (!Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
         {
@@ -382,7 +415,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 }
             }
         }
-    }
+    }*/
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }

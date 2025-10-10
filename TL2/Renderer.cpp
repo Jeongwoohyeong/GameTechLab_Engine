@@ -112,11 +112,6 @@ void URenderer::UpdateBillboardConstantBuffers(const FVector& pos,const FMatrix&
     RHIDevice->UpdateBillboardConstantBuffers(pos,ViewMatrix, ProjMatrix, CameraRight, CameraUp);
 }
 
-//void URenderer::UpdateTextConstantBuffers(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix)
-//{
-//    RHIDevice->UpdateTextConstantBuffers(ModelMatrix, ViewMatrix, ProjMatrix);
-//}
-
 void URenderer::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
 {
     RHIDevice->UpdatePixelConstantBuffers(InMaterialInfo, bHasMaterial, bHasTexture);
@@ -140,6 +135,39 @@ void URenderer::UpdateViewportBuffer(float StartX, float StartY, float SizeX, fl
 void URenderer::UpdateUVScroll(const FVector2D& Speed, float TimeSec)
 {
     RHIDevice->UpdateUVScrollConstantBuffers(Speed, TimeSec);
+}
+
+void URenderer::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP)
+{
+    RHIDevice->UpdateDecalConstantBuffer(InWorldMVP, InDecalMVP);
+}
+
+void URenderer::ProjectDecalToStaticMesh(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
+{
+    UINT stride = 0;
+    stride = sizeof(FVertexDynamic);
+
+    UINT offset = 0;
+
+    ID3D11Buffer* VertexBuffer = InMesh->GetVertexBuffer();
+    ID3D11Buffer* IndexBuffer = InMesh->GetIndexBuffer();
+    uint32 VertexCount = InMesh->GetVertexCount();
+    uint32 IndexCount = InMesh->GetIndexCount();
+
+    RHIDevice->GetDeviceContext()->IASetVertexBuffers(
+        0, 1, &VertexBuffer, &stride, &offset
+    );
+
+    RHIDevice->GetDeviceContext()->IASetIndexBuffer(
+        IndexBuffer, DXGI_FORMAT_R32_UINT, 0
+    );
+
+    // TODO : 텍스처를 데칼에 할당해야 함
+
+    RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
+    RHIDevice->PSSetDefaultSampler(0);
+
+    RHIDevice->GetDeviceContext()->DrawIndexed(IndexCount, 0, 0);
 }
 
 void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology, const TArray<FMaterialSlot>& InComponentMaterialSlots)

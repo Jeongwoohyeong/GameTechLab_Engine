@@ -2,6 +2,7 @@
 
 #include "PrimitiveComponent.h"
 #include "OBoundingBoxComponent.h"
+#include "StaticMeshComponent.h"
 
 class UDecalComponent : public UPrimitiveComponent
 {
@@ -10,6 +11,14 @@ public:
     UDecalComponent();
 
     virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
+
+    void ProjectDecal
+    (
+        URenderer* Renderer,
+        UStaticMeshComponent* StaticMeshComponent,
+        const FMatrix& View,
+        const FMatrix& Proj
+    );
 
 protected:
     ~UDecalComponent() override;
@@ -29,5 +38,13 @@ private:
         {0.5f, -0.5f, -0.5f},
         {-0.5f, 0.5f, -0.5f},
         {-0.5f, -0.5f, 0.5f}
+    };
+
+    inline static const FMatrix DecalProjection =
+    {
+        2.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 2.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.5f, 1.0f
     };
 };
