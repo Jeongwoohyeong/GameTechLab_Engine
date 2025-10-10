@@ -312,6 +312,11 @@ struct FVector4
             (W > B.W) ? W : B.W
         );
     }
+
+    FVector ToVec3()
+    {
+        return FVector(X, Y, Z);
+    }
 };
 
 // ─────────────────────────────

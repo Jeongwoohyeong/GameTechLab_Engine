@@ -48,6 +48,8 @@
 #include"EditorEngine.h"
 #include"GameEngine.h"
 #include"Level.h"
+#include "OBoundingBoxComponent.h"
+#include "DecalComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -59,6 +61,8 @@ IMPLEMENT_CLASS(UCameraComponent)
 IMPLEMENT_CLASS(UStaticMeshComponent)
 IMPLEMENT_CLASS(UAABoundingBoxComponent)
 IMPLEMENT_CLASS(UShapeComponent)
+IMPLEMENT_CLASS(UOBoundingBoxComponent)
+IMPLEMENT_CLASS(UDecalComponent)
 
 IMPLEMENT_CLASS(AActor)
 IMPLEMENT_CLASS(ACameraActor)

@@ -1,0 +1,68 @@
+// C++에서 상수 버퍼를 통해 전달될 데이터
+cbuffer CameraInfo : register(b0)
+{
+    row_major matrix worldMVP;
+    row_major matrix decalMVP;
+}
+
+struct VS_INPUT
+{
+    float3 position : POSITION; // Input position from vertex buffer
+    float4 decalNDC : TEXCOORD0;
+
+    // 추후 decal이 추가 정보를 입력받을 경우를 대비한 주석
+    // float3 normal : NORMAL0;
+    // float4 color : COLOR; // Input color from vertex buffer
+    // float2 texCoord : TEXCOORD1;
+};
+
+struct PS_INPUT
+{
+    float4 position : SV_POSITION; // Transformed position to pass to the pixel shader
+    float4 decalNDC : TEXCOORD0;
+    
+    // 추후 decal이 추가 정보를 입력받을 경우를 대비한 주석
+    // float3 normal : NORMAL0;
+    // float4 color : COLOR; // Color to pass to the pixel shader
+    // float2 texCoord : TEXCOORD1;
+};
+
+Texture2D g_DecalTexture : register(t0);
+SamplerState g_Sample : register(s0);
+
+PS_INPUT mainVS(VS_INPUT input)
+{
+    PS_INPUT output;;
+    
+    output.position = mul(float4(input.position, 1.0f), worldMVP);
+    output.decalNDC = mul(float4(input.position, 1.0f), decalMVP);
+    
+    return output;
+}
+
+float4 mainPS(PS_INPUT input) : SV_TARGET
+{
+    // Lerp the incoming color with the global LerpColor
+    float4 finalColor = input.color;
+    
+    if (
+        input.decalNDC.x <= -1.0f ||
+        input.decalNDC.x >= 1.0f ||
+        input.decalNDC.y <= -1.0f ||
+        input.decalNDC.y >= 1.0f ||
+        input.decalNDC.z <= -1.0f ||
+        input.decalNDC.z >= 1.0f
+        )
+    {
+        discard;
+    }
+    
+    float2 uv;
+    uv.x = input.decalNDC.x * 0.5f + 0.5f;
+    uv.y = 1.0f - input.decalNDC.y * 0.5f + 0.5f;
+    finalColor.rgb = g_DecalTexture.Sample(g_Sample, uv);
+    
+    
+    return finalColor;
+}
+

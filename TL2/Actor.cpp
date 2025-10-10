@@ -228,6 +228,10 @@ USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentCompone
             NewComponent->SetOwner(this);
         }
     }
+    else
+    {
+        UE_LOG("Warning: 부착이 실패했습니다. Component가 factory에 등록되지 않았을 수 있습니다.");
+    }
 
     return NewComponent;
 }

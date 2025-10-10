@@ -6,7 +6,6 @@
 #include "World.h"
 #include "Vector.h"
 #include "GizmoActor.h"
-#include <string>
 
 #include "BillboardComponent.h"
 #include "StaticMeshActor.h"    
@@ -14,6 +13,9 @@
 #include "ResourceManager.h"    
 #include "SceneComponent.h"    
 #include "TextRenderComponent.h"    
+#include "DecalComponent.h"
+
+#include <string>
 #include <filesystem>
 #include <vector>
 
@@ -184,7 +186,8 @@ void UTargetActorTransformWidget::RenderWidget()
 			{ "StaticMesh Component", UStaticMeshComponent::StaticClass() },
 			{ "Text Component", UTextRenderComponent::StaticClass() },
 			{ "Scene Component", USceneComponent::StaticClass() },
-			{ "Billboard Component", UBillboardComponent::StaticClass() }
+			{ "Billboard Component", UBillboardComponent::StaticClass() },
+			{ "Decal Component", UDecalComponent::StaticClass() }
 		};
 
 		// 컴포넌트 추가 메뉴

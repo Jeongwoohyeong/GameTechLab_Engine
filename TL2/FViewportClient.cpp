@@ -61,7 +61,6 @@ void FViewportClient::Draw(FViewport* Viewport)
                 if (GizmoActor)
                 {
                     GizmoActor->Render(Camera, Viewport);
-                        
                 }
             }
             break;

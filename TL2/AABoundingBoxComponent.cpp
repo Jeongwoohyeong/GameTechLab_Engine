@@ -1,11 +1,11 @@
 ﻿#include"pch.h"
 #include "AABoundingBoxComponent.h"
 #include "SelectionManager.h"
-#include "Line.h"   
-#include"OBoundingBoxComponent.h"
+#include "Line.h"
+#include "OrientedBound.h"
 
 UAABoundingBoxComponent::UAABoundingBoxComponent()
-    : LocalMin(FVector{}), LocalMax(FVector{}), LineColor(0.0f, 0.0f, 0.0f, 1.0f) // 노란색
+    : LocalMin(FVector{}), LocalMax(FVector{}), LineColor(1.0f, 1.0f, 1.0f, 1.0f) // 흰색
 {
 }
 
@@ -152,7 +152,7 @@ FOrientedBound UAABoundingBoxComponent::GetWorldOrientedBound() const
                      std::abs(WorldMat.M[2][1] * LocalExtents.Y) +
                      std::abs(WorldMat.M[2][2] * LocalExtents.Z);
 
-    return FOrientedBound(WorldCenter, WorldExtents, WorldMat);
+    return FOrientedBound(WorldExtents, WorldMat);
 }
 
 bool UAABoundingBoxComponent::RayIntersectsOBB(const FVector& Origin, const FVector& Direction, float& Distance) const
@@ -211,8 +211,6 @@ void UAABoundingBoxComponent::CreateLineData(
     const FVector v5(Max.X, Min.Y, Max.Z);
     const FVector v6(Max.X, Max.Y, Max.Z);
     const FVector v7(Min.X, Max.Y, Max.Z);
-
-    // 선 색상 정의
 
 
     // --- 아래쪽 면 ---

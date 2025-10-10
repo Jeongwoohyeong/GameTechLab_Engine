@@ -452,6 +452,11 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>ThirdParty\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Box.cpp" />
+    <ClCompile Include="OrientedBound.cpp" />
+    <ClCompile Include="DecalComponent.cpp">
+      <Filter>Components\Decal</Filter>
+    </ClCompile>
   </ItemGroup>
   <!-- ==================== 헤더 파일 (.h) ==================== -->
   <ItemGroup>
@@ -822,6 +827,11 @@
     </ClInclude>
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.h" />
+    <ClInclude Include="OrientedBound.h" />
+    <ClInclude Include="DecalComponent.h">
+      <Filter>Components\Decal</Filter>
     </ClInclude>
   </ItemGroup>
   <!-- ==================== 셰이더 파일 (.hlsl) ==================== -->
