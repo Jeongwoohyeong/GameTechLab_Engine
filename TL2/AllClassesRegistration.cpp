@@ -48,8 +48,6 @@
 #include"EditorEngine.h"
 #include"GameEngine.h"
 #include"Level.h"
-#include"DecalComponent.h"
-#include"DecalActor.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -76,7 +74,6 @@ IMPLEMENT_CLASS(ULineComponent)
 IMPLEMENT_CLASS(ULine)
 IMPLEMENT_CLASS(UTextRenderComponent)
 IMPLEMENT_CLASS(UBillboardComponent)
-IMPLEMENT_CLASS(UDecalComponent)
 
 // Managers / Systems
 IMPLEMENT_CLASS(UInputManager)
