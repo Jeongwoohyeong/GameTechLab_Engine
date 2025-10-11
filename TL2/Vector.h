@@ -330,6 +330,23 @@ struct FQuat
     {
     }
 
+    /**
+     * @brief Checks if two quaternions are component-wise equal within a tolerance.
+     * Note: This does not check for rotational equivalence (q == -q).
+     */
+    bool operator==(const FQuat& Q) const
+    {
+        return std::fabs(X - Q.X) < KINDA_SMALL_NUMBER &&
+               std::fabs(Y - Q.Y) < KINDA_SMALL_NUMBER &&
+               std::fabs(Z - Q.Z) < KINDA_SMALL_NUMBER &&
+               std::fabs(W - Q.W) < KINDA_SMALL_NUMBER;
+    }
+
+    bool operator!=(const FQuat& Q) const
+    {
+        return !(*this == Q);
+    }
+
     static FQuat Identity() { return FQuat(0, 0, 0, 1); }
 
     // 곱 (회전 누적)

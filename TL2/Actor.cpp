@@ -115,8 +115,15 @@ void AActor::SetActorRotation(const FVector& InEulerDegree) const
 {
     if (RootComponent)
     {
-        
-        RootComponent->SetWorldRotation(FQuat::MakeFromEuler(InEulerDegree));
+        const FQuat NewRotation = FQuat::MakeFromEuler(InEulerDegree);
+
+        // 현재 회전값과 새로운 회전값이 다를 때만 업데이트를 진행
+        if (RootComponent->GetWorldRotation() == NewRotation)
+        {
+            return;
+        }
+
+        RootComponent->SetWorldRotation(NewRotation);
     
         if (World)
         {
@@ -129,10 +136,10 @@ void AActor::SetActorRotation(const FQuat& InQuat) const
 {
     if (RootComponent)
     {
-        /*if (RootComponent->GetWorldRotation() == InQuat)
+        if (RootComponent->GetWorldRotation() == InQuat)
         {
             return;
-        }*/
+        }
         RootComponent->SetWorldRotation(InQuat);
 
         if (World)
@@ -159,8 +166,7 @@ void AActor::SetActorScale(const FVector& InNewScale) const
 
         if (World)
         {
-            // TODO: 이 함수가 매번 호출되니까 BVH 계속 Refit됨
-            //World->MarkBVHDirty();
+            World->MarkBVHDirty();
         }
     }
 }
