@@ -137,9 +137,9 @@ void URenderer::UpdateUVScroll(const FVector2D& Speed, float TimeSec)
     RHIDevice->UpdateUVScrollConstantBuffers(Speed, TimeSec);
 }
 
-void URenderer::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP)
+void URenderer::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float InAlpha)
 {
-    RHIDevice->UpdateDecalConstantBuffer(InWorldMVP, InDecalMVP);
+    RHIDevice->UpdateDecalConstantBuffer(InWorldMVP, InDecalMVP, InAlpha);
 }
 
 void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
@@ -198,6 +198,8 @@ void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InM
     RHIDevice->PSSetDefaultSampler(0);
 
     RHIDevice->GetDeviceContext()->DrawIndexed(IndexCount, 0, 0);
+    StatsCollector.IncrementDrawCalls();
+    StatsCollector.IncrementBasePassDrawCalls();
 }
 
 void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology, const TArray<FMaterialSlot>& InComponentMaterialSlots)

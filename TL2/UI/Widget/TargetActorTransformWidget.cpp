@@ -76,6 +76,38 @@ static TArray<FString> GetIconFiles()
 	return iconFiles;
 }
 
+static TArray<FString> GetDecalFiles()
+{
+	TArray<FString> DecalFiles;
+	try
+	{
+		fs::path DecalPath = "Editor/Decal";
+		if (fs::exists(DecalPath) && fs::is_directory(DecalPath))
+		{
+			for (const auto& entry : fs::directory_iterator(DecalPath))
+			{
+				if (entry.is_regular_file())
+				{
+					auto Filename = entry.path().filename().string();
+					if (Filename.ends_with(".dds"))
+					{
+						FString RelativePath = "Editor/Decal/" + Filename;
+						DecalFiles.push_back(RelativePath);
+					}
+				}
+			}
+		}
+	}
+	catch (const std::exception&)
+	{
+		DecalFiles.push_back("Editor/Decal/Pawn_64x.dds");
+		DecalFiles.push_back("Editor/Decal/PointLight_64x.dds");
+		DecalFiles.push_back("Editor/Decal/SpotLight_64x.dds");
+	}
+
+	return DecalFiles;
+}
+
 UTargetActorTransformWidget::UTargetActorTransformWidget()
 	: UWidget("Target Actor Transform Widget")
 	, UIManager(&UUIManager::GetInstance())
@@ -102,6 +134,29 @@ void UTargetActorTransformWidget::Initialize()
 	if (UIManager)
 	{
 		UIManager->RegisterTargetTransformWidget(this);
+	}
+
+	// 추가 가능한 컴포넌트 타입 목록 초기화 (메타데이터 기반)
+	if (!bComponentTypesInitialized)
+	{
+		// ObjectFactory의 NameRegistry를 순회하면서 메타데이터를 체크
+		for (const auto& ClassDataPair : ObjectFactory::GetNameRegistry())
+		{
+			UClass* ClassType = ClassDataPair.second;
+
+			// UActorComponent의 파생 클래스인지 확인
+			if (ClassType && ClassType->IsChildOf(UActorComponent::StaticClass()))
+			{
+				// 메타데이터를 체크하여 TargetActorTransformWidget에서 생성 가능한지 확인
+				if (ClassType->GetMetaDataBool("CanSpawnInTransformWidget", false))
+				{
+					// 리스트에 추가
+					FString DisplayName = ClassDataPair.first;
+					AddableComponentTypes.push_back({ DisplayName, ClassType });
+				}
+			}
+		}
+		bComponentTypesInitialized = true;
 	}
 }
 
@@ -180,15 +235,6 @@ void UTargetActorTransformWidget::RenderWidget()
 		// 선택된 액터 UUID 표시(전역 고유 ID)
 		ImGui::Text("UUID: %u", static_cast<unsigned int>(SelectedActor->UUID));
 		ImGui::Spacing();
-
-		// 추가 가능한 컴포넌트 타입 목록 (임시 하드코딩)
-		static const TArray<TPair<FString, UClass*>> AddableComponentTypes = {
-			{ "StaticMesh Component", UStaticMeshComponent::StaticClass() },
-			{ "Text Component", UTextRenderComponent::StaticClass() },
-			{ "Scene Component", USceneComponent::StaticClass() },
-			{ "Billboard Component", UBillboardComponent::StaticClass() },
-			{ "Decal Component", UDecalComponent::StaticClass() }
-		};
 
 		// 컴포넌트 추가 메뉴
 		if (SelectedComponent)
@@ -554,6 +600,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				
 				ImGui::Spacing();
 				
+				
 				// Screen Size Scaled 체크박스
 				// bool bIsScreenSizeScaled = BBC->IsScreenSizeScaled();
 				// if (ImGui::Checkbox("Is Screen Size Scaled", &bIsScreenSizeScaled))
@@ -650,11 +697,147 @@ void UTargetActorTransformWidget::RenderWidget()
 				//	TextRenderComponent->SetTextColor(FLinearColor(color[0], color[1], color[2]));
 				//}
 			}
+			else if (UDecalComponent* DecalComponent = Cast<UDecalComponent>(SelectedComponent))
+			{
+				ImGui::Separator();
+				ImGui::Text("Decal Component Settings");
+
+				// 현재 선택된 데칼 경로 표시
+				FString DecalFilePath = DecalComponent->GetTexturePath();
+				// UTexture* DecalTexture = DecalComponent->GetMaterial()->GetTexture();
+				// FString DecalFilePath{};				
+				// if (DecalTexture)
+				// {
+				// 	DecalFilePath = DecalTexture->GetFilePath();
+				// }
+				ImGui::Text("Current Decal: %s", DecalFilePath.c_str());
+
+				// Edidtor/Decal 폴더의 텍스처 로드
+				static TArray<FString> DecalOptions;
+				static bool bIsDecalOptionsLoaded = false;
+				static int32 CurrentDecalIndex = 0;
+
+				if (!bIsDecalOptionsLoaded)
+				{
+					DecalOptions = GetDecalFiles();
+					bIsDecalOptionsLoaded = true;
+
+					for (size_t i = 0; i< DecalOptions.size(); i++)
+					{
+						if (DecalOptions[i] == DecalFilePath)
+						{
+							CurrentDecalIndex = i;
+							break;
+						}
+					}
+				}
+
+				// 데칼 드랍다운 메뉴
+				ImGui::Text("Decal Texture: ");
+				FString CurrentDisplayName = (CurrentDecalIndex >= 0 && CurrentDecalIndex < DecalOptions.size())
+				? GetBaseNameNoExt(DecalOptions[CurrentDecalIndex]) : "Select Decal";
+
+				if (ImGui::BeginCombo("##DecalCombo", CurrentDisplayName.c_str()))
+				{
+					for (int32 i = 0; i< DecalOptions.size(); i++)
+					{
+						FString DisplayName = GetBaseNameNoExt(DecalOptions[i]);
+						bool bIsSelected = (CurrentDecalIndex == i);
+
+						if (ImGui::Selectable(DisplayName.c_str(), bIsSelected))
+						{
+							CurrentDecalIndex = i;
+							DecalComponent->SetTexture(DecalOptions[CurrentDecalIndex]);
+						}
+
+						if (bIsSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				ImGui::SameLine();
+				if(ImGui::Button("Refresh"))
+				{
+					bIsDecalOptionsLoaded = false;
+					CurrentDecalIndex = 0;
+				}
+				ImGui::Spacing();
+
+				ImGui::Text("Decal Fade");
+				ImGui::SameLine();
+				static bool bIsFadeEnabled = false;
+				static bool bIsFadeOut = true;
+				static float ElapsedTime = 0.0f;
+				if (ImGui::Checkbox("Fade On", &bIsFadeEnabled))
+				{
+					// 체크박스가 켜지면 처음부터 다시 페이드
+					if (bIsFadeEnabled)
+					{
+						ElapsedTime = 0.0f;
+						bIsFadeOut = true;
+					}
+					// 체크박스 꺼지면 default값으로 재설정
+					else
+					{
+						FVector4 DefaultFadeProperties = {5.0f, 0.0f, 1.0f, 1.0f};
+						DecalComponent->ResetFadeProperties();
+					}
+				}
+				if (bIsFadeEnabled)
+				{
+					FVector4 FadeProperties = DecalComponent->GetFadeProperties();
+					ImGui::SameLine();
+					// 기본값으로 초기화
+					if (ImGui::Button("Reset"))
+					{
+						DecalComponent->ResetFadeProperties();
+						ElapsedTime = 0.0f;
+						bIsFadeOut = true;
+					}
+					ImGui::DragFloat("Duration", &FadeProperties.X, 0.01f, 0.0f, 60.0f);
+					ImGui::DragFloat("MinAlpha", &FadeProperties.Y, 0.001f, 0.0f, FadeProperties.Z);
+					ImGui::DragFloat("MaxAlpha", &FadeProperties.Z, 0.001f, FadeProperties.Y, 1.0f);					
+					
+					float DeltaTime = ImGui::GetIO().DeltaTime;				
+					if (FadeProperties.X > 1e-6f)
+					{
+						ElapsedTime += DeltaTime;
+						// 진행시간 / 주기로 진행도를 0~1로 정규화
+						float Progress = ElapsedTime / FadeProperties.X;
+
+						// 선형 보간
+						if (bIsFadeOut)
+						{
+							// fade out일 때 max에서 min까지 선형보간
+							FadeProperties.W = FadeProperties.Z - (FadeProperties.Z - FadeProperties.Y) * Progress;
+						}
+						else
+						{
+							// min에서 max까지 선형보간
+							FadeProperties.W = FadeProperties.Y + (FadeProperties.Z - FadeProperties.Y) * Progress;
+						}
+
+						// 진행도가 1 이상이면 fade in - fade out 전환
+						// 진행시간 초기화
+						if (Progress >= 1.0f)
+						{
+							ElapsedTime = 0.0f;
+							bIsFadeOut = !bIsFadeOut;
+						}
+					}
+					DecalComponent->SetFadeProperties(FadeProperties);
+				}				
+				
+			}
 		else
 		{
 			ImGui::Text("Selected component is not a supported type.");
 		}
 		}
+		
 	}
 	else
 	{

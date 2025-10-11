@@ -54,6 +54,41 @@ void UPrimitiveSpawnWidget::Initialize()
 {
 	// UIManager 참조 확보
 	UIManager = &UUIManager::GetInstance();
+
+	// Spawnable Actor 타입 초기화
+	InitializeSpawnableActors();
+}
+
+void UPrimitiveSpawnWidget::InitializeSpawnableActors()
+{
+	SpawnableActorClasses.clear();
+	SpawnableActorNames.clear();
+
+	// ObjectFactory에서 Spawnable 메타데이터가 있는 Actor 타입 수집
+	for (const auto& ClassDataPair : ObjectFactory::GetNameRegistry())
+	{
+		UClass* ClassType = ClassDataPair.second;
+
+		// AActor의 파생 클래스이면서 Spawnable 메타데이터가 true인 경우
+		if (ClassType && ClassType->IsChildOf(AActor::StaticClass()))
+		{
+			if (ClassType->GetMetaDataBool("Spawnable", false))
+			{
+				SpawnableActorClasses.push_back(ClassType);
+				SpawnableActorNames.push_back(ClassDataPair.first);
+			}
+		}
+	}
+
+	// 기본 선택: AStaticMeshActor
+	for (int32 i = 0; i < static_cast<int32>(SpawnableActorNames.size()); ++i)
+	{
+		if (SpawnableActorNames[i] == "AStaticMeshActor")
+		{
+			SelectedActorTypeIndex = i;
+			break;
+		}
+	}
 }
 
 void UPrimitiveSpawnWidget::Update()
@@ -110,19 +145,43 @@ FQuat UPrimitiveSpawnWidget::GenerateRandomRotation() const
 
 void UPrimitiveSpawnWidget::RenderWidget()
 {
-    ImGui::Text("Primitive Actor Spawner");
+    ImGui::Text("Actor Spawner");
     ImGui::Spacing();
 
-    // Primitive 타입 선택: StaticMesh만 노출
-    const char* PrimitiveTypes[] = { "StaticMesh" };
+    // Actor 타입 선택 (동적)
+    if (!SpawnableActorNames.empty())
+    {
+        TArray<const char*> ActorTypeItems;
+        ActorTypeItems.reserve(SpawnableActorNames.size());
+        for (const FString& Name : SpawnableActorNames)
+        {
+            ActorTypeItems.push_back(Name.c_str());
+        }
 
-    ImGui::Text("Primitive Type:");
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(120);
-    ImGui::Combo("##PrimitiveType", &SelectedPrimitiveType, PrimitiveTypes, 1);
+        ImGui::Text("Actor Type:");
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(200);
+        ImGui::Combo("##ActorType", &SelectedActorTypeIndex, ActorTypeItems.data(),
+                     static_cast<int>(ActorTypeItems.size()));
+    }
+    else
+    {
+        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
+                          "No spawnable actors found!");
+    }
 
-    // StaticMesh 타입일 때만 리소스 메쉬 선택 UI 표시
-    if (SelectedPrimitiveType == 0)
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    // StaticMeshActor가 선택된 경우에만 메쉬 선택 UI 표시
+    bool bIsStaticMeshActor = false;
+    if (SelectedActorTypeIndex >= 0 && SelectedActorTypeIndex < static_cast<int32>(SpawnableActorNames.size()))
+    {
+        bIsStaticMeshActor = (SpawnableActorNames[SelectedActorTypeIndex] == "AStaticMeshActor");
+    }
+
+    if (bIsStaticMeshActor)
     {
         auto& ResourceManager = UResourceManager::GetInstance();
 
@@ -256,7 +315,6 @@ void UPrimitiveSpawnWidget::RenderWidget()
     ImGui::Text("Quick Spawn:");
     if (ImGui::Button("Spawn 1 Cube"))
     {
-        SelectedPrimitiveType = 0;
         NumberOfSpawn = 1;
         // 기본 선택을 Cube로 강제
         if (!CachedMeshFilePaths.empty())
@@ -277,7 +335,6 @@ void UPrimitiveSpawnWidget::RenderWidget()
     ImGui::SameLine();
     if (ImGui::Button("Spawn 5 Random"))
     {
-        SelectedPrimitiveType = 0;
         NumberOfSpawn = 5;
         SpawnActors();
     }
@@ -292,22 +349,41 @@ void UPrimitiveSpawnWidget::SpawnActors() const
         return;
     }
 
-    UE_LOG("PrimitiveSpawn: Spawning %d %s actors", NumberOfSpawn, GetPrimitiveTypeName(SelectedPrimitiveType));
+    // 선택된 Actor 타입 확인
+    if (SelectedActorTypeIndex < 0 || SelectedActorTypeIndex >= static_cast<int32>(SpawnableActorClasses.size()))
+    {
+        UE_LOG("PrimitiveSpawn: Invalid actor type selected");
+        return;
+    }
+
+    UClass* SelectedActorClass = SpawnableActorClasses[SelectedActorTypeIndex];
+    const FString& ActorTypeName = SpawnableActorNames[SelectedActorTypeIndex];
+
+    UE_LOG("PrimitiveSpawn: Spawning %d %s actors", NumberOfSpawn, ActorTypeName.c_str());
 
     int32 SuccessCount = 0;
 
     for (int32 i = 0; i < NumberOfSpawn; i++)
     {
-        FVector SpawnLocation = FVector(0, 0 ,0); //GenerateRandomLocation();
+        FVector SpawnLocation = FVector(0, 0, 0); //GenerateRandomLocation();
         FQuat   SpawnRotation = FQuat::Identity(); //GenerateRandomRotation();
-        float   SpawnScale = 1.0f;//GenerateRandomScale();
+        float   SpawnScale = 1.0f; //GenerateRandomScale();
         FVector SpawnScaleVec(SpawnScale, SpawnScale, SpawnScale);
 
         FTransform SpawnTransform(SpawnLocation, SpawnRotation, SpawnScaleVec);
 
-        AStaticMeshActor* NewActor = World->SpawnActor<AStaticMeshActor>(SpawnTransform);
+        // 동적으로 Actor 생성
+        AActor* NewActor = Cast<AActor>(NewObject(SelectedActorClass));
+        if (!NewActor)
+        {
+            UE_LOG("PrimitiveSpawn: Failed to create actor instance %d", i);
+            continue;
+        }
 
-        if (NewActor)
+        NewActor->SetActorTransform(SpawnTransform);
+
+        // AStaticMeshActor인 경우 SpawnActor 호출 전에 메시 설정
+        if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(NewActor))
         {
             // 드롭다운에서 선택한 리소스가 있으면 그걸 사용, 아니면 Cube로 기본 설정
             FString MeshPath = "Data/Cube.obj";
@@ -320,18 +396,18 @@ void UPrimitiveSpawnWidget::SpawnActors() const
                 MeshPath = CachedMeshFilePaths[SelectedMeshIndex];
             }
 
-            if (auto* StaticMeshComp = NewActor->GetStaticMeshComponent())
+            if (auto* StaticMeshComp = StaticMeshActor->GetStaticMeshComponent())
             {
                 StaticMeshComp->SetStaticMesh(MeshPath);
 
                 // 충돌 컴포넌트 설정 (Sphere만 특례)
                 if (GetBaseNameNoExt(MeshPath) == "Sphere")
                 {
-                    Cast<AStaticMeshActor>(NewActor)->SetCollisionComponent(EPrimitiveType::Sphere);
+                    StaticMeshActor->SetCollisionComponent(EPrimitiveType::Sphere);
                 }
                 else
                 {
-                    Cast<AStaticMeshActor>(NewActor)->SetCollisionComponent();
+                    StaticMeshActor->SetCollisionComponent();
                 }
             }
 
@@ -340,14 +416,23 @@ void UPrimitiveSpawnWidget::SpawnActors() const
             );
             NewActor->SetName(ActorName);
 
-            SuccessCount++;
-            UE_LOG("PrimitiveSpawn: Created at (%.2f, %.2f, %.2f) scale %.2f using %s",
-                SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z, SpawnScale, MeshPath.c_str());
+            UE_LOG("PrimitiveSpawn: Created StaticMeshActor at (%.2f, %.2f, %.2f) using %s",
+                   SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z, MeshPath.c_str());
         }
         else
         {
-            UE_LOG("PrimitiveSpawn: Failed to spawn actor %d", i);
+            // 다른 Actor 타입은 기본 이름만 설정
+            FString ActorName = World->GenerateUniqueActorName(ActorTypeName);
+            NewActor->SetName(ActorName);
+
+            UE_LOG("PrimitiveSpawn: Created %s at (%.2f, %.2f, %.2f)",
+                   ActorTypeName.c_str(), SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
         }
+
+        // 모든 설정이 완료된 후 World에 Actor 등록
+        World->SpawnActor(NewActor);
+
+        SuccessCount++;
     }
 
     UE_LOG("PrimitiveSpawn: Successfully spawned %d/%d actors", SuccessCount, NumberOfSpawn);

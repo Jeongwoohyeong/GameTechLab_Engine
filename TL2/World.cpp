@@ -19,7 +19,9 @@
 #include "BVH.h"
 #include "UEContainer.h"
 #include "DecalComponent.h"
-
+#include "PickingTimer.h"
+#include "RenderingStats.h"
+#include "UI/StatsOverlayD2D.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -334,18 +336,26 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 continue;
             }
 
-            // TODO : Decal Show Flag 구현
             UDecalComponent* DecalComponent = Cast<UDecalComponent>(Component);
-            if (DecalComponent/* &&
-                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal)*/)
+            // Decal Show Flag가 켜져 있다면
+            if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal))
             {
-                DecalVolumes.Push(DecalComponent);
-            }
+                // Pass 2를 위해 Decal과 Static 메시를 별도로 저장
+                if (DecalComponent)
+                {
+                    DecalVolumes.Push(DecalComponent);
+                }
 
-            UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
-            if (StaticMeshComponent)
+                UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
+                if (StaticMeshComponent)
+                {
+                    StaticMeshes.Push(StaticMeshComponent);
+                }
+            }
+            else
             {
-                StaticMeshes.Push(StaticMeshComponent);
+                if (DecalComponent)
+                    continue;
             }
 
             if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
@@ -374,26 +384,46 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     // 엔진 액터들 (그리드 등) 렌더링
     RenderEngineActors(ViewMatrix, ProjectionMatrix, Viewport);
 
-    // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
-    if (BVH)
+    URenderingStatsCollector& StatsCollector =
+        URenderingStatsCollector::GetInstance();
+
+    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal))
     {
+
+        TStatId ViewportAspectDecalRenderStatId;
+        FScopeCycleCounter ViewportAspectDecalRenderTimer(ViewportAspectDecalRenderStatId);
+
+        // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
         for (UDecalComponent* DecalVolume : DecalVolumes)
         {
-            
+            for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+            {
+                DecalVolume->ProjectDecal(
+                    Renderer,
+                    StaticMesh,
+                    ViewMatrix,
+                    ProjectionMatrix
+                );
+            }
         }
+
+        uint64_t ViewportAspectCycleDiff = ViewportAspectDecalRenderTimer.Finish();
+        double ViewportAspectDecalRenderTimeMs = FPlatformTime::ToMilliseconds(ViewportAspectCycleDiff);
+        
+        StatsCollector.UpdateDecalStats(
+            DecalVolumes.size(),
+            (float)ViewportAspectDecalRenderTimeMs
+        );
     }
-    for (UDecalComponent* DecalVolume : DecalVolumes)
+    else
     {
-        for (UStaticMeshComponent* StaticMesh : StaticMeshes)
-        {
-            DecalVolume->ProjectDecal(
-                Renderer,
-                StaticMesh,
-                ViewMatrix,
-                ProjectionMatrix
-            );
-        }
+        StatsCollector.UpdateDecalStats(0, 0.0f);
     }
+
+    UStatsOverlayD2D::Get().UpdateDecalStats(
+        StatsCollector.GetDecalNum(),
+        StatsCollector.GetDecalRenderTimeTotal()
+    );
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }
@@ -1219,9 +1249,11 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
     {
         return nullptr;
     }
+
     PIEWorld->Renderer = EditorWorld->Renderer;
     PIEWorld->MainViewport = EditorWorld->MainViewport;
     PIEWorld->MultiViewport = EditorWorld->MultiViewport;
+
     // WorldType을 PIE로 설정
     PIEWorld->WorldType=(EWorldType::PIE);
 
@@ -1303,14 +1335,13 @@ void UWorld::SpawnActor(AActor* InActor)
 {
     InActor->SetWorld(this);
   
- 
-        if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
-        {
-            FString ActorName = GenerateUniqueActorName(
-                GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
-            );
-            InActor->SetName(ActorName);
-        }
+    if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
+    {
+        FString ActorName = GenerateUniqueActorName(
+            GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
+        );
+        InActor->SetName(ActorName);
+    }
    
     Level->GetActors().Add(InActor);
 }

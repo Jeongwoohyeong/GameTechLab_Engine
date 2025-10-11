@@ -22,6 +22,9 @@ public:
     virtual void TickComponent(float DeltaSeconds); // 매 프레임
     virtual void EndPlay(EEndPlayReason::Type EndPlayReason); // 파괴/종료 시
 
+    UWorld* GetWorld() const;
+
+
     // ───────────────
     // 활성화/비활성
     // ───────────────

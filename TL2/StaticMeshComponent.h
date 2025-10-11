@@ -37,7 +37,7 @@ public:
     void SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName);
 
     const TArray<FMaterialSlot>& GetMaterailSlots() const { return MaterailSlots; }
-    
+
     UObject* Duplicate() override;
     void DuplicateSubObjects() override;
 

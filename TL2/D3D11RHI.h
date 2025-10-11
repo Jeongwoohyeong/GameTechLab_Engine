@@ -53,7 +53,7 @@ public:
     void UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec) override;
     void UpdateInvWorldConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewProjMatrix) override;
     void UpdateViewportConstantBuffer(float StartX, float StartY, float SizeX, float SizeY);
-    void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP) override;
+    void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
 
     void IASetPrimitiveTopology() override;
     void RSSetState(EViewModeIndex ViewModeIndex) override;

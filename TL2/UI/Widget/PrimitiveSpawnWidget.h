@@ -22,24 +22,29 @@ public:
 
 private:
 	UUIManager* UIManager = nullptr;
-	
+
+	// Actor Type Selection (Dynamic)
+	TArray<UClass*> SpawnableActorClasses;
+	TArray<FString> SpawnableActorNames;
+	int32 SelectedActorTypeIndex = 0;
+
 	// Spawn 설정
-	int32 SelectedPrimitiveType = 0;
 	int32 NumberOfSpawn = 1;
 	float SpawnRangeMin = -5.0f;
 	float SpawnRangeMax = 5.0f;
-	
+
 	// 추가 옵션
 	bool bRandomRotation = true;
 	bool bRandomScale = true;
 	float MinScale = 0.5f;
 	float MaxScale = 2.0f;
 
-	// 메시 선택
+	// 메시 선택 (StaticMeshActor 전용)
 	mutable int32 SelectedMeshIndex = -1;
 	mutable TArray<FString> CachedMeshFilePaths;
-	
+
 	// 헬퍼 메서드
+	void InitializeSpawnableActors();
 	UWorld* GetCurrentWorld() const;
 	FVector GenerateRandomLocation() const;
 	float GenerateRandomScale() const;

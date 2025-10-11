@@ -2,7 +2,7 @@
 
 #include "ObjectFactory.h"
 
-template<typename TObject>
+template<DerivedFromUObject TObject>
 class TObjectIterator
 {
 public:
@@ -65,4 +65,21 @@ private:
 
 private:
 	int32 CurrentIndex = -1;
+};
+
+template<DerivedFromUObject TObject>
+class TObjectRange
+{
+public:
+	TObjectRange() = default;
+
+	TObjectIterator<TObject> begin() const
+	{
+		return TObjectIterator<TObject>(0); // 처음부터 시작
+	}
+
+	TObjectIterator<TObject> end() const
+	{
+		return TObjectIterator<TObject>(GUObjectArray.Num()); // 범위 끝
+	}
 };

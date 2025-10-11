@@ -3,7 +3,12 @@
 
 UDecalComponent::UDecalComponent() : OBB(DecalVolumeVertices, this)
 {
-    SetMaterial("Decal.hlsl");
+    SetMaterial(MaterialPath);
+}
+
+void UDecalComponent::ResetFadeProperties()
+{
+    FadeProperties = DefaultFadeProperties;
 }
 
 UDecalComponent::~UDecalComponent()
@@ -13,7 +18,11 @@ UDecalComponent::~UDecalComponent()
 
 void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
-    OBB.Render(Renderer, View, Proj);
+    // OBB는 에디터에서만 보이도록 처리
+    if (GetWorld() && !GetWorld()->IsPIEWorld())
+    {
+        OBB.Render(Renderer, View, Proj);
+    }
 }
 
 void UDecalComponent::ProjectDecal
@@ -31,8 +40,8 @@ void UDecalComponent::ProjectDecal
     }
 
     // 야매 텍스처 로드(후에 제대로 텍스처 로드할 수 있도록 바꿔야 함)
-    Material->Load("Editor/Decal/PointLight_64x.dds", Renderer->GetRHIDevice()->GetDevice());
-
+    Material->Load(TexturePath, Renderer->GetRHIDevice()->GetDevice());
+    
     Renderer->RSSetDefaultState();
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly);
     Renderer->OMSetBlendState(true);
@@ -44,7 +53,8 @@ void UDecalComponent::ProjectDecal
         MeshWorld * \
         GetWorldMatrix().Inverse() * \
         DecalViewRotation * \
-        DecalProjection
+        DecalProjection,
+        FadeProperties.W
     );
     Renderer->PrepareShader(GetMaterial()->GetShader());
     Renderer->ProjectDecalToStaticMesh(
@@ -56,4 +66,26 @@ void UDecalComponent::ProjectDecal
     // 상태 원상복구
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
     Renderer->OMSetBlendState(false);
+}
+
+void UDecalComponent::SetTexture(const FString& InTexturePath)
+{
+    TexturePath = InTexturePath;
+}
+
+void UDecalComponent::SetFadeProperties(const FVector4& InFadeProperties)
+{
+    FadeProperties = InFadeProperties;
+}
+
+UObject* UDecalComponent::Duplicate()
+{
+    UDecalComponent* DuplicatedComponent = Cast<UDecalComponent>(NewObject(GetClass()));
+    CopyCommonProperties(DuplicatedComponent);
+
+    DuplicatedComponent->Material = this->Material;
+    DuplicatedComponent->TexturePath = this->TexturePath;
+
+    DuplicatedComponent->DuplicateSubObjects();
+    return DuplicatedComponent;
 }
