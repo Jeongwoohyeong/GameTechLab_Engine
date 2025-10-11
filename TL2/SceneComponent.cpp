@@ -334,7 +334,7 @@ void USceneComponent::DeSerialize(FObjectData* Data)
     FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
     assert(ComponentData, "USceneComponent::DeSerialize got wrong data type.");
 
-    UObject::Serialize(Data);
+    UObject::DeSerialize(Data);
     SetRelativeLocation(ComponentData->RelativeLocation);
     SetRelativeRotation(FQuat::MakeFromEuler(ComponentData->RelativeRotation));
     SetRelativeScale(ComponentData->RelativeScale);
