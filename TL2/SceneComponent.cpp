@@ -306,3 +306,36 @@ void USceneComponent::DuplicateSubObjects()
     }
     AttachChildren = DuplicatedChildren;
 }
+
+void USceneComponent::Serialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "USceneComponent::Serialize got wrong data type.");
+
+    UObject::Serialize(Data);
+    ComponentData->OwnerActorUUID = GetOwner()->UUID;
+
+    if (AttachParent)
+        ComponentData->ParentComponentUUID = AttachParent->UUID;
+    else
+        ComponentData->ParentComponentUUID = 0;
+
+    // Transform
+    ComponentData->RelativeLocation = RelativeLocation;
+    ComponentData->RelativeRotation = RelativeRotation.ToEuler();
+    ComponentData->RelativeScale = RelativeScale;
+
+    // Type 자동 가져오기
+    ComponentData->Type = GetClass()->Name;
+}
+
+void USceneComponent::DeSerialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "USceneComponent::DeSerialize got wrong data type.");
+
+    UObject::DeSerialize(Data);
+    SetRelativeLocation(ComponentData->RelativeLocation);
+    SetRelativeRotation(FQuat::MakeFromEuler(ComponentData->RelativeRotation));
+    SetRelativeScale(ComponentData->RelativeScale);
+}

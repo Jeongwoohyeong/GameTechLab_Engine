@@ -94,3 +94,35 @@ void UDecalComponent::DuplicateSubObjects()
 {
     Super_t::DuplicateSubObjects();
 }
+
+void UDecalComponent::Serialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UStaticMeshComponent::Serialize got wrong data type.");
+
+    USceneComponent::Serialize(Data);
+
+    if (!TexturePath.empty())
+    {
+        ComponentData->ResourceName = TexturePath;
+        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->ResourceName.c_str());
+    }
+    else
+    {
+        UE_LOG("SaveScene: Decal has no Texture assigned");
+    }
+}
+
+void UDecalComponent::DeSerialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
+
+    USceneComponent::DeSerialize(Data);
+
+    if (!ComponentData->ResourceName.empty())
+    {
+        TexturePath = ComponentData->ResourceName;
+    }
+}
+

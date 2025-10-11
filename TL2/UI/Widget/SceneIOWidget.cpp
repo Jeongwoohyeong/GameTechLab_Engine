@@ -217,7 +217,7 @@ void USceneIOWidget::SaveLevel(const FString& InFilePath)
 			// Quick Save
 			if (bUseV2Format)
 			{
-				CurrentWorld->SaveSceneV2("QuickSave");
+				CurrentWorld->SaveScene("QuickSave");
 				UE_LOG("SceneIO: Quick Save V2 executed to Scene/QuickSave.Scene");
 				SetStatusMessage("Quick Save V2 completed: Scene/QuickSave.Scene");
 			}
@@ -244,7 +244,7 @@ void USceneIOWidget::SaveLevel(const FString& InFilePath)
 
 			if (bUseV2Format)
 			{
-				CurrentWorld->SaveSceneV2(SceneName);
+				CurrentWorld->SaveScene(SceneName);
 				UE_LOG("SceneIO: Scene V2 saved: %s", SceneName.c_str());
 				SetStatusMessage("Scene V2 saved: Scene/" + SceneName + ".Scene");
 			}
@@ -313,7 +313,7 @@ void USceneIOWidget::LoadLevel(const FString& InFilePath)
 		// 2) 씬 로드
 		if (bUseV2Format)
 		{
-			CurrentWorld->LoadSceneV2(SceneName);
+			CurrentWorld->LoadScene(SceneName);
 			UE_LOG("SceneIO: Scene V2 loaded successfully: %s", SceneName.c_str());
 			SetStatusMessage("Scene V2 loaded successfully: " + SceneName);
 		}

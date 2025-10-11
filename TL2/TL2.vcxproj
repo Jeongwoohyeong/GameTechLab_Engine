@@ -216,6 +216,7 @@
     <ClCompile Include="MemoryManager.cpp" />
     <ClCompile Include="MeshLoader.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="SerializationData.cpp" />
     <ClCompile Include="SceneIOWindow.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="ImGui\imgui.cpp">
@@ -406,6 +407,7 @@
     <ClInclude Include="MemoryManager.h" />
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="SerializationData.h" />
     <ClInclude Include="SceneIOWindow.h" />
     <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="ImGui\imconfig.h" />

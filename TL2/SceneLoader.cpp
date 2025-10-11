@@ -53,145 +53,11 @@ static bool ParsePerspectiveCamera(const JSON& Root, FPerspectiveCameraData& Out
     return true;
 }
 
-TArray<FPrimitiveData> FSceneLoader::Load(const FString& FileName, FPerspectiveCameraData* OutCameraData)
-{
-    std::ifstream file(FileName);
-    if (!file.is_open())
-    {
-		UE_LOG("Scene load failed. Cannot open file: %s", FileName.c_str());
-        return {};
-    }
-
-    std::stringstream Buffer;
-    Buffer << file.rdbuf();
-    std::string content = Buffer.str();
-
-    try {
-        JSON j = JSON::Load(content);
-
-        // 카메라 먼저 파싱
-        if (OutCameraData)
-        {
-            FPerspectiveCameraData Temp{};
-            if (ParsePerspectiveCamera(j, Temp))
-            {
-                *OutCameraData = Temp;
-            }
-            else
-            {
-                // 카메라 블록이 없으면 값을 건드리지 않음
-            }
-        }
-
-        return Parse(j);
-    }
-    catch (const std::exception& e) {
-		UE_LOG("Scene load failed. JSON parse error: %s", e.what());
-        return {};
-    }
-}
-
-void FSceneLoader::Save(TArray<FPrimitiveData> InPrimitiveData, const FPerspectiveCameraData* InCameraData, const FString& SceneName)
-{
-    uint32 NextUUID = UObject::PeekNextUUID();
-
-    namespace fs = std::filesystem;
-    fs::path outPath(SceneName);
-    if (!outPath.has_parent_path())
-        outPath = fs::path("Scene") / outPath;
-    if (outPath.extension().string() != ".Scene")
-        outPath.replace_extension(".Scene");
-    std::error_code ec;
-    fs::create_directories(outPath.parent_path(), ec);
-
-    auto NormalizePath = [](FString Path) -> FString
-        {
-            // 절대 경로를 프로젝트 기준 상대 경로로 변환
-            fs::path absPath = fs::absolute(Path);
-            fs::path currentPath = fs::current_path();
-
-            std::error_code ec;
-            fs::path relativePath = fs::relative(absPath, currentPath, ec);
-
-            // 상대 경로 변환 실패 시 원본 경로 사용
-            FString result = ec ? Path : relativePath.string();
-
-            // 백슬래시를 슬래시로 변환 (크로스 플랫폼 호환)
-            for (auto& ch : result)
-            {
-                if (ch == '\\') ch = '/';
-            }
-            return result;
-        };
-
-    std::ostringstream oss;
-    oss.setf(std::ios::fixed);
-    oss << std::setprecision(6);
-
-    auto writeVec3 = [&](const char* name, const FVector& v, int indent)
-        {
-            std::string tabs(indent, ' ');
-            oss << tabs << "\"" << name << "\" : [" << v.X << ", " << v.Y << ", " << v.Z << "]";
-        };
-
-    oss << "{\n";
-    oss << "  \"Version\" : 1,\n";
-    oss << "  \"NextUUID\" : " << NextUUID;
-
-    bool bHasCamera = (InCameraData != nullptr);
-
-    if (bHasCamera)
-    {
-        oss << ",\n";
-        oss << "  \"PerspectiveCamera\" : {\n";
-        // 순서: FOV, FarClip, Location, NearClip, Rotation (FOV/Clip들은 단일 요소 배열)
-        oss << "    \"FOV\" : [" << InCameraData->FOV << "],\n";
-        oss << "    \"FarClip\" : [" << InCameraData->FarClip << "],\n";
-        writeVec3("Location", InCameraData->Location, 4); oss << ",\n";
-        oss << "    \"NearClip\" : [" << InCameraData->NearClip << "],\n";
-        writeVec3("Rotation", InCameraData->Rotation, 4); oss << "\n";
-        oss << "  }";
-    }
-
-    // Primitives 블록
-    oss << (bHasCamera ? ",\n" : ",\n"); // 카메라 없더라도 컴마 후 줄바꿈
-    oss << "  \"Primitives\" : {\n";
-    for (size_t i = 0; i < InPrimitiveData.size(); ++i)
-    {
-        const FPrimitiveData& Data = InPrimitiveData[i];
-        oss << "    \"" << Data.UUID << "\" : {\n";
-        // 순서: Location, ObjStaticMeshAsset, Rotation, Scale, Type
-        writeVec3("Location", Data.Location, 6); oss << ",\n";
-
-        FString AssetPath = NormalizePath(Data.ObjStaticMeshAsset);
-        oss << "      \"ObjStaticMeshAsset\" : " << "\"" << AssetPath << "\",\n";
-
-        writeVec3("Rotation", Data.Rotation, 6); oss << ",\n";
-        writeVec3("Scale", Data.Scale, 6); oss << ",\n";
-        oss << "      \"Type\" : " << "\"" << Data.Type << "\"\n";
-        oss << "    }" << (i + 1 < InPrimitiveData.size() ? "," : "") << "\n";
-    }
-    oss << "  }\n";
-    oss << "}\n";
-
-    const std::string finalPath = outPath.make_preferred().string();
-    std::ofstream OutFile(finalPath.c_str(), std::ios::out | std::ios::trunc);
-    if (OutFile.is_open())
-    {
-        OutFile << oss.str();
-        OutFile.close();
-    }
-    else
-    {
-        UE_LOG("Scene save failed. Cannot open file: %s", finalPath.c_str());
-    }
-}
-
 // ========================================
 // Version 2 API Implementation
 // ========================================
 
-void FSceneLoader::SaveV2(const FSceneData& SceneData, const FString& SceneName)
+void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
 {
     namespace fs = std::filesystem;
     fs::path outPath(SceneName);
@@ -275,10 +141,10 @@ void FSceneLoader::SaveV2(const FSceneData& SceneData, const FString& SceneName)
         writeVec3("RelativeScale", Comp.RelativeScale, 6);
 
         // Type별 속성
-        if (Comp.Type.find("StaticMeshComponent") != std::string::npos && !Comp.StaticMesh.empty())
+        if (Comp.Type.find("StaticMeshComponent") != std::string::npos && !Comp.ResourceName.empty())
         {
             oss << ",\n";
-            FString AssetPath = NormalizePath(Comp.StaticMesh);
+            FString AssetPath = NormalizePath(Comp.ResourceName);
             oss << "      \"StaticMesh\" : \"" << AssetPath << "\"";
 
             if (!Comp.Materials.empty())
@@ -313,7 +179,7 @@ void FSceneLoader::SaveV2(const FSceneData& SceneData, const FString& SceneName)
     }
 }
 
-FSceneData FSceneLoader::LoadV2(const FString& FileName)
+FSceneData FSceneLoader::Load(const FString& FileName)
 {
     FSceneData Result;
 
@@ -430,7 +296,7 @@ FSceneData FSceneLoader::ParseV2(const JSON& Json)
 
             // Type별 속성
             if (CompJson.hasKey("StaticMesh"))
-                Comp.StaticMesh = CompJson.at("StaticMesh").ToString();
+                Comp.ResourceName = CompJson.at("StaticMesh").ToString();
 
             if (CompJson.hasKey("Materials"))
             {
