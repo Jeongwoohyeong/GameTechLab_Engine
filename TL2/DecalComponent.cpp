@@ -6,6 +6,11 @@ UDecalComponent::UDecalComponent() : OBB(DecalVolumeVertices, this)
     SetMaterial("Decal.hlsl");
 }
 
+void UDecalComponent::ResetFadeProperties()
+{
+    FadeProperties = DefaultFadeProperties;
+}
+
 UDecalComponent::~UDecalComponent()
 {
     Material = nullptr;
@@ -44,7 +49,8 @@ void UDecalComponent::ProjectDecal
         MeshWorld * \
         GetWorldMatrix().Inverse() * \
         DecalViewRotation * \
-        DecalProjection
+        DecalProjection,
+        FadeProperties.W
     );
     Renderer->PrepareShader(GetMaterial()->GetShader());
     Renderer->ProjectDecalToStaticMesh(
@@ -61,4 +67,9 @@ void UDecalComponent::ProjectDecal
 void UDecalComponent::SetTexture(const FString& InTexturePath)
 {
     TexturePath = InTexturePath;
+}
+
+void UDecalComponent::SetFadeProperties(const FVector4& InFadeProperties)
+{
+    FadeProperties = InFadeProperties;
 }

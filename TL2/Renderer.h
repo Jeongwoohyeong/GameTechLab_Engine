@@ -54,7 +54,7 @@ public:
 
     void UpdateUVScroll(const FVector2D& Speed, float TimeSec);
 
-    void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP);
+    void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float InAlpha);
 
     void ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology);
 
