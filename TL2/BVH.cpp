@@ -42,22 +42,16 @@ void FBVH::Build(const TArray<AActor*>& Actors)
 
         if (const AStaticMeshActor* StaticMeshActor = Cast<const AStaticMeshActor>(Actor))
         {
-            for (auto Component : StaticMeshActor->GetComponents()) // 최적화: AABB 컴포넌트만 검색
+            if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
             {
-                if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(Component))
-                {
-                    ActorBounds_Local = AABBComponent->GetFBound();
-                    bHasBounds = true;
-                    break;
-                }
+                // Refit과 동일하게 GetWorldBoundFromCube()를 사용하여 항상 최신 AABB를 가져옵니다.
+                FBound WorldBound = AABBComponent->GetWorldBoundFromCube();
+                ActorBounds_Local = &WorldBound; // 임시 변수의 주소를 사용
+                
+                FActorBounds AB(Actor, *ActorBounds_Local);
+                ActorBounds.Add(AB);
+                ActorIndices.Add(ActorBounds.Num() - 1);
             }
-        }
-
-        if (bHasBounds)
-        {
-            FActorBounds AB(Actor, *ActorBounds_Local);
-            ActorBounds.Add(AB);
-            ActorIndices.Add(ActorBounds.Num() - 1);
         }
     }
 
