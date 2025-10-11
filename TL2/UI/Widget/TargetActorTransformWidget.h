@@ -38,6 +38,10 @@ private:
 	USceneComponent* SelectedComponent = nullptr;	// 현재 선택된 SceneComponent를 저장할 포인터
 	FString CachedActorName; // 액터 이름 캐시 (안전한 출력을 위해)
 
+	// 추가 가능한 컴포넌트 타입 목록 (메타데이터 기반)
+	TArray<TPair<FString, UClass*>> AddableComponentTypes;
+	bool bComponentTypesInitialized = false;
+
 	// Transform UI 상태
 	FVector EditLocation = {0.0f, 0.0f, 0.0f};
 	FVector EditRotation = {0.0f, 0.0f, 0.0f};

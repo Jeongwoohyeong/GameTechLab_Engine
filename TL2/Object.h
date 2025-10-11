@@ -15,9 +15,10 @@ struct UClass
     const char* Name = nullptr;
     const UClass* Super = nullptr;   // 루트(UObject)는 nullptr
     std::size_t   Size = 0;
+    TMap<FString, FString> MetaData; // 클래스 메타데이터 시스템
 
-    constexpr UClass() = default;
-    constexpr UClass(const char* n, const UClass* s, std::size_t z)//언리얼도 런타임 시간에 관리해주기 때문에 문제가 없습니다.
+    UClass() = default;
+    UClass(const char* n, const UClass* s, std::size_t z)//언리얼도 런타임 시간에 관리해주기 때문에 문제가 없습니다.
         :Name(n), Super(s), Size(z) {
     }
     bool IsChildOf(const UClass* Base) const noexcept
@@ -26,6 +27,34 @@ struct UClass
         for (auto c = this; c; c = c->Super)
             if (c == Base) return true;
         return false;
+    }
+
+    // 메타데이터 접근 함수들
+    void SetMetaData(const FString& Key, const FString& Value)
+    {
+        MetaData[Key] = Value;
+    }
+
+    bool HasMetaData(const FString& Key) const
+    {
+        return MetaData.find(Key) != MetaData.end();
+    }
+
+    FString GetMetaData(const FString& Key, const FString& DefaultValue = "") const
+    {
+        auto It = MetaData.find(Key);
+        return (It != MetaData.end()) ? It->second : DefaultValue;
+    }
+
+    bool GetMetaDataBool(const FString& Key, bool DefaultValue = false) const
+    {
+        auto It = MetaData.find(Key);
+        if (It != MetaData.end())
+        {
+            const FString& Value = It->second;
+            return (Value == "true" || Value == "1" || Value == "True");
+        }
+        return DefaultValue;
     }
 };
 
@@ -157,3 +186,19 @@ public:                                                                       \
 
 template<typename T>
 concept DerivedFromUObject = std::is_base_of_v<UObject, T>;
+
+// ── 클래스 메타데이터 등록 매크로 ──────────────────────────────
+// IMPLEMENT_CLASS 다음에 사용하여 클래스에 메타데이터를 추가합니다.
+// 예: CLASS_META(UStaticMeshComponent, CanSpawnInTransformWidget, "true")
+//     (Key는 quotation 없이 토큰으로 전달, 매크로가 자동으로 문자열화)
+#define CLASS_META(ThisClass, Key, Value)                                     \
+    namespace {                                                               \
+        struct ThisClass##MetaRegister_##Key                                  \
+        {                                                                     \
+            ThisClass##MetaRegister_##Key()                                   \
+            {                                                                 \
+                ThisClass::StaticClass()->SetMetaData(#Key, Value);           \
+            }                                                                 \
+        };                                                                    \
+        static ThisClass##MetaRegister_##Key GMetaRegister_##ThisClass##_##Key; \
+    }

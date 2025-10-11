@@ -1204,9 +1204,11 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
     {
         return nullptr;
     }
+
     PIEWorld->Renderer = EditorWorld->Renderer;
     PIEWorld->MainViewport = EditorWorld->MainViewport;
     PIEWorld->MultiViewport = EditorWorld->MultiViewport;
+
     // WorldType을 PIE로 설정
     PIEWorld->WorldType=(EWorldType::PIE);
 
@@ -1288,14 +1290,13 @@ void UWorld::SpawnActor(AActor* InActor)
 {
     InActor->SetWorld(this);
   
- 
-        if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
-        {
-            FString ActorName = GenerateUniqueActorName(
-                GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
-            );
-            InActor->SetName(ActorName);
-        }
+    if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
+    {
+        FString ActorName = GenerateUniqueActorName(
+            GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
+        );
+        InActor->SetName(ActorName);
+    }
    
     Level->GetActors().Add(InActor);
 }
