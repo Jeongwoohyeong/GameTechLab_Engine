@@ -215,6 +215,9 @@ void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
     BVH = new FBVH();
     BVH->Build(Actors);
 #endif
+    // BVH 초기화 및 빌드
+    BVH = new FBVH();
+    BVH->Build(Actors);
 }
 
 void UWorld::RenderSceneGraph()
@@ -372,6 +375,13 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     RenderEngineActors(ViewMatrix, ProjectionMatrix, Viewport);
 
     // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
+    if (BVH)
+    {
+        for (UDecalComponent* DecalVolume : DecalVolumes)
+        {
+            
+        }
+    }
     for (UDecalComponent* DecalVolume : DecalVolumes)
     {
         for (UStaticMeshComponent* StaticMesh : StaticMeshes)
@@ -1181,6 +1191,11 @@ void UWorld::LoadSceneV2(const FString& SceneName)
     if (MaxUUID > UObject::PeekNextUUID())
     {
         UObject::SetNextUUID(MaxUUID);
+    }
+
+    if (Level)
+    {
+        InitializeSceneGraph(Level->GetActors());
     }
 
     UE_LOG("Scene V2 loaded successfully: %s", SceneName.c_str());
