@@ -259,7 +259,7 @@ void SViewportWindow::RenderToolbar()
 			{
 				Viewport->ToggleShowFlag(EEngineShowFlags::SF_StaticMeshes);
 			}
-
+			 
 			// Grid
 			bool bGridEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
 			if (ImGui::Checkbox("Grid", &bGridEnabled))
@@ -281,12 +281,12 @@ void SViewportWindow::RenderToolbar()
 				Viewport->ToggleShowFlag(EEngineShowFlags::SF_BoundingBoxes);
 			}
 
-			//// Wireframe
-			//bool bWireframeEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Wireframe);
-			//if (ImGui::Checkbox("Wireframe", &bWireframeEnabled))
-			//{
-			//	Viewport->ToggleShowFlag(EEngineShowFlags::SF_Wireframe);
-			//}
+			// Decal
+			bool bDecalEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal);
+			if (ImGui::Checkbox("Decal", &bDecalEnabled))
+			{
+				Viewport->ToggleShowFlag(EEngineShowFlags::SF_Decal);
+			}
 
 			ImGui::EndCombo();
 		}

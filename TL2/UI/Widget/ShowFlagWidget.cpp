@@ -22,6 +22,7 @@ void UShowFlagWidget::Initialize()
     bBillboardText = false;
     bBoundingBoxes = false;
     bGrid = true;
+    bDecal = true;
     bLighting = true;
 }
 
@@ -76,7 +77,6 @@ void UShowFlagWidget::RenderWidget()
 
                 RenderShowFlagCheckbox("Bounds", EEngineShowFlags::SF_BoundingBoxes, Viewport);
                 ImGui::SameLine();
-                RenderShowFlagCheckbox("Wireframe", EEngineShowFlags::SF_Wireframe, Viewport);
             }
             else
             {
@@ -90,6 +90,9 @@ void UShowFlagWidget::RenderWidget()
                 ImGui::Separator();
 
                 RenderDebugSection(Viewport);
+                ImGui::Separator();
+
+                RenderDecalSection(Viewport);
                 ImGui::Separator();
 
                 RenderLightingSection(Viewport);
@@ -116,7 +119,6 @@ void UShowFlagWidget::SyncWithViewport(FViewport* Viewport)
     // 각 플래그 상태를 로컬 변수에 동기화
     bPrimitives = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Primitives);
     bStaticMeshes = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes);
-    bWireframe = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Wireframe);
     bBillboardText = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText);
     bBoundingBoxes = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes);
     bGrid = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
@@ -164,10 +166,6 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
             ImGui::Text("Static Mesh 액터들 표시/숨김");
             ImGui::Text("일반적인 3D 메시 오브젝트들의 가시성을 제어합니다.");
             break;
-        case EEngineShowFlags::SF_Wireframe:
-            ImGui::Text("와이어프레임 오버레이 표시/숨김");
-            ImGui::Text("3D 모델의 와이어프레임을 표시합니다.");
-            break;
         case EEngineShowFlags::SF_BillboardText:
             ImGui::Text("오브젝트 위의 UUID 텍스트 표시/숨김");
             ImGui::Text("각 오브젝트 위에 표시되는 식별자 텍스트입니다.");
@@ -179,6 +177,10 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
         case EEngineShowFlags::SF_Grid:
             ImGui::Text("월드 그리드 표시/숨김");
             ImGui::Text("3D 공간의 참조용 격자를 표시합니다.");
+            break;
+        case EEngineShowFlags::SF_Decal:
+            ImGui::Text("데칼 볼륨 및 데칼 투영 표시/숨김");
+            ImGui::Text("데칼 컴포넌트의 활성화 여부를 결정합니다.");
             break;
         case EEngineShowFlags::SF_Lighting:
             ImGui::Text("조명 효과 활성화/비활성화");
@@ -211,7 +213,6 @@ void UShowFlagWidget::RenderPrimitiveSection(FViewport* Viewport)
 
         ImGui::Indent(15.0f);
         RenderShowFlagCheckbox("Static Meshes", EEngineShowFlags::SF_StaticMeshes, Viewport);
-        RenderShowFlagCheckbox("Wireframe", EEngineShowFlags::SF_Wireframe, Viewport);
         ImGui::Unindent(15.0f);
 
         if (!bPrimitivesEnabled)
@@ -237,6 +238,23 @@ void UShowFlagWidget::RenderDebugSection(FViewport* Viewport)
         RenderShowFlagCheckbox("Billboard Text", EEngineShowFlags::SF_BillboardText, Viewport);
         RenderShowFlagCheckbox("Bounding Boxes", EEngineShowFlags::SF_BoundingBoxes, Viewport);
         RenderShowFlagCheckbox("Grid", EEngineShowFlags::SF_Grid, Viewport);
+
+        ImGui::TreePop();
+    }
+    else
+    {
+        ImGui::PopStyleColor();
+    }
+}
+
+void UShowFlagWidget::RenderDecalSection(FViewport* Viewport)
+{
+    ImGui::PushStyleColor(ImGuiCol_Text, HeaderColor);
+    if (ImGui::TreeNode("Decal"))
+    {
+        ImGui::PopStyleColor();
+
+        RenderShowFlagCheckbox("Decal", EEngineShowFlags::SF_Decal, Viewport);
 
         ImGui::TreePop();
     }
