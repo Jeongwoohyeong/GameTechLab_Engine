@@ -39,9 +39,6 @@ PS_INPUT mainVS(VS_INPUT input)
 
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
-    // Lerp the incoming color with the global LerpColor
-    float4 finalColor;
-    
     if (
         input.decalNDC.x <= -1.0f ||
         input.decalNDC.x >= 1.0f ||
@@ -56,11 +53,10 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     
     float2 uv;
     uv.x = input.decalNDC.x * 0.5f + 0.5f;
-    uv.y = 1.0f - input.decalNDC.y * 0.5f + 0.5f;
-    finalColor.rgb = g_DecalTexture.Sample(g_Sample, uv);
+    uv.y = 1.0f - (input.decalNDC.y * 0.5f + 0.5f);
     
-    // return finalColor;
+    float4 finalColor = g_DecalTexture.Sample(g_Sample, uv);
+    clip(finalColor.a - 0.5f);
     
-    // test code
-    return float4(1.0f, 0.0f, 0.0f, 1.0f);
+    return finalColor;
 }

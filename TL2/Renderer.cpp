@@ -142,8 +142,10 @@ void URenderer::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatr
     RHIDevice->UpdateDecalConstantBuffer(InWorldMVP, InDecalMVP);
 }
 
-void URenderer::ProjectDecalToStaticMesh(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
+void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
+    RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
+
     UINT stride = 0;
     stride = sizeof(FVertexDynamic);
 
@@ -162,9 +164,37 @@ void URenderer::ProjectDecalToStaticMesh(UStaticMesh* InMesh, D3D11_PRIMITIVE_TO
         IndexBuffer, DXGI_FORMAT_R32_UINT, 0
     );
 
-    // TODO : 텍스처를 데칼에 할당해야 함
+    URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
 
-    RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
+    // 매테리얼 변경 추적
+    UMaterial* CompMaterial = Comp->GetMaterial();
+    if (LastMaterial != CompMaterial)
+    {
+        StatsCollector.IncrementMaterialChanges();
+        LastMaterial = CompMaterial;
+    }
+
+    UShader* CompShader = CompMaterial->GetShader();
+    // 셰이더 변경 추적
+    if (LastShader != CompShader)
+    {
+        StatsCollector.IncrementShaderChanges();
+        LastShader = CompShader;
+    }
+
+    RHIDevice->GetDeviceContext()->IASetInputLayout(CompShader->GetInputLayout());
+
+    // 텍스처 변경 추적 (텍스처 비교)
+    UTexture* CompTexture = CompMaterial->GetTexture();
+    if (LastTexture != CompTexture)
+    {
+        StatsCollector.IncrementTextureChanges();
+        LastTexture = CompTexture;
+    }
+
+    ID3D11ShaderResourceView* TextureSRV = CompTexture->GetShaderResourceView();
+
+    RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &TextureSRV);
     RHIDevice->PSSetDefaultSampler(0);
 
     RHIDevice->GetDeviceContext()->DrawIndexed(IndexCount, 0, 0);

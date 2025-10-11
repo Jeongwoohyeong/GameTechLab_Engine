@@ -456,7 +456,7 @@ void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
 void D3D11RHI::Present()
 {
     // Draw any Direct2D overlays before present
-    // UStatsOverlayD2D::Get().Draw();
+    UStatsOverlayD2D::Get().Draw();
     SwapChain->Present(1, 0); // vsync on
 }
 

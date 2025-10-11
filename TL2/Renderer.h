@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "BillboardComponent.h"
+#include "DecalComponent.h"
 #include "RHIDevice.h"
 #include "LineDynamicMesh.h"
 
@@ -55,7 +56,7 @@ public:
 
     void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP);
 
-    void ProjectDecalToStaticMesh(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology);
+    void ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology);
 
     void DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
     void DrawIndexedPrimitiveComponent(UBillboardComponent* Comp,
