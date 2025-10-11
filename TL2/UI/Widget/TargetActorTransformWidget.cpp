@@ -76,6 +76,38 @@ static TArray<FString> GetIconFiles()
 	return iconFiles;
 }
 
+static TArray<FString> GetDecalFiles()
+{
+	TArray<FString> DecalFiles;
+	try
+	{
+		fs::path DecalPath = "Editor/Decal";
+		if (fs::exists(DecalPath) && fs::is_directory(DecalPath))
+		{
+			for (const auto& entry : fs::directory_iterator(DecalPath))
+			{
+				if (entry.is_regular_file())
+				{
+					auto Filename = entry.path().filename().string();
+					if (Filename.ends_with(".dds"))
+					{
+						FString RelativePath = "Editor/Decal/" + Filename;
+						DecalFiles.push_back(RelativePath);
+					}
+				}
+			}
+		}
+	}
+	catch (const std::exception&)
+	{
+		DecalFiles.push_back("Editor/Decal/Pawn_64x.dds");
+		DecalFiles.push_back("Editor/Decal/PointLight_64x.dds");
+		DecalFiles.push_back("Editor/Decal/SpotLight_64x.dds");
+	}
+
+	return DecalFiles;
+}
+
 UTargetActorTransformWidget::UTargetActorTransformWidget()
 	: UWidget("Target Actor Transform Widget")
 	, UIManager(&UUIManager::GetInstance())
@@ -554,6 +586,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				
 				ImGui::Spacing();
 				
+				
 				// Screen Size Scaled 체크박스
 				// bool bIsScreenSizeScaled = BBC->IsScreenSizeScaled();
 				// if (ImGui::Checkbox("Is Screen Size Scaled", &bIsScreenSizeScaled))
@@ -650,11 +683,83 @@ void UTargetActorTransformWidget::RenderWidget()
 				//	TextRenderComponent->SetTextColor(FLinearColor(color[0], color[1], color[2]));
 				//}
 			}
+			else if (UDecalComponent* DecalComponent = Cast<UDecalComponent>(SelectedComponent))
+			{
+				ImGui::Separator();
+				ImGui::Text("Decal Component Settings");
+
+				// 현재 선택된 데칼 경로 표시
+				FString DecalFilePath = DecalComponent->GetTexturePath();
+				// UTexture* DecalTexture = DecalComponent->GetMaterial()->GetTexture();
+				// FString DecalFilePath{};				
+				// if (DecalTexture)
+				// {
+				// 	DecalFilePath = DecalTexture->GetFilePath();
+				// }
+				ImGui::Text("Current Decal: %s", DecalFilePath.c_str());
+
+				// Edidtor/Decal 폴더의 텍스처 로드
+				static TArray<FString> DecalOptions;
+				static bool bIsDecalOptionsLoaded = false;
+				static int32 CurrentDecalIndex = 0;
+
+				if (!bIsDecalOptionsLoaded)
+				{
+					DecalOptions = GetDecalFiles();
+					bIsDecalOptionsLoaded = true;
+
+					for (size_t i = 0; i< DecalOptions.size(); i++)
+					{
+						if (DecalOptions[i] == DecalFilePath)
+						{
+							CurrentDecalIndex = i;
+							break;
+						}
+					}
+				}
+
+				// 데칼 드랍다운 메뉴
+				ImGui::Text("Decal Texture: ");
+				FString CurrentDisplayName = (CurrentDecalIndex >= 0 && CurrentDecalIndex < DecalOptions.size())
+				? GetBaseNameNoExt(DecalOptions[CurrentDecalIndex]) : "Select Decal";
+
+				if (ImGui::BeginCombo("##DecalCombo", CurrentDisplayName.c_str()))
+				{
+					for (int32 i = 0; i< DecalOptions.size(); i++)
+					{
+						FString DisplayName = GetBaseNameNoExt(DecalOptions[i]);
+						bool bIsSelected = (CurrentDecalIndex == i);
+
+						if (ImGui::Selectable(DisplayName.c_str(), bIsSelected))
+						{
+							CurrentDecalIndex = i;
+							DecalComponent->SetTexture(DecalOptions[CurrentDecalIndex]);
+						}
+
+						if (bIsSelected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+
+				ImGui::SameLine();
+				if(ImGui::Button("Refresh"))
+				{
+					bIsDecalOptionsLoaded = false;
+					CurrentDecalIndex = 0;
+				}
+				ImGui::Spacing();
+
+				ImGui::Text("Decal Fade");
+			}
 		else
 		{
 			ImGui::Text("Selected component is not a supported type.");
 		}
 		}
+		
 	}
 	else
 	{
