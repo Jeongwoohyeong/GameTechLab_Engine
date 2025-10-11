@@ -3,7 +3,7 @@
 
 UDecalComponent::UDecalComponent() : OBB(DecalVolumeVertices, this)
 {
-    SetMaterial("Decal.hlsl");
+    SetMaterial(MaterialPath);
 }
 
 UDecalComponent::~UDecalComponent()
@@ -13,7 +13,11 @@ UDecalComponent::~UDecalComponent()
 
 void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
-    OBB.Render(Renderer, View, Proj);
+    // OBB는 에디터에서만 보이도록 처리
+    if (GetWorld() && !GetWorld()->IsPIEWorld())
+    {
+        OBB.Render(Renderer, View, Proj);
+    }
 }
 
 void UDecalComponent::ProjectDecal
@@ -61,4 +65,16 @@ void UDecalComponent::ProjectDecal
 void UDecalComponent::SetTexture(const FString& InTexturePath)
 {
     TexturePath = InTexturePath;
+}
+
+UObject* UDecalComponent::Duplicate()
+{
+    UDecalComponent* DuplicatedComponent = Cast<UDecalComponent>(NewObject(GetClass()));
+    CopyCommonProperties(DuplicatedComponent);
+
+    DuplicatedComponent->Material = this->Material;
+    DuplicatedComponent->TexturePath = this->TexturePath;
+
+    DuplicatedComponent->DuplicateSubObjects();
+    return DuplicatedComponent;
 }
