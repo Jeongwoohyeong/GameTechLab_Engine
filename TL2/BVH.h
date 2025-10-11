@@ -112,6 +112,9 @@ public:
     // 빠른 레이 교차 검사 - 가장 가까운 액터 반환
     AActor* Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const;
 
+    // AABB와 교차하는 모든 액터 찾기
+    void IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const;
+
     // 통계 정보
     int GetNodeCount() const { return Nodes.Num(); }
     int GetActorCount() const { return ActorBounds.Num(); }
@@ -143,7 +146,8 @@ private:
     int PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitPos);
 
     bool IntersectNode(int NodeIndex, const FOptimizedRay& Ray, float& InOutDistance, AActor*& OutActor) const;
-
+    void IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<AActor*>&
+        OutActors) const;
     //// 재귀 교차 검사 (깊이 제한 추가)
     //bool IntersectNode(int NodeIndex, const FVector& RayOrigin, const FVector& RayDirection,
     //                   float& InOutDistance, AActor*& OutActor, int RecursionDepth = 0) const;

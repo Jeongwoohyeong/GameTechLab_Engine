@@ -122,6 +122,20 @@ AActor* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, f
         return nullptr;
     }
 }
+/**
+* @breif 쿼리 AABB와 교차하는 모든 액터를 찾습니다.
+* @param QueryAABB 교차 검사를 수행할 AABB
+* @param OutActors 교차된 액터들의 목록 저장할 배열
+*/
+void FBVH::IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const
+{
+    OutActors.Empty();
+    if (Nodes.Num() == 0)
+    {
+        return;
+    }
+    IntersectAABBRecursive(0, QueryAABB, OutActors);
+}
 
 int FBVH::BuildRecursive(int FirstActor, int ActorCount, int Depth)
 {
@@ -477,6 +491,50 @@ bool FBVH::IntersectNode(int NodeIndex,
     }
 
     return bHit;
+}
+/**
+* @breif BVH 노드를 재귀적으로 순회하며 AABB와 교차하는 액터를 찾습니다.
+* @param NodeIndex 현재 탐색 중인 노드의 인덱스
+* @param QueryAABB 검사할 AABB
+* @param OutActors 결과를 저장할 배열
+*/
+void FBVH::IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<AActor*>& OutActors) const
+{
+    const FBVHNode& Node = Nodes[NodeIndex];
+
+    // 노드의 AABB와 쿼리 AABB가 교차 안하면 Pruning
+    if (!Node.BoundingBox.Intersects(QueryAABB))
+    {
+        return;
+    }
+
+    // Leaf 노드인 경우
+    if (Node.IsLeaf())
+    {
+        for (int i = 0;i < Node.ActorCount; ++i)
+        {
+            int ActorIndexInBVH = ActorIndices[Node.FirstActor + i];
+            const FActorBounds& ActorBound = ActorBounds[ActorIndexInBVH];
+
+            if (ActorBound.Bounds.Intersects(QueryAABB))
+            {
+                OutActors.Add(ActorBound.Actor);
+            }
+        }
+    }
+    // Internal 노드인 경우
+    else
+    {
+        // 재귀적 탐색
+        if (Node.LeftChild != -1)
+        {
+            IntersectAABBRecursive(Node.LeftChild, QueryAABB, OutActors);
+        }
+        if (Node.RightChild != -1)
+        {
+            IntersectAABBRecursive(Node.RightChild, QueryAABB, OutActors);
+        }
+    }
 }
 
 bool FBVH::IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
