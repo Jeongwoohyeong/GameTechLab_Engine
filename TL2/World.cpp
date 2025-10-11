@@ -394,18 +394,72 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
         FScopeCycleCounter ViewportAspectDecalRenderTimer(ViewportAspectDecalRenderStatId);
 
         // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
-        for (UDecalComponent* DecalVolume : DecalVolumes)
+        if (BVH)
         {
-            for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+            // 각 데칼 볼륨에 대해 수행
+            for (UDecalComponent* DecalVolume : DecalVolumes)
             {
-                DecalVolume->ProjectDecal(
-                    Renderer,
-                    StaticMesh,
-                    ViewMatrix,
-                    ProjectionMatrix
-                );
+                UOBoundingBoxComponent* DecalOBB = DecalVolume->GetOBBComponent();
+                if (!DecalOBB)
+                {
+                    continue;
+                }
+                // ======= Broad Phase =======
+                // Decal OBB를 감싸는 AABB
+                FBound DecalWorldAABB = DecalOBB->GetWorldBound();
+                
+                // BVH에 AABB 쿼리 -> 후보 액터 목록 얻기
+                TArray<AActor*> CandidateActors;
+                BVH->IntersectAABB(DecalWorldAABB, CandidateActors);
+
+                // ======= Narrow Phase =======
+                // 후보군 액터에서 SAT 검사 수행
+                for (AActor* CandidateActor : CandidateActors)
+                {
+                    // 후보군 액터에서 StaticMeshActor 뽑기
+                    AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(CandidateActor);
+                    if (!StaticMeshActor)
+                    {
+                        continue;
+                    }
+                    UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
+                    UAABoundingBoxComponent* MeshAABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent);
+                    // 두개 중 하나라도 없으면 검사 수행 불가
+                    if (!StaticMeshComponent || !MeshAABBComponent)
+                    {
+                        continue;
+                    }
+                    // 데칼 OBB와 StaticMesh가 가진 AABB와 충돌 검사(SAT)
+                    if (DecalOBB->IntersectsWithAABB(*MeshAABBComponent->GetFBound()))
+                    {
+                        DecalVolume->ProjectDecal(
+                            Renderer,
+                            StaticMeshComponent,
+                            ViewMatrix,
+                            ProjectionMatrix
+                        );
+                    }
+                }
+
+
             }
         }
+        else // BVH가 없는 경우, 기존 방식으로 렌더링
+        {
+            for (UDecalComponent* DecalVolume : DecalVolumes)
+            {
+                for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+                {
+                    DecalVolume->ProjectDecal(
+                        Renderer,
+                        StaticMesh,
+                        ViewMatrix,
+                        ProjectionMatrix
+                    );
+                }
+            }
+        }
+        
 
         uint64_t ViewportAspectCycleDiff = ViewportAspectDecalRenderTimer.Finish();
         double ViewportAspectDecalRenderTimeMs = FPlatformTime::ToMilliseconds(ViewportAspectCycleDiff);
