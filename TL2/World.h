@@ -79,13 +79,9 @@ public:
 	bool DestroyActor(AActor* Actor);
 
 	void CreateNewScene();
-	// Version 1 (Legacy)
+
 	void LoadScene(const FString& SceneName);
 	void SaveScene(const FString& SceneName);
-
-	// Version 2 (Component Hierarchy)
-	void LoadSceneV2(const FString& SceneName);
-	void SaveSceneV2(const FString& SceneName);
 	ACameraActor* GetCameraActor() { return MainCameraActor; }
 
 	EViewModeIndex GetViewModeIndex() { return ViewModeIndex; }
@@ -133,6 +129,9 @@ public:
 	void CleanupWorld();
 
 	bool IsPIEWorld() const { return WorldType == EWorldType::PIE; }
+
+	void Serialize(FObjectData* Data) override;
+	void DeSerialize(FObjectData* Data) override;
 private:
 	// 싱글톤 매니저 참조
 	UResourceManager& ResourceManager;

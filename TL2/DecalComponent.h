@@ -40,16 +40,29 @@ public:
     virtual UObject* Duplicate() override;
     virtual void DuplicateSubObjects() override;
 
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
+    void TickComponent(float DeltaTime) override;
+
+    void SetFadeEnabled(bool bIsEnable);
+
 protected:
     ~UDecalComponent() override;
 
 private:
+    void UpdateFade(float DeltaTime);
+
+private:
     UOBoundingBoxComponent OBB;
-    FString TexturePath = "Editor/Decal/PointLight_64x.dds";
+    FString TexturePath = "Editor/Decal/doro.dds";
     FString MaterialPath = "Decal.hlsl";
     // Duration, min, max, Alpha
     FVector4 DefaultFadeProperties = {5.0f, 0.0f, 1.0f, 1.0f};
     FVector4 FadeProperties = DefaultFadeProperties;
+    bool bIsFadeEnabled = false;
+    bool bIsFadeOut = true;
+    float ElapsedTime = 0.0f;
+    
 
     // Projection settings
     bool bUsePerspectiveProjection = false;  // false = Ortho, true = Perspective

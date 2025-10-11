@@ -100,6 +100,7 @@ public:
     // Tick 조건 헬퍼 함수들
     bool ShouldTickInEditor() const { return bTickInEditor; }
     bool CanTickInPlayMode() const { return bCanEverTick && !bHiddenInGame; }
+    void SetEditorTickEnabled(bool bEnableTick) { bTickInEditor = bEnableTick; }
 
     
 
@@ -107,6 +108,9 @@ public:
     UWorld* GetWorld() const override final;
     // TODO(KHJ): 제거 필요
     void SetWorld(UWorld* InWorld) { World = InWorld; }
+
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
 
 public:
     // NOTE: UObject의 ObjectName과 용도가 겹치는 것 같음?

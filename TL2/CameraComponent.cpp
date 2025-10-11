@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "CameraComponent.h"
 #include"FViewport.h"
+#include "CameraActor.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;

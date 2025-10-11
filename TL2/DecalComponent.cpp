@@ -3,17 +3,53 @@
 
 UDecalComponent::UDecalComponent() : OBB(DecalVolumeVertices, this)
 {
-    SetMaterial(MaterialPath);
+    SetMaterial(MaterialPath);    
 }
 
 void UDecalComponent::ResetFadeProperties()
 {
     FadeProperties = DefaultFadeProperties;
+    ElapsedTime = 0.0f;
+    bIsFadeOut = true;
 }
 
 UDecalComponent::~UDecalComponent()
 {
     Material = nullptr;
+}
+
+void UDecalComponent::UpdateFade(float DeltaTime)
+{
+    if (!bIsFadeEnabled)
+    {
+        return;
+    }
+
+    if (FadeProperties.X > FLT_EPSILON)
+    {
+        ElapsedTime += DeltaTime;
+        float Progress = ElapsedTime / FadeProperties.X;
+
+        // 선형보간
+        if (bIsFadeOut)
+        {
+            // fade out일 때 max에서 min까지 선형보간
+            FadeProperties.W = FadeProperties.Z - (FadeProperties.Z - FadeProperties.Y) * Progress;
+        }
+        else
+        {
+            // min에서 max까지 선형보간
+            FadeProperties.W = FadeProperties.Y + (FadeProperties.Z - FadeProperties.Y) * Progress;
+        }
+
+        // 진행도가 1 이상이면 fade in - fade out 전환
+        // 진행시간 초기화
+        if (Progress >= 1.0f)
+        {
+            ElapsedTime = 0.0f;
+            bIsFadeOut = !bIsFadeOut;
+        }
+    }
 }
 
 void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
@@ -132,4 +168,60 @@ UObject* UDecalComponent::Duplicate()
 void UDecalComponent::DuplicateSubObjects()
 {
     Super_t::DuplicateSubObjects();
+}
+
+void UDecalComponent::Serialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UStaticMeshComponent::Serialize got wrong data type.");
+
+    USceneComponent::Serialize(Data);
+
+    if (!TexturePath.empty())
+    {
+        ComponentData->ResourceName = TexturePath;
+        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->ResourceName.c_str());
+    }
+    else
+    {
+        UE_LOG("SaveScene: Decal has no Texture assigned");
+    }
+}
+
+void UDecalComponent::DeSerialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
+
+    USceneComponent::DeSerialize(Data);
+
+    if (!ComponentData->ResourceName.empty())
+    {
+        TexturePath = ComponentData->ResourceName;
+    }
+}
+
+
+void UDecalComponent::TickComponent(float DeltaTime)
+{
+    UPrimitiveComponent::TickComponent(DeltaTime);
+    UpdateFade(DeltaTime);
+}
+
+void UDecalComponent::SetFadeEnabled(bool bIsEnable)
+{
+    this->bIsFadeEnabled = bIsEnable;
+    // fade가 시작되면 세팅값 초기화
+    if (bIsFadeEnabled)
+    {
+        ElapsedTime = 0.0f;
+        bIsFadeOut = true;
+    }
+    // fade 종료 시 기본값으로 초기화
+    else
+    {
+        FadeProperties = DefaultFadeProperties;
+    }
+    // Tick 활성화 제어
+    SetTickEnabled(bIsFadeEnabled);
 }

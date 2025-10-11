@@ -27,6 +27,7 @@ AStaticMeshActor::AStaticMeshActor()
 
 void AStaticMeshActor::Tick(float DeltaTime)
 {
+    AActor::Tick(DeltaTime);
     static float times;
     times += DeltaTime;
     if (World->WorldType == EWorldType::PIE) {
