@@ -201,6 +201,28 @@ UWorld* AActor::GetWorld() const
     return World;
 }
 
+void AActor::Serialize(FObjectData* Data)
+{
+    FActorData* ActorData = dynamic_cast<FActorData*>(Data);
+    assert(ActorData, "AActor::Serialize got wrong data type.");
+
+    UObject::Serialize(Data);
+    ActorData->Name = Name.ToString();
+    ActorData->Type = GetClass()->Name;
+
+    if (RootComponent)
+        ActorData->RootComponentUUID = RootComponent->UUID;
+}
+
+void AActor::DeSerialize(FObjectData* Data)
+{
+    FActorData* ActorData = dynamic_cast<FActorData*>(Data);
+    assert(ActorData, "AActor::DeSerialize got wrong data type.");
+
+    UObject::DeSerialize(Data);
+    SetName(ActorData->Name);
+}
+
 // ParentComponent 하위에 새로운 컴포넌트를 추가합니다
 USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentComponent, UClass* ComponentClass)
 {

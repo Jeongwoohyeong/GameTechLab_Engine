@@ -736,236 +736,15 @@ void UWorld::ProcessViewportInput()
     MultiViewport->OnMouseMove(MousePosition);
 }
 
-void UWorld::LoadScene(const FString& SceneName)
-{
-    namespace fs = std::filesystem;
-    fs::path path = fs::path("Scene") / SceneName;
-    if (path.extension().string() != ".Scene")
-    {
-        path.replace_extension(".Scene");
-    }
-
-    const FString FilePath = path.make_preferred().string();
-
-    // [1] 로드 시작 전 현재 카운터 백업
-    const uint32 PreLoadNext = UObject::PeekNextUUID();
-
-    // [2] 파일 NextUUID는 현재보다 클 때만 반영(절대 하향 설정 금지)
-    uint32 LoadedNextUUID = 0;
-    if (FSceneLoader::TryReadNextUUID(FilePath, LoadedNextUUID))
-    {
-        if (LoadedNextUUID > UObject::PeekNextUUID())
-        {
-            UObject::SetNextUUID(LoadedNextUUID);
-        }
-    }
-
-    // [3] 기존 씬 비우기
-    CreateNewScene();
-
-    // [4] 로드
-    FPerspectiveCameraData CamData{};
-    const TArray<FPrimitiveData>& Primitives = FSceneLoader::Load(FilePath, &CamData);
-
-    // 마우스 델타 초기화
-    const FVector2D CurrentMousePos = UInputManager::GetInstance().GetMousePosition();
-    UInputManager::GetInstance().SetLastMousePosition(CurrentMousePos);
-
-    // 카메라 적용
-    if (MainCameraActor && MainCameraActor->GetCameraComponent())
-    {
-        UCameraComponent* Cam = MainCameraActor->GetCameraComponent();
-
-        // 위치/회전(월드 트랜스폼)
-        MainCameraActor->SetActorLocation(CamData.Location);
-        MainCameraActor->SetActorRotation(FQuat::MakeFromEuler(CamData.Rotation));
-
-        // 입력 경로와 동일한 방식으로 각도/회전 적용
-        // 매핑: Pitch = CamData.Rotation.Y, Yaw = CamData.Rotation.Z
-        MainCameraActor->SetAnglesImmediate(CamData.Rotation.Y, CamData.Rotation.Z);
-
-        // UIManager의 카메라 회전 상태도 동기화
-        UIManager.UpdateMouseRotation(CamData.Rotation.Y, CamData.Rotation.Z);
-
-        // 프로젝션 파라미터
-        Cam->SetFOV(CamData.FOV);
-        Cam->SetClipPlanes(CamData.NearClip, CamData.FarClip);
-
-        // UI 위젯에 현재 카메라 상태로 재동기화 요청
-        UIManager.SyncCameraControlFromCamera();
-    }
-
-    // 1) 현재 월드에서 이미 사용 중인 UUID 수집(엔진 액터 + 기즈모)
-    std::unordered_set<uint32> UsedUUIDs;
-    auto AddUUID = [&](AActor* A) { if (A) UsedUUIDs.insert(A->UUID); };
-    for (AActor* Eng : EngineActors)
-    {
-        AddUUID(Eng);
-    }
-    AddUUID(GizmoActor); // Gizmo는 EngineActors에 안 들어갈 수 있으므로 명시 추가
-
-    uint32 MaxAssignedUUID = 0;
-
-    for (const FPrimitiveData& Primitive : Primitives)
-    {
-        // 스폰 시 필요한 초기 트랜스폼은 그대로 넘김
-        AStaticMeshActor* StaticMeshActor = SpawnActor<AStaticMeshActor>(
-            FTransform(Primitive.Location,
-                       SceneRotUtil::QuatFromEulerZYX_Deg(Primitive.Rotation),
-                       Primitive.Scale));
-
-        // 스폰 시점에 자동 발급된 고유 UUID (충돌 시 폴백으로 사용)
-        uint32 Assigned = StaticMeshActor->UUID;
-
-        // 우선 스폰된 UUID를 사용 중으로 등록
-        UsedUUIDs.insert(Assigned);
-
-        // 2) 파일의 UUID를 우선 적용하되, 충돌이면 스폰된 UUID 유지
-        if (Primitive.UUID != 0)
-        {
-            if (UsedUUIDs.find(Primitive.UUID) == UsedUUIDs.end())
-            {
-                // 스폰된 ID 등록 해제 후 교체
-                UsedUUIDs.erase(Assigned);
-                StaticMeshActor->UUID = Primitive.UUID;
-                Assigned = Primitive.UUID;
-                UsedUUIDs.insert(Assigned);
-            }
-            else
-            {
-                // 충돌: 파일 UUID 사용 불가 → 경고 로그 및 스폰된 고유 UUID 유지
-                UE_LOG("LoadScene: UUID collision detected (%u). Keeping generated %u for actor.",
-                       Primitive.UUID, Assigned);
-            }
-        }
-
-        MaxAssignedUUID = std::max(MaxAssignedUUID, Assigned);
-
-        if (UStaticMeshComponent* SMC = StaticMeshActor->GetStaticMeshComponent())
-        {
-            FPrimitiveData Temp = Primitive;
-            SMC->Serialize(true, Temp);
-
-            FString LoadedAssetPath;
-            if (UStaticMesh* Mesh = SMC->GetStaticMesh())
-            {
-                LoadedAssetPath = Mesh->GetAssetPathFileName();
-            }
-
-            if (LoadedAssetPath == "Data/Sphere.obj")
-            {
-                StaticMeshActor->SetCollisionComponent(EPrimitiveType::Sphere);
-            }
-            else
-            {
-                StaticMeshActor->SetCollisionComponent();
-            }
-
-            FString BaseName = "StaticMesh";
-            if (!LoadedAssetPath.empty())
-            {
-                BaseName = RemoveObjExtension(LoadedAssetPath);
-            }
-            StaticMeshActor->SetName(GenerateUniqueActorName(BaseName));
-        }
-    }
-
- 
-
-    // 3) 최종 보정: 전역 카운터는 절대 하향 금지 + 현재 사용된 최대값 이후로 설정
-    const uint32 DuringLoadNext = UObject::PeekNextUUID();
-    const uint32 SafeNext = std::max({DuringLoadNext, MaxAssignedUUID + 1, PreLoadNext});
-    UObject::SetNextUUID(SafeNext);
-
-
-
-    if (Level)
-    {
-        InitializeSceneGraph(Level->GetActors());
-    }
-}
-
 void UWorld::SaveScene(const FString& SceneName)
 {
-    TArray<FPrimitiveData> Primitives;
-
-    for (AActor* Actor :Level->GetActors())
-    {
-        if (AStaticMeshActor* MeshActor = Cast<AStaticMeshActor>(Actor))
-        {
-            FPrimitiveData Data;
-            Data.UUID = Actor->UUID;
-            Data.Type = "StaticMeshComp";
-            if (UStaticMeshComponent* SMC = MeshActor->GetStaticMeshComponent())
-            {
-                SMC->Serialize(false, Data); // 여기서 RotUtil 적용됨(상위 Serialize)
-            }
-            Primitives.push_back(Data);
-        }
-        else
-        {
-            FPrimitiveData Data;
-            Data.UUID = Actor->UUID;
-            Data.Type = "Actor";
-
-            if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(Actor->GetRootComponent()))
-            {
-                Prim->Serialize(false, Data); // 여기서 RotUtil 적용됨
-            }
-            else
-            {
-                // 루트가 Primitive가 아닐 때도 동일 규칙으로 저장
-                Data.Location = Actor->GetActorLocation();
-                Data.Rotation = SceneRotUtil::EulerZYX_Deg_FromQuat(Actor->GetActorRotation());
-                Data.Scale = Actor->GetActorScale();
-            }
-
-            Data.ObjStaticMeshAsset.clear();
-            Primitives.push_back(Data);
-        }
-    }
-
-    // 카메라 데이터 채우기
-    const FPerspectiveCameraData* CamPtr = nullptr;
-    FPerspectiveCameraData CamData;
-    if (MainCameraActor && MainCameraActor->GetCameraComponent())
-    {
-        UCameraComponent* Cam = MainCameraActor->GetCameraComponent();
-
-        CamData.Location = MainCameraActor->GetActorLocation();
-
-        // 내부 누적 각도로 저장: Pitch=Y, Yaw=Z, Roll=0
-        CamData.Rotation.X = 0.0f;
-        CamData.Rotation.Y = MainCameraActor->GetCameraPitch();
-        CamData.Rotation.Z = MainCameraActor->GetCameraYaw();
-
-        CamData.FOV = Cam->GetFOV();
-        CamData.NearClip = Cam->GetNearClip();
-        CamData.FarClip = Cam->GetFarClip();
-        CamPtr = &CamData;
-    }
-
-    // Scene 디렉터리에 저장
-    FSceneLoader::Save(Primitives, CamPtr, SceneName);
-}
-
-void UWorld::SaveSceneV2(const FString& SceneName)
-{
     FSceneData SceneData;
-    SceneData.Version = 2;
-    SceneData.NextUUID = UObject::PeekNextUUID();
+    Serialize(&SceneData);
 
     // 카메라 데이터 채우기
     if (MainCameraActor && MainCameraActor->GetCameraComponent())
     {
-        UCameraComponent* Cam = MainCameraActor->GetCameraComponent();
-        SceneData.Camera.Location = MainCameraActor->GetActorLocation();
-        SceneData.Camera.Rotation.X = 0.0f;
-        SceneData.Camera.Rotation.Y = MainCameraActor->GetCameraPitch();
-        SceneData.Camera.Rotation.Z = MainCameraActor->GetCameraYaw();
-        SceneData.Camera.FOV = Cam->GetFOV();
-        SceneData.Camera.NearClip = Cam->GetNearClip();
-        SceneData.Camera.FarClip = Cam->GetFarClip();
+        MainCameraActor->Serialize(&SceneData.Camera);
     }
 
     // Actor 및 Component 계층 수집
@@ -975,12 +754,7 @@ void UWorld::SaveSceneV2(const FString& SceneName)
 
         // Actor 데이터
         FActorData ActorData;
-        ActorData.UUID = Actor->UUID;
-        ActorData.Name = Actor->GetName().ToString();
-        ActorData.Type = Actor->GetClass()->Name;
-
-        if (Actor->GetRootComponent())
-            ActorData.RootComponentUUID = Actor->GetRootComponent()->UUID;
+        Actor->Serialize(&ActorData);
 
         SceneData.Actors.push_back(ActorData);
 
@@ -989,52 +763,21 @@ void UWorld::SaveSceneV2(const FString& SceneName)
         {
             if (!ActorComp) continue;
 
-            // SceneComponent만 처리 (Transform 정보가 있는 컴포넌트)
-            USceneComponent* Comp = Cast<USceneComponent>(ActorComp);
-            if (!Comp) continue;
+            USceneComponent* Component = Cast<USceneComponent>(ActorComp);
+            if (!Component) continue;
 
-            FComponentData CompData;
-            CompData.UUID = Comp->UUID;
-            CompData.OwnerActorUUID = Actor->UUID;
+            FComponentData ComponentData;
+            Component->Serialize(&ComponentData);
 
-            // 부모 컴포넌트 UUID (RootComponent면 0)
-            if (Comp->GetAttachParent())
-                CompData.ParentComponentUUID = Comp->GetAttachParent()->UUID;
-            else
-                CompData.ParentComponentUUID = 0;
-
-            // Transform
-            CompData.RelativeLocation = Comp->GetRelativeLocation();
-            CompData.RelativeRotation = Comp->GetRelativeRotation().ToEuler();
-            CompData.RelativeScale = Comp->GetRelativeScale();
-
-            // Type 자동 가져오기
-            CompData.Type = Comp->GetClass()->Name;
-
-            // Type별 속성
-            if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Comp))
-            {
-                if (StaticMeshComponent->GetStaticMesh())
-                {
-                    CompData.StaticMesh = StaticMeshComponent->GetStaticMesh()->GetAssetPathFileName();
-                    UE_LOG("SaveScene: StaticMesh saved: %s", CompData.StaticMesh.c_str());
-                }
-                else
-                {
-                    UE_LOG("SaveScene: StaticMeshComponent has no StaticMesh assigned");
-                }
-                // TODO: Materials 수집
-            }
-
-            SceneData.Components.push_back(CompData);
+            SceneData.Components.push_back(ComponentData);
         }
     }
 
     // Scene 디렉터리에 V2 포맷으로 저장
-    FSceneLoader::SaveV2(SceneData, SceneName);
+    FSceneLoader::Save(SceneData, SceneName);
 }
 
-void UWorld::LoadSceneV2(const FString& SceneName)
+void UWorld::LoadScene(const FString& SceneName)
 {
     namespace fs = std::filesystem;
     fs::path path = fs::path("Scene") / SceneName;
@@ -1059,34 +802,20 @@ void UWorld::LoadSceneV2(const FString& SceneName)
     CreateNewScene();
 
     // V2 데이터 로드
-    FSceneData SceneData = FSceneLoader::LoadV2(FilePath);
+    FSceneData SceneData = FSceneLoader::Load(FilePath);
 
     // 마우스 델타 초기화
     const FVector2D CurrentMousePos = UInputManager::GetInstance().GetMousePosition();
     UInputManager::GetInstance().SetLastMousePosition(CurrentMousePos);
 
-
-
     if (MainCameraActor && MainCameraActor->GetCameraComponent())
     {
-        UCameraComponent* Cam = MainCameraActor->GetCameraComponent();
-        MainCameraActor->SetActorLocation(SceneData.Camera.Location);
-        MainCameraActor->SetCameraPitch(SceneData.Camera.Rotation.Y);
-        MainCameraActor->SetCameraYaw(SceneData.Camera.Rotation.Z);
-
-        // 입력 경로와 동일한 방식으로 각도/회전 적용
-      // 매핑: Pitch = CamData.Rotation.Y, Yaw = CamData.Rotation.Z
-        MainCameraActor->SetAnglesImmediate(SceneData.Camera.Rotation.Y, SceneData.Camera.Rotation.Z);
-
+        MainCameraActor->DeSerialize(&SceneData.Camera);
+        
         // UIManager의 카메라 회전 상태도 동기화
         UIManager.UpdateMouseRotation(SceneData.Camera.Rotation.Y, SceneData.Camera.Rotation.Z);
-
-        Cam->SetFOV(SceneData.Camera.FOV);
-        Cam->SetClipPlanes(SceneData.Camera.NearClip, SceneData.Camera.FarClip);
-
         // UI 위젯에 현재 카메라 상태로 재동기화 요청
         UIManager.SyncCameraControlFromCamera();
-      
     }
 
     // UUID → Object 매핑 테이블
@@ -1106,46 +835,32 @@ void UWorld::LoadSceneV2(const FString& SceneName)
             continue;
         }
 
-        NewActor->UUID = ActorData.UUID;
-        NewActor->SetName(ActorData.Name);
+        NewActor->DeSerialize(const_cast<FActorData*>(&ActorData));
         NewActor->SetWorld(this);
 
         ActorMap.Add(ActorData.UUID, NewActor);
     }
 
     // Component 생성
-    for (const FComponentData& CompData : SceneData.Components)
+    for (const FComponentData& ComponentData : SceneData.Components)
     {
-        USceneComponent* NewComp = Cast<USceneComponent>(NewObject(CompData.Type));
+        USceneComponent* NewComponent = Cast<USceneComponent>(NewObject(ComponentData.Type));
 
-        if (!NewComp)
+        if (!NewComponent)
         {
-            UE_LOG("Failed to create Component: %s", CompData.Type.c_str());
+            UE_LOG("Failed to create Component: %s", ComponentData.Type.c_str());
             continue;
         }
 
-        NewComp->UUID = CompData.UUID;
-        NewComp->SetRelativeLocation(CompData.RelativeLocation);
-        NewComp->SetRelativeRotation(FQuat::MakeFromEuler(CompData.RelativeRotation));
-        NewComp->SetRelativeScale(CompData.RelativeScale);
-
-        // Type별 속성 복원
-        if (UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(NewComp))
-        {
-            if (!CompData.StaticMesh.empty())
-            {
-                SMC->SetStaticMesh(CompData.StaticMesh);
-            }
-            // TODO: Materials 복원
-        }
+        NewComponent->DeSerialize(const_cast<FComponentData*>(&ComponentData));
 
         // Owner Actor 설정
-        if (AActor** OwnerActor = ActorMap.Find(CompData.OwnerActorUUID))
+        if (AActor** OwnerActor = ActorMap.Find(ComponentData.OwnerActorUUID))
         {
-            NewComp->SetOwner(*OwnerActor);
+            NewComponent->SetOwner(*OwnerActor);
         }
 
-        ComponentMap.Add(CompData.UUID, NewComp);
+        ComponentMap.Add(ComponentData.UUID, NewComponent);
     }
 
     // ========================================
@@ -1181,12 +896,6 @@ void UWorld::LoadSceneV2(const FString& SceneName)
                 Comp->SetupAttachment(*ParentPtr, EAttachmentRule::KeepRelative);
             }
         }
-
-        // Actor의 OwnedComponents에 추가
-        if (AActor** OwnerActorPtr = ActorMap.Find(CompData.OwnerActorUUID))
-        {
-            (*OwnerActorPtr)->OwnedComponents.Add(Comp);
-        }
     }
 
     // Actor를 Level에 추가
@@ -1213,12 +922,7 @@ void UWorld::LoadSceneV2(const FString& SceneName)
         }
     }
 
-    // NextUUID 업데이트 (로드된 모든 UUID + 1)
-    uint32 MaxUUID = SceneData.NextUUID;
-    if (MaxUUID > UObject::PeekNextUUID())
-    {
-        UObject::SetNextUUID(MaxUUID);
-    }
+    DeSerialize(&SceneData);
 
     UE_LOG("Scene V2 loaded successfully: %s", SceneName.c_str());
 }
@@ -1316,6 +1020,28 @@ void UWorld::CleanupWorld()
                 Actor->EndPlay(EEndPlayReason::Quit);
             }
         }
+    }
+}
+
+void UWorld::Serialize(FObjectData* Data)
+{
+    FSceneData* SceneData = dynamic_cast<FSceneData*>(Data);
+    assert(SceneData, "UStaticMeshComponent::Serialize got wrong data type.");
+
+    SceneData->Version = 2;
+    SceneData->NextUUID = UObject::PeekNextUUID();
+}
+
+void UWorld::DeSerialize(FObjectData* Data)
+{
+    FSceneData* SceneData = dynamic_cast<FSceneData*>(Data);
+    assert(SceneData, "UStaticMeshComponent::DeSerialize got wrong data type.");
+
+    // NextUUID 업데이트 (로드된 모든 UUID + 1)
+    uint32 MaxUUID = SceneData->NextUUID;
+    if (MaxUUID > UObject::PeekNextUUID())
+    {
+        UObject::SetNextUUID(MaxUUID);
     }
 }
 

@@ -26,6 +26,10 @@ public:
     FVector4 GetFadeProperties() const { return FadeProperties;}
     void ResetFadeProperties();
     virtual UObject* Duplicate() override;
+    virtual void DuplicateSubObjects() override;
+
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
     void TickComponent(float DeltaTime) override;
 
     void SetFadeEnabled(bool bIsEnable);
