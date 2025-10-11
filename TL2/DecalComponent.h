@@ -22,6 +22,7 @@ public:
     void SetTexture(const FString& TexturePath);
     const FString& GetTexturePath() const { return TexturePath; }
     virtual UObject* Duplicate() override;
+    virtual void DuplicateSubObjects() override;
 
 protected:
     ~UDecalComponent() override;
