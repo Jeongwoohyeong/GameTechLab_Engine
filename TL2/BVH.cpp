@@ -79,6 +79,19 @@ void FBVH::Build(const TArray<AActor*>& Actors)
         ActorBounds.Num(), Nodes.Num(), MaxDepth, BuildTimeMs);
     UE_LOG(buf);
 }
+// 🔥 새로 추가: Bound 합치는 유틸리티
+static inline FBound Union(const FBound& A, const FBound& B)
+{
+    FBound Out;
+    Out.Min.X = FMath::Min(A.Min.X, B.Min.X);
+    Out.Min.Y = FMath::Min(A.Min.Y, B.Min.Y);
+    Out.Min.Z = FMath::Min(A.Min.Z, B.Min.Z);
+
+    Out.Max.X = FMath::Max(A.Max.X, B.Max.X);
+    Out.Max.Y = FMath::Max(A.Max.Y, B.Max.Y);
+    Out.Max.Z = FMath::Max(A.Max.Z, B.Max.Z);
+    return Out;
+}
 
 void FBVH::Refit()
 {
@@ -297,19 +310,6 @@ FBound FBVH::CalculateCentroidBounds(int FirstActor, int ActorCount) const
     return Bounds;
 }
 
-// 🔥 새로 추가: Bound 합치는 유틸리티
-static inline FBound Union(const FBound& A, const FBound& B)
-{
-    FBound Out;
-    Out.Min.X = FMath::Min(A.Min.X, B.Min.X);
-    Out.Min.Y = FMath::Min(A.Min.Y, B.Min.Y);
-    Out.Min.Z = FMath::Min(A.Min.Z, B.Min.Z);
-
-    Out.Max.X = FMath::Max(A.Max.X, B.Max.X);
-    Out.Max.Y = FMath::Max(A.Max.Y, B.Max.Y);
-    Out.Max.Z = FMath::Max(A.Max.Z, B.Max.Z);
-    return Out;
-}
 
 int FBVH::FindBestSplit(int FirstActor, int ActorCount, int& OutAxis, float& OutSplitPos)
 {

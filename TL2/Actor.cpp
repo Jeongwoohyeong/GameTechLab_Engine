@@ -75,6 +75,11 @@ void AActor::SetActorTransform(const FTransform& InNewTransform) const
     if (RootComponent)
     {
         RootComponent->SetWorldTransform(InNewTransform);
+
+        if (World)
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -88,7 +93,16 @@ void AActor::SetActorLocation(const FVector& InNewLocation)
 {
     if (RootComponent)
     {
+        if (RootComponent->GetWorldLocation() == InNewLocation)
+        {
+            return;
+        }
         RootComponent->SetWorldLocation(InNewLocation);
+
+        if (World)
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -101,7 +115,13 @@ void AActor::SetActorRotation(const FVector& InEulerDegree) const
 {
     if (RootComponent)
     {
+        
         RootComponent->SetWorldRotation(FQuat::MakeFromEuler(InEulerDegree));
+    
+        if (World)
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -109,7 +129,16 @@ void AActor::SetActorRotation(const FQuat& InQuat) const
 {
     if (RootComponent)
     {
+        /*if (RootComponent->GetWorldRotation() == InQuat)
+        {
+            return;
+        }*/
         RootComponent->SetWorldRotation(InQuat);
+
+        if (World)
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -122,7 +151,17 @@ void AActor::SetActorScale(const FVector& InNewScale) const
 {
     if (RootComponent)
     {
+        if (RootComponent->GetWorldScale() == InNewScale)
+        {
+            return;
+        }
         RootComponent->SetWorldScale(InNewScale);
+
+        if (World)
+        {
+            // TODO: 이 함수가 매번 호출되니까 BVH 계속 Refit됨
+            //World->MarkBVHDirty();
+        }
     }
 }
 
