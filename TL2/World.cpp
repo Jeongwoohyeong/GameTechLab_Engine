@@ -331,18 +331,26 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 continue;
             }
 
-            // TODO : Decal Show Flag 구현
             UDecalComponent* DecalComponent = Cast<UDecalComponent>(Component);
-            if (DecalComponent/* &&
-                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal)*/)
+            // Decal Show Flag가 켜져 있다면
+            if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal))
             {
-                DecalVolumes.Push(DecalComponent);
-            }
+                // Pass 2를 위해 Decal과 Static 메시를 별도로 저장
+                if (DecalComponent)
+                {
+                    DecalVolumes.Push(DecalComponent);
+                }
 
-            UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
-            if (StaticMeshComponent)
+                UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
+                if (StaticMeshComponent)
+                {
+                    StaticMeshes.Push(StaticMeshComponent);
+                }
+            }
+            else
             {
-                StaticMeshes.Push(StaticMeshComponent);
+                if (DecalComponent)
+                    continue;
             }
 
             if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
@@ -371,17 +379,21 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     // 엔진 액터들 (그리드 등) 렌더링
     RenderEngineActors(ViewMatrix, ProjectionMatrix, Viewport);
 
-    // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
-    for (UDecalComponent* DecalVolume : DecalVolumes)
+    // 만약에 DecalShowFlag가 활성화되어 있다면
+    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal))
     {
-        for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+        // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
+        for (UDecalComponent* DecalVolume : DecalVolumes)
         {
-            DecalVolume->ProjectDecal(
-                Renderer,
-                StaticMesh,
-                ViewMatrix,
-                ProjectionMatrix
-            );
+            for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+            {
+                DecalVolume->ProjectDecal(
+                    Renderer,
+                    StaticMesh,
+                    ViewMatrix,
+                    ProjectionMatrix
+                );
+            }
         }
     }
 

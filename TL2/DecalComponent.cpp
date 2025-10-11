@@ -31,8 +31,8 @@ void UDecalComponent::ProjectDecal
     }
 
     // 야매 텍스처 로드(후에 제대로 텍스처 로드할 수 있도록 바꿔야 함)
-    Material->Load("Editor/Decal/PointLight_64x.dds", Renderer->GetRHIDevice()->GetDevice());
-
+    Material->Load(TexturePath, Renderer->GetRHIDevice()->GetDevice());
+    
     Renderer->RSSetDefaultState();
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly);
     Renderer->OMSetBlendState(true);
@@ -56,4 +56,9 @@ void UDecalComponent::ProjectDecal
     // 상태 원상복구
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
     Renderer->OMSetBlendState(false);
+}
+
+void UDecalComponent::SetTexture(const FString& InTexturePath)
+{
+    TexturePath = InTexturePath;
 }

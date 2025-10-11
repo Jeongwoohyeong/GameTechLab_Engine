@@ -36,6 +36,7 @@ private:
     /** Show Flag 카테고리별 섹션 렌더링 */
     void RenderPrimitiveSection(FViewport* Viewport);
     void RenderDebugSection(FViewport* Viewport);
+    void RenderDecalSection(FViewport* Viewport);
     void RenderLightingSection(FViewport* Viewport);
 
     /** 전체 제어 버튼들 */
@@ -57,6 +58,7 @@ private:
     bool bBillboardText = false;
     bool bBoundingBoxes = false;
     bool bGrid = true;
+    bool bDecal = true;
     bool bLighting = true;
     
     // UI 스타일
