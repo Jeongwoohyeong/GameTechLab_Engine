@@ -28,6 +28,7 @@ public:
     UOBoundingBoxComponent* GetOBBComponent() { return &OBB; }
 
     virtual UObject* Duplicate() override;
+    virtual void DuplicateSubObjects() override;
 
 protected:
     ~UDecalComponent() override;

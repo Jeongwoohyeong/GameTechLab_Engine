@@ -114,6 +114,7 @@ public:
 
     // Duplicate
     UObject* Duplicate() override;
+	//void DuplicateSubObjects() override;
 
 private:
     void CreateLineData(

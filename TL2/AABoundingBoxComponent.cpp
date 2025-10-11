@@ -189,12 +189,19 @@ UObject* UAABoundingBoxComponent::Duplicate()
     DuplicatedComponent->PrimitiveType = this->PrimitiveType;
     DuplicatedComponent->LastWorldMat = this->LastWorldMat;
     DuplicatedComponent->WorldBound = this->WorldBound;
+    // 공통 속성 복사
+    CopyCommonProperties(DuplicatedComponent);
 
     // 자식 컴포넌트 복제
     DuplicatedComponent->DuplicateSubObjects();
 
     return DuplicatedComponent;
 }
+
+//void UAABoundingBoxComponent::DuplicateSubObjects()
+//{
+//	Super_t::DuplicateSubObjects();
+//}
 
 void UAABoundingBoxComponent::CreateLineData(
     const FVector& Min, const FVector& Max,

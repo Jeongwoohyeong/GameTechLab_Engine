@@ -89,3 +89,8 @@ UObject* UDecalComponent::Duplicate()
     DuplicatedComponent->DuplicateSubObjects();
     return DuplicatedComponent;
 }
+
+void UDecalComponent::DuplicateSubObjects()
+{
+    Super_t::DuplicateSubObjects();
+}
