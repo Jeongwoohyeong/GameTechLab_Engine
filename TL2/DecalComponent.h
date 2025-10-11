@@ -25,6 +25,8 @@ public:
     const FString& GetTexturePath() const { return TexturePath; }
     FVector4 GetFadeProperties() const { return FadeProperties;}
     void ResetFadeProperties();
+    UOBoundingBoxComponent* GetOBBComponent() { return &OBB; }
+
     virtual UObject* Duplicate() override;
 
 protected:
