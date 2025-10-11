@@ -30,6 +30,9 @@ public:
     virtual UObject* Duplicate() override;
     virtual void DuplicateSubObjects() override;
 
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
+
 protected:
     ~UDecalComponent() override;
 

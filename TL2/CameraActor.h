@@ -59,6 +59,9 @@ public:
     void SetCameraSpeed(float InSpeed) { CameraMoveSpeed = InSpeed; EditorINI["CameraSpeed"] = std::to_string(CameraMoveSpeed); }
 
     void ProcessEditorCameraInput(float DeltaSeconds);
+
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
 private:
     UCameraComponent* CameraComponent = nullptr;
     
@@ -78,6 +81,5 @@ private:
 
     void ProcessCameraRotation(float DeltaSeconds);
     void ProcessCameraMovement(float DeltaSeconds);
-
 };
 

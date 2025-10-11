@@ -108,6 +108,9 @@ public:
     // TODO(KHJ): 제거 필요
     void SetWorld(UWorld* InWorld) { World = InWorld; }
 
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
+
 public:
     // NOTE: UObject의 ObjectName과 용도가 겹치는 것 같음?
     // [PIE] 값 복사
