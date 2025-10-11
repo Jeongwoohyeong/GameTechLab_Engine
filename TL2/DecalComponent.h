@@ -51,6 +51,7 @@ protected:
 
 private:
     void UpdateFade(float DeltaTime);
+    void RenderFrustumLines(URenderer* Renderer);
 
 private:
     UOBoundingBoxComponent OBB;

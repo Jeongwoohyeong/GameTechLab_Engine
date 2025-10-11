@@ -21,6 +21,7 @@ ASpotlightActor::ASpotlightActor()
 	// Billboard Component (표시를 위해)
 	BillboardComponent = CreateDefaultSubobject<UBillboardComponent>(FName("BillboardComponent"));
 	BillboardComponent->SetupAttachment(RootComponent);
+	BillboardComponent->SetTexture("Editor/Icon/SpotLight_64x.dds");
 
 	// Spotlight 기본 크기 설정
 	SetActorScale(FVector(10.0f, 10.0f, 10.0f));

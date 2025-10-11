@@ -54,10 +54,77 @@ void UDecalComponent::UpdateFade(float DeltaTime)
 
 void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
-    // OBB는 에디터에서만 보이도록 처리
+    // 에디터에서만 보이도록 처리
     if (GetWorld() && !GetWorld()->IsPIEWorld())
     {
-        OBB.Render(Renderer, View, Proj);
+        if (!bUsePerspectiveProjection)
+        {
+            // Ortho 모드: OBB 렌더링
+            OBB.Render(Renderer, View, Proj);
+        }
+        else
+        {
+            // Perspective 모드: Frustum 선 렌더링
+            RenderFrustumLines(Renderer);
+        }
+    }
+}
+
+void UDecalComponent::RenderFrustumLines(URenderer* Renderer)
+{
+    // Frustum 파라미터
+    const float Near = 0.01f;
+    const float Far = 1.0f;
+    const float halfAngleRad = DegreeToRadian(ProjectionFOV * 0.5f);
+    const float tanHalfAngle = std::tan(halfAngleRad);
+
+    // Near와 Far plane에서의 반경
+    const float halfNear = tanHalfAngle * Near;
+    const float halfFar = tanHalfAngle * Far;
+
+    // Frustum 8개 꼭짓점 (Decal 로컬 공간, +Z forward)
+    FVector nearCorners[4] = {
+        FVector(-halfNear / 2.0f,  halfNear / 2.0f, Near),  // Near Top-Left
+        FVector( halfNear / 2.0f,  halfNear / 2.0f, Near),  // Near Top-Right
+        FVector( halfNear / 2.0f, -halfNear / 2.0f, Near),  // Near Bottom-Right
+        FVector(-halfNear / 2.0f, -halfNear / 2.0f, Near)   // Near Bottom-Left
+    };
+
+    FVector farCorners[4] = {
+        FVector(-halfFar / 2.0f,  halfFar / 2.0f, Far),     // Far Top-Left
+        FVector( halfFar / 2.0f,  halfFar / 2.0f, Far),     // Far Top-Right
+        FVector( halfFar / 2.0f, -halfFar / 2.0f, Far),     // Far Bottom-Right
+        FVector(-halfFar / 2.0f, -halfFar / 2.0f, Far)      // Far Bottom-Left
+    };
+
+    // 월드 변환 행렬
+    FMatrix worldMatrix = GetWorldMatrix();
+
+    // 월드 좌표로 변환
+    FVector nearWorld[4];
+    FVector farWorld[4];
+    for (int i = 0; i < 4; ++i)
+    {
+        nearWorld[i] = nearCorners[i] * worldMatrix;
+        farWorld[i] = farCorners[i] * worldMatrix;
+    }
+
+    // Near plane 사각형 (4개 edge)
+    for (int i = 0; i < 4; ++i)
+    {
+        Renderer->AddLine(nearWorld[i], nearWorld[(i + 1) % 4]);
+    }
+
+    // Far plane 사각형 (4개 edge)
+    for (int i = 0; i < 4; ++i)
+    {
+        Renderer->AddLine(farWorld[i], farWorld[(i + 1) % 4]);
+    }
+
+    // Near-Far 연결선 (4개 edge)
+    for (int i = 0; i < 4; ++i)
+    {
+        Renderer->AddLine(nearWorld[i], farWorld[i]);
     }
 }
 
