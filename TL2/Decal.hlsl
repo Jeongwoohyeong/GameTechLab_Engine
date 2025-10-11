@@ -3,6 +3,8 @@ cbuffer DecalInfo : register(b6)
 {
     row_major matrix worldMVP;
     row_major matrix decalMVP;
+    float Alpha;
+    float3 Pad;
 }
 
 struct VS_INPUT
@@ -56,7 +58,8 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     uv.y = 1.0f - (input.decalNDC.y * 0.5f + 0.5f);
     
     float4 finalColor = g_DecalTexture.Sample(g_Sample, uv);
-    clip(finalColor.a - 0.5f);
+    clip(finalColor.a - 0.5f);    
+    finalColor.a *= Alpha;
     
     return finalColor;
 }

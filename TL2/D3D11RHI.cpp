@@ -70,7 +70,10 @@ struct DecalBufferType
 {
     FMatrix WorldMVP;
     FMatrix DecalMVP;
+    float Alpha;
+    float Pad[3];
 };
+
 
 // b5: Viewport 정보 (데칼용 Screen-Space UV 계산)
 struct ViewportBufferType
@@ -333,7 +336,7 @@ void D3D11RHI::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix&
     DeviceContext->VSSetConstantBuffers(0, 1, &BillboardCB); // b0 슬롯
 }
 
-void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP)
+void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float InAlpha)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
     DeviceContext->Map(DecalCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
@@ -342,9 +345,11 @@ void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatri
     // HLSL 기본 row-major와 맞추기 위해 전치
     dataPtr->WorldMVP = InWorldMVP;
     dataPtr->DecalMVP = InDecalMVP;
+    dataPtr->Alpha = InAlpha;
 
     DeviceContext->Unmap(DecalCB, 0);
     DeviceContext->VSSetConstantBuffers(6, 1, &DecalCB); // b6 슬롯
+    DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB);
 }
 
 void D3D11RHI::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
@@ -652,7 +657,7 @@ void D3D11RHI::CreateConstantBuffer()
     // b6 : InvWorldBuffer (데칼용 - InvWorld + InvViewProj)
     D3D11_BUFFER_DESC DecalDesc = {};
     DecalDesc.Usage = D3D11_USAGE_DYNAMIC;
-    DecalDesc.ByteWidth = sizeof(FMatrix) * 2; // InvWorldMatrix + InvViewProjMatrix
+    DecalDesc.ByteWidth = sizeof(DecalBufferType); // InvWorldMatrix + InvViewProjMatrix
     DecalDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     DecalDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&DecalDesc, nullptr, &DecalCB);
