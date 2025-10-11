@@ -540,6 +540,11 @@ void UWorld::Tick(float DeltaSeconds)
             }
         }
     }
+    // 매 프레임 Refit, 조건부 호출로 바꿀 수 있을 듯
+    /*if (BVH)
+    {
+        BVH->Refit();
+    }*/
 
     // Engine Actors Tick
     for (AActor* EngineActor : EngineActors)
@@ -627,6 +632,12 @@ bool UWorld::DestroyActor(AActor* Actor)
         ObjectFactory::DeleteObject(Actor);
         // 삭제된 액터 정리
         USelectionManager::GetInstance().CleanupInvalidActors();
+
+        // 재빌드
+        if (BVH)
+        {
+            BVH->Build(Level->GetActors());
+        }
 
         return true; // 성공적으로 삭제
     }
@@ -1059,6 +1070,11 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
             PIEWorld->Level = PIELevel;
         }
     }
+    // PIE 월드 레벨에 복제된 액터들로 BVH 재빌드
+    if (PIEWorld->Level)
+    {
+        PIEWorld->InitializeSceneGraph(PIEWorld->Level->GetActors());
+    }
     return PIEWorld;
 }
 
@@ -1130,4 +1146,10 @@ void UWorld::SpawnActor(AActor* InActor)
     }
    
     Level->GetActors().Add(InActor);
+
+    // 액터 추가되었으니 BVH 재빌드
+    if (BVH)
+    {
+        BVH->Build(Level->GetActors());
+    }
 }

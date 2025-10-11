@@ -96,7 +96,7 @@ void FBVH::Refit()
             if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
             {
                 // 최신 월드 AABB를 반환된걸로 업데이트
-                AABB.Bounds = *AABBComponent->GetFBound();
+                AABB.Bounds = AABBComponent->GetWorldBoundFromCube();
 
             }
         }
