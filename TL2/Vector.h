@@ -244,7 +244,6 @@ struct FVector
         );
     }
 
-
     // 보조 유틸
     static FVector Lerp(const FVector& A, const FVector& B, float T)
     {
@@ -282,7 +281,21 @@ struct FVector
         return FVector(1.f, 1.f, 1.f);
     }
 };
-
+/**
+* @brief V * M 위치벡터 변환 (v' = v * M, w=1)
+*/
+inline FVector TransformPosition(const FVector& V, const FMatrix& M)
+{
+    const FVector4 V4(V.X, V.Y, V.Z, 1.0f);
+    const FVector4 Result4 = V4 * M;
+    if (std::fabs(Result4.W) > 1e-6f)
+    {
+        const float InvW = 1.0f / Result4.W;
+        
+        return FVector(Result4.X * InvW, Result4.Y * InvW, Result4.Z * InvW);
+    }
+    return FVector(Result4.X, Result4.Y, Result4.Z);
+}
 // ─────────────────────────────
 // FVector4 (4D Vector)
 // ─────────────────────────────
