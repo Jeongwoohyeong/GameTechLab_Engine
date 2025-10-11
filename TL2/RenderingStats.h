@@ -17,6 +17,10 @@ struct FRenderingStats
     uint32 TranslucentPassDrawCalls = 0;
     uint32 DebugPassDrawCalls = 0;
 
+    // Decal 통계
+    uint32 DecalNum = 0;
+    float DecalRenderTimeTotal = 0;
+
     // 성능 통계
     float TotalRenderTime = 0.0f;      // ms (전체 프레임 시간)
     // float BasePassTime = 0.0f;         // ms (미사용 - RenderPass 시스템 미구현)
@@ -38,7 +42,9 @@ struct FRenderingStats
         DebugPassDrawCalls = 0;
         TotalRenderTime = 0.0f;
         PickingTime = 0.0f;
-        // BasePassTime = 0.0f;
+        DecalNum = 0.0f;
+        DecalRenderTimeTotal = 0.0f;
+        //BasePassTime = 0.0f;
         // SortTime = 0.0f;
     }
 };
@@ -67,6 +73,8 @@ public:
     void IncrementShaderChanges() { if (bEnabled) CurrentFrameStats.ShaderChanges++; }
     void IncrementBasePassDrawCalls() { if (bEnabled) CurrentFrameStats.BasePassDrawCalls++; }
 
+
+
     void IncrementDepthPrePassDrawCalls()
     {
         if (bEnabled) CurrentFrameStats.DepthPrePassDrawCalls++;
@@ -79,6 +87,8 @@ public:
 
     void IncrementDebugPassDrawCalls() { if (bEnabled) CurrentFrameStats.DebugPassDrawCalls++; }
 
+
+
     // 통계 접근
     const FRenderingStats& GetCurrentFrameStats() const { return CurrentFrameStats; }
     const FRenderingStats& GetAverageStats() const { return AverageStats; }
@@ -88,6 +98,13 @@ public:
     double GetLastPickingTime() const;
     uint64_t GetNumPickingAttempts() const;
     double GetAccumulatedPickingTime() const;
+
+    // 데칼 관련 접근 및 설정
+    void UpdateDecalStats(uint32 InDecalNum, float InTime);
+    void SetDecalNum(uint32 InDecalNum);
+    void SetDecalRenderTimeTotal(float InTime);
+    uint32 GetDecalNum() const;
+    float GetDecalRenderTimeTotal() const;
 
     // 설정
     void SetEnabled(bool bInEnabled) { bEnabled = bInEnabled; }

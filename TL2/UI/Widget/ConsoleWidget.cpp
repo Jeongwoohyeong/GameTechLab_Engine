@@ -277,10 +277,15 @@ void UConsoleWidget::ExecCommand(const char* command_line)
         UStatsOverlayD2D::Get().SetShowMemory(true);
         AddLog("STAT MEMORY: ON");
     }
+    else if (Stricmp(command_line, "STAT DECAL") == 0)
+    {
+        UStatsOverlayD2D::Get().SetShowDecalStats(true);
+    }
     else if (Stricmp(command_line, "STAT NONE") == 0)
     {
         UStatsOverlayD2D::Get().SetShowFPS(false);
         UStatsOverlayD2D::Get().SetShowMemory(false);
+        UStatsOverlayD2D::Get().SetShowDecalStats(false);
         AddLog("STAT: OFF");
     }
     else
