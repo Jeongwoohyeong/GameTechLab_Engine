@@ -19,12 +19,18 @@ UStaticMeshComponent::~UStaticMeshComponent()
 
 void UStaticMeshComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
-    if (StaticMesh)
+    if (!StaticMesh)
     {
-        Renderer->UpdateConstantBuffer(GetWorldMatrix(), ViewMatrix, ProjectionMatrix);
-        Renderer->PrepareShader(GetMaterial()->GetShader());
-        Renderer->DrawIndexedPrimitiveComponent(GetStaticMesh(), D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST, MaterailSlots);
+        return;
     }
+
+    Renderer->UpdateConstantBuffer(GetWorldMatrix(), ViewMatrix, ProjectionMatrix);
+    Renderer->PrepareShader(GetMaterial()->GetShader());
+    Renderer->DrawIndexedPrimitiveComponent(
+        GetStaticMesh(),
+        D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+        MaterailSlots
+    );
 }
 
 void UStaticMeshComponent::SetStaticMesh(const FString& PathFileName)

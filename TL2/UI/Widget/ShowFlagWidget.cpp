@@ -77,7 +77,6 @@ void UShowFlagWidget::RenderWidget()
 
                 RenderShowFlagCheckbox("Bounds", EEngineShowFlags::SF_BoundingBoxes, Viewport);
                 ImGui::SameLine();
-                RenderShowFlagCheckbox("Wireframe", EEngineShowFlags::SF_Wireframe, Viewport);
             }
             else
             {
@@ -120,7 +119,6 @@ void UShowFlagWidget::SyncWithViewport(FViewport* Viewport)
     // 각 플래그 상태를 로컬 변수에 동기화
     bPrimitives = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Primitives);
     bStaticMeshes = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes);
-    bWireframe = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Wireframe);
     bBillboardText = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText);
     bBoundingBoxes = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes);
     bGrid = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
@@ -167,10 +165,6 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
         case EEngineShowFlags::SF_StaticMeshes:
             ImGui::Text("Static Mesh 액터들 표시/숨김");
             ImGui::Text("일반적인 3D 메시 오브젝트들의 가시성을 제어합니다.");
-            break;
-        case EEngineShowFlags::SF_Wireframe:
-            ImGui::Text("와이어프레임 오버레이 표시/숨김");
-            ImGui::Text("3D 모델의 와이어프레임을 표시합니다.");
             break;
         case EEngineShowFlags::SF_BillboardText:
             ImGui::Text("오브젝트 위의 UUID 텍스트 표시/숨김");
@@ -219,7 +213,6 @@ void UShowFlagWidget::RenderPrimitiveSection(FViewport* Viewport)
 
         ImGui::Indent(15.0f);
         RenderShowFlagCheckbox("Static Meshes", EEngineShowFlags::SF_StaticMeshes, Viewport);
-        RenderShowFlagCheckbox("Wireframe", EEngineShowFlags::SF_Wireframe, Viewport);
         ImGui::Unindent(15.0f);
 
         if (!bPrimitivesEnabled)

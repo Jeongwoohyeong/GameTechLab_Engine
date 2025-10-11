@@ -259,13 +259,6 @@ void SViewportWindow::RenderToolbar()
 			{
 				Viewport->ToggleShowFlag(EEngineShowFlags::SF_StaticMeshes);
 			}
-
-			// Wireframe
-			bool bWireframeEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Wireframe);
-			if (ImGui::Checkbox("Wireframe", &bWireframeEnabled))
-			{
-				Viewport->ToggleShowFlag(EEngineShowFlags::SF_Wireframe);
-			}
 			 
 			// Grid
 			bool bGridEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
