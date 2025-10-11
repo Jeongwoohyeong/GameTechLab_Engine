@@ -159,6 +159,54 @@ void ACameraActor::ProcessEditorCameraInput(float DeltaSeconds)
     }
 }
 
+void ACameraActor::Serialize(FObjectData* Data)
+{
+    FPerspectiveCameraData* CameraData = dynamic_cast<FPerspectiveCameraData*>(Data);
+    assert(CameraData, "UCameraComponent::Serialize got wrong data type.");
+
+    CameraData->Location = GetActorLocation();
+    CameraData->Rotation.X = 0.0f;
+    CameraData->Rotation.Y = CameraPitchDeg;
+    CameraData->Rotation.Z = CameraYawDeg;
+
+    if (CameraComponent)
+    {
+        CameraData->FOV = CameraComponent->GetFOV();
+        CameraData->NearClip = CameraComponent->GetNearClip();
+        CameraData->FarClip = CameraComponent->GetFarClip();
+    }
+    else
+    {
+        const float DEFAULT_FOV = 90.0f;
+        const float DEFAULT_NEARCLIP = 0.1f;
+        const float DEFAULT_FARCLIP = 100.0f;
+
+        CameraData->FOV = DEFAULT_FOV;
+        CameraData->NearClip = DEFAULT_NEARCLIP;
+        CameraData->FarClip = DEFAULT_FARCLIP;
+    }
+}
+
+void ACameraActor::DeSerialize(FObjectData* Data)
+{
+    FPerspectiveCameraData* CameraData = dynamic_cast<FPerspectiveCameraData*>(Data);
+    assert(CameraData, "UCameraComponent::DeSerialize got wrong data type.");
+
+    SetActorLocation(CameraData->Location);
+    SetCameraPitch(CameraData->Rotation.Y);
+    SetCameraYaw(CameraData->Rotation.Z);
+
+    // 입력 경로와 동일한 방식으로 각도/회전 적용
+    // 매핑: Pitch = CamData.Rotation.Y, Yaw = CamData.Rotation.Z
+    SetAnglesImmediate(CameraData->Rotation.Y, CameraData->Rotation.Z);
+
+    if (CameraComponent)
+    {
+        CameraComponent->SetFOV(CameraData->FOV);
+        CameraComponent->SetClipPlanes(CameraData->NearClip, CameraData->FarClip);
+    }
+}
+
 static inline float Clamp(float v, float a, float b) { return v < a ? a : (v > b ? b : v); }
 
 void ACameraActor::ProcessCameraRotation(float DeltaSeconds)
@@ -232,3 +280,5 @@ void ACameraActor::ProcessCameraMovement(float DeltaSeconds)
         SetActorLocation(P + Move);
     }
 }
+
+

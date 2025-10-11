@@ -51,3 +51,7 @@ void UObject::DuplicateSubObjects()
 	//      본인이 가진 서브 오브젝트에 대해 또 Duplicate 하겠다는 의미 -> 재귀적
 	// - 
 }
+
+// 트랜스폼 직렬화/역직렬화 (월드 트랜스폼 기준)
+void UObject::Serialize(FObjectData* Data) { Data->UUID = UUID; }
+void UObject::DeSerialize(FObjectData* Data) { UUID = Data->UUID; }

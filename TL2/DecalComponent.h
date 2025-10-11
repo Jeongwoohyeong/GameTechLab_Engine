@@ -23,6 +23,9 @@ public:
     const FString& GetTexturePath() const { return TexturePath; }
     virtual UObject* Duplicate() override;
 
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
+
 protected:
     ~UDecalComponent() override;
 

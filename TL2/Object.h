@@ -5,6 +5,7 @@
 #include "Name.h"
 #include "Enums.h"
 #include "PropertyFlag.h"
+#include "SerializationData.h"
 
 // 전방 선언/외부 심볼 (네 프로젝트 환경 유지)
 class UObject;
@@ -87,6 +88,10 @@ public:
     
     virtual UObject* Duplicate();
     virtual void DuplicateSubObjects();
+
+    // 트랜스폼 직렬화/역직렬화 (월드 트랜스폼 기준)
+    virtual void Serialize(FObjectData* Data);
+    virtual void DeSerialize(FObjectData* Data);
 
 public:
 

@@ -53,42 +53,6 @@ void UStaticMeshComponent::SetStaticMesh(const FString& PathFileName)
     }
 }
 
-void UStaticMeshComponent::Serialize(bool bIsLoading, FPrimitiveData& InOut)
-{
-    // 0) 트랜스폼 직렬화/역직렬화는 상위(UPrimitiveComponent)에서 처리
-    UPrimitiveComponent::Serialize(bIsLoading, InOut);
-
-    if (bIsLoading)
-    {
-        // 1) 신규 포맷: ObjStaticMeshAsset가 있으면 우선 사용
-        if (!InOut.ObjStaticMeshAsset.empty())
-        {
-            SetStaticMesh(InOut.ObjStaticMeshAsset);
-            return;
-        }
-
-        // 2) 레거시 호환: Type을 "Data/<Type>.obj"로 매핑
-        if (!InOut.Type.empty())
-        {
-            const FString LegacyPath = "Data/" + InOut.Type + ".obj";
-            SetStaticMesh(LegacyPath);
-        }
-    }
-    else
-    {
-        // 저장 시: 현재 StaticMesh가 있다면 실제 에셋 경로를 기록
-        if (UStaticMesh* Mesh = GetStaticMesh())
-        {
-            InOut.ObjStaticMeshAsset = Mesh->GetAssetPathFileName();
-        }
-        else
-        {
-            InOut.ObjStaticMeshAsset.clear();
-        }
-        // Type은 상위(월드/액터) 정책에 따라 별도 기록 (예: "StaticMeshComp")
-    }
-}
-
 void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName)
 {
     assert((0 <= InMaterialSlotIndex && InMaterialSlotIndex < MaterailSlots.size()) && "out of range InMaterialSlotIndex");
@@ -126,4 +90,37 @@ void UStaticMeshComponent::DuplicateSubObjects()
 {
     // 부모의 깊은 복사 수행 (AttachChildren 재귀 복제)
     Super_t::DuplicateSubObjects();
+}
+
+void UStaticMeshComponent::Serialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UStaticMeshComponent::Serialize got wrong data type.");
+
+    USceneComponent::Serialize(Data);
+    
+    if (StaticMesh)
+    {
+        ComponentData->ResourceName = StaticMesh->GetAssetPathFileName();
+        UE_LOG("SaveScene: StaticMesh saved: %s", ComponentData->ResourceName.c_str());
+    }
+    else
+    {
+        UE_LOG("SaveScene: StaticMeshComponent has no StaticMesh assigned");
+    }
+    // TODO: Materials 수집
+}
+
+void UStaticMeshComponent::DeSerialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
+
+    USceneComponent::DeSerialize(Data);
+
+    if (!ComponentData->ResourceName.empty())
+    {
+        SetStaticMesh(ComponentData->ResourceName);
+    }
+    // TODO: Materials 복원
 }

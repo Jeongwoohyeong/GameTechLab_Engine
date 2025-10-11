@@ -457,6 +457,10 @@
     <ClCompile Include="DecalComponent.cpp">
       <Filter>Components\Decal</Filter>
     </ClCompile>
+    <ClCompile Include="DecalActor.cpp" />
+    <ClCompile Include="SerializationData.cpp">
+      <Filter>Utilities\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <!-- ==================== 헤더 파일 (.h) ==================== -->
   <ItemGroup>
@@ -832,6 +836,10 @@
     <ClInclude Include="OrientedBound.h" />
     <ClInclude Include="DecalComponent.h">
       <Filter>Components\Decal</Filter>
+    </ClInclude>
+    <ClInclude Include="DecalActor.h" />
+    <ClInclude Include="SerializationData.h">
+      <Filter>Utilities\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <!-- ==================== 셰이더 파일 (.hlsl) ==================== -->

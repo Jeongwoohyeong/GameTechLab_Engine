@@ -18,9 +18,6 @@ public:
     virtual void SetMaterial(const FString& FilePath);
     virtual UMaterial* GetMaterial() { return Material; }
 
-    // 트랜스폼 직렬화/역직렬화 (월드 트랜스폼 기준)
-    virtual void Serialize(bool bIsLoading, FPrimitiveData& InOut);
-
     virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) {}
 
     UObject* Duplicate() override;
