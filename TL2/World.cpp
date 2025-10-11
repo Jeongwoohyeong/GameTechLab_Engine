@@ -340,8 +340,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             }
 
             UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
-            if (StaticMeshComponent/* &&
-                !Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal)*/)
+            if (StaticMeshComponent)
             {
                 StaticMeshes.Push(StaticMeshComponent);
             }
@@ -385,37 +384,6 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             );
         }
     }
-    /*for (AActor* Actor : LevelActors)
-    {
-        if (!Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
-        {
-            continue;
-        }
-        if (!Actor)
-        {
-            continue;
-        }
-        if (Actor->GetActorHiddenInGame())
-        {
-            continue;
-        }
-
-        for (UActorComponent* Component : Actor->GetComponents())
-        {
-            if (!Component)
-            {
-                continue;
-            }
-
-            if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
-            {
-                if (!ActorComp->IsActive())
-                {
-                    continue;
-                }
-            }
-        }
-    }*/
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }

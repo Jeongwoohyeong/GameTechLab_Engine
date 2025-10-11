@@ -51,7 +51,7 @@ private:
     inline static const FMatrix DecalViewRotation =
     {
         1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, -1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
