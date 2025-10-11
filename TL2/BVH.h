@@ -107,6 +107,7 @@ public:
 
     // 액터 배열로부터 BVH 구축
     void Build(const TArray<AActor*>& Actors);
+    void Refit();
     void Clear();
 
     // 빠른 레이 교차 검사 - 가장 가까운 액터 반환
@@ -133,7 +134,8 @@ private:
 
     // 재귀 구축 함수
     int BuildRecursive(int FirstActor, int ActorCount, int Depth = 0);
-
+    // Refit 위한 재귀 헬퍼
+    FBound RefitRecursive(int NodeIndex); 
     // 경계 박스 계산
     FBound CalculateBounds(int FirstActor, int ActorCount) const;
     FBound CalculateCentroidBounds(int FirstActor, int ActorCount) const;

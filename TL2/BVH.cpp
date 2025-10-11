@@ -80,6 +80,32 @@ void FBVH::Build(const TArray<AActor*>& Actors)
     UE_LOG(buf);
 }
 
+void FBVH::Refit()
+{
+    if (Nodes.Num() == 0)
+    {
+        return;
+    }
+    // 모든 액터의 AABB 정보를 ActorBounds 배열에 업데이트 
+    for (FActorBounds& AABB : ActorBounds)
+    {
+        // FActorBounds가 AStaticMeshActor에 소속되어 있는 경우에만
+        if (const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(AABB.Actor))
+        {
+            // AStaticMeshActor에서 AABB 컴포넌트 얻어오기
+            if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
+            {
+                // 최신 월드 AABB를 반환된걸로 업데이트
+                AABB.Bounds = *AABBComponent->GetFBound();
+
+            }
+        }
+    }
+    // 루트부터 재귀적으로 AABB 갱신
+    RefitRecursive(0);
+
+}
+
 void FBVH::Clear()
 {
     Nodes.Empty();
@@ -182,6 +208,27 @@ int FBVH::BuildRecursive(int FirstActor, int ActorCount, int Depth)
     Node.RightChild = BuildRecursive(ActualSplit, RightCount, Depth + 1);
 
     return NodeIndex;
+}
+/**
+  * @brief Refit을 위한 재귀 헬퍼. 자식 노드의 AABB를 합쳐 부모 노드의 AABB를 만듭니다.
+  */
+FBound FBVH::RefitRecursive(int NodeIndex)
+{
+    FBVHNode& Node = Nodes[NodeIndex];
+    
+    // Leaf일 때, 포함된 액터들의 AABB를 합쳐 자신의 AABB 결정
+    if (Node.IsLeaf())
+    {
+        Node.BoundingBox = CalculateBounds(Node.FirstActor, Node.ActorCount);
+    }
+    // Internal일 때, 자식 노드 재귀 호출 후 합치기
+    else 
+    {
+        FBound LeftBounds = RefitRecursive(Node.LeftChild);
+        FBound RightBounds = RefitRecursive(Node.RightChild);
+        Node.BoundingBox = Union(LeftBounds, RightBounds);
+    }
+    return Node.BoundingBox;
 }
 // BVH.cpp
 float FBVH::SurfaceArea(const FBound& b) {
