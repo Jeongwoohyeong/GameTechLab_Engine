@@ -154,3 +154,6 @@ public:                                                                       \
 //    
 //    return NewObject;
 //}
+
+template<typename T>
+concept DerivedFromUObject = std::is_base_of_v<UObject, T>;
