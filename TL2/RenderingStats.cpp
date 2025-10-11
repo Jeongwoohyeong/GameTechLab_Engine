@@ -49,6 +49,32 @@ void URenderingStatsCollector::EndFrame()
     CurrentFrameStats.TotalRenderTime = Duration.count() / 1000.0f; // ms로 변환
 }
 
+void URenderingStatsCollector::UpdateDecalStats(uint32 InDecalNum, float InTime)
+{
+    SetDecalNum(InDecalNum);
+    SetDecalRenderTimeTotal(InTime);
+}
+
+void URenderingStatsCollector::SetDecalNum(uint32 InDecalNum)
+{
+    if (bEnabled) CurrentFrameStats.DecalNum = InDecalNum;
+}
+
+void URenderingStatsCollector::SetDecalRenderTimeTotal(float InTime)
+{
+    if (bEnabled) CurrentFrameStats.DecalRenderTimeTotal = InTime;
+}
+
+uint32 URenderingStatsCollector::GetDecalNum() const
+{
+    return CurrentFrameStats.DecalNum;
+}
+
+float URenderingStatsCollector::GetDecalRenderTimeTotal() const
+{
+    return CurrentFrameStats.DecalRenderTimeTotal;
+}
+
 void URenderingStatsCollector::UpdatePickingStats(double InPickingTimeMs)
 {
     LastPickingTimeMs = InPickingTimeMs;
