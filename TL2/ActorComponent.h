@@ -52,4 +52,5 @@ protected:
     // [PIE] 값 복사
     bool bIsActive = true;    // 활성 상태
     bool bCanEverTick = false; // 매 프레임 Tick 가능 여부
+    bool bIsInitialized = false; // InitializeComponent가 이미 호출되었는지 여부
 };

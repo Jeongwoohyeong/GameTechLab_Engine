@@ -27,6 +27,21 @@ AActor::~AActor()
 
 void AActor::BeginPlay()
 {
+    for (UActorComponent* Component : OwnedComponents)
+    {
+        if (Component)
+        {
+            Component->InitializeComponent();
+        }
+    }
+
+    for (UActorComponent* Component : OwnedComponents)
+    {
+        if (Component)
+        {
+            Component->BeginPlay();
+        }
+    }
 }
 
 void AActor::Tick(float DeltaSeconds)
@@ -226,6 +241,9 @@ USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentCompone
 
             NewComponent->SetupAttachment(ParentComponent, EAttachmentRule::KeepRelative);
             NewComponent->SetOwner(this);
+
+            // 런타임에 생성된 컴포넌트도 초기화합니다.
+            NewComponent->InitializeComponent();
         }
     }
     else

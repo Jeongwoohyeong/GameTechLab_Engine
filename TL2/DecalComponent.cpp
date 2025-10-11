@@ -48,12 +48,17 @@ void UDecalComponent::ProjectDecal
 
     FMatrix MeshWorld = StaticMeshComponent->GetWorldMatrix();
 
+    // 모드에 따라 적절한 Projection 행렬 선택
+    FMatrix DecalProj = bUsePerspectiveProjection
+        ? GetDecalPerspectiveProjection(ProjectionFOV)
+        : GetDecalOrthoProjection();
+
     Renderer->UpdateDecalConstantBuffer(
         MeshWorld * View * Proj,
         MeshWorld * \
         GetWorldMatrix().Inverse() * \
-        DecalViewRotation * \
-        DecalProjection,
+        DecalViewAdjustMatrix * \
+        DecalProj,
         FadeProperties.W
     );
     Renderer->PrepareShader(GetMaterial()->GetShader());
@@ -78,6 +83,37 @@ void UDecalComponent::SetFadeProperties(const FVector4& InFadeProperties)
     FadeProperties = InFadeProperties;
 }
 
+FMatrix UDecalComponent::GetDecalOrthoProjection()
+{
+    return FMatrix::OrthoLH(1.0f, 1.0f, 0.01f, 1.0f);
+    //return FMatrix(
+    //    2.0f, 0.0f, 0.0f, 0.0f,  // x: 2배 스케일
+    //    0.0f, 2.0f, 0.0f, 0.0f,  // y: 2배 스케일
+    //    0.0f, 0.0f, 2.0f, 0.0f,  // z: 2배 스케일
+    //    0.0f, 0.0f, 0.0f, 1.0f
+    //);
+}
+
+FMatrix UDecalComponent::GetDecalPerspectiveProjection(float FovYDegrees)
+{
+    // FOV를 라디안으로 변환
+    float FovYRadians = DegreeToRadian(FovYDegrees);
+
+    // 기본 perspective 행렬 생성
+    FMatrix proj = FMatrix::PerspectiveFovLH(FovYRadians, 1.0f, 0.01f, 1.0f);
+
+    // Decal Volume 크기 보정:
+    // - Decal Volume: far (z=1)에서 반경 0.5 (고정)
+    // - Perspective frustum: far에서 반경 tan(FOV/2)
+    // - 보정 스케일: 2 * tan(FOV/2) / 1.0 = 2 * tan(FOV/2)
+    // 이렇게 하면 Decal Volume [−0.5, 0.5]가 정확히 NDC [−1, 1]로 매핑됨
+    float correctionScale = 2.0f * std::tan(FovYRadians * 0.5f);
+    proj.M[0][0] *= correctionScale;  // X 스케일 조정
+    proj.M[1][1] *= correctionScale;  // Y 스케일 조정
+
+    return proj;
+}
+
 UObject* UDecalComponent::Duplicate()
 {
     UDecalComponent* DuplicatedComponent = Cast<UDecalComponent>(NewObject(GetClass()));
@@ -85,6 +121,9 @@ UObject* UDecalComponent::Duplicate()
 
     DuplicatedComponent->Material = this->Material;
     DuplicatedComponent->TexturePath = this->TexturePath;
+    DuplicatedComponent->FadeProperties = this->FadeProperties;
+    DuplicatedComponent->bUsePerspectiveProjection = this->bUsePerspectiveProjection;
+    DuplicatedComponent->ProjectionFOV = this->ProjectionFOV;
 
     DuplicatedComponent->DuplicateSubObjects();
     return DuplicatedComponent;
