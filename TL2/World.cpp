@@ -896,6 +896,12 @@ void UWorld::LoadScene(const FString& SceneName)
                 Comp->SetupAttachment(*ParentPtr, EAttachmentRule::KeepRelative);
             }
         }
+
+        // Actor의 OwnedComponents에 추가
+        if (AActor** OwnerActorPtr = ActorMap.Find(CompData.OwnerActorUUID))
+        {
+            (*OwnerActorPtr)->OwnedComponents.Add(Comp);
+        }
     }
 
     // Actor를 Level에 추가
