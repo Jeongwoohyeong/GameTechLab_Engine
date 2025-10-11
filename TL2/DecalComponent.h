@@ -25,6 +25,7 @@ public:
     const FString& GetTexturePath() const { return TexturePath; }
     FVector4 GetFadeProperties() const { return FadeProperties;}
     void ResetFadeProperties();
+    virtual UObject* Duplicate() override;
 
 protected:
     ~UDecalComponent() override;
@@ -32,6 +33,7 @@ protected:
 private:
     UOBoundingBoxComponent OBB;
     FString TexturePath = "Editor/Decal/PointLight_64x.dds";
+    FString MaterialPath = "Decal.hlsl";
     // Duration, min, max, Alpha
     FVector4 DefaultFadeProperties = {5.0f, 0.0f, 1.0f, 1.0f};
     FVector4 FadeProperties = DefaultFadeProperties;

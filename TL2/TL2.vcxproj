@@ -162,6 +162,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
+    <ClCompile Include="DecalActor.cpp" />
     <ClCompile Include="AllClassesRegistration.cpp" />
     <ClCompile Include="AABoundingBoxComponent.cpp" />
     <ClCompile Include="BillboardComponent.cpp" />
@@ -355,6 +356,7 @@
   <ItemGroup>
     <ClInclude Include="ActorComponent.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
+    <ClInclude Include="DecalActor.h" />
     <ClInclude Include="Archive.h" />
     <ClInclude Include="BillboardComponent.h" />
     <ClInclude Include="BoundingVolumeHierarchy.h" />

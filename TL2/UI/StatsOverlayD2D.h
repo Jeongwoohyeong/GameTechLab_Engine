@@ -14,9 +14,11 @@ public:
     void SetShowFPS(bool b); 
     void SetShowMemory(bool b);
     void SetShowRenderStats(bool b);
+    void SetShowDecalStats(bool b);
     void ToggleFPS();
     void ToggleMemory();
     void ToggleRenderStats();
+    void ToggleDecalStats();
     bool IsFPSVisible() const { return bShowFPS; }
     bool IsMemoryVisible() const { return bShowMemory; }
     bool IsRenderStatsVisible() const { return bShowRenderStats; }
@@ -24,6 +26,18 @@ public:
     // 렌더링 통계 업데이트
     void UpdateRenderingStats(uint32 InDrawCalls, uint32 InMaterialChanges,
                               uint32 InTextureChanges, uint32 InShaderChanges);
+
+    // 데칼 통계 업데이트
+    void UpdateDecalStats(uint32 InDecalNum, float InDecalRenderTimeTotal)
+    {
+        CurrentDecalNum = InDecalNum;
+        CurrentDecalRenderTimeTotal = InDecalRenderTimeTotal;
+        
+        CurrentDecalNum == 0 ? \
+            CurrentDecalRenderTimeAverage = 0.0f : \
+            CurrentDecalRenderTimeAverage = \
+            CurrentDecalRenderTimeTotal / (float)CurrentDecalNum;
+    }
 
 private:
     UStatsOverlayD2D() = default;
@@ -39,12 +53,18 @@ private:
     bool bShowFPS = true;
     bool bShowMemory = true;
     bool bShowRenderStats = true;
+    bool bShowDecalStats = true;
     
     // 렌더링 통계 데이터
     uint32 CurrentDrawCalls = 0;
     uint32 CurrentMaterialChanges = 0;
     uint32 CurrentTextureChanges = 0;
     uint32 CurrentShaderChanges = 0;
+
+    // 데칼 통계 데이터
+    uint32 CurrentDecalNum = 0;
+    float CurrentDecalRenderTimeTotal = 0.0f;
+    float CurrentDecalRenderTimeAverage = 0.0f;
     
     // 10프레임 평균
     static const int STATS_HISTORY_SIZE = 10;

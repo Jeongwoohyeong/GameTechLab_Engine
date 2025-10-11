@@ -198,6 +198,8 @@ void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InM
     RHIDevice->PSSetDefaultSampler(0);
 
     RHIDevice->GetDeviceContext()->DrawIndexed(IndexCount, 0, 0);
+    StatsCollector.IncrementDrawCalls();
+    StatsCollector.IncrementBasePassDrawCalls();
 }
 
 void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology, const TArray<FMaterialSlot>& InComponentMaterialSlots)

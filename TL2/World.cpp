@@ -19,7 +19,9 @@
 #include "BVH.h"
 #include "UEContainer.h"
 #include "DecalComponent.h"
-
+#include "PickingTimer.h"
+#include "RenderingStats.h"
+#include "UI/StatsOverlayD2D.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -379,9 +381,15 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     // 엔진 액터들 (그리드 등) 렌더링
     RenderEngineActors(ViewMatrix, ProjectionMatrix, Viewport);
 
-    // 만약에 DecalShowFlag가 활성화되어 있다면
+    URenderingStatsCollector& StatsCollector =
+        URenderingStatsCollector::GetInstance();
+
     if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal))
     {
+
+        TStatId ViewportAspectDecalRenderStatId;
+        FScopeCycleCounter ViewportAspectDecalRenderTimer(ViewportAspectDecalRenderStatId);
+
         // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
         for (UDecalComponent* DecalVolume : DecalVolumes)
         {
@@ -395,7 +403,24 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 );
             }
         }
+
+        uint64_t ViewportAspectCycleDiff = ViewportAspectDecalRenderTimer.Finish();
+        double ViewportAspectDecalRenderTimeMs = FPlatformTime::ToMilliseconds(ViewportAspectCycleDiff);
+        
+        StatsCollector.UpdateDecalStats(
+            DecalVolumes.size(),
+            (float)ViewportAspectDecalRenderTimeMs
+        );
     }
+    else
+    {
+        StatsCollector.UpdateDecalStats(0, 0.0f);
+    }
+
+    UStatsOverlayD2D::Get().UpdateDecalStats(
+        StatsCollector.GetDecalNum(),
+        StatsCollector.GetDecalRenderTimeTotal()
+    );
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }
@@ -1216,9 +1241,11 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
     {
         return nullptr;
     }
+
     PIEWorld->Renderer = EditorWorld->Renderer;
     PIEWorld->MainViewport = EditorWorld->MainViewport;
     PIEWorld->MultiViewport = EditorWorld->MultiViewport;
+
     // WorldType을 PIE로 설정
     PIEWorld->WorldType=(EWorldType::PIE);
 
@@ -1300,14 +1327,13 @@ void UWorld::SpawnActor(AActor* InActor)
 {
     InActor->SetWorld(this);
   
- 
-        if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
-        {
-            FString ActorName = GenerateUniqueActorName(
-                GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
-            );
-            InActor->SetName(ActorName);
-        }
+    if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
+    {
+        FString ActorName = GenerateUniqueActorName(
+            GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
+        );
+        InActor->SetName(ActorName);
+    }
    
     Level->GetActors().Add(InActor);
 }

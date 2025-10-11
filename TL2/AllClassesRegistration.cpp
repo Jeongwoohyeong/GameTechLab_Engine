@@ -9,6 +9,7 @@
 #include "CameraComponent.h"
 #include "CameraActor.h"
 #include "StaticMeshActor.h"
+#include "DecalActor.h"
 #include "MeshLoader.h"
 #include "LineComponent.h"
 #include "Line.h"
@@ -57,19 +58,24 @@ IMPLEMENT_CLASS(UWorld)
 IMPLEMENT_CLASS(UPrimitiveComponent)
 IMPLEMENT_CLASS(UActorComponent)
 IMPLEMENT_CLASS(USceneComponent)
+CLASS_META(USceneComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UCameraComponent)
 IMPLEMENT_CLASS(UStaticMeshComponent)
+CLASS_META(UStaticMeshComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UAABoundingBoxComponent)
 IMPLEMENT_CLASS(UShapeComponent)
 IMPLEMENT_CLASS(UOBoundingBoxComponent)
 IMPLEMENT_CLASS(UDecalComponent)
+CLASS_META(UDecalComponent, CanSpawnInTransformWidget, "true")
 
 IMPLEMENT_CLASS(AActor)
 IMPLEMENT_CLASS(ACameraActor)
 IMPLEMENT_CLASS(AStaticMeshActor)
+CLASS_META(AStaticMeshActor, Spawnable, "true")
 IMPLEMENT_CLASS(AGizmoActor)
 IMPLEMENT_CLASS(AGridActor)
-//IMPLEMENT_CLASS(ADecalActor)
+IMPLEMENT_CLASS(ADecalActor)
+CLASS_META(ADecalActor, Spawnable, "true")
 
 IMPLEMENT_CLASS(UGizmoArrowComponent)
 IMPLEMENT_CLASS(UGizmoScaleComponent)
@@ -77,7 +83,9 @@ IMPLEMENT_CLASS(UGizmoRotateComponent)
 IMPLEMENT_CLASS(ULineComponent)
 IMPLEMENT_CLASS(ULine)
 IMPLEMENT_CLASS(UTextRenderComponent)
+CLASS_META(UTextRenderComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UBillboardComponent)
+CLASS_META(UBillboardComponent, CanSpawnInTransformWidget, "true")
 
 // Managers / Systems
 IMPLEMENT_CLASS(UInputManager)

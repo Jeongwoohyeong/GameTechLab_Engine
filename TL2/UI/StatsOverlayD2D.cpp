@@ -182,7 +182,7 @@ void UStatsOverlayD2D::Draw()
     const float margin = 12.0f;
     const float panelWidth = 200.0f;
     const float panelHeight = 48.0f;
-    float nextY = margin;
+    float nextY = 70.0f;
 
     if (bShowFPS)
     {
@@ -193,13 +193,19 @@ void UStatsOverlayD2D::Draw()
         
 
         wchar_t buf[256];
-        swprintf_s(buf, L"FPS: %.1f\nFrame time: %.2f ms",fps,ms);
+        swprintf_s(buf, L"FPS: %.1f\nFrame time: %.2f ms", fps, ms);
 
-        D2D1_RECT_F rc = D2D1::RectF(margin, nextY, margin + panelWidth, nextY + panelHeight);
+        D2D1_RECT_F rc = D2D1::RectF(
+            margin,
+            nextY,
+            margin + panelWidth,
+            nextY + panelHeight
+        );
         DrawTextBlock(
             d2dCtx, dwrite, buf, rc, 16.0f,
             D2D1::ColorF(0, 0, 0, 0.6f),
-            D2D1::ColorF(D2D1::ColorF::Yellow));
+            D2D1::ColorF(D2D1::ColorF::Yellow)
+        );
 
         nextY += panelHeight + 8.0f;
     }
@@ -210,10 +216,13 @@ void UStatsOverlayD2D::Draw()
         uint64 NumAttempts = Instance.GetNumPickingAttempts();
         double AccumulatedTime = Instance.GetAccumulatedPickingTime();
 
-        swprintf_s(buf, L"Picking Time %f ms : Num Attempts %llu : Accumulated Time %f ms",
+        swprintf_s(
+            buf,
+            L"Picking Time %f ms : Num Attempts %llu : Accumulated Time %f ms",
             LastPickingTime,
             NumAttempts,
-            AccumulatedTime);
+            AccumulatedTime
+        );
 
         D2D1_RECT_F rc = D2D1::RectF(margin, nextY, margin + panelWidth * 3.0f, nextY + panelHeight / 2.0f);
 
@@ -287,8 +296,32 @@ void UStatsOverlayD2D::Draw()
             d2dCtx, dwrite, Buffer, rc, 14.0f,
             D2D1::ColorF(0, 0, 0, 0.6f),
             D2D1::ColorF(D2D1::ColorF::Cyan));
-    }
 
+        nextY += panelHeight + 30.0f;
+    }
+    if (bShowDecalStats)
+    {
+        wchar_t buf[256];
+        swprintf_s(
+            buf,
+            L"Decal Number: %u\nTotal Render Time: %.2f ms\nAverage Render Time: %.2f",
+            CurrentDecalNum,
+            CurrentDecalRenderTimeTotal,
+            CurrentDecalRenderTimeAverage
+            );
+
+        D2D1_RECT_F rc = D2D1::RectF(
+            margin,
+            nextY,
+            margin + panelWidth,
+            nextY + panelHeight * 1.5f
+        );
+        DrawTextBlock(
+            d2dCtx, dwrite, buf, rc, 16.0f,
+            D2D1::ColorF(0, 0, 0, 0.6f),
+            D2D1::ColorF(D2D1::ColorF::Purple)
+        );
+    }
    
 
     d2dCtx->EndDraw();
@@ -318,6 +351,11 @@ void UStatsOverlayD2D::SetShowRenderStats(bool b)
     bShowRenderStats = b;
 }
 
+void UStatsOverlayD2D::SetShowDecalStats(bool b)
+{
+    bShowDecalStats = b;
+}
+
 void UStatsOverlayD2D::ToggleFPS()
 {
     bShowFPS = !bShowFPS;
@@ -331,4 +369,9 @@ void UStatsOverlayD2D::ToggleMemory()
 void UStatsOverlayD2D::ToggleRenderStats()
 {
     bShowRenderStats = !bShowRenderStats;
+}
+
+void UStatsOverlayD2D::ToggleDecalStats()
+{
+    bShowDecalStats = !bShowDecalStats;
 }

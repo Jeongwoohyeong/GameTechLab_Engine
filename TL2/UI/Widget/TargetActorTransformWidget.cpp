@@ -135,6 +135,29 @@ void UTargetActorTransformWidget::Initialize()
 	{
 		UIManager->RegisterTargetTransformWidget(this);
 	}
+
+	// 추가 가능한 컴포넌트 타입 목록 초기화 (메타데이터 기반)
+	if (!bComponentTypesInitialized)
+	{
+		// ObjectFactory의 NameRegistry를 순회하면서 메타데이터를 체크
+		for (const auto& ClassDataPair : ObjectFactory::GetNameRegistry())
+		{
+			UClass* ClassType = ClassDataPair.second;
+
+			// UActorComponent의 파생 클래스인지 확인
+			if (ClassType && ClassType->IsChildOf(UActorComponent::StaticClass()))
+			{
+				// 메타데이터를 체크하여 TargetActorTransformWidget에서 생성 가능한지 확인
+				if (ClassType->GetMetaDataBool("CanSpawnInTransformWidget", false))
+				{
+					// 리스트에 추가
+					FString DisplayName = ClassDataPair.first;
+					AddableComponentTypes.push_back({ DisplayName, ClassType });
+				}
+			}
+		}
+		bComponentTypesInitialized = true;
+	}
 }
 
 AActor* UTargetActorTransformWidget::GetCurrentSelectedActor() const
@@ -212,15 +235,6 @@ void UTargetActorTransformWidget::RenderWidget()
 		// 선택된 액터 UUID 표시(전역 고유 ID)
 		ImGui::Text("UUID: %u", static_cast<unsigned int>(SelectedActor->UUID));
 		ImGui::Spacing();
-
-		// 추가 가능한 컴포넌트 타입 목록 (임시 하드코딩)
-		static const TArray<TPair<FString, UClass*>> AddableComponentTypes = {
-			{ "StaticMesh Component", UStaticMeshComponent::StaticClass() },
-			{ "Text Component", UTextRenderComponent::StaticClass() },
-			{ "Scene Component", USceneComponent::StaticClass() },
-			{ "Billboard Component", UBillboardComponent::StaticClass() },
-			{ "Decal Component", UDecalComponent::StaticClass() }
-		};
 
 		// 컴포넌트 추가 메뉴
 		if (SelectedComponent)

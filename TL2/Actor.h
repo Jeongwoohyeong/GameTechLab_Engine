@@ -92,8 +92,8 @@ public:
     void SetActorHiddenInGame(bool bNewHidden) { bHiddenInGame = bNewHidden; }
     bool GetActorHiddenInGame() const { return bHiddenInGame; }
     bool IsActorVisible() const { return !bHiddenInGame; }
-    
-    
+
+
     // Tick Enabled Check
     bool IsActorTickEnabled() const { return bCanEverTick; }
 
