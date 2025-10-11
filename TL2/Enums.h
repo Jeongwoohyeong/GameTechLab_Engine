@@ -328,11 +328,14 @@ enum class EEngineShowFlags : uint64
     SF_BoundingBoxes = 1ull << 4, // Show/hide collision bounds
     SF_Grid = 1ull << 5,          // Show/hide world grid
     
+    // Decal Rendering
+    SF_Decal = 1ull << 6,         // Show/hide decal volume line rendering, decal projection to static mesh
+
     // Lighting
-    SF_Lighting = 1ull << 6,      // Enable/disable lighting
+    SF_Lighting = 1ull << 7,      // Enable/disable lighting
     
     // Default enabled flags
-    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid,
+    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal,
     
     // All flags (for initialization/reset)
     SF_All = 0xFFFFFFFFFFFFFFFFull
