@@ -306,3 +306,7 @@ void USceneComponent::DuplicateSubObjects()
     }
     AttachChildren = DuplicatedChildren;
 }
+
+void USceneComponent::TickComponent(float DeltaSeconds)
+{
+}

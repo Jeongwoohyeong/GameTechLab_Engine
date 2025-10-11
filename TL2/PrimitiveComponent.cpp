@@ -30,6 +30,10 @@ void UPrimitiveComponent::Serialize(bool bIsLoading, FPrimitiveData& InOut)
     }
 }
 
+void UPrimitiveComponent::TickComponent(float DeltaSeconds)
+{
+}
+
 UObject* UPrimitiveComponent::Duplicate()
 {
     UPrimitiveComponent* DuplicatedComponent = NewObject<UPrimitiveComponent>(*this);

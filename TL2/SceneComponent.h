@@ -81,6 +81,8 @@ public:
     UObject* Duplicate() override;
     void DuplicateSubObjects() override;
 
+    void TickComponent(float DeltaSeconds) override;
+
 protected:
     void UpdateRelativeTransform();
 
