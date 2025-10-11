@@ -75,7 +75,7 @@ public:
     // ──────────────────────────────
     USceneComponent* GetAttachParent() const { return AttachParent; }
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
-    UWorld* GetWorld() { return AttachParent->GetWorld(); }
+
 
     // Duplicate function
     UObject* Duplicate() override;

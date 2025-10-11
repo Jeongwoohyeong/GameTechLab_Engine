@@ -1,5 +1,6 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "ActorComponent.h"
+#include "Actor.h"
 
 UActorComponent::UActorComponent()
     : Owner(nullptr), bIsActive(true), bCanEverTick(false)
@@ -37,6 +38,11 @@ void UActorComponent::EndPlay(EEndPlayReason::Type EndPlayReason)
     {
         // End Replication
     }
+}
+
+UWorld* UActorComponent::GetWorld() const
+{
+    return Owner ? Owner->GetWorld() : nullptr;
 }
 
 UObject* UActorComponent::Duplicate()
