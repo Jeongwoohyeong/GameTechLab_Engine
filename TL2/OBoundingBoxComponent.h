@@ -28,10 +28,15 @@ public:
     FVector GetExtent() const;
 
 	void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
+    FBound GetWorldBound();
+    bool IntersectsWithAABB(const FBound& AABB);
 
 private:
+    // Local AABB
     FVector LocalMin;
     FVector LocalMax;
+
+    // OBB
     FOrientedBound Bound;
 
     USceneComponent* OwnerComponent = nullptr;
