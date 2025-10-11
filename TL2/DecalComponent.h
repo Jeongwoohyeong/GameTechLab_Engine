@@ -19,12 +19,15 @@ public:
         const FMatrix& View,
         const FMatrix& Proj
     );
+    void SetTexture(const FString& TexturePath);
+    const FString& GetTexturePath() const { return TexturePath; }
 
 protected:
     ~UDecalComponent() override;
 
 private:
     UOBoundingBoxComponent OBB;
+    FString TexturePath = "Editor/Decal/PointLight_64x.dds";
     
     // OBB 박스에 Vertex 정보를 전달하기 위한 배열
     // Local 공간에서 Decal Volume은 한 변의 길이가 1인 정육면체이다.
