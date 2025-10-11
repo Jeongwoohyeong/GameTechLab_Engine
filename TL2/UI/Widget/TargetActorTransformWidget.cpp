@@ -941,10 +941,13 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 	if (!SelectedActor || !SelectedComponent)
 		return;
 
+	bool bTransformHasChanged = false;
+
 	// 변경사항이 있는 경우에만 적용
 	if (bPositionChanged)
 	{
 		SelectedComponent->SetRelativeLocation(EditLocation);
+		bTransformHasChanged = true;
 		UE_LOG("Transform: Applied location (%.2f, %.2f, %.2f)",
 			EditLocation.X, EditLocation.Y, EditLocation.Z);
 	}
@@ -953,6 +956,7 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 	{
 		FQuat NewRotation = FQuat::MakeFromEuler(EditRotation);
 		SelectedComponent->SetRelativeRotation(NewRotation);
+		bTransformHasChanged = true;
 		UE_LOG("Transform: Applied rotation (%.1f, %.1f, %.1f)",
 			EditRotation.X, EditRotation.Y, EditRotation.Z);
 	}
@@ -960,8 +964,18 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 	if (bScaleChanged)
 	{
 		SelectedComponent->SetRelativeScale(EditScale);
+		bTransformHasChanged = true;
 		UE_LOG("Transform: Applied scale (%.2f, %.2f, %.2f)",
 			EditScale.X, EditScale.Y, EditScale.Z);
+	}
+
+	// 컴포넌트의 트랜스폼이 변경되었다면, World에 알려 BVH를 업데이트 하도록 합니다.
+	if (bTransformHasChanged)
+	{
+		if (UWorld* World = SelectedActor->GetWorld())
+		{
+			World->MarkBVHDirty();
+		}
 	}
 
 	// 플래그 리셋은 const 메서드에서 할 수 없으므로 PostProcess에서 처리
