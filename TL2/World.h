@@ -132,6 +132,9 @@ public:
 
 	void Serialize(FObjectData* Data) override;
 	void DeSerialize(FObjectData* Data) override;
+
+	/** === 액터의 트랜스폼 변경 시 BVH 업데이트 하도록 표시 */
+	void MarkBVHDirty() { bIsBVHDirty = true; }
 private:
 	// 싱글톤 매니저 참조
 	UResourceManager& ResourceManager;
@@ -169,6 +172,7 @@ private:
 
 	UOctree* Octree;
 	FBVH* BVH;
+	bool bIsBVHDirty = false; 
 };
 template<class T>
 inline T* UWorld::SpawnActor()
