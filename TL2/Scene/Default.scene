@@ -1,31 +1,31 @@
 {
   "Version" : 2,
-  "NextUUID" : 533,
+  "NextUUID" : 531,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [4000.000000],
-    "Location" : [-16.951210, 10.446845, 4.586755],
+    "Location" : [-9.523299, 5.960875, 4.233333],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 12.900002, -29.399998]
+    "Rotation" : [0.000000, 4.500003, -7.800001]
   },
   "Actors" : [
     {
-      "UUID" : 530,
+      "UUID" : 528,
       "Type" : "AStaticMeshActor",
       "Name" : "AStaticMeshActor_1",
-      "RootComponentUUID" : 531
+      "RootComponentUUID" : 529
     }
   ],
   "Components" : [
     {
-      "UUID" : 531,
-      "OwnerActorUUID" : 530,
+      "UUID" : 529,
+      "OwnerActorUUID" : 528,
       "ParentComponentUUID" : 0,
       "Type" : "UStaticMeshComponent",
-      "RelativeLocation" : [1.014588, 0.383465, 3.242635],
+      "RelativeLocation" : [-2.221595, 2.784051, 3.444127],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/ship/ship.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     }
   ]
 }
