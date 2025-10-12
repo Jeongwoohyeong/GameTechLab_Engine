@@ -114,7 +114,7 @@ public:
     // 빠른 레이 교차 검사 - 가장 가까운 프리미티브 반환
     UPrimitiveComponent* Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const;
 
-    // AABB와 교차하는 모든 프리미티브 찾기
+    // AABB와 교차하는 모든 프리미티브 찾기(Broad Phase)
     void IntersectAABB(const FBound& QueryAABB, TArray<UPrimitiveComponent*>& OutPrimitives) const;
 
     // BVH 구조를 디버깅용 라인으로 렌더링

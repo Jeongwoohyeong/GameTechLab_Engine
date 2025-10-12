@@ -606,7 +606,7 @@ void FBVH::RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const
     case 1: Color = FVector4(0.f, 1.f, 0.f, 1.f); break; // Green
     case 2: Color = FVector4(0.f, 0.f, 1.f, 1.f); break; // Blue
     case 3: Color = FVector4(1.f, 1.f, 0.f, 1.f); break; // Yellow
-    case 4: Color = FVector4(1.f, 0.f, 1.f, 1.f); break; // Magenta
+    case 4: Color = FVector4(0.f, 1.f, 1.f, 1.f); break; // Cyan
     }
     // 현재 노드의 AABB를 그리기
     Renderer->DrawAABB(Node.BoundingBox.Min, Node.BoundingBox.Max, Color);
