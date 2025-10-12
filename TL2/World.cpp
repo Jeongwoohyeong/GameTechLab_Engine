@@ -213,13 +213,13 @@ void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
     //Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
 
     // 빌드 완료 후 모든 마이크로 BVH 미리 생성
-#ifndef _DEBUG
-    Octree->PreBuildAllMicroBVH();
-
-    // BVH 초기화 및 빌드
-    BVH = new FBVH();
-    BVH->Build(Actors);
-#endif
+//#ifndef _DEBUG
+//    Octree->PreBuildAllMicroBVH();
+//
+//    // BVH 초기화 및 빌드
+//    BVH = new FBVH();
+//    BVH->Build(Actors);
+//#endif
     // BVH 초기화 및 빌드
     BVH = new FBVH();
     BVH->Build(Actors);
