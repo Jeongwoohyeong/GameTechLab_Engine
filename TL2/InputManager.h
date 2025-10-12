@@ -70,6 +70,9 @@ public:
     uint32 GetDraggingAxis() const { return DraggingAxis; }
     void SetDraggingAxis(uint32 Axis) { DraggingAxis = Axis; }
 
+    // 모든 키 상태를 초기화합니다. (창 비활성화 시 호출)
+    void InitKeyStates();
+
 private:
     // 내부 헬퍼 함수들
     void UpdateMousePosition(int X, int Y);

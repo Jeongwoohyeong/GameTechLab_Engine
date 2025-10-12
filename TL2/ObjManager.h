@@ -10,9 +10,9 @@ struct FObjInfo
     TArray<FVector2D> TexCoords;
     TArray<FVector> Normals;
 
-    TArray<uint32> PositionIndices;
-    TArray<uint32> TexCoordIndices;
-    TArray<uint32> NormalIndices;
+    TArray<int> PositionIndices;
+    TArray<int> TexCoordIndices;
+    TArray<int> NormalIndices;
 
     TArray<FString> MaterialNames; // == 강의 글의 meshMaterials
     TArray<uint32> GroupIndexStartArray; // i번째 Group이 사용하는 indices 범위: GroupIndexStartArray[i] ~ GroupIndexStartArray[i+1]
@@ -448,9 +448,9 @@ public:
 
     struct VertexKey
     {
-        uint32 PosIndex;
-        uint32 TexIndex;
-        uint32 NormalIndex;
+        int32 PosIndex;
+        int32 TexIndex;
+        int32 NormalIndex;
 
         bool operator==(const VertexKey& Other) const
         {
@@ -493,9 +493,9 @@ public:
             else
             {
                 // 새 정점 추가
-                FVector Pos = InObjInfo.Positions[Key.PosIndex];
-                FVector Normal = InObjInfo.Normals[Key.NormalIndex];
-                FVector2D TexCoord = InObjInfo.TexCoords[Key.TexIndex];
+                FVector Pos = InObjInfo.Positions[Key.PosIndex >= 0 ? Key.PosIndex : InObjInfo.Positions.size() + Key.PosIndex];
+                FVector Normal = InObjInfo.Normals[Key.NormalIndex >= 0 ? Key.NormalIndex : InObjInfo.Normals.size() + Key.NormalIndex];
+                FVector2D TexCoord = InObjInfo.TexCoords[Key.TexIndex >= 0 ? Key.TexIndex : InObjInfo.TexCoords.size() + Key.TexIndex];
                 FVector4 Color(1, 1, 1, 1);
 
                 FNormalVertex NormalVertex(Pos, Normal, Color, TexCoord);
@@ -559,9 +559,9 @@ public:
 private:
     struct FFaceVertex
     {
-        uint32 PositionIndex;
-        uint32 TexCoordIndex;
-        uint32 NormalIndex;
+        int PositionIndex;
+        int TexCoordIndex;
+        int NormalIndex;
     };
 
     //없는 건 0으로 넣음
@@ -570,9 +570,9 @@ private:
         FString vertPart;
         uint32 whichPart = 0;
 
-        uint32 VertexPositionIndexTemp;
-        uint32 VertexTexIndexTemp;
-        uint32 VertexNormalIndexTemp;
+        int VertexPositionIndexTemp = 0;
+        int VertexTexIndexTemp = 0;
+        int VertexNormalIndexTemp = 0;
         for (int j = 0; j < InVertexDef.length(); ++j)
         {
             if (InVertexDef[j] != '/')	//If there is no divider "/", add a char to our vertPart
@@ -586,7 +586,8 @@ private:
                 if (whichPart == 0)	//If vPos
                 {
                     stringToInt >> VertexPositionIndexTemp;
-                    VertexPositionIndexTemp -= 1;		//subtract one since c++ arrays start with 0, and obj start with 1
+                    if(VertexPositionIndexTemp > 0)
+                        VertexPositionIndexTemp -= 1;		//subtract one since c++ arrays start with 0, and obj start with 1
 
                     //Check to see if the vert pos was the only thing specified
                     if (j == InVertexDef.length() - 1)
@@ -601,7 +602,8 @@ private:
                     if (vertPart != "")	//Check to see if there even is a tex coord
                     {
                         stringToInt >> VertexTexIndexTemp;
-                        VertexTexIndexTemp -= 1;	//subtract one since c++ arrays start with 0, and obj start with 1
+                        if(VertexTexIndexTemp > 0)
+                            VertexTexIndexTemp -= 1;	//subtract one since c++ arrays start with 0, and obj start with 1
                     }
                     else	//If there is no tex coord, make a default
                         VertexTexIndexTemp = 0;
@@ -615,7 +617,8 @@ private:
                 else if (whichPart == 2)	//If vNorm
                 {
                     stringToInt >> VertexNormalIndexTemp;
-                    VertexNormalIndexTemp -= 1;		//subtract one since c++ arrays start with 0, and obj start with 1
+                    if(VertexNormalIndexTemp > 0)
+                        VertexNormalIndexTemp -= 1;		//subtract one since c++ arrays start with 0, and obj start with 1
                 }
 
                 vertPart = "";	//Get ready for next vertex part
@@ -623,7 +626,7 @@ private:
             }
         }
 
-        FFaceVertex Result = FFaceVertex(VertexPositionIndexTemp, VertexTexIndexTemp, VertexNormalIndexTemp);
+        FFaceVertex Result = { VertexPositionIndexTemp, VertexTexIndexTemp, VertexNormalIndexTemp };
         return Result;
     }
 

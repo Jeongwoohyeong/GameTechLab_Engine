@@ -36,8 +36,13 @@ void FObjManager::Preload()
 
         if (Extension == ".obj")
         {
-            // 경로 정규화 - 절대경로로 변환하고 슬래시로 통일
-            std::filesystem::path NormalizedPath = std::filesystem::absolute(Path);
+            // 경로 정규화 - 상대경로로 변환하고 슬래시로 통일
+            std::error_code ec;
+            std::filesystem::path NormalizedPath = std::filesystem::relative(Path, std::filesystem::current_path(), ec);
+            if (ec)
+            {
+                NormalizedPath = Path;
+            }
             FString PathStr = NormalizedPath.string();
             std::replace(PathStr.begin(), PathStr.end(), '\\', '/');
 
@@ -66,8 +71,13 @@ void FObjManager::Clear()
 
 FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 {
-    // 1) 경로 정규화 - 절대경로로 변환하고 백슬래시를 슬래시로 통일
-    std::filesystem::path NormalizedPath = std::filesystem::absolute(PathFileName);
+    // 1) 경로 정규화 - 상대경로로 변환하고 백슬래시를 슬래시로 통일
+    std::error_code ec;
+    std::filesystem::path NormalizedPath = std::filesystem::relative(PathFileName, std::filesystem::current_path(), ec);
+    if (ec)
+    {
+        NormalizedPath = PathFileName;
+    }
     FString NormalizedPathStr = NormalizedPath.string();
     std::replace(NormalizedPathStr.begin(), NormalizedPathStr.end(), '\\', '/');
 
@@ -171,7 +181,12 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
 {
     // 0) 경로 정규화
-    std::filesystem::path NormalizedPath = std::filesystem::absolute(PathFileName);
+    std::error_code ec;
+    std::filesystem::path NormalizedPath = std::filesystem::relative(PathFileName, std::filesystem::current_path(), ec);
+    if (ec)
+    {
+        NormalizedPath = PathFileName;
+    }
     FString NormalizedPathStr = NormalizedPath.string();
     std::replace(NormalizedPathStr.begin(), NormalizedPathStr.end(), '\\', '/');
 
@@ -179,7 +194,7 @@ UStaticMesh* FObjManager::LoadObjStaticMesh(const FString& PathFileName)
     for (TObjectIterator<UStaticMesh> It; It; ++It)
     {
         UStaticMesh* StaticMesh = *It;
-        std::filesystem::path ExistingPath = std::filesystem::absolute(StaticMesh->GetFilePath());
+        std::filesystem::path ExistingPath = StaticMesh->GetFilePath();
         FString ExistingNormalizedStr = ExistingPath.string();
         std::replace(ExistingNormalizedStr.begin(), ExistingNormalizedStr.end(), '\\', '/');
 

@@ -35,6 +35,9 @@ public:
     void SetScreenSize(float Size) { ScreenSize = Size; }
     float GetScreenSize() const { return ScreenSize; }
 
+	bool IsDisplayedOnPlayMode() const { return bIsDisplayedOnPlayMode; }
+	void SetDisplayedOnPlayMode(bool bInDisplayed) { bIsDisplayedOnPlayMode = bInDisplayed; }
+
     UTextQuad* GetStaticMesh() const { return BillboardQuad; }
 
     UObject* Duplicate() override;
@@ -58,6 +61,7 @@ private:
     // Texture properties
     // [PIE] 값 복사
     FString TexturePath = "Editor/Icon/Pawn_64x.dds";
+    bool bIsDisplayedOnPlayMode = true;
     
     // UV coordinate properties
     // [PIE] 값 복사
