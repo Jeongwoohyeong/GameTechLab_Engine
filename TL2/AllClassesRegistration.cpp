@@ -10,6 +10,8 @@
 #include "CameraActor.h"
 #include "StaticMeshActor.h"
 #include "DecalActor.h"
+#include "SpotlightActor.h"
+
 #include "MeshLoader.h"
 #include "LineComponent.h"
 #include "Line.h"
@@ -51,6 +53,7 @@
 #include"Level.h"
 #include "OBoundingBoxComponent.h"
 #include "DecalComponent.h"
+#include "SpotlightComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -67,6 +70,7 @@ IMPLEMENT_CLASS(UShapeComponent)
 IMPLEMENT_CLASS(UOBoundingBoxComponent)
 IMPLEMENT_CLASS(UDecalComponent)
 CLASS_META(UDecalComponent, CanSpawnInTransformWidget, "true")
+IMPLEMENT_CLASS(USpotlightComponent)
 
 IMPLEMENT_CLASS(AActor)
 IMPLEMENT_CLASS(ACameraActor)
@@ -76,6 +80,8 @@ IMPLEMENT_CLASS(AGizmoActor)
 IMPLEMENT_CLASS(AGridActor)
 IMPLEMENT_CLASS(ADecalActor)
 CLASS_META(ADecalActor, Spawnable, "true")
+IMPLEMENT_CLASS(ASpotlightActor)
+CLASS_META(ASpotlightActor, Spawnable, "true")
 
 IMPLEMENT_CLASS(UGizmoArrowComponent)
 IMPLEMENT_CLASS(UGizmoScaleComponent)

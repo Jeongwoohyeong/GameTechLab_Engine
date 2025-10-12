@@ -21,10 +21,22 @@ public:
     );
     void SetTexture(const FString& TexturePath);
     void SetFadeProperties(const FVector4& FadeProperties);
-    
+
     const FString& GetTexturePath() const { return TexturePath; }
     FVector4 GetFadeProperties() const { return FadeProperties;}
     void ResetFadeProperties();
+
+    // Projection mode
+    void SetUsePerspectiveProjection(bool bUsePerspective) { bUsePerspectiveProjection = bUsePerspective; }
+    bool GetUsePerspectiveProjection() const { return bUsePerspectiveProjection; }
+
+    void SetProjectionFOV(float InFOV) { ProjectionFOV = InFOV; }
+    float GetProjectionFOV() const { return ProjectionFOV; }
+
+    // Projection matrix getters
+    static FMatrix GetDecalOrthoProjection();
+    static FMatrix GetDecalPerspectiveProjection(float FovYDegrees);
+
     UOBoundingBoxComponent* GetOBBComponent() { return &OBB; }
 
     virtual UObject* Duplicate() override;
@@ -41,6 +53,7 @@ protected:
 
 private:
     void UpdateFade(float DeltaTime);
+    void RenderFrustumLines(URenderer* Renderer);
 
 private:
     UOBoundingBoxComponent OBB;
@@ -52,6 +65,11 @@ private:
     bool bIsFadeEnabled = false;
     bool bIsFadeOut = true;
     float ElapsedTime = 0.0f;
+    
+
+    // Projection settings
+    bool bUsePerspectiveProjection = false;  // false = Ortho, true = Perspective
+    float ProjectionFOV = 45.0f;  // FOV in degrees (for perspective mode)
     
     // OBB 박스에 Vertex 정보를 전달하기 위한 배열
     // Local 공간에서 Decal Volume은 한 변의 길이가 1인 정육면체이다.
@@ -67,19 +85,12 @@ private:
         {-0.5f, -0.5f, 0.5f}
     };
 
-    inline static const FMatrix DecalProjection =
-    {
-        2.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 2.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 2.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-    };
 
-    inline static const FMatrix DecalViewRotation =
+    inline static const FMatrix DecalViewAdjustMatrix =
     {
         1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.5f, 1.0f
     };
 };

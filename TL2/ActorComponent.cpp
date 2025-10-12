@@ -13,6 +13,14 @@ UActorComponent::~UActorComponent()
 
 void UActorComponent::InitializeComponent()
 {
+    // 중복 초기화 방지
+    if (bIsInitialized)
+    {
+        return;
+    }
+
+    bIsInitialized = true;
+
     // 액터에 부착될 때 초기화
     // 필요하다면 Override
 }
@@ -48,6 +56,10 @@ UWorld* UActorComponent::GetWorld() const
 UObject* UActorComponent::Duplicate()
 {
     UActorComponent* DuplicatedComponent = NewObject<UActorComponent>(*this);
+
+    // 복제된 컴포넌트는 초기화되지 않은 상태로 시작
+    DuplicatedComponent->bIsInitialized = false;
+
     DuplicatedComponent->DuplicateSubObjects();
 
     return DuplicatedComponent;

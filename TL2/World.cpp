@@ -1150,7 +1150,16 @@ void UWorld::DeSerialize(FObjectData* Data)
 void UWorld::SpawnActor(AActor* InActor)
 {
     InActor->SetWorld(this);
-  
+
+    // 모든 컴포넌트 초기화
+    for (UActorComponent* Component : InActor->GetComponents())
+    {
+        if (Component)
+        {
+            Component->InitializeComponent();
+        }
+    }
+
     if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
     {
         FString ActorName = GenerateUniqueActorName(
@@ -1158,7 +1167,7 @@ void UWorld::SpawnActor(AActor* InActor)
         );
         InActor->SetName(ActorName);
     }
-   
+
     Level->GetActors().Add(InActor);
 
     // BVH가 없으면 새로 생성

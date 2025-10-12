@@ -194,6 +194,15 @@ inline T* UWorld::SpawnActor(const FTransform& Transform)
 	//  월드 등록
 	NewActor->SetWorld(this);
 
+	// 모든 컴포넌트 초기화
+	for (UActorComponent* Component : NewActor->GetComponents())
+	{
+		if (Component)
+		{
+			Component->InitializeComponent();
+		}
+	}
+
 	if (Level)
 	{
 		Level->AddActor(NewActor);
