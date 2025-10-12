@@ -9,6 +9,8 @@
 #include "CameraActor.h"
 #include "GizmoActor.h"
 #include "World.h"
+#include "PrimitiveComponent.h"
+
 AActor::AActor() {}
 
 /*
@@ -240,6 +242,31 @@ void AActor::AddActorLocalLocation(const FVector& InDeltaLocation) const
 const TSet<UActorComponent*>& AActor::GetComponents() const
 {
     return OwnedComponents;
+}
+
+FBound AActor::GetActorBounds(bool bOnlyCollidingComponents) const
+{
+    FBound ActorBounds;
+    bool bIsFirst = true;
+
+    for (UActorComponent* Component : OwnedComponents)
+    {
+        UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(Component);
+        if (PrimComp && PrimComp->IsActive())
+        {
+            if (bIsFirst)
+            {
+                ActorBounds = PrimComp->GetWorldBound();
+                bIsFirst = false;
+            }
+            else
+            {
+                // 기존 바운딩 박스와 결합
+                ActorBounds += PrimComp->GetWorldBound();
+            }
+        }
+    }
+    return ActorBounds;
 }
 
 void AActor::AddComponent(USceneComponent* InComponent)
