@@ -12,6 +12,8 @@
 
 AGizmoActor::AGizmoActor()
 {
+	AActor::Initialize();
+
 	Name = "Gizmo Actor";
 
 	//======= Arrow Component 생성 =======

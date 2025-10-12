@@ -7,7 +7,9 @@
 #include "MeshComponent.h"
 #include "TextRenderComponent.h"
 
-AActor::AActor()
+AActor::AActor() {}
+
+void AActor::Initialize()
 {
     Name = "DefaultActor";
     RootComponent = CreateDefaultSubobject<USceneComponent>(FName("SceneComponent"));

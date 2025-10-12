@@ -3,17 +3,10 @@
 #include "AABoundingBoxComponent.h"
 #include "ObjectFactory.h"
 
-ADecalActor::ADecalActor()
-{
-	// AActor의 생성자에서 USceneComponent를 Root로 생성하지만
-	// DecalActor는 DecalComponent가 Root가 되어야 하므로 기존 Root를 제거 후 새로 할당
-	if (RootComponent)
-	{
-		USceneComponent* TempRootComponent = RootComponent;
-		RootComponent = nullptr;
-		DeleteComponent(TempRootComponent);
-	}
+ADecalActor::ADecalActor() {}
 
+void ADecalActor::Initialize()
+{
 	Name = "Decal Actor";
 	DecalComponent = CreateDefaultSubobject<UDecalComponent>("DecalComponent");
 	RootComponent = DecalComponent;

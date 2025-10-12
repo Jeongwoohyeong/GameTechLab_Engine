@@ -380,6 +380,7 @@ void UPrimitiveSpawnWidget::SpawnActors() const
             continue;
         }
 
+        NewActor->Initialize();
         NewActor->SetActorTransform(SpawnTransform);
 
         // AStaticMeshActor인 경우 SpawnActor 호출 전에 메시 설정
