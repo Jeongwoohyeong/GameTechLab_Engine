@@ -9,6 +9,10 @@ void UPrimitiveComponent::SetMaterial(const FString& FilePath)
     Material = UResourceManager::GetInstance().Load<UMaterial>(FilePath);
 }
 
+void UPrimitiveComponent::TickComponent(float DeltaSeconds)
+{
+}
+
 UObject* UPrimitiveComponent::Duplicate()
 {
     UPrimitiveComponent* DuplicatedComponent = NewObject<UPrimitiveComponent>(*this);

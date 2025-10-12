@@ -83,6 +83,8 @@ public:
 
     void Serialize(FObjectData* Data) override;
     void DeSerialize(FObjectData* Data) override;
+    void TickComponent(float DeltaSeconds) override;
+
 protected:
     void UpdateRelativeTransform();
 

@@ -769,22 +769,9 @@ void UTargetActorTransformWidget::RenderWidget()
 				ImGui::Text("Decal Fade");
 				ImGui::SameLine();
 				static bool bIsFadeEnabled = false;
-				static bool bIsFadeOut = true;
-				static float ElapsedTime = 0.0f;
 				if (ImGui::Checkbox("Fade On", &bIsFadeEnabled))
 				{
-					// 체크박스가 켜지면 처음부터 다시 페이드
-					if (bIsFadeEnabled)
-					{
-						ElapsedTime = 0.0f;
-						bIsFadeOut = true;
-					}
-					// 체크박스 꺼지면 default값으로 재설정
-					else
-					{
-						FVector4 DefaultFadeProperties = {5.0f, 0.0f, 1.0f, 1.0f};
-						DecalComponent->ResetFadeProperties();
-					}
+					DecalComponent->SetFadeEnabled(bIsFadeEnabled);
 				}
 				if (bIsFadeEnabled)
 				{
@@ -793,43 +780,17 @@ void UTargetActorTransformWidget::RenderWidget()
 					// 기본값으로 초기화
 					if (ImGui::Button("Reset"))
 					{
-						DecalComponent->ResetFadeProperties();
-						ElapsedTime = 0.0f;
-						bIsFadeOut = true;
+						DecalComponent->ResetFadeProperties();						
 					}
-					ImGui::DragFloat("Duration", &FadeProperties.X, 0.01f, 0.0f, 60.0f);
-					ImGui::DragFloat("MinAlpha", &FadeProperties.Y, 0.001f, 0.0f, FadeProperties.Z);
-					ImGui::DragFloat("MaxAlpha", &FadeProperties.Z, 0.001f, FadeProperties.Y, 1.0f);					
-					
-					float DeltaTime = ImGui::GetIO().DeltaTime;				
-					if (FadeProperties.X > 1e-6f)
+					bool bIsPropertyChanged = false;
+					bIsPropertyChanged |= ImGui::DragFloat("Duration", &FadeProperties.X, 0.01f, 0.0f, 60.0f);
+					bIsPropertyChanged |= ImGui::DragFloat("MinAlpha", &FadeProperties.Y, 0.001f, 0.0f, FadeProperties.Z);
+					bIsPropertyChanged |= ImGui::DragFloat("MaxAlpha", &FadeProperties.Z, 0.001f, FadeProperties.Y, 1.0f);
+					if (bIsPropertyChanged)
 					{
-						ElapsedTime += DeltaTime;
-						// 진행시간 / 주기로 진행도를 0~1로 정규화
-						float Progress = ElapsedTime / FadeProperties.X;
-
-						// 선형 보간
-						if (bIsFadeOut)
-						{
-							// fade out일 때 max에서 min까지 선형보간
-							FadeProperties.W = FadeProperties.Z - (FadeProperties.Z - FadeProperties.Y) * Progress;
-						}
-						else
-						{
-							// min에서 max까지 선형보간
-							FadeProperties.W = FadeProperties.Y + (FadeProperties.Z - FadeProperties.Y) * Progress;
-						}
-
-						// 진행도가 1 이상이면 fade in - fade out 전환
-						// 진행시간 초기화
-						if (Progress >= 1.0f)
-						{
-							ElapsedTime = 0.0f;
-							bIsFadeOut = !bIsFadeOut;
-						}
+						DecalComponent->SetFadeProperties(FadeProperties);
 					}
-					DecalComponent->SetFadeProperties(FadeProperties);
-				}				
+				}
 				
 			}
 		else
@@ -928,10 +889,6 @@ void UTargetActorTransformWidget::UpdateTransformFromActor()
 		EditRotation = SelectedComponent->GetRelativeRotation().ToEuler();
 		EditScale = SelectedComponent->GetRelativeScale();
 	}
-
-	// 균등 스케일 여부 판단
-	bUniformScale = (abs(EditScale.X - EditScale.Y) < 0.01f &&
-		abs(EditScale.Y - EditScale.Z) < 0.01f);
 
 	ResetChangeFlags();
 }

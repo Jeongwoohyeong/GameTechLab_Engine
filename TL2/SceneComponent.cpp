@@ -339,3 +339,7 @@ void USceneComponent::DeSerialize(FObjectData* Data)
     SetRelativeRotation(FQuat::MakeFromEuler(ComponentData->RelativeRotation));
     SetRelativeScale(ComponentData->RelativeScale);
 }
+
+void USceneComponent::TickComponent(float DeltaSeconds)
+{
+}

@@ -32,17 +32,26 @@ public:
 
     void Serialize(FObjectData* Data) override;
     void DeSerialize(FObjectData* Data) override;
+    void TickComponent(float DeltaTime) override;
+
+    void SetFadeEnabled(bool bIsEnable);
 
 protected:
     ~UDecalComponent() override;
 
 private:
+    void UpdateFade(float DeltaTime);
+
+private:
     UOBoundingBoxComponent OBB;
-    FString TexturePath = "Editor/Decal/PointLight_64x.dds";
+    FString TexturePath = "Editor/Decal/doro.dds";
     FString MaterialPath = "Decal.hlsl";
     // Duration, min, max, Alpha
     FVector4 DefaultFadeProperties = {5.0f, 0.0f, 1.0f, 1.0f};
     FVector4 FadeProperties = DefaultFadeProperties;
+    bool bIsFadeEnabled = false;
+    bool bIsFadeOut = true;
+    float ElapsedTime = 0.0f;
     
     // OBB 박스에 Vertex 정보를 전달하기 위한 배열
     // Local 공간에서 Decal Volume은 한 변의 길이가 1인 정육면체이다.

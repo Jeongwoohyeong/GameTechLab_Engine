@@ -100,6 +100,7 @@ public:
     // Tick 조건 헬퍼 함수들
     bool ShouldTickInEditor() const { return bTickInEditor; }
     bool CanTickInPlayMode() const { return bCanEverTick && !bHiddenInGame; }
+    void SetEditorTickEnabled(bool bEnableTick) { bTickInEditor = bEnableTick; }
 
     
 

@@ -19,6 +19,7 @@ public:
     virtual UMaterial* GetMaterial() { return Material; }
 
     virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) {}
+    void TickComponent(float DeltaSeconds) override;
 
     UObject* Duplicate() override;
     void DuplicateSubObjects() override;
