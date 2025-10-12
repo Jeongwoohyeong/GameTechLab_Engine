@@ -75,9 +75,9 @@ protected:
 private:
     struct FFace
     {
-        size_t IndexPosition;
-        size_t IndexNormal;
-        size_t IndexTexCoord;
+        int IndexPosition = 0;
+        int IndexNormal = 0;
+        int IndexTexCoord = 0;
     };
 
     static FFace ParseFaceBuffer(const FString& FaceBuffer);
