@@ -5,6 +5,7 @@
 #include "PickingTimer.h"
 #include "UI/GlobalConsole.h"
 #include "Renderer.h" // For URenderer and DrawAABB
+#include "PrimitiveComponent.h"
 #include <algorithm>
 #include <cfloat>
 
@@ -18,63 +19,57 @@ FBVH::~FBVH()
     Clear();
 }
 
-void FBVH::Build(const TArray<AActor*>& Actors)
+void FBVH::Build(const TArray<UPrimitiveComponent*>& Primitives)
 {
     TStatId BVHBuildStatId;
     FScopeCycleCounter BVHBuildTimer(BVHBuildStatId);
 
     Clear();
 
-    if (Actors.Num() == 0)
+    if (Primitives.Num() == 0)
         return;
 
-    // 1. 액터들의 AABB 정보 수집
-    ActorBounds.Reserve(Actors.Num());
-    ActorIndices.Reserve(Actors.Num());
+    // 1. 프리미티브들의 AABB 정보 수집
+    PrimitiveBounds.Reserve(Primitives.Num());
+    PrimitiveIndices.Reserve(Primitives.Num());
 
-    for (int i = 0; i < Actors.Num(); ++i)
+    for (int i = 0; i < Primitives.Num(); ++i)
     {
-        AActor* Actor = Actors[i];
-        if (!Actor || Actor->GetActorHiddenInGame())
+        UPrimitiveComponent* Prim = Primitives[i];
+        if (!Prim || !Prim->IsActive()) 
             continue;
 
-        const FBound* ActorBounds_Local = nullptr;
-        bool bHasBounds = false;
-
-        if (const AStaticMeshActor* StaticMeshActor = Cast<const AStaticMeshActor>(Actor))
-        {
-            if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
-            {
-                // Refit과 동일하게 GetWorldBoundFromCube()를 사용하여 항상 최신 AABB를 가져옵니다.
-                FBound WorldBound = AABBComponent->GetWorldBoundFromCube();
-                ActorBounds_Local = &WorldBound; // 임시 변수의 주소를 사용
-                
-                FActorBounds AB(Actor, *ActorBounds_Local);
-                ActorBounds.Add(AB);
-                ActorIndices.Add(ActorBounds.Num() - 1);
-            }
-        }
+        // World AABB
+        FBound WorldBound = Prim->GetWorldBound();
+        
+        // Primitive의 Bound 목록 및 인덱스에 추가
+        FPrimitiveBounds PB(Prim, WorldBound);
+        PrimitiveBounds.Add(PB);
+        PrimitiveIndices.Add(PrimitiveBounds.Num() - 1);
     }
 
-    if (ActorBounds.Num() == 0)
+    if (PrimitiveBounds.Num() == 0)
         return;
 
     // 2. 노드 배열 예약 (최악의 경우 2*N-1개 노드)
-    Nodes.Reserve(ActorBounds.Num() * 2);
+    Nodes.Reserve(PrimitiveBounds.Num() * 2);
 
     // 3. 재귀적으로 BVH 구축
     MaxDepth = 0;
-    int RootIndex = BuildRecursive(0, ActorBounds.Num(), 0);
+    int RootIndex = BuildRecursive(0, PrimitiveBounds.Num(), 0);
 
     uint64_t BuildCycles = BVHBuildTimer.Finish();
     double BuildTimeMs = FPlatformTime::ToMilliseconds(BuildCycles);
 
     char buf[256];
-    sprintf_s(buf, "[BVH] Built for %d actors, %d nodes, depth %d (Time: %.3fms)\n",
-        ActorBounds.Num(), Nodes.Num(), MaxDepth, BuildTimeMs);
+    sprintf_s(buf, "[BVH] Built for %d primitives, %d nodes, depth %d (Time: %.3fms)\n",
+        PrimitiveBounds.Num(), Nodes.Num(), MaxDepth, BuildTimeMs);
     UE_LOG(buf);
 }
-// 🔥 새로 추가: Bound 합치는 유틸리티
+
+/**
+* @brief 두 AABB를 합친 AABB를 만든다.
+*/
 static inline FBound Union(const FBound& A, const FBound& B)
 {
     FBound Out;
@@ -88,41 +83,40 @@ static inline FBound Union(const FBound& A, const FBound& B)
     return Out;
 }
 
+/**
+* @brief 
+*/
 void FBVH::Refit()
 {
     if (Nodes.Num() == 0)
     {
         return;
     }
-    // 모든 액터의 AABB 정보를 ActorBounds 배열에 업데이트 
-    for (FActorBounds& AABB : ActorBounds)
+    // 저장된 Primitive의 Bound 목록으로부터 실제 Bound 갱신
+    for (FPrimitiveBounds& PB : PrimitiveBounds)
     {
-        // FActorBounds가 AStaticMeshActor에 소속되어 있는 경우에만
-        if (const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(AABB.Actor))
+        if (PB.Primitive)
         {
-            // AStaticMeshActor에서 AABB 컴포넌트 얻어오기
-            if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
-            {
-                // 최신 월드 AABB를 반환된걸로 업데이트
-                AABB.Bounds = AABBComponent->GetWorldBoundFromCube();
-
-            }
+            PB.Bounds = PB.Primitive->GetWorldBound();
         }
     }
-    // 루트부터 재귀적으로 AABB 갱신
+    
+    // 루트부터 재귀적으로 Refit
     RefitRecursive(0);
-
 }
 
 void FBVH::Clear()
 {
     Nodes.Empty();
-    ActorBounds.Empty();
-    ActorIndices.Empty();
+    PrimitiveBounds.Empty();
+    PrimitiveIndices.Empty();
     MaxDepth = 0;
 }
 
-AActor* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const
+/**
+* @brief Ray와 BVH 충돌 검사하여 충돌한 PrimitiveCompnent 반환
+*/
+UPrimitiveComponent* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const
 {
     if (Nodes.Num() == 0)
         return nullptr;
@@ -131,11 +125,10 @@ AActor* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, f
     FScopeCycleCounter BVHIntersectTimer(BVHIntersectStatId);
 
     OutDistance = FLT_MAX;
-    AActor* HitActor = nullptr;
+    UPrimitiveComponent* HitPrimitive = nullptr;
 
-    // 최적화된 Ray 생성 (InverseDirection과 Sign 미리 계산)
     FOptimizedRay OptRay(RayOrigin, RayDirection);
-    bool bHit = IntersectNode(0, OptRay, OutDistance, HitActor);
+    bool bHit = IntersectNode(0, OptRay, OutDistance, HitPrimitive);
 
     uint64_t IntersectCycles = BVHIntersectTimer.Finish();
     double IntersectTimeMs = FPlatformTime::ToMilliseconds(IntersectCycles);
@@ -143,10 +136,10 @@ AActor* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, f
     if (bHit)
     {
         char buf[256];
-        sprintf_s(buf, "[BVH Pick] Hit actor at distance %.3f (Time: %.3fms)\n",
+        sprintf_s(buf, "[BVH Pick] Hit primitive at distance %.3f (Time: %.3fms)\n",
             OutDistance, IntersectTimeMs);
         UE_LOG(buf);
-        return HitActor;
+        return HitPrimitive;
     }
     else
     {
@@ -157,21 +150,27 @@ AActor* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, f
     }
 }
 /**
-* @breif 쿼리 AABB와 교차하는 모든 액터를 찾습니다.
+* @breif 쿼리 AABB와 교차하는 모든 Primitives를 찾습니다. (Broad Phase)
 * @param QueryAABB 교차 검사를 수행할 AABB
-* @param OutActors 교차된 액터들의 목록 저장할 배열
+* @param OutPrimitives 교차된 Primitives들의 목록 저장할 배열
 */
-void FBVH::IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const
+void FBVH::IntersectAABB(const FBound& QueryAABB, TArray<UPrimitiveComponent*>& OutPrimitives) const
 {
-    OutActors.Empty();
+    OutPrimitives.Empty();
     if (Nodes.Num() == 0)
     {
         return;
     }
-    IntersectAABBRecursive(0, QueryAABB, OutActors);
+    IntersectAABBRecursive(0, QueryAABB, OutPrimitives);
 }
-
-int FBVH::BuildRecursive(int FirstActor, int ActorCount, int Depth)
+/**
+* @brief 재귀적으로 Build하는 헬퍼
+* @param FirstPrim 첫번째 Primitive
+* @param PrimCount Primitive 개수
+* @param Depth 현재 깊이
+* @return 노드의 인덱스
+*/
+int FBVH::BuildRecursive(int FirstPrim, int PrimCount, int Depth)
 {
     MaxDepth = FMath::Max(MaxDepth, Depth);
 
@@ -180,110 +179,112 @@ int FBVH::BuildRecursive(int FirstActor, int ActorCount, int Depth)
     Nodes.Add(NewNode);
     FBVHNode& Node = Nodes[NodeIndex];
 
-    Node.BoundingBox = CalculateBounds(FirstActor, ActorCount);
+    // 현재 노드의 바운딩 박스 생성
+    Node.BoundingBox = CalculateBounds(FirstPrim, PrimCount);
 
-    if (ActorCount <= MaxActorsPerLeaf || Depth >= MaxBVHDepth)
+    // 재귀 종료 (리프노드의 최대치보다 작거나 최대 깊이를 넘은 경우)
+    if (PrimCount <= MaxPrimsPerLeaf || Depth >= MaxBVHDepth)
     {
-        Node.FirstActor = FirstActor;
-        Node.ActorCount = ActorCount;
+        Node.FirstPrim = FirstPrim;
+        Node.PrimCount = PrimCount;
         return NodeIndex;
     }
 
     int BestAxis;
     float BestSplitPos;
-    int SplitIndex = FindBestSplit(FirstActor, ActorCount, BestAxis, BestSplitPos);
+    int SplitIndex = FindBestSplit(FirstPrim, PrimCount, BestAxis, BestSplitPos);
 
-    if (SplitIndex == FirstActor || SplitIndex == FirstActor + ActorCount)
+    if (SplitIndex == FirstPrim || SplitIndex == FirstPrim + PrimCount)
     {
-        Node.FirstActor = FirstActor;
-        Node.ActorCount = ActorCount;
+        Node.FirstPrim = FirstPrim;
+        Node.PrimCount = PrimCount;
         return NodeIndex;
     }
 
-    int ActualSplit = PartitionActors(FirstActor, ActorCount, BestAxis, BestSplitPos);
+    int ActualSplit = PartitionPrimitives(FirstPrim, PrimCount, BestAxis, BestSplitPos);
 
-    int LeftCount = ActualSplit - FirstActor;
-    int RightCount = ActorCount - LeftCount;
+    int LeftCount = ActualSplit - FirstPrim;
+    int RightCount = PrimCount - LeftCount;
 
     if (LeftCount == 0 || RightCount == 0)
     {
-        Node.FirstActor = FirstActor;
-        Node.ActorCount = ActorCount;
+        Node.FirstPrim = FirstPrim;
+        Node.PrimCount = PrimCount;
         return NodeIndex;
     }
 
-    Node.LeftChild = BuildRecursive(FirstActor, LeftCount, Depth + 1);
+    Node.LeftChild = BuildRecursive(FirstPrim, LeftCount, Depth + 1);
     Node.RightChild = BuildRecursive(ActualSplit, RightCount, Depth + 1);
 
     return NodeIndex;
 }
 /**
   * @brief Refit을 위한 재귀 헬퍼. 자식 노드의 AABB를 합쳐 부모 노드의 AABB를 만듭니다.
-  */
+*/
 FBound FBVH::RefitRecursive(int NodeIndex)
 {
     FBVHNode& Node = Nodes[NodeIndex];
     
-    // Leaf일 때, 포함된 액터들의 AABB를 합쳐 자신의 AABB 결정
     if (Node.IsLeaf())
     {
-        Node.BoundingBox = CalculateBounds(Node.FirstActor, Node.ActorCount);
+        // Leaf일 때, 포함된 Node들의 AABB를 합쳐 자신의 AABB 결정
+        Node.BoundingBox = CalculateBounds(Node.FirstPrim, Node.PrimCount);
     }
-    // Internal일 때, 자식 노드 재귀 호출 후 합치기
     else 
     {
+        // Internal일 때, 자식 노드 재귀 호출 후 합치기
         FBound LeftBounds = RefitRecursive(Node.LeftChild);
         FBound RightBounds = RefitRecursive(Node.RightChild);
         Node.BoundingBox = Union(LeftBounds, RightBounds);
     }
     return Node.BoundingBox;
 }
-// BVH.cpp
+
 float FBVH::SurfaceArea(const FBound& b) {
     FVector s = b.Max - b.Min;
     if (s.X <= 0 || s.Y <= 0 || s.Z <= 0) return 0.0f;
     return 2.0f * (s.X * s.Y + s.Y * s.Z + s.Z * s.X);
 }
 
-FBound FBVH::CalculateBounds(int FirstActor, int ActorCount) const
+FBound FBVH::CalculateBounds(int FirstPrim, int PrimCount) const
 {
     FBound Bounds;
     bool bFirst = true;
 
-    for (int i = 0; i < ActorCount; ++i)
+    for (int i = 0; i < PrimCount; ++i)
     {
-        int ActorIndex = ActorIndices[FirstActor + i];
-        const FBound& ActorBound = ActorBounds[ActorIndex].Bounds;
+        int PrimIndex = PrimitiveIndices[FirstPrim + i];
+        const FBound& PrimBound = PrimitiveBounds[PrimIndex].Bounds;
 
         if (bFirst)
         {
-            Bounds = ActorBound;
+            Bounds = PrimBound;
             bFirst = false;
         }
         else
         {
-            Bounds.Min.X = FMath::Min(Bounds.Min.X, ActorBound.Min.X);
-            Bounds.Min.Y = FMath::Min(Bounds.Min.Y, ActorBound.Min.Y);
-            Bounds.Min.Z = FMath::Min(Bounds.Min.Z, ActorBound.Min.Z);
+            Bounds.Min.X = FMath::Min(Bounds.Min.X, PrimBound.Min.X);
+            Bounds.Min.Y = FMath::Min(Bounds.Min.Y, PrimBound.Min.Y);
+            Bounds.Min.Z = FMath::Min(Bounds.Min.Z, PrimBound.Min.Z);
 
-            Bounds.Max.X = FMath::Max(Bounds.Max.X, ActorBound.Max.X);
-            Bounds.Max.Y = FMath::Max(Bounds.Max.Y, ActorBound.Max.Y);
-            Bounds.Max.Z = FMath::Max(Bounds.Max.Z, ActorBound.Max.Z);
+            Bounds.Max.X = FMath::Max(Bounds.Max.X, PrimBound.Max.X);
+            Bounds.Max.Y = FMath::Max(Bounds.Max.Y, PrimBound.Max.Y);
+            Bounds.Max.Z = FMath::Max(Bounds.Max.Z, PrimBound.Max.Z);
         }
     }
 
     return Bounds;
 }
 
-FBound FBVH::CalculateCentroidBounds(int FirstActor, int ActorCount) const
+FBound FBVH::CalculateCentroidBounds(int FirstPrim, int PrimCount) const
 {
     FBound Bounds;
     bool bFirst = true;
 
-    for (int i = 0; i < ActorCount; ++i)
+    for (int i = 0; i < PrimCount; ++i)
     {
-        int ActorIndex = ActorIndices[FirstActor + i];
-        const FVector& Center = ActorBounds[ActorIndex].Center;
+        int PrimIndex = PrimitiveIndices[FirstPrim + i];
+        const FVector& Center = PrimitiveBounds[PrimIndex].Center;
 
         if (bFirst)
         {
@@ -306,10 +307,10 @@ FBound FBVH::CalculateCentroidBounds(int FirstActor, int ActorCount) const
 }
 
 
-int FBVH::FindBestSplit(int FirstActor, int ActorCount, int& OutAxis, float& OutSplitPos)
+int FBVH::FindBestSplit(int FirstPrim, int PrimCount, int& OutAxis, float& OutSplitPos)
 {
-    FBound CentroidBounds = CalculateCentroidBounds(FirstActor, ActorCount);
-    FBound ParentBounds = CalculateBounds(FirstActor, ActorCount);
+    FBound CentroidBounds = CalculateCentroidBounds(FirstPrim, PrimCount);
+    FBound ParentBounds = CalculateBounds(FirstPrim, PrimCount);
 
     FVector Extent = CentroidBounds.Max - CentroidBounds.Min;
     OutAxis = 0;
@@ -319,51 +320,50 @@ int FBVH::FindBestSplit(int FirstActor, int ActorCount, int& OutAxis, float& Out
     if (Extent[OutAxis] < KINDA_SMALL_NUMBER)
     {
         OutSplitPos = CentroidBounds.Min[OutAxis];
-        return FirstActor + ActorCount / 2;
+        return FirstPrim + PrimCount / 2;
     }
 
     // 1) 정렬 - TArray의 Sort 사용
     // 임시 배열 생성 후 정렬
     TArray<int> TempIndices;
-    TempIndices.Reserve(ActorCount);
-    for (int i = 0; i < ActorCount; ++i)
+    TempIndices.Reserve(PrimCount);
+    for (int i = 0; i < PrimCount; ++i)
     {
-        TempIndices.Add(ActorIndices[FirstActor + i]);
+        TempIndices.Add(PrimitiveIndices[FirstPrim + i]);
     }
 
     TempIndices.Sort([&](int A, int B)
     {
-        return ActorBounds[A].Center[OutAxis] < ActorBounds[B].Center[OutAxis];
+        return PrimitiveBounds[A].Center[OutAxis] < PrimitiveBounds[B].Center[OutAxis];
     });
-
     // 정렬된 결과를 다시 복사
-    for (int i = 0; i < ActorCount; ++i)
+    for (int i = 0; i < PrimCount; ++i)
     {
-        ActorIndices[FirstActor + i] = TempIndices[i];
+        PrimitiveIndices[FirstPrim + i] = TempIndices[i];
     }
     // 2) Prefix/Suffix AABB 계산
     TArray<FBound> Prefix;
     TArray<FBound> Suffix;
-    Prefix.SetNum(ActorCount);
-    Suffix.SetNum(ActorCount);
+    Prefix.SetNum(PrimCount);
+    Suffix.SetNum(PrimCount);
 
-    Prefix[0] = ActorBounds[ActorIndices[FirstActor]].Bounds;
-    for (int i = 1; i < ActorCount; i++)
-        Prefix[i] = Union(Prefix[i - 1], ActorBounds[ActorIndices[FirstActor + i]].Bounds);
+    Prefix[0] = PrimitiveBounds[PrimitiveIndices[FirstPrim]].Bounds;
+    for (int i = 1; i < PrimCount; i++)
+        Prefix[i] = Union(Prefix[i - 1], PrimitiveBounds[PrimitiveIndices[FirstPrim + i]].Bounds);
 
-    Suffix[ActorCount - 1] = ActorBounds[ActorIndices[FirstActor + ActorCount - 1]].Bounds;
-    for (int i = ActorCount - 2; i >= 0; i--)
-        Suffix[i] = Union(Suffix[i + 1], ActorBounds[ActorIndices[FirstActor + i]].Bounds);
-
+    Suffix[PrimCount - 1] = PrimitiveBounds[PrimitiveIndices[FirstPrim + PrimCount - 1]].Bounds;
+    for (int i = PrimCount - 2; i >= 0; i--)
+        Suffix[i] = Union(Suffix[i + 1], PrimitiveBounds[PrimitiveIndices[FirstPrim + i]].Bounds);
+    
     // 3) SAH 비용 평가
     float BestCost = FLT_MAX;
-    int BestSplit = FirstActor + ActorCount / 2;
+    int BestSplit = FirstPrim + PrimCount / 2;
     float SA_P = SurfaceArea(ParentBounds) + 1e-6f;
 
-    for (int i = 0; i < ActorCount - 1; i++)
+    for (int i = 0; i < PrimCount - 1; i++)
     {
         int LeftCount = i + 1;
-        int RightCount = ActorCount - LeftCount;
+        int RightCount = PrimCount - LeftCount;
 
         float SA_L = SurfaceArea(Prefix[i]);
         float SA_R = SurfaceArea(Suffix[i + 1]);
@@ -373,24 +373,18 @@ int FBVH::FindBestSplit(int FirstActor, int ActorCount, int& OutAxis, float& Out
         if (Cost < BestCost)
         {
             BestCost = Cost;
-            BestSplit = FirstActor + LeftCount;
-            OutSplitPos = ActorBounds[ActorIndices[BestSplit]].Center[OutAxis];
+            BestSplit = FirstPrim + LeftCount;
+            OutSplitPos = PrimitiveBounds[PrimitiveIndices[BestSplit]].Center[OutAxis];
         }
     }
 
     return BestSplit;
 }
 
-//static inline float SurfaceArea(const FBound& b) {
-//    FVector s = b.Max - b.Min;
-//    if (s.X <= 0 || s.Y <= 0 || s.Z <= 0) return 0.0f;
-//    return 2.0f * (s.X * s.Y + s.Y * s.Z + s.Z * s.X);
-//}
-
-float FBVH::CalculateSAH(int FirstActor, int LeftCount, int RightCount, const FBound& Parent) const
+float FBVH::CalculateSAH(int FirstPrim, int LeftCount, int RightCount, const FBound& Parent) const
 {
-    FBound LB = CalculateBounds(FirstActor, LeftCount);
-    FBound RB = CalculateBounds(FirstActor + LeftCount, RightCount);
+    FBound LB = CalculateBounds(FirstPrim, LeftCount);
+    FBound RB = CalculateBounds(FirstPrim + LeftCount, RightCount);
 
     float SA_P = SurfaceArea(Parent) + 1e-6f;
     float SA_L = SurfaceArea(LB);
@@ -401,17 +395,17 @@ float FBVH::CalculateSAH(int FirstActor, int LeftCount, int RightCount, const FB
     return Ct + Ci * ((SA_L / SA_P) * LeftCount + (SA_R / SA_P) * RightCount);
 }
 
-int FBVH::PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitPos)
+int FBVH::PartitionPrimitives(int FirstPrim, int PrimCount, int Axis, float SplitPos)
 {
-    int Left = FirstActor;
-    int Right = FirstActor + ActorCount - 1;
+    int Left = FirstPrim;
+    int Right = FirstPrim + PrimCount - 1;
 
     while (Left <= Right)
     {
         while (Left <= Right)
         {
-            int LeftActorIndex = ActorIndices[Left];
-            const FVector& LeftCenter = ActorBounds[LeftActorIndex].Center;
+            int LeftPrimIndex = PrimitiveIndices[Left];
+            const FVector& LeftCenter = PrimitiveBounds[LeftPrimIndex].Center;
             if (LeftCenter[Axis] >= SplitPos)
                 break;
             Left++;
@@ -419,8 +413,8 @@ int FBVH::PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitP
 
         while (Left <= Right)
         {
-            int RightActorIndex = ActorIndices[Right];
-            const FVector& RightCenter = ActorBounds[RightActorIndex].Center;
+            int RightPrimIndex = PrimitiveIndices[Right];
+            const FVector& RightCenter = PrimitiveBounds[RightPrimIndex].Center;
             if (RightCenter[Axis] < SplitPos)
                 break;
             Right--;
@@ -428,9 +422,9 @@ int FBVH::PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitP
 
         if (Left < Right)
         {
-            int Temp = ActorIndices[Left];
-            ActorIndices[Left] = ActorIndices[Right];
-            ActorIndices[Right] = Temp;
+            int Temp = PrimitiveIndices[Left];
+            PrimitiveIndices[Left] = PrimitiveIndices[Right];
+            PrimitiveIndices[Right] = Temp;
             Left++;
             Right--;
         }
@@ -439,14 +433,16 @@ int FBVH::PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitP
     return Left;
 }
 
+/**
+* @brief Ray와 충돌한 Primitive 얻어오기
+*/
 bool FBVH::IntersectNode(int NodeIndex,
     const FOptimizedRay& Ray,
     float& InOutDistance,
-    AActor*& OutActor) const
+    UPrimitiveComponent*& OutPrimitive) const
 {
     const FBVHNode& Node = Nodes[NodeIndex];
 
-    // 최적화된 Ray-AABB 교차 검사 사용
     float tNear;
     if (!Ray.IntersectAABB(Node.BoundingBox, tNear))
         return false;
@@ -458,20 +454,20 @@ bool FBVH::IntersectNode(int NodeIndex,
     {
         bool bHit = false;
         float Closest = InOutDistance;
-        AActor* ClosestActor = nullptr;
+        UPrimitiveComponent* ClosestPrimitive = nullptr;
 
-        for (int i = 0; i < Node.ActorCount; ++i)
+        for (int i = 0; i < Node.PrimCount; ++i)
         {
-            int ActorIndex = ActorIndices[Node.FirstActor + i];
-            AActor* Actor = ActorBounds[ActorIndex].Actor;
+            int PrimIndex = PrimitiveIndices[Node.FirstPrim + i];
+            UPrimitiveComponent* Prim = PrimitiveBounds[PrimIndex].Primitive;
 
             float Dist;
-            if (IntersectActor(Actor, Ray.Origin, Ray.Direction, Dist))
+            if (IntersectPrimitive(Prim, Ray.Origin, Ray.Direction, Dist))
             {
                 if (Dist < Closest)
                 {
                     Closest = Dist;
-                    ClosestActor = Actor;
+                    ClosestPrimitive = Prim;
                     bHit = true;
                 }
             }
@@ -480,7 +476,7 @@ bool FBVH::IntersectNode(int NodeIndex,
         if (bHit)
         {
             InOutDistance = Closest;
-            OutActor = ClosestActor;
+            OutPrimitive = ClosestPrimitive;
         }
 
         return bHit;
@@ -512,35 +508,35 @@ bool FBVH::IntersectNode(int NodeIndex,
         const ChildHit First = (L.tNear < R.tNear) ? L : R;
         const ChildHit Second = (L.tNear < R.tNear) ? R : L;
 
-        if (IntersectNode(First.Index, Ray, InOutDistance, OutActor))
+        if (IntersectNode(First.Index, Ray, InOutDistance, OutPrimitive))
             bHit = true;
 
         if (InOutDistance > Second.tNear)
         {
-            if (IntersectNode(Second.Index, Ray, InOutDistance, OutActor))
+            if (IntersectNode(Second.Index, Ray, InOutDistance, OutPrimitive))
                 bHit = true;
         }
     }
     else if (L.bValid)
     {
-        if (IntersectNode(L.Index, Ray, InOutDistance, OutActor))
+        if (IntersectNode(L.Index, Ray, InOutDistance, OutPrimitive))
             bHit = true;
     }
     else if (R.bValid)
     {
-        if (IntersectNode(R.Index, Ray, InOutDistance, OutActor))
+        if (IntersectNode(R.Index, Ray, InOutDistance, OutPrimitive))
             bHit = true;
     }
 
     return bHit;
 }
 /**
-* @breif BVH 노드를 재귀적으로 순회하며 AABB와 교차하는 액터를 찾습니다.
+* @brief BVH 노드를 재귀적으로 순회하며 AABB와 교차하는 Primitives를 찾습니다.
 * @param NodeIndex 현재 탐색 중인 노드의 인덱스
 * @param QueryAABB 검사할 AABB
-* @param OutActors 결과를 저장할 배열
+* @param OutPrimitives 결과를 저장할 배열
 */
-void FBVH::IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<AActor*>& OutActors) const
+void FBVH::IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<UPrimitiveComponent*>& OutPrimitives) const
 {
     const FBVHNode& Node = Nodes[NodeIndex];
 
@@ -550,43 +546,38 @@ void FBVH::IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray
         return;
     }
 
-    // Leaf 노드인 경우
     if (Node.IsLeaf())
     {
-        for (int i = 0;i < Node.ActorCount; ++i)
+        for (int i = 0;i < Node.PrimCount; ++i)
         {
-            int ActorIndexInBVH = ActorIndices[Node.FirstActor + i];
-            const FActorBounds& ActorBound = ActorBounds[ActorIndexInBVH];
+            int PrimIndexInBVH = PrimitiveIndices[Node.FirstPrim + i];
+            const FPrimitiveBounds& PrimBound = PrimitiveBounds[PrimIndexInBVH];
 
-            if (ActorBound.Bounds.Intersects(QueryAABB))
+            if (PrimBound.Bounds.Intersects(QueryAABB))
             {
-                OutActors.Add(ActorBound.Actor);
+                OutPrimitives.Add(PrimBound.Primitive);
             }
         }
     }
-    // Internal 노드인 경우
-    else
+    else // Internal Node인 경우
     {
-        // 재귀적 탐색
         if (Node.LeftChild != -1)
         {
-            IntersectAABBRecursive(Node.LeftChild, QueryAABB, OutActors);
+            IntersectAABBRecursive(Node.LeftChild, QueryAABB, OutPrimitives);
         }
         if (Node.RightChild != -1)
         {
-            IntersectAABBRecursive(Node.RightChild, QueryAABB, OutActors);
+            IntersectAABBRecursive(Node.RightChild, QueryAABB, OutPrimitives);
         }
     }
 }
 
-bool FBVH::IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
+bool FBVH::IntersectPrimitive(const UPrimitiveComponent* Primitive, const FVector& RayOrigin, const FVector& RayDirection,
     float& OutDistance) const
 {
-    FRay Ray;
-    Ray.Origin = RayOrigin;
-    Ray.Direction = RayDirection;
-
-    return CPickingSystem::CheckActorPicking(Actor, Ray, OutDistance);
+    // This needs a proper implementation based on primitive type
+    // For now, we can just intersect with the AABB as a proxy
+    return Primitive->GetWorldBound().RayIntersects(RayOrigin, RayDirection, OutDistance);
 }
 
 void FBVH::Render(URenderer* Renderer) const
@@ -608,7 +599,6 @@ void FBVH::RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const
 
     const FBVHNode& Node = Nodes[NodeIndex];
 
-    // 깊이에 따라 색상을 다르게 하여 계층 구조를 시각화
     FVector4 Color;
     switch (Depth % 5)
     {
@@ -618,13 +608,12 @@ void FBVH::RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const
     case 3: Color = FVector4(1.f, 1.f, 0.f, 1.f); break; // Yellow
     case 4: Color = FVector4(1.f, 0.f, 1.f, 1.f); break; // Magenta
     }
-
-    // 현재 노드의 AABB를 그립니다.
+    // 현재 노드의 AABB를 그리기
     Renderer->DrawAABB(Node.BoundingBox.Min, Node.BoundingBox.Max, Color);
 
-    // 내부 노드인 경우, 자식 노드들에 대해 재귀적으로 렌더링을 계속합니다.
     if (!Node.IsLeaf())
     {
+        // 내부 노드인 경우, 자식 노드들에 대해 재귀적으로 렌더링
         RenderRecursive(Renderer, Node.LeftChild, Depth + 1);
         RenderRecursive(Renderer, Node.RightChild, Depth + 1);
     }

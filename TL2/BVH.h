@@ -64,36 +64,36 @@ struct alignas(16) FOptimizedRay
 // BVH 노드 구조체
 struct FBVHNode
 {
-    FBound BoundingBox;
+    FBound BoundingBox; // 노드가 이루는 AABB
 
-    // 리프 노드용 데이터
-    int FirstActor;  // 리프인 경우: 첫 번째 액터 인덱스, 내부 노드인 경우: -1
-    int ActorCount;  // 리프인 경우: 액터 개수, 내부 노드인 경우: -1
+    // Leaf Node 전용 Data
+    int FirstPrim;  // 첫 번째 프리미티브 인덱스
+    int PrimCount;  // 프리미티브 개수
 
-    // 내부 노드용 데이터
+    // Internal Node 전용 Data
     int LeftChild;   // 왼쪽 자식 노드 인덱스
     int RightChild;  // 오른쪽 자식 노드 인덱스
 
     // 생성자
     FBVHNode()
-        : FirstActor(-1), ActorCount(-1), LeftChild(-1), RightChild(-1)
+        : FirstPrim(-1), PrimCount(0), LeftChild(-1), RightChild(-1)
     {
     }
 
     // 리프 노드인지 확인
-    bool IsLeaf() const { return FirstActor >= 0 && ActorCount > 0; }
+    bool IsLeaf() const { return PrimCount > 0; }
 };
 
-// 액터의 AABB와 포인터를 저장
-struct FActorBounds
+// 프리미티브의 World AABB와 포인터를 저장
+struct FPrimitiveBounds
 {
-    FBound Bounds;
-    AActor* Actor;
+    UPrimitiveComponent* Primitive;
+    FBound Bounds;  // World AABB
     FVector Center;
 
-    FActorBounds() : Actor(nullptr) {}
-    FActorBounds(AActor* InActor, const FBound& InBounds)
-        : Actor(InActor), Bounds(InBounds)
+    FPrimitiveBounds() : Primitive(nullptr) {}
+    FPrimitiveBounds(UPrimitiveComponent* InPrimitive, const FBound& InBounds)
+        : Primitive(InPrimitive), Bounds(InBounds)
     {
         Center = (InBounds.Min + InBounds.Max) * 0.5f;
     }
@@ -106,23 +106,23 @@ public:
     FBVH();
     ~FBVH();
 
-    // 액터 배열로부터 BVH 구축
-    void Build(const TArray<AActor*>& Actors);
+    // 프리미티브 배열로부터 BVH 구축
+    void Build(const TArray<UPrimitiveComponent*>& Primitives);
     void Refit();
     void Clear();
 
-    // 빠른 레이 교차 검사 - 가장 가까운 액터 반환
-    AActor* Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const;
+    // 빠른 레이 교차 검사 - 가장 가까운 프리미티브 반환
+    UPrimitiveComponent* Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const;
 
-    // AABB와 교차하는 모든 액터 찾기
-    void IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const;
+    // AABB와 교차하는 모든 프리미티브 찾기
+    void IntersectAABB(const FBound& QueryAABB, TArray<UPrimitiveComponent*>& OutPrimitives) const;
 
     // BVH 구조를 디버깅용 라인으로 렌더링
     void Render(URenderer* Renderer) const;
 
     // 통계 정보
     int GetNodeCount() const { return Nodes.Num(); }
-    int GetActorCount() const { return ActorBounds.Num(); }
+    int GetPrimitiveCount() const { return PrimitiveBounds.Num(); }
     int GetMaxDepth() const { return MaxDepth; }
 
     // 렌더링을 위한 노드 접근
@@ -131,42 +131,36 @@ public:
     static float SurfaceArea(const FBound& b);
 private:
     TArray<FBVHNode> Nodes;
-    TArray<FActorBounds> ActorBounds;
-    TArray<int> ActorIndices; // 정렬된 액터 인덱스
+    TArray<FPrimitiveBounds> PrimitiveBounds;
+    TArray<int> PrimitiveIndices; // 정렬된 프리미티브 인덱스
 
     int MaxDepth;
 
     // 재귀 구축 함수
-    int BuildRecursive(int FirstActor, int ActorCount, int Depth = 0);
+    int BuildRecursive(int FirstPrim, int PrimCount, int Depth = 0);
     // Refit 위한 재귀 헬퍼
-    FBound RefitRecursive(int NodeIndex); 
+    FBound RefitRecursive(int NodeIndex);
     // 경계 박스 계산
-    FBound CalculateBounds(int FirstActor, int ActorCount) const;
-    FBound CalculateCentroidBounds(int FirstActor, int ActorCount) const;
+    FBound CalculateBounds(int FirstPrim, int PrimCount) const;
+    FBound CalculateCentroidBounds(int FirstPrim, int PrimCount) const;
 
     // Surface Area Heuristic을 이용한 최적 분할
-    int FindBestSplit(int FirstActor, int ActorCount, int& OutAxis, float& OutSplitPos);
-    float CalculateSAH(int FirstActor, int LeftCount, int RightCount, const FBound& ParentBounds) const;
+    int FindBestSplit(int FirstPrim, int PrimCount, int& OutAxis, float& OutSplitPos);
+    float CalculateSAH(int FirstPrim, int LeftCount, int RightCount, const FBound& ParentBounds) const;
 
-    // 액터 분할
-    int PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitPos);
+    // 프리미티브 분할
+    int PartitionPrimitives(int FirstPrim, int PrimCount, int Axis, float SplitPos);
 
-    bool IntersectNode(int NodeIndex, const FOptimizedRay& Ray, float& InOutDistance, AActor*& OutActor) const;
-    void IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<AActor*>&
-        OutActors) const;
-    //// 재귀 교차 검사 (깊이 제한 추가)
-    //bool IntersectNode(int NodeIndex, const FVector& RayOrigin, const FVector& RayDirection,
-    //                   float& InOutDistance, AActor*& OutActor, int RecursionDepth = 0) const;
+    bool IntersectNode(int NodeIndex, const FOptimizedRay& Ray, float& InOutDistance, UPrimitiveComponent*& OutPrimitive) const;
+    void IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<UPrimitiveComponent*>& OutPrimitives) const;
 
-    // 액터와의 교차 검사
-    bool IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
-                        float& OutDistance) const;
+    // 프리미티브와의 교차 검사
+    bool IntersectPrimitive(const UPrimitiveComponent* Primitive, const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const;
 
     // Render를 위한 재귀 헬퍼
     void RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const;
 
     // 상수
-    static const int MaxActorsPerLeaf = 8;  // 리프당 최대 액터 수 (마이크로 BVH용)
-    static const int MaxBVHDepth = 24;      // 최대 깊이
-    static const int SAHSamples = 10;       // SAH 샘플링 수
+    static const int MaxPrimsPerLeaf = 4;
+    static const int MaxBVHDepth = 32;
 };
