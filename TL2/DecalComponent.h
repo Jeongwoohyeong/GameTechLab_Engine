@@ -37,6 +37,8 @@ public:
     static FMatrix GetDecalOrthoProjection();
     static FMatrix GetDecalPerspectiveProjection(float FovYDegrees);
 
+    UOBoundingBoxComponent* GetOBBComponent() { return &OBB; }
+
     virtual UObject* Duplicate() override;
     virtual void DuplicateSubObjects() override;
 

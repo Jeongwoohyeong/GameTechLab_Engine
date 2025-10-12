@@ -2,8 +2,8 @@
 
 struct FOrientedBound
 {
-    FVector Extents;
-    FMatrix Orientation;
+    FVector Extents;        // 각 축의 절반 길이
+    FMatrix Orientation;    // OBB 월드 공간의 직교 축
 
     FOrientedBound() : Extents(FVector()), Orientation(FMatrix::Identity()) {}
     FOrientedBound(const FVector& InExtents, const FMatrix& InOrientation)

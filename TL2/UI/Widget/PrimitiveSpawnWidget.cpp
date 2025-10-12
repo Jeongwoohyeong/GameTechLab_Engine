@@ -365,7 +365,7 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
     for (int32 i = 0; i < NumberOfSpawn; i++)
     {
-        FVector SpawnLocation = FVector(0, 0, 0); //GenerateRandomLocation();
+        FVector SpawnLocation = /*FVector(0, 0, 0);*/ GenerateRandomLocation();
         FQuat   SpawnRotation = FQuat::Identity(); //GenerateRandomRotation();
         float   SpawnScale = 1.0f; //GenerateRandomScale();
         FVector SpawnScaleVec(SpawnScale, SpawnScale, SpawnScale);

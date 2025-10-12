@@ -4,6 +4,7 @@
 #include "Picking.h"
 #include "PickingTimer.h"
 #include "UI/GlobalConsole.h"
+#include "Renderer.h" // For URenderer and DrawAABB
 #include <algorithm>
 #include <cfloat>
 
@@ -42,22 +43,16 @@ void FBVH::Build(const TArray<AActor*>& Actors)
 
         if (const AStaticMeshActor* StaticMeshActor = Cast<const AStaticMeshActor>(Actor))
         {
-            for (auto Component : StaticMeshActor->GetComponents()) // 최적화: AABB 컴포넌트만 검색
+            if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
             {
-                if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(Component))
-                {
-                    ActorBounds_Local = AABBComponent->GetFBound();
-                    bHasBounds = true;
-                    break;
-                }
+                // Refit과 동일하게 GetWorldBoundFromCube()를 사용하여 항상 최신 AABB를 가져옵니다.
+                FBound WorldBound = AABBComponent->GetWorldBoundFromCube();
+                ActorBounds_Local = &WorldBound; // 임시 변수의 주소를 사용
+                
+                FActorBounds AB(Actor, *ActorBounds_Local);
+                ActorBounds.Add(AB);
+                ActorIndices.Add(ActorBounds.Num() - 1);
             }
-        }
-
-        if (bHasBounds)
-        {
-            FActorBounds AB(Actor, *ActorBounds_Local);
-            ActorBounds.Add(AB);
-            ActorIndices.Add(ActorBounds.Num() - 1);
         }
     }
 
@@ -78,6 +73,45 @@ void FBVH::Build(const TArray<AActor*>& Actors)
     sprintf_s(buf, "[BVH] Built for %d actors, %d nodes, depth %d (Time: %.3fms)\n",
         ActorBounds.Num(), Nodes.Num(), MaxDepth, BuildTimeMs);
     UE_LOG(buf);
+}
+// 🔥 새로 추가: Bound 합치는 유틸리티
+static inline FBound Union(const FBound& A, const FBound& B)
+{
+    FBound Out;
+    Out.Min.X = FMath::Min(A.Min.X, B.Min.X);
+    Out.Min.Y = FMath::Min(A.Min.Y, B.Min.Y);
+    Out.Min.Z = FMath::Min(A.Min.Z, B.Min.Z);
+
+    Out.Max.X = FMath::Max(A.Max.X, B.Max.X);
+    Out.Max.Y = FMath::Max(A.Max.Y, B.Max.Y);
+    Out.Max.Z = FMath::Max(A.Max.Z, B.Max.Z);
+    return Out;
+}
+
+void FBVH::Refit()
+{
+    if (Nodes.Num() == 0)
+    {
+        return;
+    }
+    // 모든 액터의 AABB 정보를 ActorBounds 배열에 업데이트 
+    for (FActorBounds& AABB : ActorBounds)
+    {
+        // FActorBounds가 AStaticMeshActor에 소속되어 있는 경우에만
+        if (const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(AABB.Actor))
+        {
+            // AStaticMeshActor에서 AABB 컴포넌트 얻어오기
+            if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent))
+            {
+                // 최신 월드 AABB를 반환된걸로 업데이트
+                AABB.Bounds = AABBComponent->GetWorldBoundFromCube();
+
+            }
+        }
+    }
+    // 루트부터 재귀적으로 AABB 갱신
+    RefitRecursive(0);
+
 }
 
 void FBVH::Clear()
@@ -121,6 +155,20 @@ AActor* FBVH::Intersect(const FVector& RayOrigin, const FVector& RayDirection, f
         UE_LOG(buf);
         return nullptr;
     }
+}
+/**
+* @breif 쿼리 AABB와 교차하는 모든 액터를 찾습니다.
+* @param QueryAABB 교차 검사를 수행할 AABB
+* @param OutActors 교차된 액터들의 목록 저장할 배열
+*/
+void FBVH::IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const
+{
+    OutActors.Empty();
+    if (Nodes.Num() == 0)
+    {
+        return;
+    }
+    IntersectAABBRecursive(0, QueryAABB, OutActors);
 }
 
 int FBVH::BuildRecursive(int FirstActor, int ActorCount, int Depth)
@@ -168,6 +216,27 @@ int FBVH::BuildRecursive(int FirstActor, int ActorCount, int Depth)
     Node.RightChild = BuildRecursive(ActualSplit, RightCount, Depth + 1);
 
     return NodeIndex;
+}
+/**
+  * @brief Refit을 위한 재귀 헬퍼. 자식 노드의 AABB를 합쳐 부모 노드의 AABB를 만듭니다.
+  */
+FBound FBVH::RefitRecursive(int NodeIndex)
+{
+    FBVHNode& Node = Nodes[NodeIndex];
+    
+    // Leaf일 때, 포함된 액터들의 AABB를 합쳐 자신의 AABB 결정
+    if (Node.IsLeaf())
+    {
+        Node.BoundingBox = CalculateBounds(Node.FirstActor, Node.ActorCount);
+    }
+    // Internal일 때, 자식 노드 재귀 호출 후 합치기
+    else 
+    {
+        FBound LeftBounds = RefitRecursive(Node.LeftChild);
+        FBound RightBounds = RefitRecursive(Node.RightChild);
+        Node.BoundingBox = Union(LeftBounds, RightBounds);
+    }
+    return Node.BoundingBox;
 }
 // BVH.cpp
 float FBVH::SurfaceArea(const FBound& b) {
@@ -236,19 +305,6 @@ FBound FBVH::CalculateCentroidBounds(int FirstActor, int ActorCount) const
     return Bounds;
 }
 
-// 🔥 새로 추가: Bound 합치는 유틸리티
-static inline FBound Union(const FBound& A, const FBound& B)
-{
-    FBound Out;
-    Out.Min.X = FMath::Min(A.Min.X, B.Min.X);
-    Out.Min.Y = FMath::Min(A.Min.Y, B.Min.Y);
-    Out.Min.Z = FMath::Min(A.Min.Z, B.Min.Z);
-
-    Out.Max.X = FMath::Max(A.Max.X, B.Max.X);
-    Out.Max.Y = FMath::Max(A.Max.Y, B.Max.Y);
-    Out.Max.Z = FMath::Max(A.Max.Z, B.Max.Z);
-    return Out;
-}
 
 int FBVH::FindBestSplit(int FirstActor, int ActorCount, int& OutAxis, float& OutSplitPos)
 {
@@ -478,6 +534,50 @@ bool FBVH::IntersectNode(int NodeIndex,
 
     return bHit;
 }
+/**
+* @breif BVH 노드를 재귀적으로 순회하며 AABB와 교차하는 액터를 찾습니다.
+* @param NodeIndex 현재 탐색 중인 노드의 인덱스
+* @param QueryAABB 검사할 AABB
+* @param OutActors 결과를 저장할 배열
+*/
+void FBVH::IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<AActor*>& OutActors) const
+{
+    const FBVHNode& Node = Nodes[NodeIndex];
+
+    // 노드의 AABB와 쿼리 AABB가 교차 안하면 Pruning
+    if (!Node.BoundingBox.Intersects(QueryAABB))
+    {
+        return;
+    }
+
+    // Leaf 노드인 경우
+    if (Node.IsLeaf())
+    {
+        for (int i = 0;i < Node.ActorCount; ++i)
+        {
+            int ActorIndexInBVH = ActorIndices[Node.FirstActor + i];
+            const FActorBounds& ActorBound = ActorBounds[ActorIndexInBVH];
+
+            if (ActorBound.Bounds.Intersects(QueryAABB))
+            {
+                OutActors.Add(ActorBound.Actor);
+            }
+        }
+    }
+    // Internal 노드인 경우
+    else
+    {
+        // 재귀적 탐색
+        if (Node.LeftChild != -1)
+        {
+            IntersectAABBRecursive(Node.LeftChild, QueryAABB, OutActors);
+        }
+        if (Node.RightChild != -1)
+        {
+            IntersectAABBRecursive(Node.RightChild, QueryAABB, OutActors);
+        }
+    }
+}
 
 bool FBVH::IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
     float& OutDistance) const
@@ -487,4 +587,45 @@ bool FBVH::IntersectActor(const AActor* Actor, const FVector& RayOrigin, const F
     Ray.Direction = RayDirection;
 
     return CPickingSystem::CheckActorPicking(Actor, Ray, OutDistance);
+}
+
+void FBVH::Render(URenderer* Renderer) const
+{
+    if (!Renderer || Nodes.Num() == 0)
+    {
+        return;
+    }
+    // 루트 노드(인덱스 0)부터 재귀 렌더링 시작
+    RenderRecursive(Renderer, 0, 0);
+}
+
+void FBVH::RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const
+{
+    if (NodeIndex < 0 || (size_t)NodeIndex >= Nodes.Num())
+    {
+        return;
+    }
+
+    const FBVHNode& Node = Nodes[NodeIndex];
+
+    // 깊이에 따라 색상을 다르게 하여 계층 구조를 시각화
+    FVector4 Color;
+    switch (Depth % 5)
+    {
+    case 0: Color = FVector4(1.f, 0.f, 0.f, 1.f); break; // Red
+    case 1: Color = FVector4(0.f, 1.f, 0.f, 1.f); break; // Green
+    case 2: Color = FVector4(0.f, 0.f, 1.f, 1.f); break; // Blue
+    case 3: Color = FVector4(1.f, 1.f, 0.f, 1.f); break; // Yellow
+    case 4: Color = FVector4(1.f, 0.f, 1.f, 1.f); break; // Magenta
+    }
+
+    // 현재 노드의 AABB를 그립니다.
+    Renderer->DrawAABB(Node.BoundingBox.Min, Node.BoundingBox.Max, Color);
+
+    // 내부 노드인 경우, 자식 노드들에 대해 재귀적으로 렌더링을 계속합니다.
+    if (!Node.IsLeaf())
+    {
+        RenderRecursive(Renderer, Node.LeftChild, Depth + 1);
+        RenderRecursive(Renderer, Node.RightChild, Depth + 1);
+    }
 }

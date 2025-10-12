@@ -202,12 +202,15 @@ void UWorld::InitializeGizmo()
     UIManager.SetGizmoActor(GizmoActor);
 }
 
+/**
+* @brief BVH 생성
+*/
 void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
 {
-    Octree = NewObject<UOctree>();
+    //Octree = NewObject<UOctree>();
     //	Octree->Initialize(FBound({ -100,-100,-100 }, { 100,100,100 }));
     //const TArray<AActor*>& InActors, FBound& WorldBounds, int32 Depth = 0
-    Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
+    //Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
 
     // 빌드 완료 후 모든 마이크로 BVH 미리 생성
 #ifndef _DEBUG
@@ -217,6 +220,9 @@ void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
     BVH = new FBVH();
     BVH->Build(Actors);
 #endif
+    // BVH 초기화 및 빌드
+    BVH = new FBVH();
+    BVH->Build(Actors);
 }
 
 void UWorld::RenderSceneGraph()
@@ -391,18 +397,72 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
         FScopeCycleCounter ViewportAspectDecalRenderTimer(ViewportAspectDecalRenderStatId);
 
         // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
-        for (UDecalComponent* DecalVolume : DecalVolumes)
+        if (BVH)
         {
-            for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+            // 각 데칼 볼륨에 대해 수행
+            for (UDecalComponent* DecalVolume : DecalVolumes)
             {
-                DecalVolume->ProjectDecal(
-                    Renderer,
-                    StaticMesh,
-                    ViewMatrix,
-                    ProjectionMatrix
-                );
+                UOBoundingBoxComponent* DecalOBB = DecalVolume->GetOBBComponent();
+                if (!DecalOBB)
+                {
+                    continue;
+                }
+                // ======= Broad Phase =======
+                // Decal OBB를 감싸는 AABB
+                FBound DecalWorldAABB = DecalOBB->GetWorldBound();
+                
+                // BVH에 AABB 쿼리 -> 후보 액터 목록 얻기
+                TArray<AActor*> CandidateActors;
+                BVH->IntersectAABB(DecalWorldAABB, CandidateActors);
+
+                // ======= Narrow Phase =======
+                // 후보군 액터에서 SAT 검사 수행
+                for (AActor* CandidateActor : CandidateActors)
+                {
+                    // 후보군 액터에서 StaticMeshActor 뽑기
+                    AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(CandidateActor);
+                    if (!StaticMeshActor)
+                    {
+                        continue;
+                    }
+                    UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
+                    UAABoundingBoxComponent* MeshAABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent);
+                    // 두개 중 하나라도 없으면 검사 수행 불가
+                    if (!StaticMeshComponent || !MeshAABBComponent)
+                    {
+                        continue;
+                    }
+                    // 데칼 OBB와 StaticMesh가 가진 AABB와 충돌 검사(SAT)
+                    if (DecalOBB->IntersectsWithAABB(*MeshAABBComponent->GetFBound()))
+                    {
+                        DecalVolume->ProjectDecal(
+                            Renderer,
+                            StaticMeshComponent,
+                            ViewMatrix,
+                            ProjectionMatrix
+                        );
+                    }
+                }
+
+
             }
         }
+        else // BVH가 없는 경우, 기존 방식으로 렌더링
+        {
+            for (UDecalComponent* DecalVolume : DecalVolumes)
+            {
+                for (UStaticMeshComponent* StaticMesh : StaticMeshes)
+                {
+                    DecalVolume->ProjectDecal(
+                        Renderer,
+                        StaticMesh,
+                        ViewMatrix,
+                        ProjectionMatrix
+                    );
+                }
+            }
+        }
+        
 
         uint64_t ViewportAspectCycleDiff = ViewportAspectDecalRenderTimer.Finish();
         double ViewportAspectDecalRenderTimeMs = FPlatformTime::ToMilliseconds(ViewportAspectCycleDiff);
@@ -421,6 +481,12 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
         StatsCollector.GetDecalNum(),
         StatsCollector.GetDecalRenderTimeTotal()
     );
+
+    // BVH 디버그 렌더링
+    if (BVH && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes) && WorldType != EWorldType::PIE)
+    {
+        BVH->Render(Renderer);
+    }
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }
@@ -481,6 +547,16 @@ void UWorld::Tick(float DeltaSeconds)
             {
                 Actor->Tick(DeltaSeconds);
             }
+        }
+    }
+    if (BVH)
+    {
+        // 액터 위치가 바뀐 경우에만 Refit
+        if (bIsBVHDirty)
+        {
+            UE_LOG("BVH Refit!");
+            BVH->Refit();
+            bIsBVHDirty = false;
         }
     }
 
@@ -570,6 +646,12 @@ bool UWorld::DestroyActor(AActor* Actor)
         ObjectFactory::DeleteObject(Actor);
         // 삭제된 액터 정리
         USelectionManager::GetInstance().CleanupInvalidActors();
+
+        // 재빌드
+        if (BVH)
+        {
+            BVH->Build(Level->GetActors());
+        }
 
         return true; // 성공적으로 삭제
     }
@@ -930,6 +1012,11 @@ void UWorld::LoadScene(const FString& SceneName)
 
     DeSerialize(&SceneData);
 
+    if (Level)
+    {
+        InitializeSceneGraph(Level->GetActors());
+    }
+
     UE_LOG("Scene V2 loaded successfully: %s", SceneName.c_str());
 }
 
@@ -996,6 +1083,11 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
 
             PIEWorld->Level = PIELevel;
         }
+    }
+    // PIE 월드 레벨에 복제된 액터들로 BVH 재빌드
+    if (PIEWorld->Level)
+    {
+        PIEWorld->InitializeSceneGraph(PIEWorld->Level->GetActors());
     }
     return PIEWorld;
 }
@@ -1077,4 +1169,12 @@ void UWorld::SpawnActor(AActor* InActor)
     }
 
     Level->GetActors().Add(InActor);
+
+    // BVH가 없으면 새로 생성
+    if (!BVH)
+    {
+        BVH = new FBVH();
+    }
+    // 있는 경우 재빌드
+    BVH->Build(Level->GetActors());
 }

@@ -6,6 +6,7 @@
 #include <cmath>
 
 struct FBound;
+class URenderer; // Forward Declaration for the renderer
 
 // 최적화된 Ray-AABB 교차 검사를 위한 구조체
 struct alignas(16) FOptimizedRay
@@ -107,10 +108,17 @@ public:
 
     // 액터 배열로부터 BVH 구축
     void Build(const TArray<AActor*>& Actors);
+    void Refit();
     void Clear();
 
     // 빠른 레이 교차 검사 - 가장 가까운 액터 반환
     AActor* Intersect(const FVector& RayOrigin, const FVector& RayDirection, float& OutDistance) const;
+
+    // AABB와 교차하는 모든 액터 찾기
+    void IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const;
+
+    // BVH 구조를 디버깅용 라인으로 렌더링
+    void Render(URenderer* Renderer) const;
 
     // 통계 정보
     int GetNodeCount() const { return Nodes.Num(); }
@@ -130,7 +138,8 @@ private:
 
     // 재귀 구축 함수
     int BuildRecursive(int FirstActor, int ActorCount, int Depth = 0);
-
+    // Refit 위한 재귀 헬퍼
+    FBound RefitRecursive(int NodeIndex); 
     // 경계 박스 계산
     FBound CalculateBounds(int FirstActor, int ActorCount) const;
     FBound CalculateCentroidBounds(int FirstActor, int ActorCount) const;
@@ -143,7 +152,8 @@ private:
     int PartitionActors(int FirstActor, int ActorCount, int Axis, float SplitPos);
 
     bool IntersectNode(int NodeIndex, const FOptimizedRay& Ray, float& InOutDistance, AActor*& OutActor) const;
-
+    void IntersectAABBRecursive(int NodeIndex, const FBound& QueryAABB, TArray<AActor*>&
+        OutActors) const;
     //// 재귀 교차 검사 (깊이 제한 추가)
     //bool IntersectNode(int NodeIndex, const FVector& RayOrigin, const FVector& RayDirection,
     //                   float& InOutDistance, AActor*& OutActor, int RecursionDepth = 0) const;
@@ -151,6 +161,9 @@ private:
     // 액터와의 교차 검사
     bool IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
                         float& OutDistance) const;
+
+    // Render를 위한 재귀 헬퍼
+    void RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const;
 
     // 상수
     static const int MaxActorsPerLeaf = 8;  // 리프당 최대 액터 수 (마이크로 BVH용)

@@ -6,6 +6,8 @@
 #include "AABoundingBoxComponent.h"
 #include "MeshComponent.h"
 #include "TextRenderComponent.h"
+#include "CameraActor.h"
+#include "GizmoActor.h"
 
 AActor::AActor()
 {
@@ -90,6 +92,11 @@ void AActor::SetActorTransform(const FTransform& InNewTransform) const
     if (RootComponent)
     {
         RootComponent->SetWorldTransform(InNewTransform);
+
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -103,7 +110,16 @@ void AActor::SetActorLocation(const FVector& InNewLocation)
 {
     if (RootComponent)
     {
+        if (RootComponent->GetWorldLocation() == InNewLocation)
+        {
+            return;
+        }
         RootComponent->SetWorldLocation(InNewLocation);
+
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -116,7 +132,18 @@ void AActor::SetActorRotation(const FVector& InEulerDegree) const
 {
     if (RootComponent)
     {
-        RootComponent->SetWorldRotation(FQuat::MakeFromEuler(InEulerDegree));
+        const FQuat NewRotation = FQuat::MakeFromEuler(InEulerDegree);
+
+        // 현재 회전값과 새로운 회전값이 다를 때만 업데이트를 진행
+        if (RootComponent->GetWorldRotation() == NewRotation)
+        {
+            return;
+        }
+
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -124,7 +151,16 @@ void AActor::SetActorRotation(const FQuat& InQuat) const
 {
     if (RootComponent)
     {
+        if (RootComponent->GetWorldRotation() == InQuat)
+        {
+            return;
+        }
         RootComponent->SetWorldRotation(InQuat);
+
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 
@@ -137,7 +173,16 @@ void AActor::SetActorScale(const FVector& InNewScale) const
 {
     if (RootComponent)
     {
+        if (RootComponent->GetWorldScale() == InNewScale)
+        {
+            return;
+        }
         RootComponent->SetWorldScale(InNewScale);
+
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+        {
+            World->MarkBVHDirty();
+        }
     }
 }
 

@@ -518,6 +518,40 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
     }
 }
 
+void URenderer::DrawAABB(const FVector& Min, const FVector& Max, const FVector4& Color)
+{
+    if (!bLineBatchActive) return;
+
+    FVector Vertices[8];
+    Vertices[0] = FVector(Min.X, Min.Y, Min.Z);
+    Vertices[1] = FVector(Max.X, Min.Y, Min.Z);
+    Vertices[2] = FVector(Max.X, Max.Y, Min.Z);
+    Vertices[3] = FVector(Min.X, Max.Y, Min.Z);
+    Vertices[4] = FVector(Min.X, Min.Y, Max.Z);
+    Vertices[5] = FVector(Max.X, Min.Y, Max.Z);
+    Vertices[6] = FVector(Max.X, Max.Y, Max.Z);
+    Vertices[7] = FVector(Min.X, Max.Y, Max.Z);
+
+    // Bottom face
+    AddLine(Vertices[0], Vertices[1], Color);
+    AddLine(Vertices[1], Vertices[2], Color);
+    AddLine(Vertices[2], Vertices[3], Color);
+    AddLine(Vertices[3], Vertices[0], Color);
+
+    // Top face
+    AddLine(Vertices[4], Vertices[5], Color);
+    AddLine(Vertices[5], Vertices[6], Color);
+    AddLine(Vertices[6], Vertices[7], Color);
+    AddLine(Vertices[7], Vertices[4], Color);
+
+    // Connecting edges
+    AddLine(Vertices[0], Vertices[4], Color);
+    AddLine(Vertices[1], Vertices[5], Color);
+    AddLine(Vertices[2], Vertices[6], Color);
+    AddLine(Vertices[3], Vertices[7], Color);
+}
+
+
 void URenderer::EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
     if (!bLineBatchActive || !LineBatchData || !DynamicLineMesh || LineBatchData->Vertices.empty())

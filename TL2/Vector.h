@@ -244,7 +244,6 @@ struct FVector
         );
     }
 
-
     // 보조 유틸
     static FVector Lerp(const FVector& A, const FVector& B, float T)
     {
@@ -329,6 +328,23 @@ struct FQuat
     FQuat(float InX = 0, float InY = 0, float InZ = 0, float InW = 1)
         : X(InX), Y(InY), Z(InZ), W(InW)
     {
+    }
+
+    /**
+     * @brief Checks if two quaternions are component-wise equal within a tolerance.
+     * Note: This does not check for rotational equivalence (q == -q).
+     */
+    bool operator==(const FQuat& Q) const
+    {
+        return std::fabs(X - Q.X) < KINDA_SMALL_NUMBER &&
+               std::fabs(Y - Q.Y) < KINDA_SMALL_NUMBER &&
+               std::fabs(Z - Q.Z) < KINDA_SMALL_NUMBER &&
+               std::fabs(W - Q.W) < KINDA_SMALL_NUMBER;
+    }
+
+    bool operator!=(const FQuat& Q) const
+    {
+        return !(*this == Q);
     }
 
     static FQuat Identity() { return FQuat(0, 0, 0, 1); }
@@ -1125,4 +1141,19 @@ inline FTransform FTransform::Inverse() const
     Out.Scale3D = InvScale;
     Out.Translation = InvTrans;
     return Out;
+}
+/**
+* @brief V * M 위치벡터 변환 (v' = v * M, w=1)
+*/
+inline FVector TransformPosition(const FVector& V, const FMatrix& M)
+{
+    const FVector4 V4(V.X, V.Y, V.Z, 1.0f);
+    const FVector4 Result4 = V4 * M;
+    if (std::fabs(Result4.W) > 1e-6f)
+    {
+        const float InvW = 1.0f / Result4.W;
+
+        return FVector(Result4.X * InvW, Result4.Y * InvW, Result4.Z * InvW);
+    }
+    return FVector(Result4.X, Result4.Y, Result4.Z);
 }

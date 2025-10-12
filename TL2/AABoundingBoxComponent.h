@@ -74,6 +74,14 @@ struct FBound
         Distance = (tNear < 0.0f) ? 0.0f : tNear;
         return true;
     }
+    // Intersect AABB with AABB
+    bool Intersects(const FBound& Other) const
+    {
+        if (Max.X < Other.Min.X || Min.X > Other.Max.X) return false;
+        if (Max.Y < Other.Min.Y || Min.Y > Other.Max.Y) return false;
+        if (Max.Z < Other.Min.Z || Min.Z > Other.Max.Z) return false;
+        return true;
+    }
 };
 
 class ULine;
