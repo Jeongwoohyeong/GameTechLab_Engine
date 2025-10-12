@@ -202,12 +202,15 @@ void UWorld::InitializeGizmo()
     UIManager.SetGizmoActor(GizmoActor);
 }
 
+/**
+* @brief BVH 생성
+*/
 void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
 {
-    Octree = NewObject<UOctree>();
+    //Octree = NewObject<UOctree>();
     //	Octree->Initialize(FBound({ -100,-100,-100 }, { 100,100,100 }));
     //const TArray<AActor*>& InActors, FBound& WorldBounds, int32 Depth = 0
-    Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
+    //Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
 
     // 빌드 완료 후 모든 마이크로 BVH 미리 생성
 #ifndef _DEBUG
@@ -1158,9 +1161,11 @@ void UWorld::SpawnActor(AActor* InActor)
    
     Level->GetActors().Add(InActor);
 
-    // 액터 추가되었으니 BVH 재빌드
-    if (BVH)
+    // BVH가 없으면 새로 생성
+    if (!BVH)
     {
-        BVH->Build(Level->GetActors());
+        BVH = new FBVH();
     }
+    // 있는 경우 재빌드
+    BVH->Build(Level->GetActors());
 }
