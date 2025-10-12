@@ -48,6 +48,8 @@ UObject* UBillboardComponent::Duplicate()
 {
     UBillboardComponent* DuplicatedComponent = NewObject<UBillboardComponent>(*this);
     DuplicatedComponent->DuplicateSubObjects();
+    DuplicatedComponent->TexturePath = TexturePath;
+	DuplicatedComponent->bIsDisplayedOnPlayMode = bIsDisplayedOnPlayMode;
 
     return DuplicatedComponent;
 }
@@ -136,6 +138,9 @@ void UBillboardComponent::CreateBillboardVertices()
 
 void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
+    if(GetWorld()->IsPIEWorld() && !bIsDisplayedOnPlayMode)
+		return;
+
     // 텍스처 로드
     Material->Load(TexturePath, Renderer->GetRHIDevice()->GetDevice());
 

@@ -59,6 +59,8 @@ public:
     void SetIsPicked(bool picked) { bIsPicked = picked; }
     bool GetIsPicked() { return bIsPicked; }
 
+    FBound GetActorBounds(bool bOnlyCollidingComponents = false) const;
+
     
 
     //-----------------------------

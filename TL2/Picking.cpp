@@ -507,20 +507,24 @@ AActor* CPickingSystem::PerformViewportPicking(const TArray<AActor*>& Actors,
     FBVH* BVH = GetEngine()->GetWorld()->GetBVH();
     if (BVH)
     {
-        // 3. BVH로 Ray와 가장 가까운 Actor 반환
+        // 3. BVH를 사용하여 광선과 충돌하는 가장 가까운 프리미티브를 찾습니다 (Broad Phase).
         float hitDistance;
-        // Ray와 충돌하는 가장 가까운 액터를 정밀 검사까지 마쳐서 찾아줌.
-        AActor* HitActor = BVH->Intersect(WorldRay.Origin, WorldRay.Direction, hitDistance);
+        UPrimitiveComponent* HitPrimitive = BVH->Intersect(WorldRay.Origin, WorldRay.Direction, hitDistance);
 
-        //if (CheckActorPicking(HitActor, WorldRay, hitDistance))
-        if(HitActor)
+        if (HitPrimitive)
         {
-            // 충돌했고, 기존에 찾은 것보다 더 가깝다면 최종 후보를 교체
-            if (hitDistance < finalClosestHitDistance)
+            AActor* CandidateActor = Cast<AActor>(HitPrimitive->GetOwner());
+
+            // 4. 후보 액터에 대해 정밀 삼각형 레벨 충돌 검사를 수행합니다 (Narrow Phase).
+            float preciseHitDistance;
+            if (CandidateActor && CheckActorPicking(CandidateActor, WorldRay, preciseHitDistance))
             {
-                finalClosestHitDistance = hitDistance;
-                finalHitActor = HitActor;
-               
+                // 정밀 검사에 성공하고, 이전에 찾은 것보다 더 가깝다면 최종 후보로 선택합니다.
+                if (preciseHitDistance < finalClosestHitDistance)
+                {
+                    finalClosestHitDistance = preciseHitDistance;
+                    finalHitActor = CandidateActor;
+                }
             }
         }
     }
@@ -1468,6 +1472,9 @@ AActor* CPickingSystem::PerformOctreeBasedPicking(const TArray<AActor*>& Actors,
     }
 }
 
+/**
+* @brief 실제 수행하는 피킹 로직
+*/
 AActor* CPickingSystem::PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
                                                ACameraActor* Camera,
                                                const FVector2D& ViewportMousePos,

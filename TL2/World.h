@@ -135,6 +135,7 @@ public:
 
 	/** === 액터의 트랜스폼 변경 시 BVH 업데이트 하도록 표시 */
 	void MarkBVHDirty() { bIsBVHDirty = true; }
+	void RequestRebuildBVH();
 private:
 	// 싱글톤 매니저 참조
 	UResourceManager& ResourceManager;

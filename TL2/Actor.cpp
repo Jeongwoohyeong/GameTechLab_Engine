@@ -8,6 +8,8 @@
 #include "TextRenderComponent.h"
 #include "CameraActor.h"
 #include "GizmoActor.h"
+#include "World.h"
+#include "PrimitiveComponent.h"
 
 AActor::AActor() {}
 
@@ -261,6 +263,31 @@ const TSet<UActorComponent*>& AActor::GetComponents() const
     return OwnedComponents;
 }
 
+FBound AActor::GetActorBounds(bool bOnlyCollidingComponents) const
+{
+    FBound ActorBounds;
+    bool bIsFirst = true;
+
+    for (UActorComponent* Component : OwnedComponents)
+    {
+        UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(Component);
+        if (PrimComp && PrimComp->IsActive())
+        {
+            if (bIsFirst)
+            {
+                ActorBounds = PrimComp->GetWorldBound();
+                bIsFirst = false;
+            }
+            else
+            {
+                // 기존 바운딩 박스와 결합
+                ActorBounds += PrimComp->GetWorldBound();
+            }
+        }
+    }
+    return ActorBounds;
+}
+
 void AActor::AddComponent(USceneComponent* InComponent)
 {
     if (!InComponent)
@@ -272,6 +299,12 @@ void AActor::AddComponent(USceneComponent* InComponent)
     if (!RootComponent)
     {
         RootComponent = InComponent;
+    }
+
+    // PrimitiveComp 추가 시 World의 BVH 갱신하라고 표시
+    if (World && Cast<UPrimitiveComponent>(InComponent))
+    {
+        World->RequestRebuildBVH();
     }
 }
 
@@ -339,6 +372,11 @@ USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentCompone
 
             // 런타임에 생성된 컴포넌트도 초기화합니다.
             NewComponent->InitializeComponent();
+
+            if (World && Cast<UPrimitiveComponent>(NewComponent))
+            {
+                World->RequestRebuildBVH();
+            }
         }
     }
     else
@@ -386,6 +424,11 @@ bool AActor::DeleteComponent(USceneComponent* ComponentToDelete)
 
     // 6. [메모리 해제] 모든 연결이 정리되었으므로, 마지막으로 객체를 삭제합니다.
     ObjectFactory::DeleteObject(ComponentToDelete);
+
+    if (World)
+    {
+        World->RequestRebuildBVH();
+    }
 
     return true;
 }

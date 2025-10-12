@@ -22,6 +22,7 @@
 #include "PickingTimer.h"
 #include "RenderingStats.h"
 #include "UI/StatsOverlayD2D.h"
+#include "PrimitiveComponent.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -207,22 +208,27 @@ void UWorld::InitializeGizmo()
 */
 void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
 {
-    //Octree = NewObject<UOctree>();
-    //	Octree->Initialize(FBound({ -100,-100,-100 }, { 100,100,100 }));
-    //const TArray<AActor*>& InActors, FBound& WorldBounds, int32 Depth = 0
-    //Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
+    TArray<UPrimitiveComponent*> Primitives;
+    for (AActor* Actor : Actors)
+    {
+        if (Actor)
+        {
+            for (UActorComponent* Component : Actor->GetComponents())
+            {
+                if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
+                {
+                    Primitives.Add(Primitive);
+                }
+            }
+        }
+    }
 
-    // 빌드 완료 후 모든 마이크로 BVH 미리 생성
-//#ifndef _DEBUG
-//    Octree->PreBuildAllMicroBVH();
-//
-//    // BVH 초기화 및 빌드
-//    BVH = new FBVH();
-//    BVH->Build(Actors);
-//#endif
     // BVH 초기화 및 빌드
-    BVH = new FBVH();
-    BVH->Build(Actors);
+    if (!BVH)
+    {
+        BVH = new FBVH();
+    }
+    BVH->Build(Primitives);
 }
 
 void UWorld::RenderSceneGraph()
@@ -411,29 +417,23 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 // Decal OBB를 감싸는 AABB
                 FBound DecalWorldAABB = DecalOBB->GetWorldBound();
                 
-                // BVH에 AABB 쿼리 -> 후보 액터 목록 얻기
-                TArray<AActor*> CandidateActors;
-                BVH->IntersectAABB(DecalWorldAABB, CandidateActors);
+                // BVH에 AABB 쿼리 -> 후보 프리미티브 목록 얻기
+                TArray<UPrimitiveComponent*> CandidatePrimitives;
+                BVH->IntersectAABB(DecalWorldAABB, CandidatePrimitives);
 
                 // ======= Narrow Phase =======
-                // 후보군 액터에서 SAT 검사 수행
-                for (AActor* CandidateActor : CandidateActors)
+                // 후보군 프리미티브에서 SAT 검사 수행
+                for (UPrimitiveComponent* CandidatePrimitive : CandidatePrimitives)
                 {
-                    // 후보군 액터에서 StaticMeshActor 뽑기
-                    AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(CandidateActor);
-                    if (!StaticMeshActor)
+                    // 후보군 프리미티브에서 StaticMeshComponent 뽑기
+                    UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(CandidatePrimitive);
+                    if (!StaticMeshComponent)
                     {
                         continue;
                     }
-                    UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
-                    UAABoundingBoxComponent* MeshAABBComponent = Cast<UAABoundingBoxComponent>(StaticMeshActor->CollisionComponent);
-                    // 두개 중 하나라도 없으면 검사 수행 불가
-                    if (!StaticMeshComponent || !MeshAABBComponent)
-                    {
-                        continue;
-                    }
-                    // 데칼 OBB와 StaticMesh가 가진 AABB와 충돌 검사(SAT)
-                    if (DecalOBB->IntersectsWithAABB(*MeshAABBComponent->GetFBound()))
+
+                    // 데칼 OBB와 StaticMesh의 AABB와 충돌 검사(SAT)
+                    if (DecalOBB->IntersectsWithAABB(StaticMeshComponent->GetWorldBound()))
                     {
                         DecalVolume->UpdateFade(DeltaSeconds);
                         DecalVolume->ProjectDecal(
@@ -444,8 +444,6 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                         );
                     }
                 }
-
-
             }
         }
         else // BVH가 없는 경우, 기존 방식으로 렌더링
@@ -651,7 +649,7 @@ bool UWorld::DestroyActor(AActor* Actor)
         // 재빌드
         if (BVH)
         {
-            BVH->Build(Level->GetActors());
+            RequestRebuildBVH();
         }
 
         return true; // 성공적으로 삭제
@@ -1173,6 +1171,30 @@ void UWorld::DeSerialize(FObjectData* Data)
         UObject::SetNextUUID(MaxUUID);
     }
 }
+/**
+* @brief Level의 Actor들이 가진 모든 PrimitiveComponent를 가지고 BVH에 빌드 요청
+*/
+void UWorld::RequestRebuildBVH()
+{
+    if (BVH)
+    {
+        TArray<UPrimitiveComponent*> Primitives;
+        for (AActor* Actor : Level->GetActors())
+        {
+            if (Actor)
+            {
+                for (UActorComponent* Component : Actor->GetComponents())
+                {
+                    if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
+                    {
+                        Primitives.Add(Primitive);
+                    }
+                }
+            }
+        }
+        BVH->Build(Primitives);
+    }
+}
 
 /**
  * @brief 이미 생성한 Actor를 spawn하기 위한 shortcut 함수
@@ -1214,5 +1236,6 @@ void UWorld::SpawnActor(AActor* InActor)
         BVH = new FBVH();
     }
     // 있는 경우 재빌드
-    BVH->Build(Level->GetActors());
+    RequestRebuildBVH();
+    
 }

@@ -1,10 +1,10 @@
 ﻿#pragma once
 #include "SceneComponent.h"
 #include "Material.h"
+#include "OrientedBound.h"
 
 // 전방 선언
 struct FPrimitiveData;
-
 class URenderer;
 
 class UPrimitiveComponent :public USceneComponent
@@ -23,7 +23,15 @@ public:
 
     UObject* Duplicate() override;
     void DuplicateSubObjects() override;
+
+    // Local AABB -> World AABB
+    virtual FBound GetWorldBound() const
+    {
+        FTransform WorldTransform = GetWorldTransform();
+        return Bounds.TransformBy(WorldTransform);
+    }
 protected:
     // [PIE] 주소 복사 / NOTE: 만약 복사 후에도 GPU 버퍼 내용을 다르게 갖고 싶은 경우 깊은 복사를 해서 버퍼를 2개 생성하는 방법도 고려
     UMaterial* Material = nullptr;
+    FBound Bounds; // Local AABB
 };

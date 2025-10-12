@@ -367,6 +367,15 @@ void UInputManager::UpdateKeyState(int KeyCode, bool bPressed)
     }
 }
 
+void UInputManager::InitKeyStates()
+{
+    // 모든 키보드 및 마우스 버튼 상태를 초기화합니다.
+    memset(MouseButtons, false, sizeof(MouseButtons));
+    memset(PreviousMouseButtons, false, sizeof(PreviousMouseButtons));
+    memset(KeyStates, false, sizeof(KeyStates));
+    memset(PreviousKeyStates, false, sizeof(PreviousKeyStates));
+}
+
 FVector2D UInputManager::GetScreenSize() const
 {
     // 우선 ImGui 컨텍스트가 있으면 IO의 DisplaySize 사용
