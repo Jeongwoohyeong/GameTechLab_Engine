@@ -57,19 +57,18 @@ void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMa
     // 에디터에서만 보이도록 처리
     if (GetWorld() && !GetWorld()->IsPIEWorld())
     {
-        if (!bUsePerspectiveProjection)
+        //if (!bUsePerspectiveProjection)
         {
             // Ortho 모드: OBB 렌더링
             OBB.Render(Renderer, View, Proj);
         }
-        else
-        {
-            // Perspective 모드: Frustum 선 렌더링
-            RenderFrustumLines(Renderer);
-        }
+        //else
+        //{
+        //    // Perspective 모드: Frustum 선 렌더링
+        //    RenderFrustumLines(Renderer);
+        //}
     }
 }
-
 void UDecalComponent::RenderFrustumLines(URenderer* Renderer)
 {
     // Frustum 파라미터
@@ -84,17 +83,17 @@ void UDecalComponent::RenderFrustumLines(URenderer* Renderer)
 
     // Frustum 8개 꼭짓점 (Decal 로컬 공간, +Z forward)
     FVector nearCorners[4] = {
-        FVector(-halfNear / 2.0f,  halfNear / 2.0f, Near),  // Near Top-Left
-        FVector( halfNear / 2.0f,  halfNear / 2.0f, Near),  // Near Top-Right
-        FVector( halfNear / 2.0f, -halfNear / 2.0f, Near),  // Near Bottom-Right
-        FVector(-halfNear / 2.0f, -halfNear / 2.0f, Near)   // Near Bottom-Left
+        FVector(Near - 0.5f, -halfNear,  halfNear),  // Near Top-Left
+        FVector(Near - 0.5f, halfNear,  halfNear),  // Near Top-Right
+        FVector(Near - 0.5f, halfNear, -halfNear),  // Near Bottom-Right
+        FVector(Near - 0.5f, -halfNear, -halfNear)   // Near Bottom-Left
     };
 
     FVector farCorners[4] = {
-        FVector(-halfFar / 2.0f,  halfFar / 2.0f, Far),     // Far Top-Left
-        FVector( halfFar / 2.0f,  halfFar / 2.0f, Far),     // Far Top-Right
-        FVector( halfFar / 2.0f, -halfFar / 2.0f, Far),     // Far Bottom-Right
-        FVector(-halfFar / 2.0f, -halfFar / 2.0f, Far)      // Far Bottom-Left
+        FVector(Far - 0.5f, -halfFar,  halfFar),     // Far Top-Left
+        FVector(Far - 0.5f, halfFar,  halfFar),     // Far Top-Right
+        FVector(Far - 0.5f, halfFar, -halfFar),     // Far Bottom-Right
+        FVector(Far - 0.5f, -halfFar, -halfFar)      // Far Bottom-Left
     };
 
     // 월드 변환 행렬
@@ -103,6 +102,7 @@ void UDecalComponent::RenderFrustumLines(URenderer* Renderer)
     // 월드 좌표로 변환
     FVector nearWorld[4];
     FVector farWorld[4];
+
     for (int i = 0; i < 4; ++i)
     {
         nearWorld[i] = nearCorners[i] * worldMatrix;
