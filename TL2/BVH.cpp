@@ -38,6 +38,11 @@ void FBVH::Build(const TArray<UPrimitiveComponent*>& Primitives)
         UPrimitiveComponent* Prim = Primitives[i];
         if (!Prim || !Prim->IsActive()) 
             continue;
+        // AABB와 OBB는 BVH에 포함 안시킴
+        if (UAABoundingBoxComponent* AABBComp = Cast<UAABoundingBoxComponent>(Prim))
+            continue;
+        if (UOBoundingBoxComponent* OBBComp = Cast<UOBoundingBoxComponent>(Prim))
+            continue;
 
         // World AABB
         FBound WorldBound = Prim->GetWorldBound();
@@ -434,7 +439,7 @@ int FBVH::PartitionPrimitives(int FirstPrim, int PrimCount, int Axis, float Spli
 }
 
 /**
-* @brief Ray와 충돌한 Primitive 얻어오기
+* @brief BVH 노드를 재귀적으로 타고 들어가면서 Ray와 실제 충돌한 Primitive 얻어오기
 */
 bool FBVH::IntersectNode(int NodeIndex,
     const FOptimizedRay& Ray,

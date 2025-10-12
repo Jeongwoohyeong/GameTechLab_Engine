@@ -1505,6 +1505,23 @@ AActor* CPickingSystem::PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
     float adaptiveThreshold = GetAdaptiveThreshold(cameraDistanceEstimate);
 
     // Global BVH 우선 사용
+    FBVH* BVH = GetEngine()->GetActiveWorld()->GetBVH();
+    if (BVH)
+    {
+        float HitDistance;
+        // Ray와 충돌한 Primitive 얻어오기
+        UPrimitiveComponent* HitPrimitive = BVH->Intersect(ray.Origin, ray.Direction, HitDistance);
+        if (HitPrimitive && !HitPrimitive->GetOwner()->GetActorHiddenInGame())
+        {
+           uint64_t GlobalBVHCycleDiff = GlobalBVHPickingTimer.Finish();
+            double GlobalBVHPickingTimeMs = FPlatformTime::ToMilliseconds(GlobalBVHCycleDiff);
+            URenderingStatsCollector::GetInstance().UpdatePickingStats(GlobalBVHPickingTimeMs);
+            char buf[256];
+            sprintf_s(buf, "[Global BVH Pick] Hit actor at distance %.3f (Time: %.3fms)\n", HitDistance, GlobalBVHPickingTimeMs);
+            UE_LOG(buf);
+            return HitPrimitive->GetOwner();
+        }
+    }
    /* FBVH* BVH = GetEngine()->GetWorld()->GetBVH();
     if (BVH)
     {

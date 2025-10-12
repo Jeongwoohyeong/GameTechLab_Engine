@@ -28,7 +28,7 @@ public:
                               uint32 InTextureChanges, uint32 InShaderChanges);
 
     // 데칼 통계 업데이트
-    void UpdateDecalStats(uint32 InDecalNum, float InDecalRenderTimeTotal)
+    void UpdateDecalStats(uint32 InDecalNum, float InDecalRenderTimeTotal, uint32 InPrimitivesNum, uint32 InCandidatesNum, uint32 InFinalDrawCalls)
     {
         CurrentDecalNum = InDecalNum;
         CurrentDecalRenderTimeTotal = InDecalRenderTimeTotal;
@@ -37,6 +37,10 @@ public:
             CurrentDecalRenderTimeAverage = 0.0f : \
             CurrentDecalRenderTimeAverage = \
             CurrentDecalRenderTimeTotal / (float)CurrentDecalNum;
+        
+        CurrentDecalPrimitivesNum = InPrimitivesNum;
+        CurrentDecalCandidates = InCandidatesNum;
+        CurrentDecalFinalDrawCalls = InFinalDrawCalls;
     }
 
 private:
@@ -65,7 +69,9 @@ private:
     uint32 CurrentDecalNum = 0;
     float CurrentDecalRenderTimeTotal = 0.0f;
     float CurrentDecalRenderTimeAverage = 0.0f;
-    
+    uint32 CurrentDecalPrimitivesNum = 0;
+    uint32 CurrentDecalCandidates = 0;
+    uint32 CurrentDecalFinalDrawCalls = 0;
     // 10프레임 평균
     static const int STATS_HISTORY_SIZE = 10;
     uint32 DrawCallsHistory[STATS_HISTORY_SIZE] = {0};

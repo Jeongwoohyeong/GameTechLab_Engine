@@ -20,6 +20,9 @@ struct FRenderingStats
     // Decal 통계
     uint32 DecalNum = 0;
     float DecalRenderTimeTotal = 0;
+    uint32 DecalTotalPrimitives = 0;
+    uint32 DecalCandidatePrimitives = 0;
+    uint32 DecalFinalDrawCalls = 0; // Narrow Phase를 통과한 최종 드로우 콜 수
 
     // 성능 통계
     float TotalRenderTime = 0.0f;      // ms (전체 프레임 시간)
@@ -44,6 +47,9 @@ struct FRenderingStats
         PickingTime = 0.0f;
         DecalNum = 0.0f;
         DecalRenderTimeTotal = 0.0f;
+        DecalTotalPrimitives = 0;
+        DecalCandidatePrimitives = 0;
+        DecalFinalDrawCalls = 0;
         //BasePassTime = 0.0f;
         // SortTime = 0.0f;
     }
@@ -101,6 +107,11 @@ public:
 
     // 데칼 관련 접근 및 설정
     void UpdateDecalStats(uint32 InDecalNum, float InTime);
+    void UpdateDecalCullingStats(uint32 InTotalPrims, uint32 InCandidates, uint32 InFinalDraws);
+    uint32 GetDecalTotalPrimitives() const;
+    uint32 GetDecalCandidatePrimitives() const;
+    uint32 GetDecalFinalDrawCalls() const;
+
     void SetDecalNum(uint32 InDecalNum);
     void SetDecalRenderTimeTotal(float InTime);
     uint32 GetDecalNum() const;
