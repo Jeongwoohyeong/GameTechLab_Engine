@@ -55,6 +55,12 @@ void AActor::BeginPlay()
     }
 }
 
+/*
+    HSH
+    다시 빙빙 돌아가게 하고 싶다면
+    주석 처리된 부분의
+    AddLocalOffset 메소드를 사용하면 됩니다.
+*/
 void AActor::Tick(float DeltaSeconds)
 {
     // 소유한 모든 컴포넌트의 Tick 처리
@@ -65,6 +71,19 @@ void AActor::Tick(float DeltaSeconds)
             Component->TickComponent(DeltaSeconds);
         }
     }
+
+    TickTimer += DeltaSeconds;
+    TickTimer = fmod(TickTimer, 5.0f);
+    if (World && World->WorldType == EWorldType::PIE) {
+        if (TickTimer < 2.5f)
+            RootComponent->AddRelativeLocation({0.0f, 0.0f, 0.01f});
+        else
+            RootComponent->AddRelativeLocation({0.0f, 0.0f, -0.01f});
+        //RootComponent->AddLocalRotation({ 0.01f, 0.0f,0.0f });
+        //RootComponent->AddLocalOffset({ sin(times)/100, sin(times)/100,sin(times)/100 });
+    }
+    //if(bIsPicked&& CollisionComponent)
+    //CollisionComponent->SetFromVertices(StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset()->Vertices);
 }
 
 /**
@@ -276,7 +295,7 @@ void AActor::Serialize(FObjectData* Data)
     assert(ActorData, "AActor::Serialize got wrong data type.");
 
     UObject::Serialize(Data);
-    ActorData->Name = Name.ToString();
+    ActorData->Name = ObjectName.ToString();
     ActorData->Type = GetClass()->Name;
 
     if (RootComponent)

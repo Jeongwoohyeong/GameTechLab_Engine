@@ -224,9 +224,13 @@ UObject* UDecalComponent::Duplicate()
 
     DuplicatedComponent->Material = this->Material;
     DuplicatedComponent->TexturePath = this->TexturePath;
-    DuplicatedComponent->FadeProperties = this->FadeProperties;
     DuplicatedComponent->bUsePerspectiveProjection = this->bUsePerspectiveProjection;
     DuplicatedComponent->ProjectionFOV = this->ProjectionFOV;
+
+    DuplicatedComponent->FadeProperties = this->FadeProperties;
+    DuplicatedComponent->bIsFadeEnabled = this->bIsFadeEnabled;
+    DuplicatedComponent->bIsFadeOut = this->bIsFadeOut;
+    DuplicatedComponent->ElapsedTime = this->ElapsedTime;
 
     DuplicatedComponent->DuplicateSubObjects();
     return DuplicatedComponent;
@@ -291,7 +295,6 @@ void UDecalComponent::DeSerialize(FObjectData* Data)
 void UDecalComponent::TickComponent(float DeltaTime)
 {
     UPrimitiveComponent::TickComponent(DeltaTime);
-    UpdateFade(DeltaTime);
 }
 
 void UDecalComponent::SetFadeEnabled(bool bIsEnable)

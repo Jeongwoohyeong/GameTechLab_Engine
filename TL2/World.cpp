@@ -144,7 +144,7 @@ static void DebugRTTI_UObject(UObject* Obj, const char* Title)
         UE_LOG(buf);
     }
     //FString Name = Obj->GetName();
-    std::snprintf(buf, sizeof(buf), "[RTTI] TypeName = %s\r\n", Obj->GetName().c_str());
+    std::snprintf(buf, sizeof(buf), "[RTTI] TypeName = %s\r\n", Obj->GetName().ToString().c_str());
     OutputDebugStringA(buf);
     OutputDebugStringA("================================\r\n");
 }
@@ -435,6 +435,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                     // 데칼 OBB와 StaticMesh가 가진 AABB와 충돌 검사(SAT)
                     if (DecalOBB->IntersectsWithAABB(*MeshAABBComponent->GetFBound()))
                     {
+                        DecalVolume->UpdateFade(DeltaSeconds);
                         DecalVolume->ProjectDecal(
                             Renderer,
                             StaticMeshComponent,
@@ -1099,26 +1100,19 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
     if (EditorWorld->GetLevel())
     {
         ULevel* EditorLevel = EditorWorld->GetLevel();
-        ULevel* PIELevel = PIEWorld->GetLevel();
 
-        if (PIELevel)
+        // Level의 Actors를 복제
+        for (AActor* EditorActor : EditorLevel->GetActors())
         {
-            // Level의 Actors를 복제
-            for (AActor* EditorActor : EditorLevel->GetActors())
+            if (EditorActor)
             {
-                if (EditorActor)
-                {
-                    AActor* PIEActor = Cast<AActor>(EditorActor->Duplicate());//체크!
+                AActor* PIEActor = Cast<AActor>(EditorActor->Duplicate());//체크!
 
-                    if (PIEActor)
-                    {
-                        PIELevel->AddActor(PIEActor);
-                        PIEActor->SetWorld(PIEWorld);
-                    }
+                if (PIEActor)
+                {
+                    PIEWorld->SpawnActor(PIEActor);
                 }
             }
-
-            PIEWorld->Level = PIELevel;
         }
     }
     // PIE 월드 레벨에 복제된 액터들로 BVH 재빌드
