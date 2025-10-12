@@ -111,7 +111,8 @@ FMeshData* UMeshLoader::LoadMesh(const std::filesystem::path& FilePath)
 
     for (const auto& Face : Faces)
     {
-        const FPosition& Pos = Positions[Face.IndexPosition - 1];
+        int posIndex = Face.IndexPosition > 0 ? Face.IndexPosition - 1 : Positions.size() + Face.IndexPosition;
+        const FPosition& Pos = Positions[posIndex];
         FVertexKey key{ Pos.x, Pos.y, Pos.z };
 
         auto it = UniqueVertexMap.find(key);
