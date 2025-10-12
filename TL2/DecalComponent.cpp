@@ -8,9 +8,10 @@ UDecalComponent::UDecalComponent() : OBB(DecalVolumeVertices, this)
 
 void UDecalComponent::ResetFadeProperties()
 {
-    FadeProperties = DefaultFadeProperties;
+    bool bIsEnabled = CurrentFadeProperty.bIsFadeEnabled;
+    CurrentFadeProperty = DefaultFadeProperty;
+    CurrentFadeProperty.bIsFadeEnabled = bIsEnabled;
     ElapsedTime = 0.0f;
-    bIsFadeOut = true;
 }
 
 UDecalComponent::~UDecalComponent()
@@ -20,33 +21,68 @@ UDecalComponent::~UDecalComponent()
 
 void UDecalComponent::UpdateFade(float DeltaTime)
 {
+    if (!CurrentFadeProperty.bIsFadeEnabled)
+    {
+        return;
+    }
 
-    if (FadeProperties.X > FLT_EPSILON)
+    if (CurrentFadeProperty.AlphaProperties.X <= KINDA_SMALL_NUMBER)
+    {
+        return;
+    }
+
+    if (CurrentFadeProperty.bIsFadeStart)
     {
         ElapsedTime += DeltaTime;
-        float Progress = ElapsedTime / FadeProperties.X;
+        float Progress = ElapsedTime / CurrentFadeProperty.AlphaProperties.X;
         float ClampedProgress = std::min(Progress, 1.0f);
-
-        // 선형보간
-        if (bIsFadeOut)
+        EFadeTypes Type = CurrentFadeProperty.Type;
+        switch (Type)
         {
-            // fade out일 때 max에서 min까지 선형보간
-            FadeProperties.W = FadeProperties.Z - (FadeProperties.Z - FadeProperties.Y) * ClampedProgress;
-        }
-        else
-        {
-            // min에서 max까지 선형보간
-            FadeProperties.W = FadeProperties.Y + (FadeProperties.Z - FadeProperties.Y) * ClampedProgress;
+        case EFadeTypes::FadeIn:
+            {
+                if (!CurrentFadeProperty.bIsLoop)
+                {
+                    CurrentFadeProperty.AlphaProperties.W = CurrentFadeProperty.AlphaProperties.Y;                    
+                }
+                CurrentFadeProperty.AlphaProperties.W = CurrentFadeProperty.AlphaProperties.Y +
+                        (CurrentFadeProperty.AlphaProperties.Z -
+                            CurrentFadeProperty.AlphaProperties.Y) *
+                        ClampedProgress;
+ 
+                break;
+            }
+        case EFadeTypes::FadeOut:
+            {
+                if (!CurrentFadeProperty.bIsLoop)
+                {
+                    CurrentFadeProperty.AlphaProperties.W = CurrentFadeProperty.AlphaProperties.Y;                    
+                }
+                CurrentFadeProperty.AlphaProperties.W = CurrentFadeProperty.AlphaProperties.Z -
+                        (CurrentFadeProperty.AlphaProperties.Z -
+                            CurrentFadeProperty.AlphaProperties.Y) *
+                        ClampedProgress;
+                
+                break;
+            }
+        default:
+            break;
         }
 
-        // 진행도가 1 이상이면 fade in - fade out 전환
-        // 진행시간 초기화
         if (Progress >= 1.0f)
         {
             ElapsedTime = 0.0f;
-            bIsFadeOut = !bIsFadeOut;
+            if (CurrentFadeProperty.bIsLoop)
+            {
+                CurrentFadeProperty.Type = (++Type) % EFadeTypes::FadeLoop;
+            }
+            else
+            {
+                CurrentFadeProperty.bIsFadeStart = false;
+                CurrentFadeProperty.AlphaProperties.W = 1.0f;
+            }            
         }
-    }
+    }    
 }
 
 void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
@@ -125,7 +161,14 @@ void UDecalComponent::ProjectDecal
     if (!StaticMesh)
     {
         return;
-    }    
+    }
+
+    if (!Material || !Material->GetShader())
+    {
+        // 렌더링 직전에 Material 또는 Shader가 유효하지 않으면 드로우 콜이 스킵됩니다.
+        UE_LOG("ProjectDecal: Skipping render! Material or Shader is NULL! (Mat: %p, Shader: %p)", Material, Material ? Material->GetShader() : nullptr);
+        return; // 여기서 렌더링을 중단
+    }
     
     // 야매 텍스처 로드(후에 제대로 텍스처 로드할 수 있도록 바꿔야 함)
     Material->Load(TexturePath, Renderer->GetRHIDevice()->GetDevice());
@@ -148,7 +191,7 @@ void UDecalComponent::ProjectDecal
         GetWorldMatrix().Inverse() * \
         DecalViewAdjustMatrix * \
         DecalProj,
-        FadeProperties.W
+        CurrentFadeProperty.AlphaProperties.W
     );
     Renderer->PrepareShader(GetMaterial()->GetShader());
     Renderer->ProjectDecalToStaticMesh(
@@ -168,10 +211,6 @@ void UDecalComponent::SetTexture(const FString& InTexturePath)
     TexturePath = InTexturePath;
 }
 
-void UDecalComponent::SetFadeProperties(const FVector4& InFadeProperties)
-{
-    FadeProperties = InFadeProperties;
-}
 
 FMatrix UDecalComponent::GetDecalOrthoProjection()
 {
@@ -213,11 +252,8 @@ UObject* UDecalComponent::Duplicate()
     DuplicatedComponent->TexturePath = this->TexturePath;
     DuplicatedComponent->bUsePerspectiveProjection = this->bUsePerspectiveProjection;
     DuplicatedComponent->ProjectionFOV = this->ProjectionFOV;
-    DuplicatedComponent->FadeProperties = this->FadeProperties;
-    DuplicatedComponent->bIsFadeEnabled = this->bIsFadeEnabled;
-    DuplicatedComponent->bIsFadeOut = this->bIsFadeOut;
-    DuplicatedComponent->ElapsedTime = this->ElapsedTime;
-    DuplicatedComponent->SetTickEnabled(DuplicatedComponent->bIsFadeEnabled);
+    DuplicatedComponent->CurrentFadeProperty = this->CurrentFadeProperty;
+    DuplicatedComponent->ElapsedTime = this->ElapsedTime;    
 
     DuplicatedComponent->DuplicateSubObjects();
     return DuplicatedComponent;
@@ -245,15 +281,17 @@ void UDecalComponent::Serialize(FObjectData* Data)
         UE_LOG("SaveScene: Decal has no Texture assigned");
     }
 
-    ComponentData->Duration = FadeProperties.X;
-    ComponentData->Min = FadeProperties.Y;
-    ComponentData->Max = FadeProperties.Z;
-    ComponentData->Alpha = FadeProperties.W;
+
+    ComponentData->FadeType = ToUnderlying(CurrentFadeProperty.Type);
+    ComponentData->Duration = CurrentFadeProperty.AlphaProperties.X;
+    ComponentData->Min = CurrentFadeProperty.AlphaProperties.Y;
+    ComponentData->Max = CurrentFadeProperty.AlphaProperties.Z;
+    ComponentData->Alpha = CurrentFadeProperty.AlphaProperties.W;
+    ComponentData->bIsFadeEnabled = CurrentFadeProperty.bIsFadeEnabled;
+    ComponentData->bIsFadeStart = CurrentFadeProperty.bIsFadeStart;
+    ComponentData->bIsLoop = CurrentFadeProperty.bIsLoop;
 
     ComponentData->ElapsedTime = ElapsedTime;
-
-    ComponentData->FadeEnabled = bIsFadeEnabled;
-    ComponentData->FadeOut = bIsFadeOut;
 }
 
 void UDecalComponent::DeSerialize(FObjectData* Data)
@@ -261,47 +299,28 @@ void UDecalComponent::DeSerialize(FObjectData* Data)
     FDecalComponentData* ComponentData = dynamic_cast<FDecalComponentData*>(Data);
     assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
 
+    UE_LOG("decal");
     USceneComponent::DeSerialize(Data);
 
     if (!ComponentData->Texture.empty())
     {
         TexturePath = ComponentData->Texture;
     }
-
-    FadeProperties.X = ComponentData->Duration;
-    FadeProperties.Y = ComponentData->Min;
-    FadeProperties.Z = ComponentData->Max;
-    FadeProperties.W = ComponentData->Alpha;
+    
+    CurrentFadeProperty.Type = static_cast<EFadeTypes>(ComponentData->FadeType);
+    CurrentFadeProperty.AlphaProperties.X = ComponentData->Duration;
+    CurrentFadeProperty.AlphaProperties.Y = ComponentData->Min;
+    CurrentFadeProperty.AlphaProperties.Z = ComponentData->Max;
+    CurrentFadeProperty.AlphaProperties.W = ComponentData->Alpha;
+    CurrentFadeProperty.bIsFadeEnabled = ComponentData->bIsFadeEnabled;
+    CurrentFadeProperty.bIsFadeStart = ComponentData->bIsFadeStart;
+    CurrentFadeProperty.bIsLoop = ComponentData->bIsLoop;
 
     ElapsedTime = ComponentData->ElapsedTime;
 
-    bIsFadeEnabled = ComponentData->FadeEnabled;
-    bIsFadeOut = ComponentData->FadeOut;
 }
 
 void UDecalComponent::TickComponent(float DeltaTime)
 {    
     UPrimitiveComponent::TickComponent(DeltaTime);
-    if (bIsFadeEnabled)
-    {
-        UpdateFade(DeltaTime);        
-    }    
-}
-
-void UDecalComponent::SetFadeEnabled(bool bIsEnable)
-{
-    this->bIsFadeEnabled = bIsEnable;
-    // fade가 시작되면 세팅값 초기화
-    if (bIsFadeEnabled)
-    {
-        ElapsedTime = 0.0f;
-        bIsFadeOut = true;
-    }
-    // fade 종료 시 기본값으로 초기화
-    else
-    {
-        FadeProperties = DefaultFadeProperties;
-    }
-    // Tick 활성화 제어
-    SetTickEnabled(bIsFadeEnabled);
 }

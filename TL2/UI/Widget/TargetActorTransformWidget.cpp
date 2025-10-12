@@ -768,29 +768,72 @@ void UTargetActorTransformWidget::RenderWidget()
 				ImGui::Spacing();
 
 				ImGui::Text("Decal Fade");
-				ImGui::SameLine();
-				static bool bIsFadeEnabled = false;
-				if (ImGui::Checkbox("Fade On", &bIsFadeEnabled))
+				ImGui::SameLine();				
+				static TArray<FString> FadeTypes = {"In", "Out", "Loop"};
+				static int32 CurrentFadeIndex = 0;
+
+				FFadeProperty &FadeProperties = DecalComponent->GetFadeProperties();
+
+				ImGui::Checkbox("Fade On", &FadeProperties.bIsFadeEnabled);
+				if (FadeProperties.bIsFadeEnabled)
 				{
-					DecalComponent->SetFadeEnabled(bIsFadeEnabled);
-				}
-				if (bIsFadeEnabled)
-				{
-					FVector4 FadeProperties = DecalComponent->GetFadeProperties();
+					ImGui::SameLine();
+					if (ImGui::Button("Start"))
+					{
+						FadeProperties.bIsFadeStart = true;
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Stop"))
+					{
+						FadeProperties.bIsFadeStart = false;
+					}
 					ImGui::SameLine();
 					// 기본값으로 초기화
 					if (ImGui::Button("Reset"))
 					{
 						DecalComponent->ResetFadeProperties();						
 					}
-					bool bIsPropertyChanged = false;
-					bIsPropertyChanged |= ImGui::DragFloat("Duration", &FadeProperties.X, 0.01f, 0.0f, 60.0f);
-					bIsPropertyChanged |= ImGui::DragFloat("MinAlpha", &FadeProperties.Y, 0.001f, 0.0f, FadeProperties.Z);
-					bIsPropertyChanged |= ImGui::DragFloat("MaxAlpha", &FadeProperties.Z, 0.001f, FadeProperties.Y, 1.0f);
-					if (bIsPropertyChanged)
+					if (ImGui::BeginCombo("##FadeType", FadeTypes[CurrentFadeIndex].c_str()))
 					{
-						DecalComponent->SetFadeProperties(FadeProperties);
+						for (int32 i = 0; i< FadeTypes.size(); i++)
+						{
+							bool bIsSelected = (CurrentFadeIndex == i);
+							if (ImGui::Selectable(FadeTypes[i].c_str(), bIsSelected))
+							{
+								CurrentFadeIndex = i;								
+							}
+
+							if (bIsSelected)
+							{
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+						ImGui::EndCombo();
 					}
+					ImGui::DragFloat("Duration", &FadeProperties.AlphaProperties.X, 0.01f, 0.0f, 60.0f);
+					ImGui::DragFloat("MinAlpha", &FadeProperties.AlphaProperties.Y, 0.01f, 0.0f, FadeProperties.AlphaProperties.Z);
+					ImGui::DragFloat("MaxAlpha", &FadeProperties.AlphaProperties.Z, 0.01f, FadeProperties.AlphaProperties.Y, 1.0f);
+					switch (CurrentFadeIndex)
+					{
+					case 0:
+						FadeProperties.Type = EFadeTypes::FadeIn;
+						break;
+					case 1:
+						FadeProperties.Type = EFadeTypes::FadeOut;
+						break;
+					case 2:
+						{
+							//FadeProperties.Type = EFadeTypes::FadeLoop;
+							FadeProperties.bIsLoop = true;
+							break;
+						}
+					default:
+						FadeProperties.Type = EFadeTypes::FadeIn;
+						break;						
+					}
+
+					
+
 				}
 				
 			}
