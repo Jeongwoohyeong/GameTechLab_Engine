@@ -8,6 +8,9 @@ public:
     DECLARE_CLASS(AStaticMeshActor, AActor)
 
     AStaticMeshActor();
+
+    virtual void Initialize() override;
+
     virtual void Tick(float DeltaTime) override;
 protected:
     ~AStaticMeshActor() override;
