@@ -266,7 +266,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			QueryPerformanceCounter(&CurrTime);
 
 			// 프레임 간 시간 (초 단위)
-			float DeltaSeconds = static_cast<float>(
+			DeltaSeconds = static_cast<float>(
 				(CurrTime.QuadPart - PrevTime.QuadPart) / double(Frequency.QuadPart)
 				);
 			PrevTime = CurrTime;

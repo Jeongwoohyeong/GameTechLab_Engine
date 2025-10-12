@@ -20,6 +20,5 @@ public:
     static bool TryReadNextUUID(const FString& FilePath, uint32& OutNextUUID);
 
 private:
-    static TArray<FPrimitiveData> Parse(const JSON& Json);
-    static FSceneData ParseV2(const JSON& Json);
+    static FSceneData Parse(const JSON& Json);
 };

@@ -76,7 +76,7 @@ public:
     static void  operator delete(void* ptr) noexcept { CMemoryManager::Deallocate(ptr); }
     static void  operator delete(void* ptr, std::size_t) noexcept { CMemoryManager::Deallocate(ptr); }
 
-    FString GetName();    // 원문
+    FName GetName();    // 원문
     FString GetComparisonName(); // lower-case
 
     UObject* GetOuter() const;

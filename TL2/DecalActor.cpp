@@ -24,22 +24,24 @@ void ADecalActor::Initialize()
 
 void ADecalActor::Tick(float DeltaTime)
 {
-	// CollisionComponent 업데이트 (항상 업데이트하여 피킹 가능하도록)
-	if (CollisionComponent && DecalComponent)
-	{
-		// Unit Cube의 8개 정점으로 바운딩 박스 설정
-		TArray<FNormalVertex> CubeVertices = {
-			FNormalVertex(FVector(-0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(-0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(-0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(-0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0))
-		};
-		CollisionComponent->SetFromVertices(CubeVertices);
-	}
+	AActor::Tick(DeltaTime);
+
+	//// CollisionComponent 업데이트 (항상 업데이트하여 피킹 가능하도록)
+	//if (CollisionComponent && DecalComponent)
+	//{
+	//	// Unit Cube의 8개 정점으로 바운딩 박스 설정
+	//	TArray<FNormalVertex> CubeVertices = {
+	//		FNormalVertex(FVector(-0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(-0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(-0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(-0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0))
+	//	};
+	//	CollisionComponent->SetFromVertices(CubeVertices);
+	//}
 }
 
 ADecalActor::~ADecalActor()

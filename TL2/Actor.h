@@ -138,4 +138,6 @@ protected:
     bool bCanEverTick = true;
     bool bHiddenInGame = false;
     bool bTickInEditor = false;
+private:
+    float TickTimer = 0.0f;
 };

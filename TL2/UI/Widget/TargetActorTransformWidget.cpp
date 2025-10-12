@@ -841,7 +841,7 @@ void UTargetActorTransformWidget::RenderComponentHierarchy(USceneComponent* Scen
 	}
 
 	const bool bIsRootComponent = SelectedActor->GetRootComponent() == SceneComponent;
-	const FString ComponentName = SceneComponent->GetName() + (bIsRootComponent ? " (Root)" : "");
+	const FString ComponentName = SceneComponent->GetName().ToString() + (bIsRootComponent ? " (Root)" : "");
 	const TArray<USceneComponent*>& AttachedChildren = SceneComponent->GetAttachChildren();
 	const bool bHasChildren = AttachedChildren.Num() > 0;
 

@@ -116,15 +116,15 @@ void UStaticMeshComponent::DuplicateSubObjects()
 
 void UStaticMeshComponent::Serialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FStaticMeshComponentData* ComponentData = dynamic_cast<FStaticMeshComponentData*>(Data);
     assert(ComponentData, "UStaticMeshComponent::Serialize got wrong data type.");
 
     USceneComponent::Serialize(Data);
     
     if (StaticMesh)
     {
-        ComponentData->Resource = StaticMesh->GetAssetPathFileName();
-        UE_LOG("SaveScene: StaticMeshComponent StaticMesh saved: %s", ComponentData->Resource.c_str());
+        ComponentData->StaticMesh = StaticMesh->GetAssetPathFileName();
+        UE_LOG("SaveScene: StaticMeshComponent StaticMesh saved: %s", ComponentData->StaticMesh.c_str());
     }
     else
     {
@@ -135,14 +135,14 @@ void UStaticMeshComponent::Serialize(FObjectData* Data)
 
 void UStaticMeshComponent::DeSerialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FStaticMeshComponentData* ComponentData = dynamic_cast<FStaticMeshComponentData*>(Data);
     assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
 
     USceneComponent::DeSerialize(Data);
 
-    if (!ComponentData->Resource.empty())
+    if (!ComponentData->StaticMesh.empty())
     {
-        SetStaticMesh(ComponentData->Resource);
+        SetStaticMesh(ComponentData->StaticMesh);
     }
     // TODO: Materials 복원
 }
