@@ -8,7 +8,7 @@
 #include "TextRenderComponent.h"
 #include "CameraActor.h"
 #include "GizmoActor.h"
-
+#include "World.h"
 AActor::AActor() {}
 
 /*
@@ -254,6 +254,12 @@ void AActor::AddComponent(USceneComponent* InComponent)
     {
         RootComponent = InComponent;
     }
+
+    // PrimitiveComp 추가 시 World의 BVH 갱신하라고 표시
+    if (World && Cast<UPrimitiveComponent>(InComponent))
+    {
+        World->RequestRebuildBVH();
+    }
 }
 
 UWorld* AActor::GetWorld() const
@@ -320,6 +326,11 @@ USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentCompone
 
             // 런타임에 생성된 컴포넌트도 초기화합니다.
             NewComponent->InitializeComponent();
+
+            if (World && Cast<UPrimitiveComponent>(NewComponent))
+            {
+                World->RequestRebuildBVH();
+            }
         }
     }
     else
@@ -367,6 +378,11 @@ bool AActor::DeleteComponent(USceneComponent* ComponentToDelete)
 
     // 6. [메모리 해제] 모든 연결이 정리되었으므로, 마지막으로 객체를 삭제합니다.
     ObjectFactory::DeleteObject(ComponentToDelete);
+
+    if (World)
+    {
+        World->RequestRebuildBVH();
+    }
 
     return true;
 }
