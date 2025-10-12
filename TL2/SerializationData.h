@@ -58,15 +58,16 @@ struct FDecalComponentData : public FComponentData
     FString Texture;  // Asset path
 
     // Fade Property
+    uint8 FadeType = 0;
     float Duration = 0.0f;
     float Min = 0.0f;
     float Max = 0.0f;
     float Alpha = 0.0f;
+    bool bIsFadeEnabled = false;
+    bool bIsFadeStart = false;
+    bool bIsLoop = false;
     
     float ElapsedTime = 0.0f;
-
-    bool FadeEnabled = false;
-    bool FadeOut = true;
 };
 
 struct FActorData : public FObjectData

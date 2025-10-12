@@ -66,5 +66,8 @@
 #include "UI/UIManager.h"
 #include "ResourceManager.h"
 
+//EnumUtil
+#include "EnumUtils.h"
+
 extern TMap<FString, FString> EditorINI;
 extern float DeltaSeconds;
