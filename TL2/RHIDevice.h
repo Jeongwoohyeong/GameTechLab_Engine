@@ -60,6 +60,7 @@ public:
     virtual void RSSetFrontCullState() = 0;
     virtual void RSSetNoCullState() = 0;
     virtual void RSSetDefaultState() = 0;
+    virtual void RSSetDecalState() = 0;
     virtual void OMSetRenderTargets() = 0;
     virtual void OMSetBlendState(bool bIsBlendMode) = 0;
     virtual void OmSetDepthStencilState(EComparisonFunc Func) = 0;

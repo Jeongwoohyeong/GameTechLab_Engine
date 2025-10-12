@@ -27,7 +27,7 @@ public:
 	virtual bool DeleteComponent(USceneComponent* ComponentToDelete) override;
 
 	UDecalComponent* GetDecalComponent() const { return DecalComponent; }
-	void SetDecalComponent(UDecalComponent* InDecalComponent);
+	void SetDecalComponent(UDecalComponent* InDecalComponent);	
 
 	// PIE 복제
 	UObject* Duplicate() override;

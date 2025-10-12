@@ -20,26 +20,23 @@ UDecalComponent::~UDecalComponent()
 
 void UDecalComponent::UpdateFade(float DeltaTime)
 {
-    if (!bIsFadeEnabled)
-    {
-        return;
-    }
 
     if (FadeProperties.X > FLT_EPSILON)
     {
         ElapsedTime += DeltaTime;
         float Progress = ElapsedTime / FadeProperties.X;
+        float ClampedProgress = std::min(Progress, 1.0f);
 
         // 선형보간
         if (bIsFadeOut)
         {
             // fade out일 때 max에서 min까지 선형보간
-            FadeProperties.W = FadeProperties.Z - (FadeProperties.Z - FadeProperties.Y) * Progress;
+            FadeProperties.W = FadeProperties.Z - (FadeProperties.Z - FadeProperties.Y) * ClampedProgress;
         }
         else
         {
             // min에서 max까지 선형보간
-            FadeProperties.W = FadeProperties.Y + (FadeProperties.Z - FadeProperties.Y) * Progress;
+            FadeProperties.W = FadeProperties.Y + (FadeProperties.Z - FadeProperties.Y) * ClampedProgress;
         }
 
         // 진행도가 1 이상이면 fade in - fade out 전환
@@ -140,12 +137,13 @@ void UDecalComponent::ProjectDecal
     if (!StaticMesh)
     {
         return;
-    }
-
+    }    
+    
     // 야매 텍스처 로드(후에 제대로 텍스처 로드할 수 있도록 바꿔야 함)
     Material->Load(TexturePath, Renderer->GetRHIDevice()->GetDevice());
-    
-    Renderer->RSSetDefaultState();
+
+    //Renderer->RSSetDefaultState();
+    Renderer->RSSetDecalState();
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly);
     Renderer->OMSetBlendState(true);
 
@@ -155,7 +153,7 @@ void UDecalComponent::ProjectDecal
     FMatrix DecalProj = bUsePerspectiveProjection
         ? GetDecalPerspectiveProjection(ProjectionFOV)
         : GetDecalOrthoProjection();
-
+    
     Renderer->UpdateDecalConstantBuffer(
         MeshWorld * View * Proj,
         MeshWorld * \
@@ -174,6 +172,7 @@ void UDecalComponent::ProjectDecal
     // 상태 원상복구
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
     Renderer->OMSetBlendState(false);
+    Renderer->RSSetDefaultState();
 }
 
 void UDecalComponent::SetTexture(const FString& InTexturePath)
@@ -227,6 +226,10 @@ UObject* UDecalComponent::Duplicate()
     DuplicatedComponent->FadeProperties = this->FadeProperties;
     DuplicatedComponent->bUsePerspectiveProjection = this->bUsePerspectiveProjection;
     DuplicatedComponent->ProjectionFOV = this->ProjectionFOV;
+    DuplicatedComponent->bIsFadeEnabled = this->bIsFadeEnabled;
+    DuplicatedComponent->bIsFadeOut = this->bIsFadeOut;
+    DuplicatedComponent->ElapsedTime = this->ElapsedTime;
+    DuplicatedComponent->SetTickEnabled(DuplicatedComponent->bIsFadeEnabled);
 
     DuplicatedComponent->DuplicateSubObjects();
     return DuplicatedComponent;
@@ -270,9 +273,12 @@ void UDecalComponent::DeSerialize(FObjectData* Data)
 
 
 void UDecalComponent::TickComponent(float DeltaTime)
-{
+{    
     UPrimitiveComponent::TickComponent(DeltaTime);
-    UpdateFade(DeltaTime);
+    if (bIsFadeEnabled)
+    {
+        UpdateFade(DeltaTime);        
+    }    
 }
 
 void UDecalComponent::SetFadeEnabled(bool bIsEnable)

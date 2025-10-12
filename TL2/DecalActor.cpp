@@ -31,6 +31,7 @@ ADecalActor::ADecalActor()
 
 void ADecalActor::Tick(float DeltaTime)
 {
+	AActor::Tick(DeltaTime);
 	// CollisionComponent 업데이트 (항상 업데이트하여 피킹 가능하도록)
 	if (CollisionComponent && DecalComponent)
 	{
