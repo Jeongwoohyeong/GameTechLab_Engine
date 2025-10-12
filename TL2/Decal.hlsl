@@ -63,7 +63,7 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     uv.y = 1.0f - (decalNDC.y * 0.5f + 0.5f);
     
     float4 finalColor = g_DecalTexture.Sample(g_Sample, uv);
-    clip(finalColor.a - 0.5f);    
+    clip(finalColor.a - 0.001f);    
     finalColor.a *= Alpha;
     
     
