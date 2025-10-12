@@ -435,6 +435,11 @@ void D3D11RHI::RSSetDefaultState()
     DeviceContext->RSSetState(DefaultRasterizerState);
 }
 
+void D3D11RHI::RSSetDecalState()
+{
+    DeviceContext->RSSetState(DecalRasterizerState);
+}
+
 void D3D11RHI::RSSetViewport()
 {
     DeviceContext->RSSetViewports(1, &ViewportInfo);
@@ -583,6 +588,16 @@ void D3D11RHI::CreateRasterizerState()
     nocullrasterizerdesc.DepthClipEnable = TRUE; // 근/원거리 평면 클리핑
 
     Device->CreateRasterizerState(&nocullrasterizerdesc, &NoCullRasterizerState);
+
+    D3D11_RASTERIZER_DESC DecalRasterizerDesc = {};
+    DecalRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    DecalRasterizerDesc.CullMode = D3D11_CULL_BACK;
+    DecalRasterizerDesc.DepthClipEnable = TRUE;
+    DecalRasterizerDesc.DepthBias = -1000;
+    DecalRasterizerDesc.SlopeScaledDepthBias = -1.0f;
+    DecalRasterizerDesc.DepthBiasClamp = 0.0f;
+
+    Device->CreateRasterizerState(&DecalRasterizerDesc, &DecalRasterizerState);
 }
 
 void D3D11RHI::CreateConstantBuffer()

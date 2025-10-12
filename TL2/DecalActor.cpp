@@ -41,7 +41,7 @@ void ADecalActor::Tick(float DeltaTime)
 	//		FNormalVertex(FVector(-0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0))
 	//	};
 	//	CollisionComponent->SetFromVertices(CubeVertices);
-	//}
+	//}	
 }
 
 ADecalActor::~ADecalActor()

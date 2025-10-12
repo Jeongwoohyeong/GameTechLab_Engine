@@ -23,7 +23,6 @@ void UStaticMeshComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix
     {
         return;
     }
-
     Renderer->UpdateConstantBuffer(GetWorldMatrix(), ViewMatrix, ProjectionMatrix);
     Renderer->PrepareShader(GetMaterial()->GetShader());
     Renderer->DrawIndexedPrimitiveComponent(

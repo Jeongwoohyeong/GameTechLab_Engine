@@ -178,6 +178,9 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
                 oss << "      \"Texture\" : \"" << AssetPath << "\"";
 
                 oss << ",\n";
+                oss << "      \"FadeType\" : \"" << static_cast<int32>(DecalData->FadeType) << "\"";
+
+                oss << ",\n";
                 oss << "      \"Duration\" : \"" << DecalData->Duration << "\"";
 
                 oss << ",\n";
@@ -190,13 +193,17 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
                 oss << "      \"Alpha\" : \"" << DecalData->Alpha << "\"";
 
                 oss << ",\n";
+                oss << "      \"FadeEnabled\" : \"" << DecalData->bIsFadeEnabled << "\"";
+
+                oss << ",\n";
+                oss << "      \"FadeStart\" : \"" << DecalData->bIsFadeStart << "\"";
+
+                oss << ",\n";
+                oss << "      \"Loop\" : \"" << DecalData->bIsLoop << "\"";
+
+                oss << ",\n";
                 oss << "      \"ElapsedTime\" : \"" << DecalData->ElapsedTime << "\"";
-
-                oss << ",\n";
-                oss << "      \"FadeEnabled\" : \"" << DecalData->FadeEnabled << "\"";
-
-                oss << ",\n";
-                oss << "      \"FadeOut\" : \"" << DecalData->FadeOut << "\"";
+ 
             }
         }
         else if (BillboardData)
@@ -364,6 +371,8 @@ FSceneData FSceneLoader::Parse(const JSON& Json)
                 // Type별 속성
                 if (CompJson.hasKey("Texture"))
                     DecalData->Texture = CompJson.at("Texture").ToString();
+                if (CompJson.hasKey("FadeType"))
+                    DecalData->FadeType = stoi(CompJson.at("FadeType").ToString());
                 if (CompJson.hasKey("Duration"))
                     DecalData->Duration = stof(CompJson.at("Duration").ToString());
                 if (CompJson.hasKey("Min"))
@@ -372,12 +381,14 @@ FSceneData FSceneLoader::Parse(const JSON& Json)
                     DecalData->Max = stof(CompJson.at("Max").ToString());
                 if (CompJson.hasKey("Alpha"))
                     DecalData->Alpha = stof(CompJson.at("Alpha").ToString());
+                if (CompJson.hasKey("FadeEnabled"))
+                    DecalData->bIsFadeEnabled = CompJson.at("FadeEnabled").ToString() == "true";
+                if (CompJson.hasKey("FadeStart"))
+                    DecalData->bIsFadeStart = CompJson.at("FadeStart").ToString() == "true";
+                if (CompJson.hasKey("Loop"))
+                    DecalData->bIsLoop = CompJson.at("Loop").ToString() == "true";
                 if (CompJson.hasKey("ElapsedTime"))
                     DecalData->ElapsedTime = stof(CompJson.at("ElapsedTime").ToString());
-                if (CompJson.hasKey("FadeEnabled"))
-                    DecalData->FadeEnabled = CompJson.at("FadeEnabled").ToString() == "true";
-                if (CompJson.hasKey("FadeOut"))
-                    DecalData->FadeOut = CompJson.at("FadeOut").ToString() == "true";
             }
             else
             {

@@ -97,6 +97,11 @@ void URenderer::RSSetDefaultState()
     RHIDevice->RSSetDefaultState();
 }
 
+void URenderer::RSSetDecalState()
+{
+    RHIDevice->RSSetDecalState();
+}
+
 void URenderer::UpdateConstantBuffer(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix)
 {
     RHIDevice->UpdateConstantBuffers(ModelMatrix, ViewMatrix, ProjMatrix);
