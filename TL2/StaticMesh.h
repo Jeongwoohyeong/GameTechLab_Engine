@@ -22,7 +22,9 @@ public:
     EVertexLayoutType GetVertexType() const { return VertexType; }
     void SetIndexCount(uint32 Cnt) { IndexCount = Cnt; }
 
-	const FString& GetAssetPathFileName() const { return StaticMeshAsset ? StaticMeshAsset->PathFileName : FilePath; }
+	const FString& GetAssetPathFileName() const { 
+        return StaticMeshAsset ? StaticMeshAsset->PathFileName : FilePath;
+    }
     void SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }
 	FStaticMesh* GetStaticMeshAsset() const { return StaticMeshAsset; }
 
