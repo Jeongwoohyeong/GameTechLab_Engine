@@ -15,6 +15,8 @@ public:
 	DECLARE_CLASS(ASpotlightActor, AActor);
 	ASpotlightActor();
 
+	void Initialize() override;
+
 protected:
 	~ASpotlightActor() override;
 
