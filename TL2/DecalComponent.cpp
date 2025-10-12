@@ -57,75 +57,63 @@ void UDecalComponent::Render(URenderer* Renderer, const FMatrix& View, const FMa
     // 에디터에서만 보이도록 처리
     if (GetWorld() && !GetWorld()->IsPIEWorld())
     {
-        //if (!bUsePerspectiveProjection)
+        if (!bUsePerspectiveProjection)
         {
             // Ortho 모드: OBB 렌더링
             OBB.Render(Renderer, View, Proj);
         }
-        //else
-        //{
-        //    // Perspective 모드: Frustum 선 렌더링
-        //    RenderFrustumLines(Renderer);
-        //}
+        else
+        {
+            // Perspective 모드: Frustum 선 렌더링
+            RenderFrustumLines(Renderer);
+        }
     }
 }
 void UDecalComponent::RenderFrustumLines(URenderer* Renderer)
 {
-    // Frustum 파라미터
-    const float Near = 0.01f;
-    const float Far = 1.0f;
-    const float halfAngleRad = DegreeToRadian(ProjectionFOV * 0.5f);
-    const float tanHalfAngle = std::tan(halfAngleRad);
-
-    // Near와 Far plane에서의 반경
-    const float halfNear = tanHalfAngle * Near;
-    const float halfFar = tanHalfAngle * Far;
-
-    // Frustum 8개 꼭짓점 (Decal 로컬 공간, +Z forward)
-    FVector nearCorners[4] = {
-        FVector(Near - 0.5f, -halfNear,  halfNear),  // Near Top-Left
-        FVector(Near - 0.5f, halfNear,  halfNear),  // Near Top-Right
-        FVector(Near - 0.5f, halfNear, -halfNear),  // Near Bottom-Right
-        FVector(Near - 0.5f, -halfNear, -halfNear)   // Near Bottom-Left
+    // Define the 5 corners of the Frustum
+    FVector NDCCorners[5] = {
+        FVector(0.0f, 0.0f, 0.0f), // Near-Bottom-Left
+        FVector(-1.0f, -1.0f, 1.0f), // Far-Bottom-Left
+        FVector( 1.0f, -1.0f, 1.0f), // Far-Bottom-Right
+        FVector( 1.0f,  1.0f, 1.0f), // Far-Top-Right
+        FVector(-1.0f,  1.0f, 1.0f)  // Far-Top-Left
     };
 
-    FVector farCorners[4] = {
-        FVector(Far - 0.5f, -halfFar,  halfFar),     // Far Top-Left
-        FVector(Far - 0.5f, halfFar,  halfFar),     // Far Top-Right
-        FVector(Far - 0.5f, halfFar, -halfFar),     // Far Bottom-Right
-        FVector(Far - 0.5f, -halfFar, -halfFar)      // Far Bottom-Left
-    };
+    // Get the matrix that transforms from Decal Clip Space (NDC) to World Space
+    FMatrix ClipToLocal = (DecalViewAdjustMatrix * GetDecalPerspectiveProjection(ProjectionFOV)).Inverse();
+    FMatrix DecalClipToWorld = ClipToLocal * GetWorldMatrix();
 
-    // 월드 변환 행렬
-    FMatrix worldMatrix = GetWorldMatrix();
-
-    // 월드 좌표로 변환
-    FVector nearWorld[4];
-    FVector farWorld[4];
-
-    for (int i = 0; i < 4; ++i)
+    // Transform NDC corners to world space
+    FVector WorldCorners[5];
+    for (int i = 0; i < 5; ++i)
     {
-        nearWorld[i] = nearCorners[i] * worldMatrix;
-        farWorld[i] = farCorners[i] * worldMatrix;
+        FVector4 Point(NDCCorners[i].X, NDCCorners[i].Y, NDCCorners[i].Z, 1.0f);
+        FVector4 TransformedPoint = Point * DecalClipToWorld;
+        
+        // Perform perspective divide
+        if (abs(TransformedPoint.W) > 1e-6f)
+        {
+            WorldCorners[i] = FVector(TransformedPoint.X / TransformedPoint.W, TransformedPoint.Y / TransformedPoint.W, TransformedPoint.Z / TransformedPoint.W);
+        }
+        else
+        {
+            // Fallback for w ~ 0
+            WorldCorners[i] = FVector(TransformedPoint.X, TransformedPoint.Y, TransformedPoint.Z);
+        }
     }
 
-    // Near plane 사각형 (4개 edge)
-    for (int i = 0; i < 4; ++i)
-    {
-        Renderer->AddLine(nearWorld[i], nearWorld[(i + 1) % 4]);
-    }
+    // Draw lines for the far plane
+    Renderer->AddLine(WorldCorners[1], WorldCorners[2]);
+    Renderer->AddLine(WorldCorners[2], WorldCorners[3]);
+    Renderer->AddLine(WorldCorners[3], WorldCorners[4]);
+    Renderer->AddLine(WorldCorners[4], WorldCorners[1]);
 
-    // Far plane 사각형 (4개 edge)
-    for (int i = 0; i < 4; ++i)
-    {
-        Renderer->AddLine(farWorld[i], farWorld[(i + 1) % 4]);
-    }
-
-    // Near-Far 연결선 (4개 edge)
-    for (int i = 0; i < 4; ++i)
-    {
-        Renderer->AddLine(nearWorld[i], farWorld[i]);
-    }
+    // Draw lines connecting near and far planes
+    Renderer->AddLine(WorldCorners[0], WorldCorners[1]);
+    Renderer->AddLine(WorldCorners[0], WorldCorners[2]);
+    Renderer->AddLine(WorldCorners[0], WorldCorners[3]);
+    Renderer->AddLine(WorldCorners[0], WorldCorners[4]);
 }
 
 void UDecalComponent::ProjectDecal
@@ -203,7 +191,7 @@ FMatrix UDecalComponent::GetDecalPerspectiveProjection(float FovYDegrees)
     float FovYRadians = DegreeToRadian(FovYDegrees);
 
     // 기본 perspective 행렬 생성
-    FMatrix proj = FMatrix::PerspectiveFovLH(FovYRadians, 1.0f, 0.01f, 1.0f);
+    FMatrix proj = FMatrix::PerspectiveFovLH(FovYRadians, 1.0f, 0.001f, 1.0f);
 
     // Decal Volume 크기 보정:
     // - Decal Volume: far (z=1)에서 반경 0.5 (고정)
@@ -246,8 +234,8 @@ void UDecalComponent::Serialize(FObjectData* Data)
 
     if (!TexturePath.empty())
     {
-        ComponentData->ResourceName = TexturePath;
-        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->ResourceName.c_str());
+        ComponentData->Resource = TexturePath;
+        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->Resource.c_str());
     }
     else
     {
@@ -262,9 +250,9 @@ void UDecalComponent::DeSerialize(FObjectData* Data)
 
     USceneComponent::DeSerialize(Data);
 
-    if (!ComponentData->ResourceName.empty())
+    if (!ComponentData->Resource.empty())
     {
-        TexturePath = ComponentData->ResourceName;
+        TexturePath = ComponentData->Resource;
     }
 }
 

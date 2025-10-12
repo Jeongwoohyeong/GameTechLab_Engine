@@ -140,13 +140,14 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
         writeVec3("RelativeRotation", Comp.RelativeRotation, 6); oss << ",\n";
         writeVec3("RelativeScale", Comp.RelativeScale, 6);
 
-        // Type별 속성
-        if (Comp.Type.find("StaticMeshComponent") != std::string::npos && !Comp.ResourceName.empty())
+        if (!Comp.Resource.empty())
         {
             oss << ",\n";
-            FString AssetPath = NormalizePath(Comp.ResourceName);
-            oss << "      \"StaticMesh\" : \"" << AssetPath << "\"";
+            FString AssetPath = NormalizePath(Comp.Resource);
+            oss << "      \"Resource\" : \"" << AssetPath << "\"";
 
+            /*
+            * 추후 Material 저장 및 복원을 위한 포석
             if (!Comp.Materials.empty())
             {
                 oss << ",\n";
@@ -157,7 +158,7 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
                     if (m + 1 < Comp.Materials.size()) oss << ", ";
                 }
                 oss << "]";
-            }
+            }*/
         }
 
         oss << "\n";
@@ -295,8 +296,8 @@ FSceneData FSceneLoader::ParseV2(const JSON& Json)
             }
 
             // Type별 속성
-            if (CompJson.hasKey("StaticMesh"))
-                Comp.ResourceName = CompJson.at("StaticMesh").ToString();
+            if (CompJson.hasKey("Resource"))
+                Comp.Resource = CompJson.at("Resource").ToString();
 
             if (CompJson.hasKey("Materials"))
             {

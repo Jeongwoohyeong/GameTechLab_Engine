@@ -35,8 +35,7 @@ struct FComponentData : public FObjectData
     FVector RelativeRotation;
     FVector RelativeScale;
 
-    // Type별 속성 (StaticMeshComponent 전용)
-    FString ResourceName;  // Asset path
+    FString Resource;  // Asset path
     TArray<FString> Materials;
 };
 

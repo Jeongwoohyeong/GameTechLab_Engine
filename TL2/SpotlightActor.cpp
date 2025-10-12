@@ -2,17 +2,10 @@
 #include "SpotlightActor.h"
 #include "SpotlightComponent.h"
 
-ASpotlightActor::ASpotlightActor()
-{
-	// AActor의 생성자에서 USceneComponent를 Root로 생성하지만
-	// SpotlightActor는 SpotlightComponent가 Root가 되어야 하므로 기존 Root를 제거 후 새로 할당
-	if (RootComponent)
-	{
-		USceneComponent* TempRootComponent = RootComponent;
-		RootComponent = nullptr;
-		DeleteComponent(TempRootComponent);
-	}
+ASpotlightActor::ASpotlightActor() {}
 
+void ASpotlightActor::Initialize()
+{
 	Name = "Spotlight Actor";
 	SpotlightComponent = CreateDefaultSubobject<USpotlightComponent>("SpotlightComponent");
 	RootComponent = SpotlightComponent;
@@ -22,6 +15,7 @@ ASpotlightActor::ASpotlightActor()
 	BillboardComponent = CreateDefaultSubobject<UBillboardComponent>(FName("BillboardComponent"));
 	BillboardComponent->SetupAttachment(RootComponent);
 	BillboardComponent->SetTexture("Editor/Icon/SpotLight_64x.dds");
+	BillboardComponent->SetRelativeLocation(FVector(0, 0, 0));
 
 	// Spotlight 기본 크기 설정
 	SetActorScale(FVector(10.0f, 10.0f, 10.0f));

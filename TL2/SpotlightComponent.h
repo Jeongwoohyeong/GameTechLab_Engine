@@ -30,6 +30,13 @@ private:
 public:	
 	// --- Spotlight Properties ---
 
+	float GetConeAngle() const;
+	void SetConeAngle(float InConeAngle);
+
+	float GetAttenuationRadius() const;
+	void SetAttenuationRadius(float InAttenuationRadius);
+
+private:
 	/** 스포트라이트 원뿔의 각도 (단위: 도) */
 	float ConeAngle;
 

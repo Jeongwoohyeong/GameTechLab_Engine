@@ -123,8 +123,8 @@ void UStaticMeshComponent::Serialize(FObjectData* Data)
     
     if (StaticMesh)
     {
-        ComponentData->ResourceName = StaticMesh->GetAssetPathFileName();
-        UE_LOG("SaveScene: StaticMesh saved: %s", ComponentData->ResourceName.c_str());
+        ComponentData->Resource = StaticMesh->GetAssetPathFileName();
+        UE_LOG("SaveScene: StaticMeshComponent StaticMesh saved: %s", ComponentData->Resource.c_str());
     }
     else
     {
@@ -140,9 +140,9 @@ void UStaticMeshComponent::DeSerialize(FObjectData* Data)
 
     USceneComponent::DeSerialize(Data);
 
-    if (!ComponentData->ResourceName.empty())
+    if (!ComponentData->Resource.empty())
     {
-        SetStaticMesh(ComponentData->ResourceName);
+        SetStaticMesh(ComponentData->Resource);
     }
     // TODO: Materials 복원
 }
