@@ -78,9 +78,11 @@ void AActor::Tick(float DeltaSeconds)
     TickTimer = fmod(TickTimer, 5.0f);
     if (World && World->WorldType == EWorldType::PIE) {
         if (TickTimer < 2.5f)
-            RootComponent->AddRelativeLocation({0.0f, 0.0f, 0.01f});
+            SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0, 0.01f));
+            //RootComponent->AddRelativeLocation({0.0f, 0.0f, 0.01f});
         else
-            RootComponent->AddRelativeLocation({0.0f, 0.0f, -0.01f});
+            SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0, -0.01f));
+            //RootComponent->AddRelativeLocation({0.0f, 0.0f, -0.01f});
         //RootComponent->AddLocalRotation({ 0.01f, 0.0f,0.0f });
         //RootComponent->AddLocalOffset({ sin(times)/100, sin(times)/100,sin(times)/100 });
     }
