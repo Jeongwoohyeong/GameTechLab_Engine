@@ -4,6 +4,7 @@
 #include "Picking.h"
 #include "PickingTimer.h"
 #include "UI/GlobalConsole.h"
+#include "Renderer.h" // For URenderer and DrawAABB
 #include <algorithm>
 #include <cfloat>
 
@@ -586,4 +587,45 @@ bool FBVH::IntersectActor(const AActor* Actor, const FVector& RayOrigin, const F
     Ray.Direction = RayDirection;
 
     return CPickingSystem::CheckActorPicking(Actor, Ray, OutDistance);
+}
+
+void FBVH::Render(URenderer* Renderer) const
+{
+    if (!Renderer || Nodes.Num() == 0)
+    {
+        return;
+    }
+    // 루트 노드(인덱스 0)부터 재귀 렌더링 시작
+    RenderRecursive(Renderer, 0, 0);
+}
+
+void FBVH::RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const
+{
+    if (NodeIndex < 0 || (size_t)NodeIndex >= Nodes.Num())
+    {
+        return;
+    }
+
+    const FBVHNode& Node = Nodes[NodeIndex];
+
+    // 깊이에 따라 색상을 다르게 하여 계층 구조를 시각화
+    FVector4 Color;
+    switch (Depth % 5)
+    {
+    case 0: Color = FVector4(1.f, 0.f, 0.f, 1.f); break; // Red
+    case 1: Color = FVector4(0.f, 1.f, 0.f, 1.f); break; // Green
+    case 2: Color = FVector4(0.f, 0.f, 1.f, 1.f); break; // Blue
+    case 3: Color = FVector4(1.f, 1.f, 0.f, 1.f); break; // Yellow
+    case 4: Color = FVector4(1.f, 0.f, 1.f, 1.f); break; // Magenta
+    }
+
+    // 현재 노드의 AABB를 그립니다.
+    Renderer->DrawAABB(Node.BoundingBox.Min, Node.BoundingBox.Max, Color);
+
+    // 내부 노드인 경우, 자식 노드들에 대해 재귀적으로 렌더링을 계속합니다.
+    if (!Node.IsLeaf())
+    {
+        RenderRecursive(Renderer, Node.LeftChild, Depth + 1);
+        RenderRecursive(Renderer, Node.RightChild, Depth + 1);
+    }
 }

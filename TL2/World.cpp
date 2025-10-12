@@ -479,6 +479,12 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
         StatsCollector.GetDecalRenderTimeTotal()
     );
 
+    // BVH 디버그 렌더링
+    if (BVH && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes))
+    {
+        BVH->Render(Renderer);
+    }
+
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }
 

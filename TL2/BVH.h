@@ -6,6 +6,7 @@
 #include <cmath>
 
 struct FBound;
+class URenderer; // Forward Declaration for the renderer
 
 // 최적화된 Ray-AABB 교차 검사를 위한 구조체
 struct alignas(16) FOptimizedRay
@@ -116,6 +117,9 @@ public:
     // AABB와 교차하는 모든 액터 찾기
     void IntersectAABB(const FBound& QueryAABB, TArray<AActor*>& OutActors) const;
 
+    // BVH 구조를 디버깅용 라인으로 렌더링
+    void Render(URenderer* Renderer) const;
+
     // 통계 정보
     int GetNodeCount() const { return Nodes.Num(); }
     int GetActorCount() const { return ActorBounds.Num(); }
@@ -157,6 +161,9 @@ private:
     // 액터와의 교차 검사
     bool IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
                         float& OutDistance) const;
+
+    // Render를 위한 재귀 헬퍼
+    void RenderRecursive(URenderer* Renderer, int NodeIndex, int Depth) const;
 
     // 상수
     static const int MaxActorsPerLeaf = 8;  // 리프당 최대 액터 수 (마이크로 BVH용)
