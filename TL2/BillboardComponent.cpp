@@ -60,15 +60,15 @@ void UBillboardComponent::DuplicateSubObjects()
 
 void UBillboardComponent::Serialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FBillboardComponentData* ComponentData = dynamic_cast<FBillboardComponentData*>(Data);
     assert(ComponentData, "UBillboardComponent::Serialize got wrong data type.");
 
     USceneComponent::Serialize(Data);
 
     if (!TexturePath.empty())
     {
-        ComponentData->Resource = TexturePath;
-        UE_LOG("SaveScene: BillboardComponent Texture saved: %s", ComponentData->Resource.c_str());
+        ComponentData->Texture = TexturePath;
+        UE_LOG("SaveScene: BillboardComponent Texture saved: %s", ComponentData->Texture.c_str());
     }
     else
     {
@@ -78,14 +78,14 @@ void UBillboardComponent::Serialize(FObjectData* Data)
 
 void UBillboardComponent::DeSerialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FBillboardComponentData* ComponentData = dynamic_cast<FBillboardComponentData*>(Data);
     assert(ComponentData, "UBillboardComponent::DeSerialize got wrong data type.");
 
     USceneComponent::DeSerialize(Data);
 
-    if (!ComponentData->Resource.empty())
+    if (!ComponentData->Texture.empty())
     {
-        TexturePath = ComponentData->Resource;
+        TexturePath = ComponentData->Texture;
     }
 }
 

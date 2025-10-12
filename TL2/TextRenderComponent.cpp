@@ -129,15 +129,15 @@ void UTextRenderComponent::DuplicateSubObjects()
 
 void UTextRenderComponent::Serialize(FObjectData* Data)
 {
-	FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+	FTextComponentData* ComponentData = dynamic_cast<FTextComponentData*>(Data);
 	assert(ComponentData, "UTextRenderComponent::Serialize got wrong data type.");
 
 	USceneComponent::Serialize(Data);
 
 	if (!Text.empty())
 	{
-		ComponentData->Resource = Text;
-		UE_LOG("SaveScene: TextRenderComponent Text saved: %s", ComponentData->Resource.c_str());
+		ComponentData->Text = Text;
+		UE_LOG("SaveScene: TextRenderComponent Text saved: %s", ComponentData->Text.c_str());
 	}
 	else
 	{
@@ -147,14 +147,14 @@ void UTextRenderComponent::Serialize(FObjectData* Data)
 
 void UTextRenderComponent::DeSerialize(FObjectData* Data)
 {
-	FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+	FTextComponentData* ComponentData = dynamic_cast<FTextComponentData*>(Data);
 	assert(ComponentData, "UTextRenderComponent::DeSerialize got wrong data type.");
 
 	USceneComponent::DeSerialize(Data);
 
-	if (!ComponentData->Resource.empty())
+	if (!ComponentData->Text.empty())
 	{
-		Text = ComponentData->Resource;
+		Text = ComponentData->Text;
 	}
 }
 

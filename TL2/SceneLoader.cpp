@@ -91,6 +91,7 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
     std::ostringstream oss;
     oss.setf(std::ios::fixed);
     oss << std::setprecision(6);
+    oss << std::boolalpha;
 
     auto writeVec3 = [&](const char* name, const FVector& v, int indent)
     {
@@ -130,35 +131,91 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
     oss << "  \"Components\" : [\n";
     for (size_t i = 0; i < SceneData.Components.size(); ++i)
     {
-        const FComponentData& Comp = SceneData.Components[i];
+        FComponentData* Component = SceneData.Components[i];
         oss << "    {\n";
-        oss << "      \"UUID\" : " << Comp.UUID << ",\n";
-        oss << "      \"OwnerActorUUID\" : " << Comp.OwnerActorUUID << ",\n";
-        oss << "      \"ParentComponentUUID\" : " << Comp.ParentComponentUUID << ",\n";
-        oss << "      \"Type\" : \"" << Comp.Type << "\",\n";
-        writeVec3("RelativeLocation", Comp.RelativeLocation, 6); oss << ",\n";
-        writeVec3("RelativeRotation", Comp.RelativeRotation, 6); oss << ",\n";
-        writeVec3("RelativeScale", Comp.RelativeScale, 6);
+        oss << "      \"UUID\" : " << Component->UUID << ",\n";
+        oss << "      \"OwnerActorUUID\" : " << Component->OwnerActorUUID << ",\n";
+        oss << "      \"ParentComponentUUID\" : " << Component->ParentComponentUUID << ",\n";
+        oss << "      \"Type\" : \"" << Component->Type << "\",\n";
+        writeVec3("RelativeLocation", Component->RelativeLocation, 6); oss << ",\n";
+        writeVec3("RelativeRotation", Component->RelativeRotation, 6); oss << ",\n";
+        writeVec3("RelativeScale", Component->RelativeScale, 6);
 
-        if (!Comp.Resource.empty())
+        FStaticMeshComponentData* StaticMeshData = dynamic_cast<FStaticMeshComponentData*>(Component);
+        FDecalComponentData* DecalData = dynamic_cast<FDecalComponentData*>(Component);
+        FBillboardComponentData* BillboardData = dynamic_cast<FBillboardComponentData*>(Component);
+        FTextComponentData* TextData = dynamic_cast<FTextComponentData*>(Component);
+
+        if (StaticMeshData)
         {
-            oss << ",\n";
-            FString AssetPath = NormalizePath(Comp.Resource);
-            oss << "      \"Resource\" : \"" << AssetPath << "\"";
-
-            /*
-            * 추후 Material 저장 및 복원을 위한 포석
-            if (!Comp.Materials.empty())
+            if (!StaticMeshData->StaticMesh.empty())
             {
                 oss << ",\n";
-                oss << "      \"Materials\" : [";
-                for (size_t m = 0; m < Comp.Materials.size(); ++m)
+                FString AssetPath = NormalizePath(StaticMeshData->StaticMesh);
+                oss << "      \"StaticMesh\" : \"" << AssetPath << "\"";
+
+                /*
+                * 추후 Material 저장 및 복원을 위한 포석
+                if (!Comp.Materials.empty())
                 {
-                    oss << "\"" << Comp.Materials[m] << "\"";
-                    if (m + 1 < Comp.Materials.size()) oss << ", ";
-                }
-                oss << "]";
-            }*/
+                    oss << ",\n";
+                    oss << "      \"Materials\" : [";
+                    for (size_t m = 0; m < Comp.Materials.size(); ++m)
+                    {
+                        oss << "\"" << Comp.Materials[m] << "\"";
+                        if (m + 1 < Comp.Materials.size()) oss << ", ";
+                    }
+                    oss << "]";
+                }*/
+            }
+        }
+        else if (DecalData)
+        {
+            if (!DecalData->Texture.empty())
+            {
+                oss << ",\n";
+                FString AssetPath = NormalizePath(DecalData->Texture);
+                oss << "      \"Texture\" : \"" << AssetPath << "\"";
+
+                oss << ",\n";
+                oss << "      \"Duration\" : \"" << DecalData->Duration << "\"";
+
+                oss << ",\n";
+                oss << "      \"Min\" : \"" << DecalData->Min << "\"";
+
+                oss << ",\n";
+                oss << "      \"Max\" : \"" << DecalData->Max << "\"";
+
+                oss << ",\n";
+                oss << "      \"Alpha\" : \"" << DecalData->Alpha << "\"";
+
+                oss << ",\n";
+                oss << "      \"ElapsedTime\" : \"" << DecalData->ElapsedTime << "\"";
+
+                oss << ",\n";
+                oss << "      \"FadeEnabled\" : \"" << DecalData->FadeEnabled << "\"";
+
+                oss << ",\n";
+                oss << "      \"FadeOut\" : \"" << DecalData->FadeOut << "\"";
+            }
+        }
+        else if (BillboardData)
+        {
+            if (!BillboardData->Texture.empty())
+            {
+                oss << ",\n";
+                FString AssetPath = NormalizePath(BillboardData->Texture);
+                oss << "      \"Texture\" : \"" << AssetPath << "\"";
+            }
+        }
+        else if (TextData)
+        {
+            if (!TextData->Text.empty())
+            {
+                oss << ",\n";
+                FString AssetPath = NormalizePath(TextData->Text);
+                oss << "      \"Text\" : \"" << AssetPath << "\"";
+            }
         }
 
         oss << "\n";
@@ -197,7 +254,7 @@ FSceneData FSceneLoader::Load(const FString& FileName)
 
     try {
         JSON j = JSON::Load(content);
-        Result = ParseV2(j);
+        Result = Parse(j);
     }
     catch (const std::exception& e) {
         UE_LOG("Scene load failed. JSON parse error: %s", e.what());
@@ -206,22 +263,22 @@ FSceneData FSceneLoader::Load(const FString& FileName)
     return Result;
 }
 
-FSceneData FSceneLoader::ParseV2(const JSON& Json)
+FSceneData FSceneLoader::Parse(const JSON& Json)
 {
-    FSceneData Data;
+    FSceneData SceneData;
 
     // Version
     if (Json.hasKey("Version"))
-        Data.Version = static_cast<uint32>(Json.at("Version").ToInt());
+        SceneData.Version = static_cast<uint32>(Json.at("Version").ToInt());
 
     // NextUUID
     if (Json.hasKey("NextUUID"))
-        Data.NextUUID = static_cast<uint32>(Json.at("NextUUID").ToInt());
+        SceneData.NextUUID = static_cast<uint32>(Json.at("NextUUID").ToInt());
 
     // Camera
     if (Json.hasKey("PerspectiveCamera"))
     {
-        ParsePerspectiveCamera(Json, Data.Camera);
+        ParsePerspectiveCamera(Json, SceneData.Camera);
     }
 
     // Actors
@@ -242,7 +299,7 @@ FSceneData FSceneLoader::ParseV2(const JSON& Json)
             if (ActorJson.hasKey("RootComponentUUID"))
                 Actor.RootComponentUUID = static_cast<uint32>(ActorJson.at("RootComponentUUID").ToInt());
 
-            Data.Actors.push_back(Actor);
+            SceneData.Actors.push_back(Actor);
         }
     }
 
@@ -253,22 +310,95 @@ FSceneData FSceneLoader::ParseV2(const JSON& Json)
         for (size_t i = 0; i < CompsJson.size(); ++i)
         {
             const JSON& CompJson = CompsJson.at(i);
-            FComponentData Comp;
+            FComponentData* ComponentData = nullptr;
 
+            // Type 별 속성 처리
+            if (!CompJson.hasKey("Type"))
+                continue;
+
+            if (CompJson.at("Type").ToString() == "UStaticMeshComponent")
+            {
+                ComponentData = new FStaticMeshComponentData;
+
+                FStaticMeshComponentData* StaticMeshData = dynamic_cast<FStaticMeshComponentData*>(ComponentData);
+
+                // Type별 속성
+                if (CompJson.hasKey("StaticMesh"))
+                    StaticMeshData->StaticMesh = CompJson.at("StaticMesh").ToString();
+
+                if (CompJson.hasKey("Materials"))
+                {
+                    const JSON& matsJson = CompJson.at("Materials");
+                    for (size_t m = 0; m < matsJson.size(); ++m)
+                    {
+                        StaticMeshData->Materials.push_back(matsJson.at(m).ToString());
+                    }
+                }
+            }
+            else if (CompJson.at("Type").ToString() == "UBillboardComponent")
+            {
+                ComponentData = new FBillboardComponentData;
+
+                FBillboardComponentData* BillboardData = dynamic_cast<FBillboardComponentData*>(ComponentData);
+
+                // Type별 속성
+                if (CompJson.hasKey("Texture"))
+                    BillboardData->Texture = CompJson.at("Texture").ToString();
+            }
+            else if (CompJson.at("Type").ToString() == "UTextRenderComponent")
+            {
+                ComponentData = new FTextComponentData;
+
+                FTextComponentData* TextData = dynamic_cast<FTextComponentData*>(ComponentData);
+
+                // Type별 속성
+                if (CompJson.hasKey("Text"))
+                    TextData->Text = CompJson.at("Text").ToString();
+            }
+            else if (CompJson.at("Type").ToString() == "UDecalComponent")
+            {
+                ComponentData = new FDecalComponentData;
+
+                FDecalComponentData* DecalData = dynamic_cast<FDecalComponentData*>(ComponentData);
+
+                // Type별 속성
+                if (CompJson.hasKey("Texture"))
+                    DecalData->Texture = CompJson.at("Texture").ToString();
+                if (CompJson.hasKey("Duration"))
+                    DecalData->Duration = stof(CompJson.at("Duration").ToString());
+                if (CompJson.hasKey("Min"))
+                    DecalData->Min = stof(CompJson.at("Min").ToString());
+                if (CompJson.hasKey("Max"))
+                    DecalData->Max = stof(CompJson.at("Max").ToString());
+                if (CompJson.hasKey("Alpha"))
+                    DecalData->Alpha = stof(CompJson.at("Alpha").ToString());
+                if (CompJson.hasKey("ElapsedTime"))
+                    DecalData->ElapsedTime = stof(CompJson.at("ElapsedTime").ToString());
+                if (CompJson.hasKey("FadeEnabled"))
+                    DecalData->FadeEnabled = CompJson.at("FadeEnabled").ToString() == "true";
+                if (CompJson.hasKey("FadeOut"))
+                    DecalData->FadeOut = CompJson.at("FadeOut").ToString() == "true";
+            }
+            else
+            {
+                continue;
+            }
+
+            // 공통 속성 처리
             if (CompJson.hasKey("UUID"))
-                Comp.UUID = static_cast<uint32>(CompJson.at("UUID").ToInt());
+                ComponentData->UUID = static_cast<uint32>(CompJson.at("UUID").ToInt());
             if (CompJson.hasKey("OwnerActorUUID"))
-                Comp.OwnerActorUUID = static_cast<uint32>(CompJson.at("OwnerActorUUID").ToInt());
+                ComponentData->OwnerActorUUID = static_cast<uint32>(CompJson.at("OwnerActorUUID").ToInt());
             if (CompJson.hasKey("ParentComponentUUID"))
-                Comp.ParentComponentUUID = static_cast<uint32>(CompJson.at("ParentComponentUUID").ToInt());
+                ComponentData->ParentComponentUUID = static_cast<uint32>(CompJson.at("ParentComponentUUID").ToInt());
             if (CompJson.hasKey("Type"))
-                Comp.Type = CompJson.at("Type").ToString();
+                ComponentData->Type = CompJson.at("Type").ToString();
 
             // Transform
             if (CompJson.hasKey("RelativeLocation"))
             {
                 auto loc = CompJson.at("RelativeLocation");
-                Comp.RelativeLocation = FVector(
+                ComponentData->RelativeLocation = FVector(
                     (float)loc[0].ToFloat(),
                     (float)loc[1].ToFloat(),
                     (float)loc[2].ToFloat()
@@ -278,7 +408,7 @@ FSceneData FSceneLoader::ParseV2(const JSON& Json)
             if (CompJson.hasKey("RelativeRotation"))
             {
                 auto rot = CompJson.at("RelativeRotation");
-                Comp.RelativeRotation = FVector(
+                ComponentData->RelativeRotation = FVector(
                     (float)rot[0].ToFloat(),
                     (float)rot[1].ToFloat(),
                     (float)rot[2].ToFloat()
@@ -288,31 +418,18 @@ FSceneData FSceneLoader::ParseV2(const JSON& Json)
             if (CompJson.hasKey("RelativeScale"))
             {
                 auto scale = CompJson.at("RelativeScale");
-                Comp.RelativeScale = FVector(
+                ComponentData->RelativeScale = FVector(
                     (float)scale[0].ToFloat(),
                     (float)scale[1].ToFloat(),
                     (float)scale[2].ToFloat()
                 );
             }
 
-            // Type별 속성
-            if (CompJson.hasKey("Resource"))
-                Comp.Resource = CompJson.at("Resource").ToString();
-
-            if (CompJson.hasKey("Materials"))
-            {
-                const JSON& matsJson = CompJson.at("Materials");
-                for (size_t m = 0; m < matsJson.size(); ++m)
-                {
-                    Comp.Materials.push_back(matsJson.at(m).ToString());
-                }
-            }
-
-            Data.Components.push_back(Comp);
+            SceneData.Components.push_back(ComponentData);
         }
     }
 
-    return Data;
+    return SceneData;
 }
 
 // ─────────────────────────────────────────────
@@ -347,74 +464,4 @@ bool FSceneLoader::TryReadNextUUID(const FString& FilePath, uint32& OutNextUUID)
         // 무시하고 false 반환
     }
     return false;
-}
-
-TArray<FPrimitiveData> FSceneLoader::Parse(const JSON& Json)
-{
-    TArray<FPrimitiveData> Primitives;
-
-    if (!Json.hasKey("Primitives"))
-    {
-        std::cerr << "Primitives 섹션이 존재하지 않습니다." << std::endl;
-        return Primitives;
-    }
-
-    auto PrimitivesJson = Json.at("Primitives");
-    for (auto& kv : PrimitivesJson.ObjectRange())
-    {
-        // kv.first: 키(문자열), kv.second: 값(JSON 객체)
-        const std::string& key = kv.first;
-        const JSON& value = kv.second;
-
-        FPrimitiveData data;
-
-        // 키를 UUID로 파싱 (숫자가 아니면 0 유지)
-        try
-        {
-            // 공백 제거 후 파싱
-            std::string trimmed = key;
-            trimmed.erase(std::remove_if(trimmed.begin(), trimmed.end(), ::isspace), trimmed.end());
-            data.UUID = static_cast<uint32>(std::stoul(trimmed));
-        }
-        catch (...)
-        {
-            data.UUID = 0; // 레거시 호환: 숫자 키가 아니면 0
-        }
-
-        auto loc = value.at("Location");
-        data.Location = FVector(
-            (float)loc[0].ToFloat(),
-            (float)loc[1].ToFloat(),
-            (float)loc[2].ToFloat()
-        );
-
-        auto rot = value.at("Rotation");
-        data.Rotation = FVector(
-            (float)rot[0].ToFloat(),
-            (float)rot[1].ToFloat(),
-            (float)rot[2].ToFloat()
-        );
-
-        auto scale = value.at("Scale");
-        data.Scale = FVector(
-            (float)scale[0].ToFloat(),
-            (float)scale[1].ToFloat(),
-            (float)scale[2].ToFloat()
-        );
-
-        if (value.hasKey("ObjStaticMeshAsset"))
-        {
-            data.ObjStaticMeshAsset = value.at("ObjStaticMeshAsset").ToString();
-        }
-        else
-        {
-            data.ObjStaticMeshAsset = "";
-        }
-
-        data.Type = value.at("Type").ToString();
-
-        Primitives.push_back(data);
-    }
-
-    return Primitives;
 }

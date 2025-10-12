@@ -845,18 +845,50 @@ void UWorld::SaveScene(const FString& SceneName)
         {
             if (!ActorComp) continue;
 
-            USceneComponent* Component = Cast<USceneComponent>(ActorComp);
-            if (!Component) continue;
+            UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(ActorComp);
+            UDecalComponent* DecalComponent = Cast<UDecalComponent>(ActorComp);
+            UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(ActorComp);
+            UTextRenderComponent* TextComponent = Cast<UTextRenderComponent>(ActorComp);
 
-            FComponentData ComponentData;
-            Component->Serialize(&ComponentData);
+            FComponentData* ComponentData;
+
+            if (StaticMeshComponent)
+            {
+                ComponentData = new FStaticMeshComponentData;
+                StaticMeshComponent->Serialize(ComponentData);
+            }
+            else if (DecalComponent)
+            {
+                ComponentData = new FDecalComponentData;
+                DecalComponent->Serialize(ComponentData);
+            }
+            else if (BillboardComponent)
+            {
+                ComponentData = new FBillboardComponentData;
+                BillboardComponent->Serialize(ComponentData);
+            }
+            else if (TextComponent)
+            {
+                ComponentData = new FTextComponentData;
+                TextComponent->Serialize(ComponentData);
+            }
+            else
+            {
+                continue;
+            }
 
             SceneData.Components.push_back(ComponentData);
         }
     }
 
-    // Scene 디렉터리에 V2 포맷으로 저장
+    // Scene 디렉터리에 저장
     FSceneLoader::Save(SceneData, SceneName);
+
+    // 동적할당 free
+    for (FComponentData* ComponentData : SceneData.Components)
+    {
+        delete ComponentData;
+    }
 }
 
 void UWorld::LoadScene(const FString& SceneName)
@@ -924,25 +956,25 @@ void UWorld::LoadScene(const FString& SceneName)
     }
 
     // Component 생성
-    for (const FComponentData& ComponentData : SceneData.Components)
+    for (FComponentData* ComponentData : SceneData.Components)
     {
-        USceneComponent* NewComponent = Cast<USceneComponent>(NewObject(ComponentData.Type));
+        USceneComponent* NewComponent = Cast<USceneComponent>(NewObject(ComponentData->Type));
 
         if (!NewComponent)
         {
-            UE_LOG("Failed to create Component: %s", ComponentData.Type.c_str());
+            UE_LOG("Failed to create Component: %s", ComponentData->Type.c_str());
             continue;
         }
 
-        NewComponent->DeSerialize(const_cast<FComponentData*>(&ComponentData));
+        NewComponent->DeSerialize(ComponentData);
 
         // Owner Actor 설정
-        if (AActor** OwnerActor = ActorMap.Find(ComponentData.OwnerActorUUID))
+        if (AActor** OwnerActor = ActorMap.Find(ComponentData->OwnerActorUUID))
         {
             NewComponent->SetOwner(*OwnerActor);
         }
 
-        ComponentMap.Add(ComponentData.UUID, NewComponent);
+        ComponentMap.Add(ComponentData->UUID, NewComponent);
     }
 
     // ========================================
@@ -963,24 +995,24 @@ void UWorld::LoadScene(const FString& SceneName)
     }
 
     // Component 부모-자식 관계 설정
-    for (const FComponentData& CompData : SceneData.Components)
+    for (FComponentData* CompData : SceneData.Components)
     {
-        USceneComponent** CompPtr = ComponentMap.Find(CompData.UUID);
+        USceneComponent** CompPtr = ComponentMap.Find(CompData->UUID);
         if (!CompPtr) continue;
 
         USceneComponent* Comp = *CompPtr;
 
         // 부모 컴포넌트 연결 (ParentUUID가 0이 아니면)
-        if (CompData.ParentComponentUUID != 0)
+        if (CompData->ParentComponentUUID != 0)
         {
-            if (USceneComponent** ParentPtr = ComponentMap.Find(CompData.ParentComponentUUID))
+            if (USceneComponent** ParentPtr = ComponentMap.Find(CompData->ParentComponentUUID))
             {
                 Comp->SetupAttachment(*ParentPtr, EAttachmentRule::KeepRelative);
             }
         }
 
         // Actor의 OwnedComponents에 추가
-        if (AActor** OwnerActorPtr = ActorMap.Find(CompData.OwnerActorUUID))
+        if (AActor** OwnerActorPtr = ActorMap.Find(CompData->OwnerActorUUID))
         {
             (*OwnerActorPtr)->OwnedComponents.Add(Comp);
         }
@@ -1008,6 +1040,11 @@ void UWorld::LoadScene(const FString& SceneName)
                 }
             }
         }
+    }
+
+    for (FComponentData* Data : SceneData.Components)
+    {
+        delete Data;
     }
 
     DeSerialize(&SceneData);

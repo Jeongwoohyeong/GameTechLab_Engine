@@ -239,35 +239,54 @@ void UDecalComponent::DuplicateSubObjects()
 
 void UDecalComponent::Serialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FDecalComponentData* ComponentData = dynamic_cast<FDecalComponentData*>(Data);
     assert(ComponentData, "UStaticMeshComponent::Serialize got wrong data type.");
 
     USceneComponent::Serialize(Data);
 
     if (!TexturePath.empty())
     {
-        ComponentData->Resource = TexturePath;
-        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->Resource.c_str());
+        ComponentData->Texture = TexturePath;
+        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->Texture.c_str());
     }
     else
     {
         UE_LOG("SaveScene: Decal has no Texture assigned");
     }
+
+    ComponentData->Duration = FadeProperties.X;
+    ComponentData->Min = FadeProperties.Y;
+    ComponentData->Max = FadeProperties.Z;
+    ComponentData->Alpha = FadeProperties.W;
+
+    ComponentData->ElapsedTime = ElapsedTime;
+
+    ComponentData->FadeEnabled = bIsFadeEnabled;
+    ComponentData->FadeOut = bIsFadeOut;
 }
 
 void UDecalComponent::DeSerialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FDecalComponentData* ComponentData = dynamic_cast<FDecalComponentData*>(Data);
     assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
 
     USceneComponent::DeSerialize(Data);
 
-    if (!ComponentData->Resource.empty())
+    if (!ComponentData->Texture.empty())
     {
-        TexturePath = ComponentData->Resource;
+        TexturePath = ComponentData->Texture;
     }
-}
 
+    FadeProperties.X = ComponentData->Duration;
+    FadeProperties.Y = ComponentData->Min;
+    FadeProperties.Z = ComponentData->Max;
+    FadeProperties.W = ComponentData->Alpha;
+
+    ElapsedTime = ComponentData->ElapsedTime;
+
+    bIsFadeEnabled = ComponentData->FadeEnabled;
+    bIsFadeOut = ComponentData->FadeOut;
+}
 
 void UDecalComponent::TickComponent(float DeltaTime)
 {
