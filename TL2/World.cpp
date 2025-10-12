@@ -1059,10 +1059,17 @@ void UWorld::SpawnActor(AActor* InActor)
 {
     InActor->SetWorld(this);
   
-    if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
+    if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(InActor->RootComponent))
     {
         FString ActorName = GenerateUniqueActorName(
-            GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
+            GetBaseNameNoExt(StaticMeshComponent->GetStaticMesh()->GetAssetPathFileName())
+        );
+        InActor->SetName(ActorName);
+    }
+    else
+    {
+        FString ActorName = GenerateUniqueActorName(
+            InActor->GetClass()->Name
         );
         InActor->SetName(ActorName);
     }
