@@ -401,6 +401,13 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
         TStatId ViewportAspectDecalRenderStatId;
         FScopeCycleCounter ViewportAspectDecalRenderTimer(ViewportAspectDecalRenderStatId);
+        
+        // 추가 통계용
+        int32 TotalPrimitivesInScene = BVH ? BVH->GetPrimitiveCount() : StaticMeshes.Num();
+        //int32 TotalPrimitivesInScene = StaticMeshes.Num();
+        int32 TotalCandidatePrimitives = 0;
+        int32 FinalDrawCalls = 0;
+
 
         // Pass 2: 데칼 렌더링 (Depth 버퍼를 읽어서 다른 오브젝트 위에 투영)
         if (BVH)
@@ -420,7 +427,16 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 // BVH에 AABB 쿼리 -> 후보 프리미티브 목록 얻기
                 TArray<UPrimitiveComponent*> CandidatePrimitives;
                 BVH->IntersectAABB(DecalWorldAABB, CandidatePrimitives);
-
+                // 스태틱 메시 개수만 세기 위해 임시 처리
+               /* for (UPrimitiveComponent* CandidatePrimitive : CandidatePrimitives)
+                {
+                    if (UStaticMeshComponent* CandidateStaticMeshComp = Cast<UStaticMeshComponent>(CandidatePrimitive))
+                    {
+                        TotalCandidatePrimitives++;
+                    }
+                }*/
+                // AABB, OBB 컴포넌트는 포함 안되어있음(BVH에 없기 때문)
+                TotalCandidatePrimitives += CandidatePrimitives.Num();
                 // ======= Narrow Phase =======
                 // 후보군 프리미티브에서 SAT 검사 수행
                 for (UPrimitiveComponent* CandidatePrimitive : CandidatePrimitives)
@@ -435,6 +451,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                     // 데칼 OBB와 StaticMesh의 AABB와 충돌 검사(SAT)
                     if (DecalOBB->IntersectsWithAABB(StaticMeshComponent->GetWorldBound()))
                     {
+                        FinalDrawCalls++; // 최종 드로우 콜 수 증가
                         DecalVolume->UpdateFade(DeltaSeconds);
                         DecalVolume->ProjectDecal(
                             Renderer,
@@ -460,6 +477,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                     );
                 }
             }
+            FinalDrawCalls = DecalVolumes.size() * StaticMeshes.size();
         }
         
 
@@ -470,6 +488,11 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             DecalVolumes.size(),
             (float)ViewportAspectDecalRenderTimeMs
         );
+        StatsCollector.UpdateDecalCullingStats(
+            TotalPrimitivesInScene,
+            TotalCandidatePrimitives,
+            FinalDrawCalls
+        );
     }
     else
     {
@@ -478,8 +501,10 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
     UStatsOverlayD2D::Get().UpdateDecalStats(
         StatsCollector.GetDecalNum(),
-        StatsCollector.GetDecalRenderTimeTotal()
-    );
+        StatsCollector.GetDecalRenderTimeTotal(),
+        StatsCollector.GetDecalTotalPrimitives(),
+        StatsCollector.GetDecalCandidatePrimitives(),
+        StatsCollector.GetDecalFinalDrawCalls());
 
     // BVH 디버그 렌더링
     if (BVH && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes) && WorldType != EWorldType::PIE)

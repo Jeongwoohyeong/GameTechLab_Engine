@@ -304,17 +304,20 @@ void UStatsOverlayD2D::Draw()
         wchar_t buf[256];
         swprintf_s(
             buf,
-            L"Decal Number: %u\nTotal Render Time: %.2f ms\nAverage Render Time: %.2f",
+            L"Decal Number: %u\nTotal Render Time: %.2f ms\nAverage Render Time: %.2f\nPrimitives: %d -> \nCandidates: %d -> \nIntersects: %d",
             CurrentDecalNum,
             CurrentDecalRenderTimeTotal,
-            CurrentDecalRenderTimeAverage
+            CurrentDecalRenderTimeAverage,
+            CurrentDecalPrimitivesNum,
+            CurrentDecalCandidates,
+            CurrentDecalFinalDrawCalls
             );
 
         D2D1_RECT_F rc = D2D1::RectF(
             margin,
             nextY,
             margin + panelWidth,
-            nextY + panelHeight * 1.5f
+            nextY + panelHeight * 3.0f
         );
         DrawTextBlock(
             d2dCtx, dwrite, buf, rc, 16.0f,

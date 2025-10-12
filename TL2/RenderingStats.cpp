@@ -55,6 +55,31 @@ void URenderingStatsCollector::UpdateDecalStats(uint32 InDecalNum, float InTime)
     SetDecalRenderTimeTotal(InTime);
 }
 
+void URenderingStatsCollector::UpdateDecalCullingStats(uint32 InTotalPrims, uint32 InCandidates, uint32 InFinalDraws)
+{
+    if (bEnabled)
+    {
+        CurrentFrameStats.DecalTotalPrimitives = InTotalPrims;
+        CurrentFrameStats.DecalCandidatePrimitives = InCandidates;
+        CurrentFrameStats.DecalFinalDrawCalls = InFinalDraws;
+    }
+}
+
+uint32 URenderingStatsCollector::GetDecalTotalPrimitives() const
+{
+    return CurrentFrameStats.DecalTotalPrimitives;
+}
+
+uint32 URenderingStatsCollector::GetDecalCandidatePrimitives() const
+{
+    return CurrentFrameStats.DecalCandidatePrimitives;
+}
+
+uint32 URenderingStatsCollector::GetDecalFinalDrawCalls() const
+{
+    return CurrentFrameStats.DecalFinalDrawCalls;
+}
+
 void URenderingStatsCollector::SetDecalNum(uint32 InDecalNum)
 {
     if (bEnabled) CurrentFrameStats.DecalNum = InDecalNum;
