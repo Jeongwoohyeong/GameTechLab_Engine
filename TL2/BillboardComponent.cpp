@@ -58,6 +58,37 @@ void UBillboardComponent::DuplicateSubObjects()
 
 }
 
+void UBillboardComponent::Serialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UBillboardComponent::Serialize got wrong data type.");
+
+    USceneComponent::Serialize(Data);
+
+    if (!TexturePath.empty())
+    {
+        ComponentData->Resource = TexturePath;
+        UE_LOG("SaveScene: BillboardComponent Texture saved: %s", ComponentData->Resource.c_str());
+    }
+    else
+    {
+        UE_LOG("SaveScene: BillboardComponent has no Texture assigned");
+    }
+}
+
+void UBillboardComponent::DeSerialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UBillboardComponent::DeSerialize got wrong data type.");
+
+    USceneComponent::DeSerialize(Data);
+
+    if (!ComponentData->Resource.empty())
+    {
+        TexturePath = ComponentData->Resource;
+    }
+}
+
 void UBillboardComponent::CreateBillboardVertices()
 {
     TArray<FBillboardVertexInfo_GPU> vertices;

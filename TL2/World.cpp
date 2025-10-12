@@ -213,13 +213,13 @@ void UWorld::InitializeSceneGraph(TArray<AActor*>& Actors)
     //Octree->Build(Actors, FBound({-100, -100, -100}, {100, 100, 100}), 0);
 
     // 빌드 완료 후 모든 마이크로 BVH 미리 생성
-#ifndef _DEBUG
-    Octree->PreBuildAllMicroBVH();
-
-    // BVH 초기화 및 빌드
-    BVH = new FBVH();
-    BVH->Build(Actors);
-#endif
+//#ifndef _DEBUG
+//    Octree->PreBuildAllMicroBVH();
+//
+//    // BVH 초기화 및 빌드
+//    BVH = new FBVH();
+//    BVH->Build(Actors);
+//#endif
     // BVH 초기화 및 빌드
     BVH = new FBVH();
     BVH->Build(Actors);
@@ -1160,10 +1160,17 @@ void UWorld::SpawnActor(AActor* InActor)
         }
     }
 
-    if (UStaticMeshComponent* ActorComp = Cast<UStaticMeshComponent>(InActor->RootComponent))
+    if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(InActor->RootComponent))
     {
         FString ActorName = GenerateUniqueActorName(
-            GetBaseNameNoExt(ActorComp->GetStaticMesh()->GetAssetPathFileName())
+            GetBaseNameNoExt(StaticMeshComponent->GetStaticMesh()->GetAssetPathFileName())
+        );
+        InActor->SetName(ActorName);
+    }
+    else
+    {
+        FString ActorName = GenerateUniqueActorName(
+            InActor->GetClass()->Name
         );
         InActor->SetName(ActorName);
     }

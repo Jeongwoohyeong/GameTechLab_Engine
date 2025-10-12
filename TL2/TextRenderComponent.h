@@ -23,6 +23,9 @@ public:
 	UObject* Duplicate() override;
 	void DuplicateSubObjects() override;
 
+	void Serialize(FObjectData* Data) override;
+	void DeSerialize(FObjectData* Data) override;
+
 private:
 	static const uint32 MaxQuads = 100; // capacity
 	static TMap<char, FBillboardVertexInfo> CharInfoMap;	// ASCII 문자 코드를 UVRect로 변환하는 Map

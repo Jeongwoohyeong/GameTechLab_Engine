@@ -9,7 +9,16 @@
 #include "CameraActor.h"
 #include "GizmoActor.h"
 
-AActor::AActor()
+AActor::AActor() {}
+
+/*
+    Initialize를 호출해야 하는 경우
+    - Widget을 통해 새로운 Actor를 스폰할 때
+    Initialize를 호출하지 말하야 하는 경우
+    - LoadScene으로 Actor를 생성할 때
+    - Duplicate 할 때(ctrl c, ctrl v, pie 등등)
+*/
+void AActor::Initialize()
 {
     Name = "DefaultActor";
     RootComponent = CreateDefaultSubobject<USceneComponent>(FName("SceneComponent"));
@@ -367,17 +376,8 @@ UObject* AActor::Duplicate()
     // 원본(this)의 RootComponent 저장
     USceneComponent* OriginalRoot = this->RootComponent;
 
-    // 얕은 복사 수행 (생성자 실행됨)
+    // 얕은 복사 수행
     AActor* DuplicateActor = NewObject<AActor>(*this);
-
-    // 생성자가 만든 RootComponent 삭제
-    if (DuplicateActor->RootComponent)
-    {
-        DuplicateActor->OwnedComponents.Remove(DuplicateActor->RootComponent);
-        ObjectFactory::DeleteObject(DuplicateActor->RootComponent);
-        DuplicateActor->RootComponent = nullptr;
-    }
-    DuplicateActor->OwnedComponents.clear();
 
     // 원본의 RootComponent 복제
     if (OriginalRoot)

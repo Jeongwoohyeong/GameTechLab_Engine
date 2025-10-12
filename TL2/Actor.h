@@ -12,7 +12,9 @@ class AActor : public UObject
 {
 public:
     DECLARE_CLASS(AActor, UObject)
-    AActor(); 
+    AActor();
+
+    virtual void Initialize();
 
 protected:
     ~AActor() override;
