@@ -578,7 +578,7 @@ void UWorld::Tick(float DeltaSeconds)
         // 액터 위치가 바뀐 경우에만 Refit
         if (bIsBVHDirty)
         {
-            UE_LOG("BVH Refit!");
+            //UE_LOG("BVH Refit!");
             BVH->Refit();
             bIsBVHDirty = false;
         }
