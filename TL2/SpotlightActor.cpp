@@ -16,6 +16,7 @@ void ASpotlightActor::Initialize()
 	BillboardComponent->SetupAttachment(RootComponent);
 	BillboardComponent->SetTexture("Editor/Icon/SpotLight_64x.dds");
 	BillboardComponent->SetRelativeLocation(FVector(0, 0, 0));
+	BillboardComponent->SetDisplayedOnPlayMode(false); // 플레이 모드에서는 숨김
 
 	// Spotlight 기본 크기 설정
 	SetActorScale(FVector(10.0f, 10.0f, 10.0f));
