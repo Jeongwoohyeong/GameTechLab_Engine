@@ -483,7 +483,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     );
 
     // BVH 디버그 렌더링
-    if (BVH && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes))
+    if (BVH && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes) && WorldType != EWorldType::PIE)
     {
         BVH->Render(Renderer);
     }
