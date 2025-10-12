@@ -36,6 +36,10 @@ PS_INPUT mainVS(VS_INPUT input)
     output.position = mul(float4(input.position, 1.0f), worldMVP);
     output.decalNDC = mul(float4(input.position, 1.0f), decalMVP);
     
+    output.position.z =
+    output.position.z - 0.001f >= 0.000001f ?
+    output.position.z - 0.001f : output.position.z;
+    
     return output;
 }
 

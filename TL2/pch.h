@@ -67,3 +67,4 @@
 #include "ResourceManager.h"
 
 extern TMap<FString, FString> EditorINI;
+extern float DeltaSeconds;

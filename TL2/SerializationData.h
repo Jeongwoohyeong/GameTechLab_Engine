@@ -35,8 +35,38 @@ struct FComponentData : public FObjectData
     FVector RelativeRotation;
     FVector RelativeScale;
 
-    FString Resource;  // Asset path
     TArray<FString> Materials;
+};
+
+struct FStaticMeshComponentData : public FComponentData
+{
+    FString StaticMesh;
+};
+
+struct FBillboardComponentData : public FComponentData
+{
+    FString Texture;
+};
+
+struct FTextComponentData : public FComponentData
+{
+    FString Text;
+};
+
+struct FDecalComponentData : public FComponentData
+{
+    FString Texture;  // Asset path
+
+    // Fade Property
+    float Duration = 0.0f;
+    float Min = 0.0f;
+    float Max = 0.0f;
+    float Alpha = 0.0f;
+    
+    float ElapsedTime = 0.0f;
+
+    bool FadeEnabled = false;
+    bool FadeOut = true;
 };
 
 struct FActorData : public FObjectData
@@ -60,6 +90,6 @@ struct FSceneData : public FObjectData
     uint32 Version = 2;
     uint32 NextUUID = 0;
     TArray<FActorData> Actors;
-    TArray<FComponentData> Components;
+    TArray<FComponentData *> Components;
     FPerspectiveCameraData Camera;
 };
