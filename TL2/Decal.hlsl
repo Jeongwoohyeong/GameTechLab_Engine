@@ -41,25 +41,31 @@ PS_INPUT mainVS(VS_INPUT input)
 
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
+    // Perspective division: homogeneous coordinates를 NDC로 변환
+    float3 decalNDC = input.decalNDC.xyz / input.decalNDC.w;
+
+    // DirectX NDC 범위 체크: x,y ∈ [-1, 1], z ∈ [0, 1]
     if (
-        input.decalNDC.x <= -1.0f ||
-        input.decalNDC.x >= 1.0f ||
-        input.decalNDC.y <= -1.0f ||
-        input.decalNDC.y >= 1.0f ||
-        input.decalNDC.z <= -1.0f ||
-        input.decalNDC.z >= 1.0f
+        decalNDC.x <= -1.0f ||
+        decalNDC.x >= 1.0f ||
+        decalNDC.y <= -1.0f ||
+        decalNDC.y >= 1.0f ||
+        decalNDC.z <= 0.0f ||
+        decalNDC.z >= 1.0f
         )
     {
         discard;
     }
     
+    // NDC [-1, 1]을 UV [0, 1]로 변환
     float2 uv;
-    uv.x = input.decalNDC.x * 0.5f + 0.5f;
-    uv.y = 1.0f - (input.decalNDC.y * 0.5f + 0.5f);
+    uv.x = decalNDC.x * 0.5f + 0.5f;
+    uv.y = 1.0f - (decalNDC.y * 0.5f + 0.5f);
     
     float4 finalColor = g_DecalTexture.Sample(g_Sample, uv);
     clip(finalColor.a - 0.5f);    
     finalColor.a *= Alpha;
+    
     
     return finalColor;
 }

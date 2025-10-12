@@ -162,6 +162,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
+    <ClCompile Include="SpotlightActor.cpp" />
+    <ClCompile Include="SpotlightComponent.cpp" />
     <ClCompile Include="DecalActor.cpp" />
     <ClCompile Include="AllClassesRegistration.cpp" />
     <ClCompile Include="AABoundingBoxComponent.cpp" />
@@ -356,6 +358,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActorComponent.h" />
+    <ClInclude Include="SpotlightActor.h" />
+    <ClInclude Include="SpotlightComponent.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
     <ClInclude Include="DecalActor.h" />
     <ClInclude Include="Archive.h" />
