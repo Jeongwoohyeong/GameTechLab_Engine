@@ -14,6 +14,7 @@
 #include "SceneComponent.h"    
 #include "TextRenderComponent.h"    
 #include "DecalComponent.h"
+#include "SpotlightComponent.h"
 
 #include <string>
 #include <filesystem>
@@ -793,10 +794,27 @@ void UTargetActorTransformWidget::RenderWidget()
 				}
 				
 			}
-		else
-		{
-			ImGui::Text("Selected component is not a supported type.");
-		}
+			else if (USpotlightComponent* SpotlightComponent = Cast<USpotlightComponent>(SelectedComponent))
+			{
+				ImGui::Separator();
+				ImGui::Text("Spotlight Component Settings");
+
+				float coneAngle = SpotlightComponent->GetConeAngle();
+				if (ImGui::DragFloat("Cone Angle", &coneAngle, 1.0f, 1.0f, 179.0f))
+				{
+					SpotlightComponent->SetConeAngle(coneAngle);
+				}
+
+				float attenuationRadius = SpotlightComponent->GetAttenuationRadius();
+				if (ImGui::DragFloat("Attenuation Radius", &attenuationRadius, 1.0f, 0.1f, 1000.0f))
+				{
+					SpotlightComponent->SetAttenuationRadius(attenuationRadius);
+				}
+			}
+			else
+			{
+				ImGui::Text("Selected component is not a supported type.");
+			}
 		}
 		
 	}
@@ -823,7 +841,7 @@ void UTargetActorTransformWidget::RenderComponentHierarchy(USceneComponent* Scen
 	}
 
 	const bool bIsRootComponent = SelectedActor->GetRootComponent() == SceneComponent;
-	const FString ComponentName = SceneComponent->GetName() + (bIsRootComponent ? " (Root)" : "");
+	const FString ComponentName = SceneComponent->GetName().ToString() + (bIsRootComponent ? " (Root)" : "");
 	const TArray<USceneComponent*>& AttachedChildren = SceneComponent->GetAttachChildren();
 	const bool bHasChildren = AttachedChildren.Num() > 0;
 

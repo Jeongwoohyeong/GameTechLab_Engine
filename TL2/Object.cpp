@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 
-FString UObject::GetName()
+FName UObject::GetName()
 {
-    return ObjectName.ToString();
+    return ObjectName;
 }
 
 FString UObject::GetComparisonName()

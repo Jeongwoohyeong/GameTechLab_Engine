@@ -47,12 +47,12 @@ public:
     void TickComponent(float DeltaTime) override;
 
     void SetFadeEnabled(bool bIsEnable);
+    void UpdateFade(float DeltaTime);
 
 protected:
     ~UDecalComponent() override;
 
 private:
-    void UpdateFade(float DeltaTime);
     void RenderFrustumLines(URenderer* Renderer);
 
 private:

@@ -3,39 +3,22 @@
 #include "StaticMeshActor.h"
 #include "ObjectFactory.h"
 
-AStaticMeshActor::AStaticMeshActor()
-{
-    // TODO(KJC): AActor의 생성자에서 USceneComponent를 Root로 넣어주고 있지만
-    // 현재 StaticMeshActor 에서는 Root가 StaticMeshComponent가 되어야 하므로 기존 Root를 제거 후 새로 할당함
-    // 필요에 따라서, Root를 Default로 생성하지 않고 인자로 처리하는 함수를 제공하면 좋음
-    // 현재는 생성 직후 소멸로 이어지기 때문에 GUObectArray를 계속 counting 처리하는 방향이라 좋지 않음
-    if (RootComponent)
-    {
-        USceneComponent* TempRootComponent = RootComponent;
-        RootComponent = nullptr;
-        DeleteComponent(TempRootComponent);
-    }
+AStaticMeshActor::AStaticMeshActor() {}
 
+void AStaticMeshActor::Initialize()
+{
     Name = "Static Mesh Actor";
     StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMesh");
     RootComponent = StaticMeshComponent;
     AddComponent(StaticMeshComponent);
 
     CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
-	CollisionComponent->SetupAttachment(RootComponent);
+    CollisionComponent->SetupAttachment(RootComponent);
 }
 
 void AStaticMeshActor::Tick(float DeltaTime)
 {
     AActor::Tick(DeltaTime);
-    static float times;
-    times += DeltaTime;
-    if (World->WorldType == EWorldType::PIE) {
-        RootComponent->AddLocalRotation({ 0.01f, 0.0f,0.0f });
-        RootComponent->AddLocalOffset({ sin(times)/100, sin(times)/100,sin(times)/100 });
-    }
-    if(bIsPicked&& CollisionComponent)
-    CollisionComponent->SetFromVertices(StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset()->Vertices);
 }
 
 AStaticMeshActor::~AStaticMeshActor()
@@ -66,26 +49,8 @@ UObject* AStaticMeshActor::Duplicate()
     // 원본(this)의 컴포넌트들 저장
     USceneComponent* OriginalRoot = this->RootComponent;
 
-    // 얕은 복사 수행 (생성자 실행됨 - StaticMeshComponent, CollisionComponent 생성)
+    // 얕은 복사 수행
     AStaticMeshActor* DuplicatedActor = NewObject<AStaticMeshActor>(*this);
-
-    // 생성자가 만든 컴포넌트들 삭제
-    if (DuplicatedActor->StaticMeshComponent)
-    {
-        DuplicatedActor->OwnedComponents.Remove(DuplicatedActor->StaticMeshComponent);
-        ObjectFactory::DeleteObject(DuplicatedActor->StaticMeshComponent);
-        DuplicatedActor->StaticMeshComponent = nullptr;
-    }
-
-    if (DuplicatedActor->CollisionComponent)
-    {
-        DuplicatedActor->OwnedComponents.Remove(DuplicatedActor->CollisionComponent);
-        ObjectFactory::DeleteObject(DuplicatedActor->CollisionComponent);
-        DuplicatedActor->CollisionComponent = nullptr;
-    }
-
-    DuplicatedActor->RootComponent = nullptr;
-    DuplicatedActor->OwnedComponents.clear();
 
     // 원본의 RootComponent(StaticMeshComponent) 복제
     if (OriginalRoot)

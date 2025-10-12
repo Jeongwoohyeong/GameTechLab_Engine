@@ -36,6 +36,10 @@ PS_INPUT mainVS(VS_INPUT input)
     output.position = mul(float4(input.position, 1.0f), worldMVP);
     output.decalNDC = mul(float4(input.position, 1.0f), decalMVP);
     
+    output.position.z =
+    output.position.z - 0.001f >= 0.000001f ?
+    output.position.z - 0.001f : output.position.z;
+    
     return output;
 }
 
@@ -63,7 +67,7 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     uv.y = 1.0f - (decalNDC.y * 0.5f + 0.5f);
     
     float4 finalColor = g_DecalTexture.Sample(g_Sample, uv);
-    clip(finalColor.a - 0.5f);    
+    clip(finalColor.a - 0.001f);    
     finalColor.a *= Alpha;
     
     

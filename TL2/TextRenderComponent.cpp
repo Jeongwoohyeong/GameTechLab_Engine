@@ -127,6 +127,37 @@ void UTextRenderComponent::DuplicateSubObjects()
 	Super_t::DuplicateSubObjects();
 }
 
+void UTextRenderComponent::Serialize(FObjectData* Data)
+{
+	FTextComponentData* ComponentData = dynamic_cast<FTextComponentData*>(Data);
+	assert(ComponentData, "UTextRenderComponent::Serialize got wrong data type.");
+
+	USceneComponent::Serialize(Data);
+
+	if (!Text.empty())
+	{
+		ComponentData->Text = Text;
+		UE_LOG("SaveScene: TextRenderComponent Text saved: %s", ComponentData->Text.c_str());
+	}
+	else
+	{
+		UE_LOG("SaveScene: TextRenderComponent has no Text assigned");
+	}
+}
+
+void UTextRenderComponent::DeSerialize(FObjectData* Data)
+{
+	FTextComponentData* ComponentData = dynamic_cast<FTextComponentData*>(Data);
+	assert(ComponentData, "UTextRenderComponent::DeSerialize got wrong data type.");
+
+	USceneComponent::DeSerialize(Data);
+
+	if (!ComponentData->Text.empty())
+	{
+		Text = ComponentData->Text;
+	}
+}
+
 void UTextRenderComponent::Render(URenderer* InRenderer, const FMatrix& InView, const FMatrix& InProj)
 {
 

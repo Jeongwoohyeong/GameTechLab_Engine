@@ -3,17 +3,10 @@
 #include "AABoundingBoxComponent.h"
 #include "ObjectFactory.h"
 
-ADecalActor::ADecalActor()
-{
-	// AActor의 생성자에서 USceneComponent를 Root로 생성하지만
-	// DecalActor는 DecalComponent가 Root가 되어야 하므로 기존 Root를 제거 후 새로 할당
-	if (RootComponent)
-	{
-		USceneComponent* TempRootComponent = RootComponent;
-		RootComponent = nullptr;
-		DeleteComponent(TempRootComponent);
-	}
+ADecalActor::ADecalActor() {}
 
+void ADecalActor::Initialize()
+{
 	Name = "Decal Actor";
 	DecalComponent = CreateDefaultSubobject<UDecalComponent>("DecalComponent");
 	RootComponent = DecalComponent;
@@ -32,22 +25,23 @@ ADecalActor::ADecalActor()
 void ADecalActor::Tick(float DeltaTime)
 {
 	AActor::Tick(DeltaTime);
-	// CollisionComponent 업데이트 (항상 업데이트하여 피킹 가능하도록)
-	if (CollisionComponent && DecalComponent)
-	{
-		// Unit Cube의 8개 정점으로 바운딩 박스 설정
-		TArray<FNormalVertex> CubeVertices = {
-			FNormalVertex(FVector(-0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(-0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(-0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
-			FNormalVertex(FVector(-0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0))
-		};
-		CollisionComponent->SetFromVertices(CubeVertices);
-	}
+
+	//// CollisionComponent 업데이트 (항상 업데이트하여 피킹 가능하도록)
+	//if (CollisionComponent && DecalComponent)
+	//{
+	//	// Unit Cube의 8개 정점으로 바운딩 박스 설정
+	//	TArray<FNormalVertex> CubeVertices = {
+	//		FNormalVertex(FVector(-0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f, -0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(-0.5f,  0.5f, -0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(-0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f, -0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0)),
+	//		FNormalVertex(FVector(-0.5f,  0.5f,  0.5f), FVector(0, 0, 0), FVector4(1, 1, 1, 1), FVector2D(0, 0))
+	//	};
+	//	CollisionComponent->SetFromVertices(CubeVertices);
+	//}	
 }
 
 ADecalActor::~ADecalActor()
@@ -72,26 +66,8 @@ UObject* ADecalActor::Duplicate()
 	// 원본(this)의 컴포넌트 저장
 	USceneComponent* OriginalRoot = this->RootComponent;
 
-	// 얕은 복사 수행 (생성자 실행됨 - DecalComponent 생성)
+	// 얕은 복사 수행
 	ADecalActor* DuplicatedActor = NewObject<ADecalActor>(*this);
-
-	// 생성자가 만든 컴포넌트 삭제
-	if (DuplicatedActor->DecalComponent)
-	{
-		DuplicatedActor->OwnedComponents.Remove(DuplicatedActor->DecalComponent);
-		ObjectFactory::DeleteObject(DuplicatedActor->DecalComponent);
-		DuplicatedActor->DecalComponent = nullptr;
-	}
-
-	if (DuplicatedActor->CollisionComponent)
-	{
-		DuplicatedActor->OwnedComponents.Remove(DuplicatedActor->CollisionComponent);
-		ObjectFactory::DeleteObject(DuplicatedActor->CollisionComponent);
-		DuplicatedActor->CollisionComponent = nullptr;
-	}
-
-	DuplicatedActor->RootComponent = nullptr;
-	DuplicatedActor->OwnedComponents.clear();
 
 	// 원본의 RootComponent(DecalComponent) 복제
 	if (OriginalRoot)
@@ -101,7 +77,7 @@ UObject* ADecalActor::Duplicate()
 
 	// OwnedComponents 재구성 및 타입별 포인터 재설정
 	DuplicatedActor->DuplicateSubObjects();
-
+	
 	return DuplicatedActor;
 }
 

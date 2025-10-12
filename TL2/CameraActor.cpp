@@ -13,6 +13,7 @@ static float MouseSensitivity = 0.05f;  // 적당한 값으로 조정
 
 ACameraActor::ACameraActor()
 {
+    AActor::Initialize();
 
     Name = "Camera Actor";
     // 카메라 컴포넌트

@@ -15,9 +15,12 @@ public:
 	DECLARE_CLASS(ADecalActor, AActor)
 
 	ADecalActor();
+
+	virtual void Initialize() override;
+
 	virtual void Tick(float DeltaTime) override;
 
-	// UI Category
+	// UI Categorys
 	//virtual FString GetDisplayCategory() const override { return "Decal"; }
 
 protected:

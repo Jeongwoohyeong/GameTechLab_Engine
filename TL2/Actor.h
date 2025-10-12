@@ -12,7 +12,9 @@ class AActor : public UObject
 {
 public:
     DECLARE_CLASS(AActor, UObject)
-    AActor(); 
+    AActor();
+
+    virtual void Initialize();
 
 protected:
     ~AActor() override;
@@ -134,4 +136,6 @@ protected:
     bool bCanEverTick = true;
     bool bHiddenInGame = false;
     bool bTickInEditor = false;
+private:
+    float TickTimer = 0.0f;
 };
