@@ -6,6 +6,8 @@
 #include "AABoundingBoxComponent.h"
 #include "MeshComponent.h"
 #include "TextRenderComponent.h"
+#include "CameraActor.h"
+#include "GizmoActor.h"
 
 AActor::AActor()
 {
@@ -76,7 +78,7 @@ void AActor::SetActorTransform(const FTransform& InNewTransform) const
     {
         RootComponent->SetWorldTransform(InNewTransform);
 
-        if (World)
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
         {
             World->MarkBVHDirty();
         }
@@ -99,7 +101,7 @@ void AActor::SetActorLocation(const FVector& InNewLocation)
         }
         RootComponent->SetWorldLocation(InNewLocation);
 
-        if (World)
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
         {
             World->MarkBVHDirty();
         }
@@ -123,9 +125,7 @@ void AActor::SetActorRotation(const FVector& InEulerDegree) const
             return;
         }
 
-        RootComponent->SetWorldRotation(NewRotation);
-    
-        if (World)
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
         {
             World->MarkBVHDirty();
         }
@@ -142,7 +142,7 @@ void AActor::SetActorRotation(const FQuat& InQuat) const
         }
         RootComponent->SetWorldRotation(InQuat);
 
-        if (World)
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
         {
             World->MarkBVHDirty();
         }
@@ -164,7 +164,7 @@ void AActor::SetActorScale(const FVector& InNewScale) const
         }
         RootComponent->SetWorldScale(InNewScale);
 
-        if (World)
+        if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
         {
             World->MarkBVHDirty();
         }
