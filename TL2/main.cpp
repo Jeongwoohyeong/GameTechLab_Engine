@@ -92,6 +92,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_ACTIVATEAPP:
+		if (LOWORD(wParam) == WA_INACTIVE)
+		{
+			// 창이 비활성화되면 모든 키 상태를 초기화합니다.
+			UInputManager::GetInstance().InitKeyStates();
+		}
+		break;
 	case WM_SIZE:
 	{
 		WPARAM sizeType = wParam;
