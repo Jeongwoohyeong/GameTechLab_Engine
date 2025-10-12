@@ -6,9 +6,10 @@ USpotlightComponent::USpotlightComponent()
 {
 	// 프로퍼티의 기본값을 설정합니다.
 	ConeAngle = 90.0f;
-	AttenuationRadius = 10.0f;
+	AttenuationRadius = 50.0f;
 	LightColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
 	Intensity = 1.0f;
+	bCanEverTick = true;
 
 }
 
@@ -47,19 +48,8 @@ void USpotlightComponent::InitializeComponent()
 		{
 			// Decal 컴포넌트의 초기 설정
 			// TODO: 적절한 스포트라이트 텍스처로 변경 (현재는 기본 Decal 텍스처 사용)
-
-			// ConeAngle과 AttenuationRadius에 맞춰 크기 조정
-			// Spotlight cone 반지름 = tan(ConeAngle / 2) * AttenuationRadius
-			//float HalfConeAngleRad = FMath::DegreesToRadians(ConeAngle / 2.0f);
-			//float ConeRadius = FMath::Tan(HalfConeAngleRad) * AttenuationRadius;
-
-			// Decal의 크기 설정 (X, Y는 cone 반지름, Z는 빛의 거리)
-			//DecalComponent->SetRelativeScale(FVector(ConeRadius, ConeRadius, AttenuationRadius));
-			DecalComponent->SetRelativeScale(CalculateScale(ConeAngle, AttenuationRadius));
-			DecalComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
-			DecalComponent->SetRelativeLocation(FVector(0, 0, -AttenuationRadius/2.0f));
 			DecalComponent->SetUsePerspectiveProjection(true);
-			DecalComponent->SetProjectionFOV(ConeAngle);
+			DecalComponent->SetTexture("Editor/Decal/spotlight_gaussian_edge0.dds");
 		}
 	}
 }
@@ -67,6 +57,34 @@ void USpotlightComponent::InitializeComponent()
 void USpotlightComponent::TickComponent(float DeltaTime)
 {
 	Super_t::TickComponent(DeltaTime);
+
+	if (DecalComponent)
+	{
+		DecalComponent->SetRelativeScale(CalculateScale(ConeAngle, AttenuationRadius));
+		DecalComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
+		DecalComponent->SetRelativeLocation(FVector(0, 0, -AttenuationRadius / 2.0f));
+		DecalComponent->SetProjectionFOV(ConeAngle);
+	}
+}
+
+float USpotlightComponent::GetConeAngle() const
+{
+	return ConeAngle;
+}
+
+void USpotlightComponent::SetConeAngle(float InConeAngle)
+{
+	ConeAngle = InConeAngle;
+}
+
+float USpotlightComponent::GetAttenuationRadius() const
+{
+	return AttenuationRadius;
+}
+
+void USpotlightComponent::SetAttenuationRadius(float InAttenuationRadius)
+{
+	AttenuationRadius = InAttenuationRadius;
 }
 
 UObject* USpotlightComponent::Duplicate()
