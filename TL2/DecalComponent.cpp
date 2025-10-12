@@ -81,9 +81,8 @@ void UDecalComponent::RenderFrustumLines(URenderer* Renderer)
     };
 
     // Get the matrix that transforms from Decal Clip Space (NDC) to World Space
-    FMatrix DecalProj = GetDecalPerspectiveProjection(ProjectionFOV);
-    FMatrix WorldToDecalClip = GetWorldMatrix().InverseAffine() * DecalViewAdjustMatrix * DecalProj;
-    FMatrix DecalClipToWorld = WorldToDecalClip.InverseAffine();
+    FMatrix ClipToLocal = (DecalViewAdjustMatrix * GetDecalPerspectiveProjection(ProjectionFOV)).Inverse();
+    FMatrix DecalClipToWorld = ClipToLocal * GetWorldMatrix();
 
     // Transform NDC corners to world space
     FVector WorldCorners[5];
@@ -192,7 +191,7 @@ FMatrix UDecalComponent::GetDecalPerspectiveProjection(float FovYDegrees)
     float FovYRadians = DegreeToRadian(FovYDegrees);
 
     // 기본 perspective 행렬 생성
-    FMatrix proj = FMatrix::PerspectiveFovLH(FovYRadians, 1.0f, 0.01f, 1.0f);
+    FMatrix proj = FMatrix::PerspectiveFovLH(FovYRadians, 1.0f, 0.001f, 1.0f);
 
     // Decal Volume 크기 보정:
     // - Decal Volume: far (z=1)에서 반경 0.5 (고정)
