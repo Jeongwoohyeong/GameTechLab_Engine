@@ -37,6 +37,28 @@ void UStaticMeshComponent::SetStaticMesh(const FString& PathFileName)
 {
 	StaticMesh = FObjManager::LoadObjStaticMesh(PathFileName);
     
+    // 메시가 성공적으로 로드되면 로컬 AABB를 계산합니다。
+    if (StaticMesh && StaticMesh->GetStaticMeshAsset())
+    {
+        const auto& Vertices = StaticMesh->GetStaticMeshAsset()->Vertices;
+        if (!Vertices.IsEmpty())
+        {
+            FVector Min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+            FVector Max(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+
+            for (const auto& Vertex : Vertices)
+            {
+                Min.X = FMath::Min(Min.X, Vertex.pos.X);
+                Min.Y = FMath::Min(Min.Y, Vertex.pos.Y);
+                Min.Z = FMath::Min(Min.Z, Vertex.pos.Z);
+                Max.X = FMath::Max(Max.X, Vertex.pos.X);
+                Max.Y = FMath::Max(Max.Y, Vertex.pos.Y);
+                Max.Z = FMath::Max(Max.Z, Vertex.pos.Z);
+            }
+            Bounds = FBound(Min, Max);
+        }
+    }
+    
     const TArray<FGroupInfo>& GroupInfos = StaticMesh->GetMeshGroupInfo();
     if (MaterailSlots.size() < GroupInfos.size())
     {
