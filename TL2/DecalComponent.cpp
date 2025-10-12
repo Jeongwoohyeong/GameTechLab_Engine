@@ -246,8 +246,8 @@ void UDecalComponent::Serialize(FObjectData* Data)
 
     if (!TexturePath.empty())
     {
-        ComponentData->ResourceName = TexturePath;
-        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->ResourceName.c_str());
+        ComponentData->Resource = TexturePath;
+        UE_LOG("SaveScene: Decal Texture saved: %s", ComponentData->Resource.c_str());
     }
     else
     {
@@ -262,9 +262,9 @@ void UDecalComponent::DeSerialize(FObjectData* Data)
 
     USceneComponent::DeSerialize(Data);
 
-    if (!ComponentData->ResourceName.empty())
+    if (!ComponentData->Resource.empty())
     {
-        TexturePath = ComponentData->ResourceName;
+        TexturePath = ComponentData->Resource;
     }
 }
 
