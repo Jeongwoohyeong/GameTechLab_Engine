@@ -162,7 +162,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
+    <ClCompile Include="HeightFog.cpp" />
     <ClCompile Include="EnumUtils.cpp" />
+    <ClCompile Include="HeightFogComponent.cpp" />
     <ClCompile Include="SpotlightActor.cpp" />
     <ClCompile Include="SpotlightComponent.cpp" />
     <ClCompile Include="DecalActor.cpp" />
@@ -359,7 +361,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActorComponent.h" />
+    <ClInclude Include="HeightFog.h" />
     <ClInclude Include="EnumUtils.h" />
+    <ClInclude Include="HeightFogComponent.h" />
     <ClInclude Include="SpotlightActor.h" />
     <ClInclude Include="SpotlightComponent.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
