@@ -61,8 +61,8 @@ void USpotlightComponent::TickComponent(float DeltaTime)
 	if (DecalComponent)
 	{
 		DecalComponent->SetRelativeScale(CalculateScale(ConeAngle, AttenuationRadius));
-		DecalComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
-		DecalComponent->SetRelativeLocation(FVector(0, 0, -AttenuationRadius / 2.0f));
+		//DecalComponent->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
+		DecalComponent->SetRelativeLocation(FVector(AttenuationRadius / 2.0f, 0, 0));
 		DecalComponent->SetProjectionFOV(ConeAngle);
 	}
 }
