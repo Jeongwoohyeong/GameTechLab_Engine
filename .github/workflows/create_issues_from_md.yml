@@ -1,0 +1,42 @@
+
+name: Create Issues from Markdown
+
+# This workflow is triggered manually from the Actions tab
+on:
+  workflow_dispatch:
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse markdown and create issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Use csplit to split the markdown file into separate files for each issue
+          # The pattern matches lines starting with "- **Issue #"
+          csplit -s -f issue- -b "%02d.txt" New_Feature_Issues.md '/^- \*\*Issue #/' '{*}'
+
+          # Loop through the generated files
+          for f in issue-*.txt; do
+            # Skip empty files that might be created by csplit
+            [ -s "$f" ] || continue
+
+            # The first line is the title. Remove markdown formatting.
+            TITLE=$(head -n 1 "$f" | sed -e 's/^- \*\*//' -e 's/\*\*$//')
+
+            # The rest of the file is the body.
+            BODY=$(tail -n +2 "$f")
+
+            echo "Creating issue with title: $TITLE"
+
+            # Create the issue using GitHub CLI
+            # gh issue create requires title and body. The token is inherited from the env.
+            gh issue create --title "$TITLE" --body "$BODY"
+          done
+
+          # Clean up the temporary files
+          rm issue-*.txt
