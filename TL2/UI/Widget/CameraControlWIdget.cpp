@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "SViewportWindow.h"
 #include "SMultiViewportWindow.h"
+#include "ObjectIterator.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -68,16 +69,19 @@ TArray<ACameraActor*> UCameraControlWidget::GetCurrentCamera() const
 {
 	TArray<ACameraActor*> Cameras;
 
-	SViewportWindow** Viewports = GetEngine()->GetWorld()->GetMultiViewportWindow()->GetViewports();
-	if (!Viewports)
+	UWorld* World = GetWorld();
+	if (!World)
 		return Cameras;
 
-	for (int64 i = 0; i < 4; i++)
+	// 방법 1: 월드에서 모든 카메라 액터 찾기
+	for (TObjectIterator<ACameraActor> It; It; ++It)
 	{
-		Cameras.push_back(Viewports[i]->GetViewportClient()->GetCamera());
+		ACameraActor* Camera = *It;
+		if (Camera)
+		{
+			Cameras.Add(Camera);
+		}
 	}
-
-	return Cameras;
 }
 
 void UCameraControlWidget::RenderWidget()

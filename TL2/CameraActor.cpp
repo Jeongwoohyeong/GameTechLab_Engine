@@ -19,7 +19,7 @@ ACameraActor::ACameraActor()
     // 카메라 컴포넌트
     CameraComponent = NewObject<UCameraComponent>();
     CameraComponent->SetupAttachment(RootComponent);
-    OwnedComponents.Add(CameraComponent);
+    OwnedSceneComponents.Add(CameraComponent);
 
     if(EditorINI.count("CameraSpeed"))
     {
