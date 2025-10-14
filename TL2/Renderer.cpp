@@ -438,10 +438,75 @@ void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_P
     RHIDevice->GetDeviceContext()->DrawIndexed(Comp->GetStaticMesh()->GetIndexCount(), 0, 0);
     StatsCollector.IncrementDrawCalls();
 }
-
-void URenderer::DrawIndexedPrimitiveComponent(UFireBallComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
+/**
+* @brief StaticMesh를 그리는 단순화된 DrawIndexPrimitiveComponent
+* 정점 및 인덱스 버퍼 바인딩
+* 셰이더, 텍스쳐, 머티리얼 변경 X, 상수버퍼 업데이트 X
+*/
+void URenderer::DrawSimpleMesh(UStaticMesh* InMesh)
 {
+    if (!InMesh)
+    {
+        return;
+    }
+    UINT Stride = 0;
+    switch (InMesh->GetVertexType())
+    {
+    case EVertexLayoutType::PositionColor:
+        Stride = sizeof(FVertexSimple);
+        break;
+    case EVertexLayoutType::PositionColorTexturNormal:
+        Stride = sizeof(FVertexDynamic);
+        break;
+    case EVertexLayoutType::PositionBillBoard:
+        Stride = sizeof(FBillboardVertexInfo_GPU);
+        break;
+    default:
+        // Handle unknown or unsupported vertex types
+        assert(false && "Unknown vertex type!");
+        return; // or log an error
+    }
 
+    UINT Offset = 0;
+    ID3D11Buffer* VertexBuffer = InMesh->GetVertexBuffer();
+    ID3D11Buffer* IndexBuffer = InMesh->GetIndexBuffer();
+
+    RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
+    RHIDevice->GetDeviceContext()->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    // 서브 메시가 있는지 판단 위해 사용
+    if (InMesh->HasMaterial())
+    {
+        const TArray<FGroupInfo> MeshGroupInfos = InMesh->GetMeshGroupInfo();
+        for (const auto& GroupInfo : MeshGroupInfos)
+        {
+            RHIDevice->GetDeviceContext()->DrawIndexed(GroupInfo.IndexCount, GroupInfo.StartIndex, 0);
+            URenderingStatsCollector::GetInstance().IncrementDrawCalls();
+        }
+    }
+    else
+    {
+        // 서브 메쉬 없는 경우
+        RHIDevice->GetDeviceContext()->DrawIndexed(InMesh->GetIndexCount(), 0, 0);
+        URenderingStatsCollector::GetInstance().IncrementDrawCalls();
+    }
+}
+
+
+void URenderer::ClearFireBallData()
+{
+    FrameFireBallData.clear();
+}
+
+void URenderer::AddFireBallToScene(const FireBallBufferType& InData)
+{
+    FrameFireBallData.Push(InData);
+}
+
+const TArray<FireBallBufferType>& URenderer::GetFrameFireBallData() const
+{
+    return FrameFireBallData;
 }
 
 void URenderer::SetViewModeType(EViewModeIndex ViewModeIndex)

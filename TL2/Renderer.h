@@ -82,8 +82,16 @@ public:
     void DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
     void DrawIndexedPrimitiveComponent(UBillboardComponent* Comp,
                                        D3D11_PRIMITIVE_TOPOLOGY InTopology);
-    void DrawIndexedPrimitiveComponent(UFireBallComponent* Comp,
-                                        D3D11_PRIMITIVE_TOPOLOGY InTopology);
+    void DrawSimpleMesh(UStaticMesh* InMesh);
+
+    // FireBall Helper
+    /** @brief 매 프레임 시작 시 호출, 이전 FireBall 데이터 삭제*/
+    void ClearFireBallData();
+    /** @brief UFireBallcomponent가 호출, 자신의 데이터 등록*/
+    void AddFireBallToScene(const FireBallBufferType& InData);
+    /** @brief UWorld가 렌더링 루프에서 수집한 FireBall 데이터에 접근위해 사용*/
+    const TArray<FireBallBufferType>& GetFrameFireBallData() const;
+
 
     void SetViewModeType(EViewModeIndex ViewModeIndex);
     // Batch Line Rendering System
@@ -109,6 +117,9 @@ private:
     UShader* LineShader = nullptr;
     bool bLineBatchActive = false;
     static const uint32 MAX_LINES = 10000;  // Maximum lines per batch
+
+    // for FireBall
+    TArray<FireBallBufferType> FrameFireBallData;
     
     // 렌더링 통계를 위한 상태 추적
     UMaterial* LastMaterial = nullptr;
