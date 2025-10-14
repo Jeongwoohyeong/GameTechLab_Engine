@@ -48,5 +48,6 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
 
 float4 mainPS(PS_INPUT In) : SV_TARGET
 {
-    return In.color;
+    float depth = SceneDepthTexture.Sample(DefaultSampler, In.texCoord).r;
+    return float4(depth, depth, depth, 1.0f);
 }
