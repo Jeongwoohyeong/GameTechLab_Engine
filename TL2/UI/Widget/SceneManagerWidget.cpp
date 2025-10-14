@@ -576,7 +576,7 @@ void USceneManagerWidget::RenderToolbar()
     ImGui::Text("View Mode:");
     ImGui::SameLine();
     
-    const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe" };
+    const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe", "SceneDepth"};
     
     UWorld* World = GetCurrentWorld();
     if (World)
@@ -595,6 +595,9 @@ void USceneManagerWidget::RenderToolbar()
             break;
         case EViewModeIndex::VMI_Wireframe:
             CurrentViewMode = 2;
+            break;
+        case EViewModeIndex::VMI_SceneDepth:
+            CurrentViewMode = 3;
             break;
         default:
             CurrentViewMode = 0;
@@ -615,6 +618,9 @@ void USceneManagerWidget::RenderToolbar()
                 break;
             case 2:
                 NewEnum = EViewModeIndex::VMI_Wireframe;
+                break;
+            case 3:
+                NewEnum = EViewModeIndex::VMI_SceneDepth;
                 break;
             }
             World->SetViewModeIndex(NewEnum);

@@ -115,6 +115,9 @@
     <Filter Include="ThirdParty\ImGui">
       <UniqueIdentifier>{340a9369-98be-4580-af67-945e0e2bcbef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Components\Fog">
+      <UniqueIdentifier>{fc218bac-c5e2-421e-83f3-09da855a0379}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <!-- ==================== 소스 파일 (.cpp) ==================== -->
   <ItemGroup>
@@ -457,13 +460,25 @@
     <ClCompile Include="DecalComponent.cpp">
       <Filter>Components\Decal</Filter>
     </ClCompile>
-    <ClCompile Include="DecalActor.cpp" />
     <ClCompile Include="SerializationData.cpp">
       <Filter>Utilities\Scene</Filter>
     </ClCompile>
     <ClCompile Include="EnumUtils.cpp" />
-    <ClCompile Include="SpotlightActor.cpp" />
-    <ClCompile Include="SpotlightComponent.cpp" />
+    <ClCompile Include="SpotlightActor.cpp">
+      <Filter>Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="DecalActor.cpp">
+      <Filter>Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="SpotlightComponent.cpp">
+      <Filter>Components\Decal</Filter>
+    </ClCompile>
+    <ClCompile Include="HeightFogComponent.cpp">
+      <Filter>Components\Fog</Filter>
+    </ClCompile>
+    <ClCompile Include="HeightFog.cpp">
+      <Filter>Actors</Filter>
+    </ClCompile>
     <ClCompile Include="FireBallComponent.cpp" />
   </ItemGroup>
   <!-- ==================== 헤더 파일 (.h) ==================== -->
@@ -841,13 +856,25 @@
     <ClInclude Include="DecalComponent.h">
       <Filter>Components\Decal</Filter>
     </ClInclude>
-    <ClInclude Include="DecalActor.h" />
     <ClInclude Include="SerializationData.h">
       <Filter>Utilities\Scene</Filter>
     </ClInclude>
     <ClInclude Include="EnumUtils.h" />
-    <ClInclude Include="SpotlightActor.h" />
-    <ClInclude Include="SpotlightComponent.h" />
+    <ClInclude Include="SpotlightActor.h">
+      <Filter>Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="DecalActor.h">
+      <Filter>Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="SpotlightComponent.h">
+      <Filter>Components\Decal</Filter>
+    </ClInclude>
+    <ClInclude Include="HeightFogComponent.h">
+      <Filter>Components\Fog</Filter>
+    </ClInclude>
+    <ClInclude Include="HeightFog.h">
+      <Filter>Actors</Filter>
+    </ClInclude>
     <ClInclude Include="FireBallComponent.h" />
   </ItemGroup>
   <!-- ==================== 셰이더 파일 (.hlsl) ==================== -->
@@ -874,6 +901,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Decal.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="HeightFog.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

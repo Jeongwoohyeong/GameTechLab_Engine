@@ -55,6 +55,15 @@ public:
     void UpdateViewportConstantBuffer(float StartX, float StartY, float SizeX, float SizeY);
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
 
+    void UpdateHeightFogConstantBuffer(
+        const FLinearColor& FogInscatteringColor,
+        float FogDensity,
+        float FogHeightFalloff,
+        float StartDistance,
+        float FogCutoffDistance,
+        float FogMaxOpacity
+    ) override;
+
     void IASetPrimitiveTopology() override;
     void RSSetState(EViewModeIndex ViewModeIndex) override;
     void RSSetFrontCullState() override;
@@ -93,9 +102,17 @@ public:
     {
         return SwapChain;
     }
-    inline ID3D11ShaderResourceView* GetDepthSRV()
+    inline ID3D11ShaderResourceView* GetDepthBuffer()
     {
         return DepthSRV;
+    }
+    inline ID3D11DepthStencilView* GetDepthStencilView()
+    {
+        return DepthStencilView;
+    }
+    inline ID3D11RenderTargetView* GetRenderTargetView()
+    {
+        return RenderTargetView;
     }
 
 private:
@@ -155,6 +172,7 @@ private:
     ID3D11Buffer* UVScrollCB{};
     ID3D11Buffer* DecalCB{};
     ID3D11Buffer* ViewportCB{};
+    ID3D11Buffer* HeightFogCB{};
 
     ID3D11Buffer* ConstantBuffer{};
 
