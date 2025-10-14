@@ -28,19 +28,19 @@ void AActor::Initialize()
 
 AActor::~AActor()
 {
-    for (UActorComponent* Comp : OwnedComponents)
+    for (UActorComponent* Comp : OwnedSceneComponents)
     {
         if (Comp)
         {
             ObjectFactory::DeleteObject(Comp);
         }
     }
-    OwnedComponents.Empty();
+    OwnedSceneComponents.Empty();
 }
 
 void AActor::BeginPlay()
 {
-    for (UActorComponent* Component : OwnedComponents)
+    for (UActorComponent* Component : OwnedSceneComponents)
     {
         if (Component)
         {
@@ -48,7 +48,7 @@ void AActor::BeginPlay()
         }
     }
 
-    for (UActorComponent* Component : OwnedComponents)
+    for (UActorComponent* Component : OwnedSceneComponents)
     {
         if (Component)
         {
@@ -66,7 +66,7 @@ void AActor::BeginPlay()
 void AActor::Tick(float DeltaSeconds)
 {
     // 소유한 모든 컴포넌트의 Tick 처리
-    for (UActorComponent* Component : OwnedComponents)
+    for (UActorComponent* Component : OwnedSceneComponents)
     {
         if (Component && Component->CanEverTick())
         {
@@ -74,6 +74,14 @@ void AActor::Tick(float DeltaSeconds)
         }
     }
 
+    for (UActorComponent* Component : OwnedNonSceneComponents)
+    {
+        if (Component && Component->CanEverTick())
+        {
+            Component->TickComponent(DeltaSeconds);
+        }
+    }
+    /*
     TickTimer += DeltaSeconds;
     TickTimer = fmod(TickTimer, 5.0f);
     if (World && World->WorldType == EWorldType::PIE) {
@@ -88,6 +96,7 @@ void AActor::Tick(float DeltaSeconds)
     }
     //if(bIsPicked&& CollisionComponent)
     //CollisionComponent->SetFromVertices(StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset()->Vertices);
+    */
 }
 
 /**
@@ -96,7 +105,7 @@ void AActor::Tick(float DeltaSeconds)
  */
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    for (UActorComponent* Component : OwnedComponents)
+    for (UActorComponent* Component : OwnedSceneComponents)
     {
         Component->EndPlay(EndPlayReason);
     }
@@ -234,6 +243,11 @@ void AActor::AddActorWorldRotation(const FQuat& InDeltaRotation) const
     {
         RootComponent->AddWorldRotation(InDeltaRotation);
     }
+
+    if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+    {
+        World->MarkBVHDirty();
+    }
 }
 
 void AActor::AddActorWorldLocation(const FVector& InDeltaLocation) const
@@ -241,6 +255,11 @@ void AActor::AddActorWorldLocation(const FVector& InDeltaLocation) const
     if (RootComponent)
     {
         RootComponent->AddWorldOffset(InDeltaLocation);
+    }
+
+    if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+    {
+        World->MarkBVHDirty();
     }
 }
 
@@ -250,6 +269,11 @@ void AActor::AddActorLocalRotation(const FQuat& InDeltaRotation) const
     {
         RootComponent->AddLocalRotation(InDeltaRotation);
     }
+
+    if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+    {
+        World->MarkBVHDirty();
+    }
 }
 
 void AActor::AddActorLocalLocation(const FVector& InDeltaLocation) const
@@ -258,11 +282,16 @@ void AActor::AddActorLocalLocation(const FVector& InDeltaLocation) const
     {
         RootComponent->AddLocalOffset(InDeltaLocation);
     }
+
+    if (World && !this->IsA<ACameraActor>() && !this->IsA<AGizmoActor>())
+    {
+        World->MarkBVHDirty();
+    }
 }
 
 const TSet<UActorComponent*>& AActor::GetComponents() const
 {
-    return OwnedComponents;
+    return OwnedSceneComponents;
 }
 
 FBound AActor::GetActorBounds(bool bOnlyCollidingComponents) const
@@ -270,7 +299,7 @@ FBound AActor::GetActorBounds(bool bOnlyCollidingComponents) const
     FBound ActorBounds;
     bool bIsFirst = true;
 
-    for (UActorComponent* Component : OwnedComponents)
+    for (UActorComponent* Component : OwnedSceneComponents)
     {
         UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(Component);
         if (PrimComp && PrimComp->IsActive())
@@ -290,14 +319,14 @@ FBound AActor::GetActorBounds(bool bOnlyCollidingComponents) const
     return ActorBounds;
 }
 
-void AActor::AddComponent(USceneComponent* InComponent)
+void AActor::AddSceneComponent(USceneComponent* InComponent)
 {
     if (!InComponent)
     {
         return;
     }
 
-    OwnedComponents.Add(InComponent);
+    OwnedSceneComponents.Add(InComponent);
     if (!RootComponent)
     {
         RootComponent = InComponent;
@@ -367,7 +396,7 @@ USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentCompone
     {
         if (NewComponent = Cast<USceneComponent>(NewComponentObject))
         {
-            this->AddComponent(NewComponent); // 액터의 관리 목록에 추가
+            this->AddSceneComponent(NewComponent); // 액터의 관리 목록에 추가
 
             NewComponent->SetupAttachment(ParentComponent, EAttachmentRule::KeepRelative);
             NewComponent->SetOwner(this);
@@ -389,10 +418,10 @@ USceneComponent* AActor::CreateAndAttachComponent(USceneComponent* ParentCompone
     return NewComponent;
 }
 
-bool AActor::DeleteComponent(USceneComponent* ComponentToDelete)
+bool AActor::DeleteSceneComponent(USceneComponent* ComponentToDelete)
 {
     // 1. [유효성 검사] nullptr이거나 이 액터가 소유한 컴포넌트가 아니면 실패 처리합니다.
-    if (!ComponentToDelete || !OwnedComponents.Contains(ComponentToDelete))
+    if (!ComponentToDelete || !OwnedSceneComponents.Contains(ComponentToDelete))
     {
         return false;
     }
@@ -422,7 +451,7 @@ bool AActor::DeleteComponent(USceneComponent* ComponentToDelete)
 
     // 5. [소유 목록에서 제거] 액터의 관리 목록에서 포인터를 제거합니다.
     //    이걸 하지 않으면 액터 소멸자에서 이미 삭제된 메모리에 접근하여 충돌합니다.
-    OwnedComponents.Remove(ComponentToDelete);
+    OwnedSceneComponents.Remove(ComponentToDelete);
 
     // 6. [메모리 해제] 모든 연결이 정리되었으므로, 마지막으로 객체를 삭제합니다.
     ObjectFactory::DeleteObject(ComponentToDelete);
@@ -435,24 +464,66 @@ bool AActor::DeleteComponent(USceneComponent* ComponentToDelete)
     return true;
 }
 
+void AActor::AddNonSceneComponent(UActorComponent* InComponent)
+{
+    if (!InComponent)
+    {
+        return;
+    }
+
+    OwnedNonSceneComponents.Add(InComponent);
+    InComponent->SetOwner(this);
+}
+
+void AActor::DeleteNonSceneComponent(UActorComponent* InComponent)
+{
+    if (!InComponent)
+    {
+        return;
+    }
+
+    OwnedNonSceneComponents.erase
+    (
+        std::remove
+        (
+            OwnedNonSceneComponents.begin(),
+            OwnedNonSceneComponents.end(),
+            InComponent
+        ),
+        OwnedNonSceneComponents.end()
+    );
+}
+
+TArray<UActorComponent*> AActor::GetOwnedNonSceneComponent()
+{
+    return OwnedNonSceneComponents;
+};
+
 UObject* AActor::Duplicate()
 {
     // 원본(this)의 RootComponent 저장
     USceneComponent* OriginalRoot = this->RootComponent;
 
     // 얕은 복사 수행
-    AActor* DuplicateActor = NewObject<AActor>(*this);
+    //AActor* DuplicatedActor = Cast<AActor>(ConstructObject(this->GetClass()));
+    AActor* DuplicatedActor = NewObject<AActor>(*this);
 
     // 원본의 RootComponent 복제
     if (OriginalRoot)
     {
-        DuplicateActor->RootComponent = Cast<USceneComponent>(OriginalRoot->Duplicate());
+        DuplicatedActor->RootComponent = Cast<USceneComponent>(OriginalRoot->Duplicate());
+    }
+
+    // Non SceneComponents 복제
+    for (UActorComponent* NonSceneComponent : OwnedNonSceneComponents)
+    {
+        DuplicatedActor->AddNonSceneComponent(Cast<UActorComponent>(NonSceneComponent->Duplicate()));
     }
 
     // OwnedComponents 재구성
-    DuplicateActor->DuplicateSubObjects();
+    DuplicatedActor->DuplicateSubObjects();
 
-    return DuplicateActor;
+    return DuplicatedActor;
 }
 
 /**
@@ -474,7 +545,7 @@ void AActor::DuplicateSubObjects()
             USceneComponent* Component = Queue.front();
             Queue.pop();
             Component->SetOwner(this);
-            OwnedComponents.Add(Component);
+            OwnedSceneComponents.Add(Component);
 
             for (USceneComponent* Child : Component->GetAttachChildren())
             {

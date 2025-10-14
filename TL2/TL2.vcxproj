@@ -166,6 +166,8 @@
     <ClCompile Include="EnumUtils.cpp" />
     <ClCompile Include="HeightFogComponent.cpp" />
     <ClCompile Include="FireBallComponent.cpp" />
+    <ClCompile Include="MovementComponent.cpp" />
+    <ClCompile Include="ProjectileMovementComponent.cpp" />
     <ClCompile Include="SpotlightActor.cpp" />
     <ClCompile Include="SpotlightComponent.cpp" />
     <ClCompile Include="DecalActor.cpp" />
@@ -310,6 +312,7 @@
     <ClCompile Include="UI\Window\SceneWindow.cpp" />
     <ClCompile Include="UI\Window\UIWindow.cpp" />
     <ClCompile Include="FViewport.cpp" />
+    <ClCompile Include="RotationMovementComponent.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="UI\StatsOverlayD2D.cpp" />
   </ItemGroup>
@@ -379,6 +382,8 @@
     <ClInclude Include="EnumUtils.h" />
     <ClInclude Include="HeightFogComponent.h" />
     <ClInclude Include="FireBallComponent.h" />
+    <ClInclude Include="MovementComponent.h" />
+    <ClInclude Include="ProjectileMovementComponent.h" />
     <ClInclude Include="SpotlightActor.h" />
     <ClInclude Include="SpotlightComponent.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
@@ -490,6 +495,7 @@
     <ClInclude Include="UI\Window\PropertyWindow.h" />
     <ClInclude Include="UI\Window\SceneWindow.h" />
     <ClInclude Include="UI\Window\UIWindow.h" />
+    <ClInclude Include="RotationMovementComponent.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="VertexData.h" />
     <ClInclude Include="FViewport.h" />

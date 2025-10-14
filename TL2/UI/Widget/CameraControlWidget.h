@@ -14,7 +14,7 @@ public:
 	void Update() override;
 	void RenderWidget() override;
 	void SyncFromCamera();
-	void PushToCamera();
+	void PushToCamera(int64 CameraIndex);
 
 	// Special Member Function
 	UCameraControlWidget();
@@ -22,13 +22,13 @@ public:
 
 private:
 	UUIManager* UIManager = nullptr;
-	ACameraActor* GetCurrentCamera() const;
+	TArray<ACameraActor*> GetCurrentCamera() const;
 	
 	// UI 상태 변수들
-	float UiFovY = 60.f;  // CameraComponent 기본값과 맞춤
-	float UiNearZ = 0.1f;
-	float UiFarZ = 1000.f;
-	int   CameraModeIndex = 0;
+	float UiFovY[4] = { 60.f, 60.f, 60.f, 60.f };  // CameraComponent 기본값과 맞춤
+	float UiNearZ[4] = { 0.1f, 0.1f, 0.1f, 0.1f };
+	float UiFarZ[4] = { 1000.f, 1000.f, 1000.f, 1000.f };
+	int   CameraModeIndex[4] = { 0, 0, 0, 0 };
 
 	// 기즈모 설정
 	EGizmoSpace CurrentGizmoSpace = EGizmoSpace::World;

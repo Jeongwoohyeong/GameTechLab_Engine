@@ -7,6 +7,9 @@
 #include "Vector.h"
 #include "World.h"
 #include <algorithm>
+#include "SViewportWindow.h"
+#include "SMultiViewportWindow.h"
+#include "ObjectIterator.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -62,19 +65,30 @@ void UCameraControlWidget::Update()
 	}
 }
 
-ACameraActor* UCameraControlWidget::GetCurrentCamera() const
+TArray<ACameraActor*> UCameraControlWidget::GetCurrentCamera() const
 {
-	if (!UIManager)
-		return nullptr;
-		
-	return UIManager->GetCamera();
+	TArray<ACameraActor*> Cameras;
+
+	UWorld* World = GetWorld();
+	if (!World)
+		return Cameras;
+
+	// 방법 1: 월드에서 모든 카메라 액터 찾기
+	for (TObjectIterator<ACameraActor> It; It; ++It)
+	{
+		ACameraActor* Camera = *It;
+		if (Camera)
+		{
+			Cameras.Add(Camera);
+		}
+	}
 }
 
 void UCameraControlWidget::RenderWidget()
 {
-	ACameraActor* Camera = GetCurrentCamera();
+	TArray<ACameraActor*> Cameras = GetCurrentCamera();
 	
-	if (!Camera)
+	if (Cameras.empty())
 	{
 		ImGui::TextUnformatted("Camera not available.");
 		ImGui::Separator();
@@ -115,65 +129,72 @@ void UCameraControlWidget::RenderWidget()
 	}
 	ImGui::Spacing();
 
-	// 카메라 모드 선택
-	if (ImGui::Combo("Mode", &CameraModeIndex, CameraMode, IM_ARRAYSIZE(CameraMode)))
+	if (ImGui::BeginTabBar("CameraTabBar"))
 	{
-		PushToCamera();
+		for (int i = 0; i < 4; i++)
+		{
+			FString TabLabel = FString("Camera ") + std::to_string(i);
+			if (ImGui::BeginTabItem(TabLabel.c_str()))
+			{
+				// 카메라 위치 제어
+				FVector Location = Cameras[i]->GetActorLocation();
+				if (ImGui::DragFloat3("Camera Location", &Location.X, 0.05f))
+				{
+					Cameras[i]->SetActorLocation(Location);
+				}
+
+				// 카메라 회전 제어 (Euler angles)
+				FVector Rotation = Cameras[i]->GetActorRotation().ToEuler();
+				bool RotationChanged = false;
+				RotationChanged |= ImGui::DragFloat3("Camera Rotation", &Rotation.X, 0.1f);
+				// Pitch 제한 (-89 ~ 89도)
+				Rotation.X = FMath::Clamp(Rotation.X, -89.0f, 89.0f);
+				if (RotationChanged)
+				{
+					FQuat NewRotation = FQuat::MakeFromEuler(Rotation);
+					Cameras[i]->SetActorRotation(NewRotation);
+				}
+
+				ImGui::TextUnformatted("Camera Optics");
+				ImGui::Spacing();
+				ImGui::Separator();
+
+				FString CameraUIText = FString("Viewport ") + std::to_string(i) + " Camera";
+				ImGui::TextUnformatted(CameraUIText.c_str());
+
+				// FOV 조절
+				bool bChanged = false;
+				bChanged |= ImGui::SliderFloat("FOV", &UiFovY[i], 1.0f, 170.0f, "%.1f");
+				// Near/Far 조절
+				bChanged |= ImGui::DragFloat("Z Near", &UiNearZ[i], 0.01f, 0.0001f, 1e6f, "%.4f");
+				bChanged |= ImGui::DragFloat("Z Far", &UiFarZ[i], 0.1f, 0.001f, 1e7f, "%.3f");
+				if (bChanged)
+				{
+					PushToCamera(i);
+				}
+
+				// 리셋 버튼
+				if (ImGui::Button("Reset Optics"))
+				{
+					UiFovY[i] = 80.0f;
+					UiNearZ[i] = 0.1f;
+					UiFarZ[i] = 1000.0f;
+					PushToCamera(i);
+				}
+
+				ImGui::Spacing();
+				ImGui::Separator();
+
+				// 카메라 정보 표시
+				ImGui::Text("Camera Info:");
+				ImGui::Text("  Position: (%.2f, %.2f, %.2f)", Location.X, Location.Y, Location.Z);
+				ImGui::Text("  Rotation: (%.1f, %.1f, %.1f)", Rotation.X, Rotation.Y, Rotation.Z);
+
+				ImGui::EndTabItem();
+			}
+		}
+		ImGui::EndTabBar();
 	}
-
-	// 카메라 위치 제어
-	FVector Location = Camera->GetActorLocation();
-	if (ImGui::DragFloat3("Camera Location", &Location.X, 0.05f))
-	{
-		Camera->SetActorLocation(Location);
-	}
-
-	// 카메라 회전 제어 (Euler angles)
-	FVector Rotation = Camera->GetActorRotation().ToEuler();
-	bool RotationChanged = false;
-	RotationChanged |= ImGui::DragFloat3("Camera Rotation", &Rotation.X, 0.1f);
-
-	// Pitch 제한 (-89 ~ 89도)
-	Rotation.X = FMath::Clamp(Rotation.X, -89.0f, 89.0f);
-
-	if (RotationChanged)
-	{
-		FQuat NewRotation = FQuat::MakeFromEuler(Rotation);
-		Camera->SetActorRotation(NewRotation);
-	}
-
-	ImGui::TextUnformatted("Camera Optics");
-	ImGui::Spacing();
-
-	// FOV 조절
-	bool bChanged = false;
-	bChanged |= ImGui::SliderFloat("FOV", &UiFovY, 1.0f, 170.0f, "%.1f");
-
-	// Near/Far 조절
-	bChanged |= ImGui::DragFloat("Z Near", &UiNearZ, 0.01f, 0.0001f, 1e6f, "%.4f");
-	bChanged |= ImGui::DragFloat("Z Far", &UiFarZ, 0.1f, 0.001f, 1e7f, "%.3f");
-
-	if (bChanged)
-	{
-		PushToCamera();
-	}
-
-	// 리셋 버튼
-	if (ImGui::Button("Reset Optics"))
-	{
-		UiFovY = 80.0f;
-		UiNearZ = 0.1f;
-		UiFarZ = 1000.0f;
-		PushToCamera();
-	}
-
-	ImGui::Spacing();
-	ImGui::Separator();
-	
-	// 카메라 정보 표시
-	ImGui::Text("Camera Info:");
-	ImGui::Text("  Position: (%.2f, %.2f, %.2f)", Location.X, Location.Y, Location.Z);
-	ImGui::Text("  Rotation: (%.1f, %.1f, %.1f)", Rotation.X, Rotation.Y, Rotation.Z);
 
 	// 월드 정보 표시
 	ImGui::Text("World Information");
@@ -237,23 +258,26 @@ void UCameraControlWidget::RenderWidget()
 
 void UCameraControlWidget::SyncFromCamera()
 {
-	ACameraActor* Camera = GetCurrentCamera();
-	if (!Camera) 
+	TArray<ACameraActor*> Cameras = GetCurrentCamera();
+	if (Cameras.empty())
 		return;
 
-	// 카메라 컴포넌트에서 실제 설정 값 가져오기
-	if (UCameraComponent* CameraComp = Camera->GetCameraComponent())
+	for (int i = 0; i < 4; i++)
 	{
-		// 실제 카메라 컴포넌트에서 값 읽어오기
-		UiFovY = CameraComp->GetFOV();
-		UiNearZ = CameraComp->GetNearClip();
-		UiFarZ = CameraComp->GetFarClip();
-		
-		// 프로젝션 모드 설정
-		CameraModeIndex = (CameraComp->GetProjectionMode() == ECameraProjectionMode::Perspective) ? 0 : 1;
-		
-		UE_LOG("CameraControl: Synced from camera - FOV=%.1f, Near=%.4f, Far=%.1f, Mode=%d", 
-			UiFovY, UiNearZ, UiFarZ, CameraModeIndex);
+		// 카메라 컴포넌트에서 실제 설정 값 가져오기
+		if (UCameraComponent* CameraComp = Cameras[i]->GetCameraComponent())
+		{
+			// 실제 카메라 컴포넌트에서 값 읽어오기
+			UiFovY[i] = CameraComp->GetFOV();
+			UiNearZ[i] = CameraComp->GetNearClip();
+			UiFarZ[i] = CameraComp->GetFarClip();
+
+			// 프로젝션 모드 설정
+			CameraModeIndex[i] = (CameraComp->GetProjectionMode() == ECameraProjectionMode::Perspective) ? 0 : 1;
+
+			UE_LOG("CameraControl: Synced from camera %d - FOV=%.1f, Near=%.4f, Far=%.1f, Mode=%d",
+				i, UiFovY[i], UiNearZ[i], UiFarZ[i], CameraModeIndex[i]);
+		}
 	}
 	
 	// World에서 카메라 이동 속도 동기화
@@ -264,30 +288,30 @@ void UCameraControlWidget::SyncFromCamera()
 	}
 }
 
-void UCameraControlWidget::PushToCamera()
+void UCameraControlWidget::PushToCamera(int64 CameraIndex)
 {
-	ACameraActor* Camera = GetCurrentCamera();
-	if (!Camera) 
+	TArray<ACameraActor*> Cameras = GetCurrentCamera();
+	if (Cameras.empty()) 
 		return;
 
 	// Near/Far 값 검증
-	UiNearZ = FMath::Max(0.0001f, UiNearZ);
-	UiFarZ = FMath::Max(UiNearZ + 0.0001f, UiFarZ);
-	UiFovY = FMath::Clamp(UiFovY, 1.0f, 170.0f);
+	UiNearZ[CameraIndex] = FMath::Max(0.0001f, UiNearZ[CameraIndex]);
+	UiFarZ[CameraIndex] = FMath::Max(UiNearZ[CameraIndex] + 0.0001f, UiFarZ[CameraIndex]);
+	UiFovY[CameraIndex] = FMath::Clamp(UiFovY[CameraIndex], 1.0f, 170.0f);
 
 	// 카메라 컴포넌트에 실제 설정 적용
-	if (UCameraComponent* CameraComp = Camera->GetCameraComponent())
+	if (UCameraComponent* CameraComp = Cameras[CameraIndex]->GetCameraComponent())
 	{
 		// 카메라 설정 업데이트
-		CameraComp->SetFOV(UiFovY);
-		CameraComp->SetNearClipPlane(UiNearZ);
-		CameraComp->SetFarClipPlane(UiFarZ);
-		
+		CameraComp->SetFOV(UiFovY[CameraIndex]);
+		CameraComp->SetNearClipPlane(UiNearZ[CameraIndex]);
+		CameraComp->SetFarClipPlane(UiFarZ[CameraIndex]);
+
 		// 프로젝션 모드 설정
-		ECameraProjectionMode NewMode = (CameraModeIndex == 0) ? ECameraProjectionMode::Perspective : ECameraProjectionMode::Orthographic;
+		ECameraProjectionMode NewMode = (CameraModeIndex[CameraIndex] == 0) ? ECameraProjectionMode::Perspective : ECameraProjectionMode::Orthographic;
 		CameraComp->SetProjectionMode(NewMode);
-		
-		UE_LOG("CameraControl: Applied to camera - FOV=%.1f, Near=%.4f, Far=%.1f, Mode=%s", 
-			UiFovY, UiNearZ, UiFarZ, (CameraModeIndex == 0) ? "Perspective" : "Orthographic");
+
+		UE_LOG("CameraControl: Applied to camera %d - FOV=%.1f, Near=%.4f, Far=%.1f",
+			CameraIndex, UiFovY[CameraIndex], UiNearZ[CameraIndex], UiFarZ[CameraIndex]);
 	}
 }

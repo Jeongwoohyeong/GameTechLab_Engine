@@ -35,11 +35,12 @@ public:
 private:
 	UUIManager* UIManager = nullptr;
 	AActor* SelectedActor = nullptr;
-	USceneComponent* SelectedComponent = nullptr;	// 현재 선택된 SceneComponent를 저장할 포인터
+	UActorComponent* SelectedComponent = nullptr;	// 현재 선택된 SceneComponent를 저장할 포인터
 	FString CachedActorName; // 액터 이름 캐시 (안전한 출력을 위해)
 
 	// 추가 가능한 컴포넌트 타입 목록 (메타데이터 기반)
-	TArray<TPair<FString, UClass*>> AddableComponentTypes;
+	TArray<TPair<FString, UClass*>> AddableSceneComponentTypes;
+	TArray<TPair<FString, UClass*>> AddableNonSceneComponentTypes;
 	bool bComponentTypesInitialized = false;
 
 	// Transform UI 상태

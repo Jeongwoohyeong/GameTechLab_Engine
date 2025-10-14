@@ -42,9 +42,9 @@ AGizmoActor::AGizmoActor()
 	if (ArrowZ) ArrowZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, -90, 0)));
 
 
-	AddComponent(ArrowX);
-	AddComponent(ArrowY);
-	AddComponent(ArrowZ);
+	AddSceneComponent(ArrowX);
+	AddSceneComponent(ArrowY);
+	AddSceneComponent(ArrowZ);
 	GizmoArrowComponents.Add(ArrowX);
 	GizmoArrowComponents.Add(ArrowY);
 	GizmoArrowComponents.Add(ArrowZ);
@@ -70,9 +70,9 @@ AGizmoActor::AGizmoActor()
 	RotateY->SetRelativeScale({ 0.02f, 0.02f, 0.02f });
 	RotateZ->SetRelativeScale({ 0.02f, 0.02f, 0.02f });
 
-	AddComponent(RotateX);
-	AddComponent(RotateY);
-	AddComponent(RotateZ);
+	AddSceneComponent(RotateX);
+	AddSceneComponent(RotateY);
+	AddSceneComponent(RotateZ);
 	GizmoRotateComponents.Add(RotateX);
 	GizmoRotateComponents.Add(RotateY);
 	GizmoRotateComponents.Add(RotateZ);
@@ -106,9 +106,9 @@ AGizmoActor::AGizmoActor()
 	if (ScaleY) ScaleY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(-90, 0, 0)));
 	if (ScaleZ) ScaleZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
 
-	AddComponent(ScaleX);
-	AddComponent(ScaleY);
-	AddComponent(ScaleZ);
+	AddSceneComponent(ScaleX);
+	AddSceneComponent(ScaleY);
+	AddSceneComponent(ScaleZ);
 	GizmoScaleComponents.Add(ScaleX);
 	GizmoScaleComponents.Add(ScaleY);
 	GizmoScaleComponents.Add(ScaleZ);

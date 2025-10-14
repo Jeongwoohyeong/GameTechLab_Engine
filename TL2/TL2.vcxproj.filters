@@ -118,6 +118,9 @@
     <Filter Include="Components\Fog">
       <UniqueIdentifier>{fc218bac-c5e2-421e-83f3-09da855a0379}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Components\Movement">
+      <UniqueIdentifier>{1263366a-92ff-4435-a292-636b4736fef3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <!-- ==================== 소스 파일 (.cpp) ==================== -->
   <ItemGroup>
@@ -480,6 +483,15 @@
       <Filter>Actors</Filter>
     </ClCompile>
     <ClCompile Include="FireBallComponent.cpp" />
+    <ClCompile Include="MovementComponent.cpp">
+      <Filter>Components\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="RotationMovementComponent.cpp">
+      <Filter>Components\Movement</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectileMovementComponent.cpp">
+      <Filter>Components\Movement</Filter>
+    </ClCompile>
   </ItemGroup>
   <!-- ==================== 헤더 파일 (.h) ==================== -->
   <ItemGroup>
@@ -878,6 +890,15 @@
     <ClInclude Include="FireBallComponent.h" />
     <ClInclude Include="Color.h">
       <Filter>Math &amp; Data</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementComponent.h">
+      <Filter>Components\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="RotationMovementComponent.h">
+      <Filter>Components\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectileMovementComponent.h">
+      <Filter>Components\Movement</Filter>
     </ClInclude>
   </ItemGroup>
   <!-- ==================== 셰이더 파일 (.hlsl) ==================== -->

@@ -53,6 +53,8 @@ public:
 
     void UpdateInvWorldBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewProjMatrix);
 
+    void UpdateInvMatrixBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix);
+
     void UpdateViewportBuffer(float StartX, float StartY, float SizeX, float SizeY);
 
     void DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology, const TArray<FMaterialSlot>& InComponentMaterialSlots);
@@ -69,7 +71,8 @@ public:
         float FogHeightFalloff,
         float StartDistance,
         float FogCutoffDistance,
-        float FogMaxOpacity
+        float FogMaxOpacity,
+        float FogHeightOffset
     );
 
     void UpdateSceneDepthBuffer(float Near, float Far);

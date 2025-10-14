@@ -10,7 +10,7 @@ void ADecalActor::Initialize()
 	Name = "Decal Actor";
 	DecalComponent = CreateDefaultSubobject<UDecalComponent>("DecalComponent");
 	RootComponent = DecalComponent;
-	AddComponent(DecalComponent);
+	AddSceneComponent(DecalComponent);
 
 	// Collision Component 추가 (피킹 및 선택을 위해)
 	CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
@@ -91,7 +91,7 @@ void ADecalActor::DuplicateSubObjects()
 	DecalComponent = Cast<UDecalComponent>(RootComponent);
 
 	// CollisionComponent 찾기
-	for (UActorComponent* Comp : OwnedComponents)
+	for (UActorComponent* Comp : OwnedSceneComponents)
 	{
 		if (UAABoundingBoxComponent* BBoxComp = Cast<UAABoundingBoxComponent>(Comp))
 		{
@@ -101,7 +101,7 @@ void ADecalActor::DuplicateSubObjects()
 	}
 }
 
-bool ADecalActor::DeleteComponent(USceneComponent* ComponentToDelete)
+bool ADecalActor::DeleteSceneComponent(USceneComponent* ComponentToDelete)
 {
 	// CollisionComponent 삭제 처리
 	if (ComponentToDelete == CollisionComponent)
@@ -116,5 +116,5 @@ bool ADecalActor::DeleteComponent(USceneComponent* ComponentToDelete)
 	}
 
 	// 부모 클래스의 원래 기능 호출
-	return AActor::DeleteComponent(ComponentToDelete);
+	return AActor::DeleteSceneComponent(ComponentToDelete);
 }

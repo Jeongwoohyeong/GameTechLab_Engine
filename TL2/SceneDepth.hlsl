@@ -50,13 +50,6 @@ float4 mainPS(PS_INPUT In) : SV_TARGET
     // 부동소수점 오차 방지를 위한 clamp
     LinearDepth = clamp(LinearDepth, 0.0f, 1.0f);
     
-    // 2단계: 값이 이상하면 빨간색
-    if (LinearDepth < 0.0 || LinearDepth > 1.0)
-    {
-        return float4(1.0, 0.0, 0.0, 1.0); // 에러: 빨간색
-    }
-    
     float4 finalDepthColor = float4(LinearDepth, LinearDepth, LinearDepth, 1.0f);  
-    
     return finalDepthColor;
 }

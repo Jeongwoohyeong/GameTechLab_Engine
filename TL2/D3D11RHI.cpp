@@ -58,7 +58,8 @@ struct FHeightFogConstBufferType
     float StartDistance;
     float FogCutoffDistance;
     float FogMaxOpacity;
-    float padding[3];
+    float FogHeightOffset;
+    float padding[2];
 };
 
 // b8
@@ -158,6 +159,7 @@ void D3D11RHI::Release()
     if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
     if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
+    if (InvMatrixCB) { InvMatrixCB->Release(); InvMatrixCB = nullptr; }
     if (FireBallCB) { FireBallCB->Release(); FireBallCB = nullptr; }
 
     // 상태 객체
@@ -763,6 +765,14 @@ void D3D11RHI::CreateConstantBuffer()
     scenedepthDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&scenedepthDesc, nullptr, &SceneDepthCB);
 
+    // b10 : InvMatrixBuffer (3 matrices: InvWorld, InvView, InvProj)
+    D3D11_BUFFER_DESC invMatrixDesc = {};
+    invMatrixDesc.Usage = D3D11_USAGE_DYNAMIC;
+    invMatrixDesc.ByteWidth = sizeof(FMatrix) * 3;  // 3 float4x4 matrices = 192 bytes
+    invMatrixDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    invMatrixDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&invMatrixDesc, nullptr, &InvMatrixCB);
+
     // FireBallCB
     D3D11_BUFFER_DESC FireBallDesc = {};
     FireBallDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -842,7 +852,8 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
     float FogHeightFalloff,
     float StartDistance,
     float FogCutoffDistance,
-    float FogMaxOpacity)
+    float FogMaxOpacity,
+    float FogHeightOffset)
 {
     if (!HeightFogCB) return;
 
@@ -856,6 +867,7 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
         dataPtr->StartDistance = StartDistance;
         dataPtr->FogCutoffDistance = FogCutoffDistance;
         dataPtr->FogMaxOpacity = FogMaxOpacity;
+        dataPtr->FogHeightOffset = FogHeightOffset;
 
         DeviceContext->Unmap(HeightFogCB, 0);
         DeviceContext->PSSetConstantBuffers(7, 1, &HeightFogCB); // b7 슬롯
@@ -883,6 +895,31 @@ void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
 
         DeviceContext->Unmap(SceneDepthCB, 0);
         DeviceContext->PSSetConstantBuffers(9, 1, &SceneDepthCB); // b9 슬롯
+    }
+}
+
+void D3D11RHI::UpdateInvMatrixConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix)
+{
+    if (!InvMatrixCB) return;
+
+    struct InvMatrixBufferType
+    {
+        FMatrix InvWorld;
+        FMatrix InvView;
+        FMatrix InvProj;
+    };
+
+    InvMatrixBufferType data;
+    data.InvWorld = InvWorldMatrix;
+    data.InvView = InvViewMatrix;
+    data.InvProj = InvProjMatrix;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(InvMatrixCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        memcpy(mapped.pData, &data, sizeof(InvMatrixBufferType));
+        DeviceContext->Unmap(InvMatrixCB, 0);
+        DeviceContext->PSSetConstantBuffers(10, 1, &InvMatrixCB); // b10 slot
     }
 }
 
@@ -1149,30 +1186,32 @@ void D3D11RHI::ResizeSwapChain(UINT width, UINT height)
 {
     if (!SwapChain) return;
 
-    // 렌더링 완료까지 대기 (중요!)
+    // 1. Flush + Unbind render targets
     if (DeviceContext) {
         DeviceContext->Flush();
-    }
-
-    // 현재 렌더 타겟 언바인딩
-    if (DeviceContext) {
         DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
     }
 
-    // 기존 뷰 해제
-    if (RenderTargetView) { RenderTargetView->Release(); RenderTargetView = nullptr; }
-    if (DepthStencilView) { DepthStencilView->Release(); DepthStencilView = nullptr; }
-    if (FrameBuffer) { FrameBuffer->Release(); FrameBuffer = nullptr; }
+    // 2. Release all views (includes DepthSRV for HeightFog shader)
+    ReleaseFrameBuffer();
 
-    // 스왑체인 버퍼 리사이즈
+    // 3. Resize swap chain buffers
     HRESULT hr = SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-    if (FAILED(hr)) { UE_LOG("ResizeBuffers failed!\n"); return; }
+    if (FAILED(hr)) {
+        UE_LOG("ResizeBuffers failed!\n");
+        return;
+    }
 
-    // 다시 RTV/DSV 만들기
-    CreateBackBufferAndDepthStencil(width, height);
+    // 4. Recreate all views (includes DepthSRV with proper TYPELESS format)
+    CreateFrameBuffer();
 
-    // 뷰포트도 갱신
-    setviewort(width, height);
+    // 5. Update viewport dimensions
+    SetViewport(width, height);
+
+    // 6. Rebind render targets immediately (safety measure, also done in BeginFrame)
+    if (DeviceContext && RenderTargetView && DepthStencilView) {
+        DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
+    }
 }
 
 void D3D11RHI::PSSetDefaultSampler(UINT StartSlot)

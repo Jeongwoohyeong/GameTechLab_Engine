@@ -61,6 +61,7 @@ public:
     void UpdateColorConstantBuffers(const FVector4& InColor) override;
     void UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec) override;
     void UpdateInvWorldConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewProjMatrix) override;
+    void UpdateInvMatrixConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix) override;
     void UpdateViewportConstantBuffer(float StartX, float StartY, float SizeX, float SizeY);
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
     void UpdateFireBallConstantBuffer(const FireBallBufferType & InFireBallData)  override;
@@ -71,7 +72,8 @@ public:
         float FogHeightFalloff,
         float StartDistance,
         float FogCutoffDistance,
-        float FogMaxOpacity
+        float FogMaxOpacity,
+        float FogHeightOffset
     ) override;
 
     void UpdateSceneDepthBuffer(float Near, float Far) override;
@@ -193,6 +195,7 @@ private:
     ID3D11Buffer* HeightFogCB{};
     ID3D11Buffer* SceneDepthCB{};
     ID3D11Buffer* FireBallCB{};
+    ID3D11Buffer* InvMatrixCB{};  // b10: InvWorld, InvView, InvProj matrices
 
     ID3D11Buffer* ConstantBuffer{};
 
