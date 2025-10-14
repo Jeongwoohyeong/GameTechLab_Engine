@@ -66,6 +66,7 @@ struct FSceneDepthBufferType
 {
     float Near;
     float Far;
+    float padding[2];
 };
 
 // b2
@@ -716,11 +717,11 @@ void D3D11RHI::CreateConstantBuffer()
     Device->CreateBuffer(&fogDesc, nullptr, &HeightFogCB);
 
     D3D11_BUFFER_DESC scenedepthDesc = {};
-    fogDesc.Usage = D3D11_USAGE_DYNAMIC;
-    fogDesc.ByteWidth = sizeof(FSceneDepthBufferType);
-    fogDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    fogDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    Device->CreateBuffer(&fogDesc, nullptr, &SceneDepthCB);
+    scenedepthDesc.Usage = D3D11_USAGE_DYNAMIC;
+    scenedepthDesc.ByteWidth = sizeof(FSceneDepthBufferType);
+    scenedepthDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    scenedepthDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&scenedepthDesc, nullptr, &SceneDepthCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -805,7 +806,11 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
 
 void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
 {
-    if (!SceneDepthCB) return;
+    if (!SceneDepthCB)
+    {
+        UE_LOG("aslkdjsalwjkljl");
+        return;
+    }
 
     D3D11_MAPPED_SUBRESOURCE mapped;
     if (SUCCEEDED(DeviceContext->Map(SceneDepthCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
@@ -814,8 +819,12 @@ void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
         dataPtr->Near = Near;
         dataPtr->Far = Far;
 
+        UE_LOG("Updating SceneDepth CB: Near=%.2f, Far=%.2f\n", Near, Far);
+        UE_LOG("CB written: Near=%.2f, Far=%.2f\n", dataPtr->Near, dataPtr->Far);
+        UE_LOG("CB bound to slot 8\n");
+
         DeviceContext->Unmap(SceneDepthCB, 0);
-        DeviceContext->PSSetConstantBuffers(8, 1, &SceneDepthCB); // b8 슬롯
+        DeviceContext->PSSetConstantBuffers(9, 1, &SceneDepthCB); // b9 슬롯
     }
 }
 
@@ -988,6 +997,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
 }
+/*
 void D3D11RHI::CreateBackBufferAndDepthStencil(UINT width, UINT height)
 {
     // 기존 바인딩 해제 후 뷰 해제
@@ -1047,6 +1057,74 @@ void D3D11RHI::CreateBackBufferAndDepthStencil(UINT width, UINT height)
     DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
 
     // 4) 뷰포트 갱신
+    SetViewport(width, height);
+}
+*/
+
+void D3D11RHI::CreateBackBufferAndDepthStencil(UINT width, UINT height)
+{
+    // 기존 바인딩 해제
+    if (RenderTargetView) {
+        DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+        RenderTargetView->Release();
+        RenderTargetView = nullptr;
+    }
+    if (DepthStencilView) {
+        DepthStencilView->Release();
+        DepthStencilView = nullptr;
+    }
+    // ✅ DepthSRV도 해제!
+    if (DepthSRV) {
+        DepthSRV->Release();
+        DepthSRV = nullptr;
+    }
+
+    // 1) RTV 생성 (기존과 동일)
+    ID3D11Texture2D* backBuffer = nullptr;
+    SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer);
+
+    D3D11_RENDER_TARGET_VIEW_DESC framebufferRTVdesc = {};
+    framebufferRTVdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    Device->CreateRenderTargetView(backBuffer, &framebufferRTVdesc, &RenderTargetView);
+    backBuffer->Release();
+
+    // 2) ✅ Depth Texture 생성 (TYPELESS + SRV 바인딩)
+    ID3D11Texture2D* depthTex = nullptr;
+    D3D11_TEXTURE2D_DESC depthDesc{};
+    depthDesc.Width = width;
+    depthDesc.Height = height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;  // ✅ TYPELESS!
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.SampleDesc.Quality = 0;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;  // ✅ SRV 추가!
+
+    Device->CreateTexture2D(&depthDesc, nullptr, &depthTex);
+
+    // 3) DSV 생성
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+    dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Texture2D.MipSlice = 0;
+    Device->CreateDepthStencilView(depthTex, &dsvDesc, &DepthStencilView);
+
+    // 4) ✅ SRV 생성!
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    Device->CreateShaderResourceView(depthTex, &srvDesc, &DepthSRV);
+
+    depthTex->Release();
+
+    // 5) OM 바인딩
+    DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
+
+    // 6) 뷰포트 갱신
     SetViewport(width, height);
 }
 

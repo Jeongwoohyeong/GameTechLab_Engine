@@ -654,9 +654,11 @@ void URenderer::DrawFullScreenPass()
     Context->OMSetRenderTargets(1, &RTV, NULL);
 
     // Bind the depth buffer as a shader resource for the pixel shader                       
-    ID3D11ShaderResourceView * DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthBuffer();  
+    ID3D11ShaderResourceView* DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthBuffer();  
     Context->PSSetShaderResources(0, 1, &DepthSRV);
-    
+    ID3D11SamplerState* Sampler = static_cast<D3D11RHI*>(RHIDevice)->GetDefaultSampler();
+    Context->PSSetSamplers(0, 1, &Sampler);
+
     // Draw a single triangle that covers the screen                                         
     Context->Draw(3, 0);                                                                     
     URenderingStatsCollector::GetInstance().IncrementDrawCalls();

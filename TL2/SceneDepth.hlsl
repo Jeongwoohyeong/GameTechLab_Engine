@@ -1,7 +1,8 @@
-cbuffer SceneDepthBuffer : register(b8)
+cbuffer SceneDepthBuffer : register(b9)
 {
     float near;
     float far;
+    float2 padding;
 };
 
 struct PS_INPUT
@@ -31,18 +32,24 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
 
 float4 mainPS(PS_INPUT In) : SV_TARGET
 {
-    float NdcZ = SceneDepthTexture.Sample(DefaultSampler, In.texCoord).z;
+    float NdcZ = SceneDepthTexture.Sample(DefaultSampler, In.texCoord).r;
     
     // NdcZ는 비선형 깊이이므로 view 공간에서의 Depth를 복원한 후
-    float LinearDepth = (2.0 * near * far) / (far + near - NdcZ * (far - near));
-    // [0, 1] 범위로 정규화한다.
+    float LinearDepth = (near * far) / (far - NdcZ * (far - near));
+    
+    // [0, 1] 범위로 정규
     LinearDepth = (LinearDepth - near) / (far - near);
+    
     // 부동소수점 오차 방지를 위한 clamp
     LinearDepth = clamp(LinearDepth, 0.0f, 1.0f);
     
-    float4 finalDepthColor = float4(LinearDepth, LinearDepth, LinearDepth, 1.0f);
+    // 2단계: 값이 이상하면 빨간색
+    if (LinearDepth < 0.0 || LinearDepth > 1.0)
+    {
+        return float4(1.0, 0.0, 0.0, 1.0); // 에러: 빨간색
+    }
     
-    //return finalDepthColor;
-    return float4(NdcZ, NdcZ, NdcZ, 1.0f);
-    //return float4(near / 100.0, far / 1000.0, 0.0, 1.0);
+    float4 finalDepthColor = float4(LinearDepth, LinearDepth, LinearDepth, 1.0f);  
+    
+    return finalDepthColor;
 }

@@ -116,6 +116,10 @@ public:
     {
         return RenderTargetView;
     }
+    inline ID3D11SamplerState* GetDefaultSampler()
+    {
+        return DefaultSamplerState;
+    }
 
 private:
     void CreateDeviceAndSwapChain(HWND hWindow)override; // 여기서 디바이스, 디바이스 컨택스트, 스왑체인, 뷰포트를 초기화한다
