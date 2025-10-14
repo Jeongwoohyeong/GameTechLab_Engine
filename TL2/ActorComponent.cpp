@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ActorComponent.h"
 #include "Actor.h"
 
@@ -70,4 +70,19 @@ void UActorComponent::DuplicateSubObjects()
     Super_t::DuplicateSubObjects();
 
 
+}
+
+
+void UActorComponent::Serialize(FObjectData* Data)
+{
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UActorComponent::Serialize got wrong data type.");
+
+    UObject::Serialize(Data);
+    ComponentData->OwnerActorUUID = GetOwner()->UUID;
+}
+
+void UActorComponent::DeSerialize(FObjectData* Data)
+{
+    ;
 }

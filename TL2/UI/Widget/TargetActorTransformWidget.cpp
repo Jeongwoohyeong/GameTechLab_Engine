@@ -16,6 +16,7 @@
 #include "DecalComponent.h"
 #include "SpotlightComponent.h"
 #include "RotationMovementComponent.h"
+#include "ProjectileMovementComponent.h"
 
 #include <string>
 #include <filesystem>
@@ -910,15 +911,25 @@ void UTargetActorTransformWidget::RenderWidget()
 			}
 			else if (URotationMovementComponent* RotationMovementComponent = Cast<URotationMovementComponent>(SelectedComponent))
 			{
-				FVector RotationAngle = RotationMovementComponent->GetRotationAngle();
-
-				ImGui::Separator();
 				ImGui::Text("RotationMovementComponent Settings");
+
+				FVector RotationAngle = RotationMovementComponent->GetRotationAngle();
 
 				// Location 편집
 				if (ImGui::DragFloat3("RotationAngle", &RotationAngle.X, 0.1f)) {}
 
 				RotationMovementComponent->SetRotationAngle(RotationAngle);
+			}
+			else if (UProjectileMovementComponent* ProjectileMovementComponent = Cast<UProjectileMovementComponent>(SelectedComponent))
+			{
+				ImGui::Text("RotationMovementComponent Settings");
+
+				FVector LaunchDirection = ProjectileMovementComponent->GetLaunchDirection();
+
+				// Location 편집
+				if (ImGui::DragFloat3("Launch Direction", &LaunchDirection.X, 0.1f)) {}
+
+				ProjectileMovementComponent->SetLaunchDirection(LaunchDirection);
 			}
 			else
 			{

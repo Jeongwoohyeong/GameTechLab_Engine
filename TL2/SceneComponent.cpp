@@ -309,12 +309,11 @@ void USceneComponent::DuplicateSubObjects()
 
 void USceneComponent::Serialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FSceneComponentData* ComponentData = dynamic_cast<FSceneComponentData*>(Data);
     assert(ComponentData, "USceneComponent::Serialize got wrong data type.");
 
-    UObject::Serialize(Data);
-    ComponentData->OwnerActorUUID = GetOwner()->UUID;
-
+    UActorComponent::Serialize(Data);
+    
     if (AttachParent)
         ComponentData->ParentComponentUUID = AttachParent->UUID;
     else
@@ -331,7 +330,7 @@ void USceneComponent::Serialize(FObjectData* Data)
 
 void USceneComponent::DeSerialize(FObjectData* Data)
 {
-    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    FSceneComponentData* ComponentData = dynamic_cast<FSceneComponentData*>(Data);
     assert(ComponentData, "USceneComponent::DeSerialize got wrong data type.");
 
     UObject::DeSerialize(Data);

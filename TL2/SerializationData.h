@@ -27,8 +27,18 @@ struct FObjectData
 struct FComponentData : public FObjectData
 {
     uint32 OwnerActorUUID = 0;
+    FString Type;   // "StaticMeshComponent", "AABoundingBoxComponent" 등
+    bool IsHierarchical = true;
+};
+
+struct FSceneComponentData : public FComponentData
+{
+    FSceneComponentData()
+    {
+        IsHierarchical = true;
+    }
+
     uint32 ParentComponentUUID = 0;  // 0이면 RootComponent (부모 없음)
-    FString Type;  // "StaticMeshComponent", "AABoundingBoxComponent" 등
 
     // Transform
     FVector RelativeLocation;
@@ -38,22 +48,22 @@ struct FComponentData : public FObjectData
     TArray<FString> Materials;
 };
 
-struct FStaticMeshComponentData : public FComponentData
+struct FStaticMeshComponentData : public FSceneComponentData
 {
     FString StaticMesh;
 };
 
-struct FBillboardComponentData : public FComponentData
+struct FBillboardComponentData : public FSceneComponentData
 {
     FString Texture;
 };
 
-struct FTextComponentData : public FComponentData
+struct FTextComponentData : public FSceneComponentData
 {
     FString Text;
 };
 
-struct FDecalComponentData : public FComponentData
+struct FDecalComponentData : public FSceneComponentData
 {
     FString Texture;  // Asset path
 
@@ -68,6 +78,16 @@ struct FDecalComponentData : public FComponentData
     bool bIsLoop = false;
     
     float ElapsedTime = 0.0f;
+};
+
+struct FRotationMovementComponentData : public FComponentData
+{
+    FVector RotationAngle;
+};
+
+struct FProjectileMovementComponentData : public FComponentData
+{
+    FVector LaunchDirection;
 };
 
 struct FActorData : public FObjectData
