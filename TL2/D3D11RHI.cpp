@@ -49,6 +49,18 @@ struct ViewProjBufferType
     FMatrix Proj;
 };
 
+// b7
+struct FHeightFogConstBufferType
+{
+    FLinearColor FogInscatteringColor;
+    float FogDensity;
+    float FogHeightFalloff;
+    float StartDistance;
+    float FogCutoffDistance;
+    float FogMaxOpacity;
+    float padding[3];
+};
+
 // b2
 struct HighLightBufferType
 {
@@ -90,6 +102,8 @@ struct BillboardBufferType
     /*FVector cameraRight;
     FVector cameraUp;*/
 };
+
+
 
 void D3D11RHI::Initialize(HWND hWindow)
 {
@@ -133,6 +147,7 @@ void D3D11RHI::Release()
     if (UVScrollCB) { UVScrollCB->Release(); UVScrollCB = nullptr; }
     if (DecalCB) { DecalCB->Release(); DecalCB = nullptr; }
     if (ViewportCB) { ViewportCB->Release(); ViewportCB = nullptr; }
+    if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
 
     // 상태 객체
@@ -684,6 +699,13 @@ void D3D11RHI::CreateConstantBuffer()
     viewportDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     viewportDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&viewportDesc, nullptr, &ViewportCB);
+
+    D3D11_BUFFER_DESC fogDesc = {};
+    fogDesc.Usage = D3D11_USAGE_DYNAMIC;
+    fogDesc.ByteWidth = sizeof(FHeightFogConstBufferType);
+    fogDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    fogDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&fogDesc, nullptr, &HeightFogCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -737,6 +759,32 @@ void D3D11RHI::UpdateViewportConstantBuffer(float StartX, float StartY, float Si
         memcpy(mapped.pData, &data, sizeof(ViewportBufferType));
         DeviceContext->Unmap(ViewportCB, 0);
         DeviceContext->PSSetConstantBuffers(6, 1, &ViewportCB);
+    }
+}
+
+void D3D11RHI::UpdateHeightFogConstantBuffer(
+    const FLinearColor& FogInscatteringColor,
+    float FogDensity,
+    float FogHeightFalloff,
+    float StartDistance,
+    float FogCutoffDistance,
+    float FogMaxOpacity)
+{
+    if (!HeightFogCB) return;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(HeightFogCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        FHeightFogConstBufferType* dataPtr = reinterpret_cast<FHeightFogConstBufferType*>(mapped.pData);
+        dataPtr->FogInscatteringColor = FogInscatteringColor;
+        dataPtr->FogDensity = FogDensity;
+        dataPtr->FogHeightFalloff = FogHeightFalloff;
+        dataPtr->StartDistance = StartDistance;
+        dataPtr->FogCutoffDistance = FogCutoffDistance;
+        dataPtr->FogMaxOpacity = FogMaxOpacity;
+
+        DeviceContext->Unmap(HeightFogCB, 0);
+        DeviceContext->PSSetConstantBuffers(7, 1, &HeightFogCB); // b7 슬롯
     }
 }
 
