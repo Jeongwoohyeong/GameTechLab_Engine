@@ -64,7 +64,7 @@ struct FLinearColor
     // ========== Utility ==========
 
 };
-};
+
 
 inline const FLinearColor FLinearColor::White{ 1.0f, 1.0f, 1.0f, 1.0f };
 inline const FLinearColor FLinearColor::Black{ 0.0f, 0.0f, 0.0f, 1.0f };
