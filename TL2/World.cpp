@@ -24,6 +24,7 @@
 #include "UI/StatsOverlayD2D.h"
 #include "PrimitiveComponent.h"
 #include "HeightFogComponent.h"
+#include "FireBallComponent.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -284,6 +285,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     FFrustum ViewFrustum;
     ViewFrustum.Update(ViewMatrix * ProjectionMatrix);
 
+
     Renderer->BeginLineBatch();
     Renderer->SetViewModeType(ViewModeIndex);
 
@@ -291,6 +293,9 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     int FrustumCullCount = 0;
 
     const TArray<AActor*>& LevelActors = Level ? Level->GetActors() : TArray<AActor*>();
+
+    // 렌더러의 이전 프레임 데이터 제거
+    Renderer->ClearFireBallData();
 
     // Pass 2를 위해 Decal을 미리 저장하기 위한 컨테이너
     TArray<UDecalComponent*> DecalVolumes;
@@ -300,6 +305,9 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
     // Pass 3를 위해 Fog를 별도로 저장하기 위한 컨테이너
     TArray<UHeightFogComponent*> HeightFogs;
+
+    // Base Pass에서 그릴 Primitives
+    TArray<UPrimitiveComponent*> BasePassPrimitives; 
 
     // Pass 1: 데칼을 제외한 모든 오브젝트 렌더링 (Depth 버퍼 채우기)
     for (AActor* Actor : LevelActors)
@@ -377,7 +385,16 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 HeightFogs.Add(HeightFog);
                 continue;
             }
-
+            // FireBall Pass를 위해 FireBall 데이터 수집
+            if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(Component) )
+            {
+                //if (!Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FireBall))
+                {
+                    // 실제로 그리는게 아닌 정보 수집
+                    FireBallComponent->Render(Renderer, ViewMatrix, ProjectionMatrix);
+                    continue;
+                }
+            }
             if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
             {
                 bool bIsSelected = SelectionManager.IsActorSelected(Actor);
@@ -538,6 +555,34 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     }
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
+
+    // FireBall Pass
+    const TArray<FireBallBufferType>& FireBallDatas = Renderer->GetFrameFireBallData();
+    if (!FireBallDatas.empty() && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FireBall))
+    {
+        Renderer->OMSetBlendState(EBlendMode::Addicitve);
+        Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly);
+        Renderer->RSSetDefaultState();
+        UShader* FireBalllShader = ResourceManager.Load<UShader>("FireBallShader.hlsl");
+        Renderer->PrepareShader(FireBalllShader);
+        for (const FireBallBufferType& FireBallData : FireBallDatas)
+        {
+            Renderer->UpdateFireBallConstantBuffer(FireBallData);
+            // 수집된 StaticMeshCompnent에 대해 한번 더 그리기
+            for (UStaticMeshComponent* StaticMeshComponent : StaticMeshes)
+            {
+                if (StaticMeshComponent && StaticMeshComponent->IsActive())
+                {
+                    Renderer->UpdateConstantBuffer(StaticMeshComponent->GetWorldMatrix(), ViewMatrix, ProjectionMatrix);
+                    Renderer->DrawSimpleMesh(StaticMeshComponent->GetStaticMesh());
+                }
+            }
+        }
+    }
+    // 렌더 상태 복원
+    Renderer->OMSetBlendState(false); // 블렌딩 비활성화
+    Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual); // 기본 깊이 스텐실 상태로 복원
+    Renderer->RSSetDefaultState();
 
     // Pass 4 - View Mode : SceneDepth가 활성화되어있는 경우 실행
 
