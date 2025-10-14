@@ -6,7 +6,8 @@ cbuffer HeightFogConstantBuffer : register(b7)
     float StartDistance;
     float FogCutoffDistance;
     float FogMaxOpacity;
-    float3 padding;
+    float FogHeightOffset;
+    float2 padding;
 };
 
 cbuffer ViewportBuffer : register(b8)
@@ -39,19 +40,54 @@ float ComputeHeightFog(float3 worldPos, float3 camPos)
 {
     float3 rayDir = worldPos - camPos;
     float d = length(rayDir);
-    float vh = rayDir.z / max(d, 1e-5); // z-axis component (instead of normalize)
-    float h0 = camPos.z;
+    float vh = rayDir.z / max(d, 1e-5); // z-axis component (normalized ray direction)
+
+    // Use relative height from fog origin (Actor position)
+    float h0 = camPos.z - FogHeightOffset;
+
+    // Apply start distance offset
+    float adjustedDistance = max(0.0f, d - StartDistance);
     
-    float adjustedDistance = min(max(0.0f, d - StartDistance), FogCutoffDistance);
+    // Early exit for cutoff distance (optimization + max opacity)
+    if (FogCutoffDistance > 0.0f && adjustedDistance > FogCutoffDistance)
+    {
+        return FogMaxOpacity; // Maximum fog beyond cutoff
+    }
+
+    // Height-integrated exponential fog (Iquilezles formula)
+    // Using relative height ensures proper fog behavior at any altitude
     float a = vh * FogHeightFalloff;
-    
     float tau;
+
     if (abs(a) < 1e-5)
+    {
+        // Horizontal ray (no height change) - simple exponential fog
         tau = FogDensity * exp(-h0 * FogHeightFalloff) * adjustedDistance;
+    }
     else
-        tau = FogDensity * exp(-h0 * FogHeightFalloff) * (1.0f - exp(-adjustedDistance * a)) / a;
-    
-    return 1.0f - exp(-tau);
+    {
+        // Ray with height change - analytical integration
+        // For numerical stability, check for potential overflow
+        float exponent = -adjustedDistance * a;
+
+        // Prevent exp() overflow (exp(87) ≈ 6e37, near float max)
+        if (exponent > 87.0f)
+        {
+            // Very large positive exponent: exp(-adjustedDistance*a) >> 1
+            // tau ≈ -(a/b) * exp(-h0*b) * exp(exponent) / vh
+            // For downward rays (vh < 0, a < 0, exponent > 0), this is maximal fog
+            return FogMaxOpacity;
+        }
+
+        exponent = max(exponent, -87.0f); // Clamp negative side too
+
+        tau = (FogDensity / FogHeightFalloff) * exp(-h0 * FogHeightFalloff) *
+              (1.0f - exp(exponent)) / vh;
+    }
+
+    // Convert optical depth to fog factor and clamp to max opacity
+    float fogFactor = 1.0f - exp(-tau);
+    return min(fogFactor, FogMaxOpacity);
 }
 
 PS_INPUT mainVS(uint VertexID : SV_VertexID)

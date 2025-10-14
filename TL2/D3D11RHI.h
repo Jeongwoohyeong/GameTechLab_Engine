@@ -62,7 +62,8 @@ public:
         float FogHeightFalloff,
         float StartDistance,
         float FogCutoffDistance,
-        float FogMaxOpacity
+        float FogMaxOpacity,
+        float FogHeightOffset
     ) override;
 
     void UpdateSceneDepthBuffer(float Near, float Far) override;

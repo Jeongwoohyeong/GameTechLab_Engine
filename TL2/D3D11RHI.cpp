@@ -58,7 +58,8 @@ struct FHeightFogConstBufferType
     float StartDistance;
     float FogCutoffDistance;
     float FogMaxOpacity;
-    float padding[3];
+    float FogHeightOffset;
+    float padding[2];
 };
 
 // b8
@@ -803,7 +804,8 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
     float FogHeightFalloff,
     float StartDistance,
     float FogCutoffDistance,
-    float FogMaxOpacity)
+    float FogMaxOpacity,
+    float FogHeightOffset)
 {
     if (!HeightFogCB) return;
 
@@ -817,6 +819,7 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
         dataPtr->StartDistance = StartDistance;
         dataPtr->FogCutoffDistance = FogCutoffDistance;
         dataPtr->FogMaxOpacity = FogMaxOpacity;
+        dataPtr->FogHeightOffset = FogHeightOffset;
 
         DeviceContext->Unmap(HeightFogCB, 0);
         DeviceContext->PSSetConstantBuffers(7, 1, &HeightFogCB); // b7 슬롯
