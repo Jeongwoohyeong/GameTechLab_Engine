@@ -4,12 +4,12 @@
 //IMPLEMENT_CLASS(UHeightFogComponent)
 
 UHeightFogComponent::UHeightFogComponent()
-    : FogDensity(0.0f)
-    , FogHeightFalloff(0.0f)
-    , StartDistance(0.0f)
-    , FogCutoffDistance(0.0f)
-    , FogMaxOpacity(1.0f)
-    , FogInscatteringColor(FLinearColor::White)
+    : FogDensity(0.3f)       // Default fog density (adjust based on scene scale)
+    , FogHeightFalloff(0.2f)  // Default height falloff
+    , StartDistance(0.0f)      // Fog starts immediately
+    , FogCutoffDistance(5000.0f) // Fog cutoff distance
+    , FogMaxOpacity(1.0f)      // Maximum fog opacity
+    , FogInscatteringColor(FLinearColor(1.0f, 0.2f, 0, 1)) // White fog
 {
     SetMaterial("HeightFog.hlsl");
 }
@@ -23,6 +23,11 @@ void UHeightFogComponent::Render(URenderer* Renderer, const FMatrix& View, const
         StartDistance,
         FogCutoffDistance,
         FogMaxOpacity
+    );
+    Renderer->UpdateInvMatrixBuffer(
+        FMatrix::Identity(),      // InvWorld - world inverse (identity for now)
+        View.Inverse(),           // InvView - contains camera position
+        Proj.Inverse()            // InvProj - projection inverse
     );
     Renderer->PrepareShader(Material->GetShader());
 
