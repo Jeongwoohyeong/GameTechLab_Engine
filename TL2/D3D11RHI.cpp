@@ -1130,30 +1130,32 @@ void D3D11RHI::ResizeSwapChain(UINT width, UINT height)
 {
     if (!SwapChain) return;
 
-    // 렌더링 완료까지 대기 (중요!)
+    // 1. Flush + Unbind render targets
     if (DeviceContext) {
         DeviceContext->Flush();
-    }
-
-    // 현재 렌더 타겟 언바인딩
-    if (DeviceContext) {
         DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
     }
 
-    // 기존 뷰 해제
-    if (RenderTargetView) { RenderTargetView->Release(); RenderTargetView = nullptr; }
-    if (DepthStencilView) { DepthStencilView->Release(); DepthStencilView = nullptr; }
-    if (FrameBuffer) { FrameBuffer->Release(); FrameBuffer = nullptr; }
+    // 2. Release all views (includes DepthSRV for HeightFog shader)
+    ReleaseFrameBuffer();
 
-    // 스왑체인 버퍼 리사이즈
+    // 3. Resize swap chain buffers
     HRESULT hr = SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-    if (FAILED(hr)) { UE_LOG("ResizeBuffers failed!\n"); return; }
+    if (FAILED(hr)) {
+        UE_LOG("ResizeBuffers failed!\n");
+        return;
+    }
 
-    // 다시 RTV/DSV 만들기
-    CreateBackBufferAndDepthStencil(width, height);
+    // 4. Recreate all views (includes DepthSRV with proper TYPELESS format)
+    CreateFrameBuffer();
 
-    // 뷰포트도 갱신
-    setviewort(width, height);
+    // 5. Update viewport dimensions
+    SetViewport(width, height);
+
+    // 6. Rebind render targets immediately (safety measure, also done in BeginFrame)
+    if (DeviceContext && RenderTargetView && DepthStencilView) {
+        DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
+    }
 }
 
 void D3D11RHI::PSSetDefaultSampler(UINT StartSlot)
