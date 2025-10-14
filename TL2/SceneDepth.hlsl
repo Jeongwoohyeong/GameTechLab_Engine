@@ -1,3 +1,8 @@
+cbuffer ViewportBuffer : register(b8)
+{
+    float4 ViewportRect; // Normalized [0,1]: x=StartX, y=StartY, z=SizeX, w=SizeY
+};
+
 cbuffer SceneDepthBuffer : register(b9)
 {
     float near;
@@ -32,7 +37,9 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
 
 float4 mainPS(PS_INPUT In) : SV_TARGET
 {
-    float NdcZ = SceneDepthTexture.Sample(DefaultSampler, In.texCoord).r;
+    float2 depthUV = ViewportRect.xy + In.texCoord * ViewportRect.zw;
+    
+    float NdcZ = SceneDepthTexture.Sample(DefaultSampler, depthUV).r;
     
     // NdcZ는 비선형 깊이이므로 view 공간에서의 Depth를 복원한 후
     float LinearDepth = (near * far) / (far - NdcZ * (far - near));
