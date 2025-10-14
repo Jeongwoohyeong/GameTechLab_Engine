@@ -333,6 +333,10 @@ enum class EEngineShowFlags : uint64
 
     // Lighting
     SF_Lighting = 1ull << 6,      // Enable/disable lighting
+
+    // Post Process
+    SF_PostProcess = 1ull << 7,
+    SF_FXAA = 1ull << 8,
     
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal,

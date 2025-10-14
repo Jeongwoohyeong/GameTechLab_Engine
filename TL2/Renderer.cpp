@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 
 #include "BillboardComponent.h"
+#include "PostProcessFXAA.h"
 #include "TextRenderComponent.h"
 #include "Shader.h"
 #include "StaticMesh.h"
@@ -13,6 +14,7 @@
 URenderer::URenderer(URHIDevice* InDevice) : RHIDevice(InDevice)
 {
     InitializeLineBatch();
+    FXAA = new FPostProcessFXAA(InDevice);
 }
 
 URenderer::~URenderer()
@@ -30,9 +32,24 @@ void URenderer::BeginFrame()
     
     // 상태 추적 리셋
     ResetRenderStateTracking();
+
+    // TODO flag에 따라 분기처리 추가
+    // Post Proccess On
+    //if (/*TODO flag 추가*/)    
+    {
+        // offscreen 버퍼 설정
+        RHIDevice->OMSetRnederTargetToOffscreen();
+        RHIDevice->ClearOffscreenBackBuffer();
+    }
+    //else
+    // Post Proccess Off
+    {        
+        RHIDevice->OMSetRenderTargets();
+        RHIDevice->ClearBackBuffer();
+    }
+        
     
     // 백버퍼/깊이버퍼를 클리어
-    RHIDevice->ClearBackBuffer();  // 배경색
     RHIDevice->ClearDepthBuffer(1.0f, 0);                 // 깊이값 초기화
     RHIDevice->CreateBlendState();
     RHIDevice->IASetPrimitiveTopology();
@@ -41,7 +58,6 @@ void URenderer::BeginFrame()
 
     //OM
     //RHIDevice->OMSetBlendState();
-    RHIDevice->OMSetRenderTargets();
 }
 
 void URenderer::PrepareShader(FShader& InShader)
@@ -447,6 +463,19 @@ void URenderer::EndFrame()
     // 현재 프레임 통계를 업데이트
     const FRenderingStats& CurrentStats = StatsCollector.GetCurrentFrameStats();
     StatsCollector.UpdateFrameStats(CurrentStats);
+
+    // Post Process pass
+    //if (/*TODO flag */)
+    {
+        RHIDevice->OMSetRenderTargetsNoDepth();
+        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
+        if (FXAA)
+        {
+            FXAA->Render(SceneSRV);
+        }
+    }
+    
+    
     
     // 평균 통계를 얻어서 오버레이에 업데이트
     const FRenderingStats& AvgStats = StatsCollector.GetAverageStats();
@@ -463,6 +492,19 @@ void URenderer::EndFrame()
 void URenderer::OMSetDepthStencilState(EComparisonFunc Func)
 {
     RHIDevice->OmSetDepthStencilState(Func);
+}
+
+void URenderer::UpdateOffscreenRenderTarget(UINT Width, UINT Height)
+{
+    if ((Width == 0) || (Height == 0) && (Width == OffscreenWidth) && (Height == OffscreenHeight))
+    {
+        return;
+    }
+
+    OffscreenWidth = Width;
+    OffscreenHeight = Height;
+
+    RHIDevice->CreateOffscreenBuffer(OffscreenWidth, OffscreenHeight);
 }
 
 void URenderer::InitializeLineBatch()

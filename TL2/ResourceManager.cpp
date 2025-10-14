@@ -398,6 +398,8 @@ void UResourceManager::InitShaderILMap()
     layout.clear();
 
     ShaderToInputLayoutMap["SceneDepth.hlsl"] = layout;
+
+    ShaderToInputLayoutMap["FXAAShader.hlsl"] = layout;
 }
 
 TArray<D3D11_INPUT_ELEMENT_DESC>& UResourceManager::GetProperInputLayout(const FString& InShaderName)

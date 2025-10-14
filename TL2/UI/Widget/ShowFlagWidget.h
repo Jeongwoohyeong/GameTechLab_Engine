@@ -38,6 +38,7 @@ private:
     void RenderDebugSection(FViewport* Viewport);
     void RenderDecalSection(FViewport* Viewport);
     void RenderLightingSection(FViewport* Viewport);
+    void RenderPostProcessSection(FViewport* Viewport);
 
     /** 전체 제어 버튼들 */
     void RenderControlButtons(FViewport* Viewport);
@@ -60,6 +61,8 @@ private:
     bool bGrid = true;
     bool bDecal = true;
     bool bLighting = true;
+    bool bIsPostProcess = true;
+    bool bIsFXAA = true;
     
     // UI 스타일
     ImVec4 HeaderColor = ImVec4(0.4f, 0.6f, 0.9f, 1.0f);

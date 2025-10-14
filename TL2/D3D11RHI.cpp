@@ -143,6 +143,7 @@ void D3D11RHI::Release()
         DeviceContext->Flush();
     }
 
+    ReleaseOffscreenBuffer();
     ReleaseSamplerState();
 
     // 상수버퍼
@@ -211,6 +212,12 @@ void D3D11RHI::CreateBlendState()
     Device->CreateBlendState(&bd, &BlendState);
 }
 
+void D3D11RHI::ClearOffscreenBackBuffer()
+{
+    float ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
+    DeviceContext->ClearRenderTargetView(OffscreenRTV, ClearColor);
+}
+
 void D3D11RHI::CreateDepthStencilState()
 {
     D3D11_DEPTH_STENCIL_DESC desc = {};
@@ -255,6 +262,32 @@ void D3D11RHI::CreateSamplerState()
     SampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	HRESULT HR = Device->CreateSamplerState(&SampleDesc, &DefaultSamplerState);
+}
+
+void D3D11RHI::CreateOffscreenBuffer(UINT Width, UINT Height)
+{
+    // 이전 프레임에 존재한 Offscreenbuffer 해제
+    ReleaseOffscreenBuffer();
+
+    D3D11_TEXTURE2D_DESC OffscreenTextureDesc = {};    
+    OffscreenTextureDesc.Width = Width;
+    OffscreenTextureDesc.Height = Height;
+    OffscreenTextureDesc.MipLevels = 1;
+    OffscreenTextureDesc.ArraySize = 1;
+    OffscreenTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    OffscreenTextureDesc.SampleDesc.Count = 1;
+    OffscreenTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+    // 생성된 텍스처는 pixel shader에서 사용되고, 렌더 타겟으로도 쓰임
+    OffscreenTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+
+    HRESULT HR = Device->CreateTexture2D(&OffscreenTextureDesc, nullptr, &OffscreenTexture);
+    assert(SUCCEEDED(HR));
+
+    HR = Device->CreateRenderTargetView(OffscreenTexture, nullptr, &OffscreenRTV);
+    assert(SUCCEEDED(HR));
+
+    HR = Device->CreateShaderResourceView(OffscreenTexture, nullptr, &OffscreenSRV);
+    assert(SUCCEEDED(HR));
 }
 
 HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* device, const FMeshData* meshData, ID3D11Buffer** outBuffer)
@@ -472,6 +505,12 @@ void D3D11RHI::RSSetViewport()
 void D3D11RHI::OMSetRenderTargets()
 {
     DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
+}
+
+void D3D11RHI::OMSetRenderTargetsNoDepth()
+{
+    // Post Process에서 dephtstencil 불필요
+    DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
 }
 
 void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
@@ -838,6 +877,12 @@ void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
     }
 }
 
+void D3D11RHI::OMSetRnederTargetToOffscreen()
+{
+    // offscreen texture를 렌더타겟으로 설정
+    DeviceContext->OMSetRenderTargets(1, &OffscreenRTV, DepthStencilView);
+}
+
 void D3D11RHI::ReleaseSamplerState()
 {
     if (DefaultSamplerState)
@@ -929,6 +974,27 @@ void D3D11RHI::ReleaseDeviceAndSwapChain()
 
 }
 
+void D3D11RHI::ReleaseOffscreenBuffer()
+{
+    if (OffscreenSRV)
+    {
+        OffscreenSRV->Release();
+        OffscreenSRV = nullptr;
+    }
+
+    if (OffscreenRTV)
+    {
+        OffscreenRTV->Release();
+        OffscreenRTV = nullptr;
+    }
+
+    if (OffscreenTexture)
+    {
+        OffscreenTexture->Release();
+        OffscreenTexture = nullptr;
+    }
+}
+
 void D3D11RHI::OmSetDepthStencilState(EComparisonFunc Func)
 {
     switch (Func)
@@ -979,6 +1045,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
 
     // 기존 리소스 해제
     ReleaseFrameBuffer();
+    ReleaseOffscreenBuffer();
 
     // 스왑체인 버퍼 리사이즈
     HRESULT hr = SwapChain->ResizeBuffers(
@@ -995,7 +1062,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
     }
 
     // 새 프레임버퍼/RTV/DSV 생성
-    CreateFrameBuffer();
+    CreateFrameBuffer();    
 
     // 뷰포트 갱신
     ViewportInfo.TopLeftX = 0.0f;
