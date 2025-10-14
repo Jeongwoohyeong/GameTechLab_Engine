@@ -80,9 +80,14 @@ void UActorComponent::Serialize(FObjectData* Data)
 
     UObject::Serialize(Data);
     ComponentData->OwnerActorUUID = GetOwner()->UUID;
+    // Type 자동 가져오기
+    ComponentData->Type = GetClass()->Name;
 }
 
 void UActorComponent::DeSerialize(FObjectData* Data)
 {
-    ;
+    FComponentData* ComponentData = dynamic_cast<FComponentData*>(Data);
+    assert(ComponentData, "UActorComponent::DeSerialize got wrong data type.");
+
+    UObject::DeSerialize(Data);
 }

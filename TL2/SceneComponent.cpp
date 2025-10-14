@@ -323,9 +323,6 @@ void USceneComponent::Serialize(FObjectData* Data)
     ComponentData->RelativeLocation = RelativeLocation;
     ComponentData->RelativeRotation = RelativeRotation.ToEuler();
     ComponentData->RelativeScale = RelativeScale;
-
-    // Type 자동 가져오기
-    ComponentData->Type = GetClass()->Name;
 }
 
 void USceneComponent::DeSerialize(FObjectData* Data)
@@ -333,7 +330,8 @@ void USceneComponent::DeSerialize(FObjectData* Data)
     FSceneComponentData* ComponentData = dynamic_cast<FSceneComponentData*>(Data);
     assert(ComponentData, "USceneComponent::DeSerialize got wrong data type.");
 
-    UObject::DeSerialize(Data);
+    UActorComponent::DeSerialize(Data);
+
     SetRelativeLocation(ComponentData->RelativeLocation);
     SetRelativeRotation(FQuat::MakeFromEuler(ComponentData->RelativeRotation));
     SetRelativeScale(ComponentData->RelativeScale);

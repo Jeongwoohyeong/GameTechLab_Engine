@@ -28,7 +28,7 @@ struct FComponentData : public FObjectData
 {
     uint32 OwnerActorUUID = 0;
     FString Type;   // "StaticMeshComponent", "AABoundingBoxComponent" 등
-    bool IsHierarchical = true;
+    bool IsHierarchical = false;
 };
 
 struct FSceneComponentData : public FComponentData

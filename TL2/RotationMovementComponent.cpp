@@ -42,5 +42,9 @@ void URotationMovementComponent::Serialize(FObjectData* Data)
 
 void URotationMovementComponent::DeSerialize(FObjectData* Data)
 {
+	FRotationMovementComponentData* ComponentData = dynamic_cast<FRotationMovementComponentData*>(Data);
+	assert(ComponentData, "URotationMovementComponent::DeSerialize got wrong data type.");
+
 	UActorComponent::DeSerialize(Data);
+	RotationAngle = ComponentData->RotationAngle;
 }

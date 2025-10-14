@@ -959,6 +959,10 @@ void UWorld::SaveScene(const FString& SceneName)
                 ComponentData = new FProjectileMovementComponentData;
                 ProjectileMovementComponent->Serialize(ComponentData);
             }
+            else
+            {
+                continue;
+            }
 
             SceneData.Components.push_back(ComponentData);
         }
@@ -1041,7 +1045,7 @@ void UWorld::LoadScene(const FString& SceneName)
     // Component 생성
     for (FComponentData* ComponentData : SceneData.Components)
     {
-        USceneComponent* NewComponent = Cast<USceneComponent>(NewObject(ComponentData->Type));
+        UActorComponent* NewComponent = Cast<UActorComponent>(NewObject(ComponentData->Type));
 
         if (!NewComponent)
         {
@@ -1066,7 +1070,7 @@ void UWorld::LoadScene(const FString& SceneName)
     for (const FActorData& ActorData : SceneData.Actors)
     {
         AActor** ActorPtr = ActorMap.Find(ActorData.UUID);
-        if (!*ActorPtr) continue;
+        if (!ActorPtr || !*ActorPtr) continue;
 
         AActor* Actor = *ActorPtr;
 
@@ -1082,43 +1086,98 @@ void UWorld::LoadScene(const FString& SceneName)
         }
     }
 
-    // Component 부모-자식 관계 설정
+    //// Component 부모-자식 관계 설정
+    //for (FComponentData* ComponentData : SceneData.Components)
+    //{
+    //    AActor** OwnerActorPtr = ActorMap.Find(ComponentData->OwnerActorUUID);
+    //    if (!OwnerActorPtr) continue;
+    //    AActor* OwnerActor = *OwnerActorPtr;
+    //    if (!OwnerActor) continue;
+
+    //    UActorComponent** ComponentPtr = ComponentMap.Find(ComponentData->UUID);
+    //    if (!ComponentPtr) continue;
+
+    //    UActorComponent* Component = *ComponentPtr;
+    //    if (!Component) continue;
+
+    //    // 계층 컴포넌트인 경우
+    //    if (ComponentData->IsHierarchical)
+    //    {
+    //        FSceneComponentData* SceneComponentData = dynamic_cast<FSceneComponentData*>(ComponentData);
+
+    //        USceneComponent* SceneComponent = Cast<USceneComponent>(Component);
+
+    //        // 부모 컴포넌트 연결 (ParentUUID가 0이 아니면)
+    //        if (SceneComponentData->ParentComponentUUID != 0)
+    //        {
+    //            UActorComponent** ParentComponentPtr = ComponentMap.Find(SceneComponentData->ParentComponentUUID);
+    //            if (!ParentComponentPtr) continue;
+
+    //            if (USceneComponent* ParentPtr = Cast<USceneComponent>(*ParentComponentPtr))
+    //            {
+    //                SceneComponent->SetupAttachment(ParentPtr, EAttachmentRule::KeepRelative);
+    //            }
+    //        }
+
+    //        // Actor의 OwnedComponents에 추가
+    //        OwnerActor->OwnedSceneComponents.Add(SceneComponent);
+    //    }
+    //    // 비계층 컴포넌트인 경우
+    //    else
+    //    {
+    //        OwnerActor->OwnedNonSceneComponents.Add(Component);
+    //    }
+    //}
+
+    // 계층 컴포넌트 부모-자식 관계 설정
     for (FComponentData* ComponentData : SceneData.Components)
     {
-        AActor** OwnerActorPtr = ActorMap.Find(ComponentData->OwnerActorUUID);
-        UActorComponent* Component = *ComponentMap.Find(ComponentData->UUID);
-        if (!Component) continue;
+        if (!ComponentData->IsHierarchical) continue;  // 계층만 처리
 
-        // 계층 컴포넌트인 경우
-        if (ComponentData->IsHierarchical)
+        FSceneComponentData* SceneComponentData = dynamic_cast<FSceneComponentData*>(ComponentData);
+        if (!SceneComponentData) continue;  // SceneComponentData 타입만
+
+        AActor** OwnerActorPtr = ActorMap.Find(SceneComponentData->OwnerActorUUID);
+        if (!OwnerActorPtr || !*OwnerActorPtr) continue;
+
+        UActorComponent** ComponentPtr = ComponentMap.Find(SceneComponentData->UUID);
+        if (!ComponentPtr || !*ComponentPtr) continue;
+
+        USceneComponent* SceneComponent = Cast<USceneComponent>(*ComponentPtr);
+        if (!SceneComponent) continue;  // SceneComponent 타입만
+
+        // 부모 컴포넌트 연결
+        if (SceneComponentData->ParentComponentUUID != 0)
         {
-            FSceneComponentData* SceneComponentData = dynamic_cast<FSceneComponentData*>(ComponentData);
-
-            USceneComponent* SceneComponent = Cast<USceneComponent>(Component);
-
-            // 부모 컴포넌트 연결 (ParentUUID가 0이 아니면)
-            if (SceneComponentData->ParentComponentUUID != 0)
+            UActorComponent** ParentComponentPtr = ComponentMap.Find(SceneComponentData->ParentComponentUUID);
+            if (ParentComponentPtr && *ParentComponentPtr)
             {
-                if (USceneComponent* ParentPtr = dynamic_cast<USceneComponent*>(*ComponentMap.Find(SceneComponentData->ParentComponentUUID)))
+                if (USceneComponent* ParentComp = Cast<USceneComponent>(*ParentComponentPtr))
                 {
-                    SceneComponent->SetupAttachment(ParentPtr, EAttachmentRule::KeepRelative);
+                    SceneComponent->SetupAttachment(ParentComp, EAttachmentRule::KeepRelative);
                 }
             }
+        }
 
-            // Actor의 OwnedComponents에 추가
-            if (OwnerActorPtr)
-            {
-                (*OwnerActorPtr)->OwnedSceneComponents.Add(SceneComponent);
-            }
-        }
-        // 비계층 컴포넌트인 경우
-        else
-        {
-            if (OwnerActorPtr)
-            {
-                (*OwnerActorPtr)->OwnedNonSceneComponents.Add(Component);
-            }
-        }
+        // Actor의 OwnedSceneComponents에 추가
+        (*OwnerActorPtr)->OwnedSceneComponents.Add(SceneComponent);
+    }
+
+    // 비계층 컴포넌트 설정
+    for (FComponentData* ComponentData : SceneData.Components)
+    {
+        if (ComponentData->IsHierarchical) continue;  // 비계층만 처리
+
+        AActor** OwnerActorPtr = ActorMap.Find(ComponentData->OwnerActorUUID);
+        if (!OwnerActorPtr || !*OwnerActorPtr) continue;
+
+        UActorComponent** ComponentPtr = ComponentMap.Find(ComponentData->UUID);
+        if (!ComponentPtr || !*ComponentPtr) continue;
+
+        UActorComponent* Component = *ComponentPtr;
+
+        // Actor의 OwnedNonSceneComponents에 추가
+        (*OwnerActorPtr)->OwnedNonSceneComponents.Add(Component);
     }
 
     // Actor를 Level에 추가

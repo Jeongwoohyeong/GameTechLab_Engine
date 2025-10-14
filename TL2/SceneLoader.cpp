@@ -137,13 +137,13 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
         oss << "    {\n";
         oss << "      \"UUID\" : " << Component->UUID << ",\n";
         oss << "      \"OwnerActorUUID\" : " << Component->OwnerActorUUID << ",\n";
-        oss << "      \"IsHierarchical\" : " << Component->IsHierarchical << ",\n";
+        oss << "      \"IsHierarchical\" : \"" << Component->IsHierarchical << "\",\n";
+        oss << "      \"Type\" : \"" << Component->Type << "\",\n";
 
         // 계층 컴포넌트일때
         if (SceneComponent)
         {
             oss << "      \"ParentComponentUUID\" : " << SceneComponent->ParentComponentUUID << ",\n";
-            oss << "      \"Type\" : \"" << SceneComponent->Type << "\",\n";
             writeVec3("RelativeLocation", SceneComponent->RelativeLocation, 6); oss << ",\n";
             writeVec3("RelativeRotation", SceneComponent->RelativeRotation, 6); oss << ",\n";
             writeVec3("RelativeScale", SceneComponent->RelativeScale, 6);
@@ -235,13 +235,11 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
         // 비계층 컴포넌트일때
         else
         {
-            UE_LOG("Debug");
             FRotationMovementComponentData* RotationMovementData = dynamic_cast<FRotationMovementComponentData*>(Component);
             FProjectileMovementComponentData* ProjectileMovementData = dynamic_cast<FProjectileMovementComponentData*>(Component);
 
             if (RotationMovementData)
             {
-                oss << ",\n";
                 oss << "      \"RotationAngleX\" : \"" << RotationMovementData->RotationAngle.X << "\"";
                 oss << ",\n";
                 oss << "      \"RotationAngleY\" : \"" << RotationMovementData->RotationAngle.Y << "\"";
@@ -250,7 +248,6 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
             }
             else if (ProjectileMovementData)
             {
-                oss << ",\n";
                 oss << "      \"LaunchDirectionX\" : \"" << ProjectileMovementData->LaunchDirection.X << "\"";
                 oss << ",\n";
                 oss << "      \"LaunchDirectionY\" : \"" << ProjectileMovementData->LaunchDirection.Y << "\"";
@@ -322,7 +319,7 @@ FSceneData FSceneLoader::Parse(const JSON& Json)
         ParsePerspectiveCamera(Json, SceneData.Camera);
     }
 
-    // Actors
+    // Actor
     if (Json.hasKey("Actors"))
     {
         const JSON& ActorsJson = Json.at("Actors");
@@ -473,10 +470,11 @@ FSceneData FSceneLoader::Parse(const JSON& Json)
                 ComponentData->OwnerActorUUID = static_cast<uint32>(CompJson.at("OwnerActorUUID").ToInt());
             if (CompJson.hasKey("Type"))
                 ComponentData->Type = CompJson.at("Type").ToString();
-
             // 계층 컴포넌트에만 있는 속성을 처리
-            if (CompJson.hasKey("IsHierarchical") ||
-                CompJson.at("IsHierarchical").ToString() == "true")
+            if (CompJson.hasKey("IsHierarchical"))
+                ComponentData->IsHierarchical = (CompJson.at("IsHierarchical").ToString() == "true");
+
+            if (ComponentData->IsHierarchical)
             {
                 FSceneComponentData* SceneComponentData = dynamic_cast<FSceneComponentData*>(ComponentData);
             

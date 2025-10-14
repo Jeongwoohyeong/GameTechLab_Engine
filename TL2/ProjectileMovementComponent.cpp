@@ -41,5 +41,9 @@ void UProjectileMovementComponent::Serialize(FObjectData* Data)
 
 void UProjectileMovementComponent::DeSerialize(FObjectData* Data)
 {
+	FProjectileMovementComponentData* ComponentData = dynamic_cast<FProjectileMovementComponentData*>(Data);
+	assert(ComponentData, "UProjectileMovementComponent::DeSerialize got wrong data type.");
+
 	UActorComponent::DeSerialize(Data);
+	LaunchDirection = ComponentData->LaunchDirection;
 }
