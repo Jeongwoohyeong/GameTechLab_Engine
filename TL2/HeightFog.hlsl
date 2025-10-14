@@ -9,6 +9,11 @@ cbuffer HeightFogConstantBuffer : register(b7)
     float3 padding;
 };
 
+cbuffer ViewportBuffer : register(b8)
+{
+    float4 ViewportRect; // Normalized [0,1]: x=StartX, y=StartY, z=SizeX, w=SizeY
+};
+
 struct PS_INPUT
 {
     float4 position : SV_POSITION; // Transformed position to pass to the pixel shader
@@ -48,6 +53,15 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
 
 float4 mainPS(PS_INPUT In) : SV_TARGET
 {
-    float depth = SceneDepthTexture.Sample(DefaultSampler, In.texCoord).r;
+    // ViewportRect contains normalized [0,1] coordinates (CPU normalizes by screen size)
+    // In.texCoord is [0,1] within the viewport's fullscreen quad
+    // Map viewport-local UV to global depth buffer UV
+    float2 depthUV = ViewportRect.xy + In.texCoord * ViewportRect.zw;
+
+    // Sample depth using corrected UV
+    float depth = SceneDepthTexture.Sample(DefaultSampler, depthUV).r;
+
+    // Visualize depth (enhance near 1.0 range for better visibility)
+    depth = (depth - 0.99f) * 100.0f;
     return float4(depth, depth, depth, 1.0f);
 }
