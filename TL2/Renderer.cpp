@@ -635,6 +635,7 @@ void URenderer::ClearLineBatch()
     bLineBatchActive = false;
 }
 
+// TODO : Resource는 달라질 수 있으니, 나중에 좀 더 구조화하기
 void URenderer::DrawFullScreenPass()                                                         
 {                                                                                            
     ID3D11DeviceContext * Context = RHIDevice->GetDeviceContext();                           
@@ -643,9 +644,13 @@ void URenderer::DrawFullScreenPass()
     Context->IASetInputLayout(nullptr); // No input layout needed                            
     Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);                  
     
+    // Unbind DepthStencilView Before Using Depth Buffer
+    ID3D11RenderTargetView* RTV = static_cast<D3D11RHI*>(RHIDevice)->GetRenderTargetView();
+    Context->OMSetRenderTargets(1, &RTV, NULL);
+
     // Bind the depth buffer as a shader resource for the pixel shader                       
-    ID3D11ShaderResourceView * DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthSRV();  
-    Context->PSSetShaderResources(0, 1, &DepthSRV);                                          
+    ID3D11ShaderResourceView * DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthBuffer();  
+    Context->PSSetShaderResources(0, 1, &DepthSRV);
     
     // Draw a single triangle that covers the screen                                         
     Context->Draw(3, 0);                                                                     
@@ -653,6 +658,10 @@ void URenderer::DrawFullScreenPass()
     
     // Unbind the SRV to avoid holding a reference                                           
     ID3D11ShaderResourceView * NullSRV = nullptr;                                            
-    Context->PSSetShaderResources(0, 1, &NullSRV);                                           
+    Context->PSSetShaderResources(0, 1, &NullSRV);
+
+    // Rebind DepthStencilView after using DepthBuffer
+    ID3D11DepthStencilView* DepthStencilView = static_cast<D3D11RHI*>(RHIDevice)->GetDepthStencilView();
+    Context->OMSetRenderTargets(1, &RTV, DepthStencilView);
 }                                                                                            
 
