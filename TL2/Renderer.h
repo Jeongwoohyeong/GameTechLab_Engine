@@ -6,6 +6,7 @@
 
 class UStaticMeshComponent;
 class UTextRenderComponent;
+class UFireBallComponent;
 class UMeshComponent;
 class URHIDevice;
 class UShader;
@@ -27,6 +28,8 @@ public:
     void PrepareShader(UShader* InShader);
 
     void OMSetBlendState(bool bIsChecked);
+
+    void OMSetBlendState(EBlendMode BlendMode);
 
     void RSSetState(EViewModeIndex ViewModeIndex);
 
@@ -58,6 +61,8 @@ public:
 
     void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float InAlpha);
 
+    void UpdateFireBallConstantBuffer(const struct FireBallBufferType& InFireBallData);
+
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,
         float FogDensity,
@@ -77,6 +82,8 @@ public:
     void DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
     void DrawIndexedPrimitiveComponent(UBillboardComponent* Comp,
                                        D3D11_PRIMITIVE_TOPOLOGY InTopology);
+    void DrawIndexedPrimitiveComponent(UFireBallComponent* Comp,
+                                        D3D11_PRIMITIVE_TOPOLOGY InTopology);
 
     void SetViewModeType(EViewModeIndex ViewModeIndex);
     // Batch Line Rendering System

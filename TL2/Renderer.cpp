@@ -77,6 +77,11 @@ void URenderer::OMSetBlendState(bool bIsChecked)
     }
 }
 
+void URenderer::OMSetBlendState(EBlendMode BlendMode)
+{
+    RHIDevice->OMSetBlendState(BlendMode);
+}
+
 void URenderer::RSSetState(EViewModeIndex ViewModeIndex)
 {
     RHIDevice->RSSetState(ViewModeIndex);
@@ -168,6 +173,11 @@ void URenderer::UpdateHeightFogConstantBuffer(
 void URenderer::UpdateSceneDepthBuffer(float Near, float Far)
 {
     RHIDevice->UpdateSceneDepthBuffer(Near, Far);
+}
+
+void URenderer::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBallData)
+{
+    RHIDevice->UpdateFireBallConstantBuffer(InFireBallData);
 }
 
 void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
@@ -427,6 +437,11 @@ void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_P
     RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
     RHIDevice->GetDeviceContext()->DrawIndexed(Comp->GetStaticMesh()->GetIndexCount(), 0, 0);
     StatsCollector.IncrementDrawCalls();
+}
+
+void URenderer::DrawIndexedPrimitiveComponent(UFireBallComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
+{
+
 }
 
 void URenderer::SetViewModeType(EViewModeIndex ViewModeIndex)

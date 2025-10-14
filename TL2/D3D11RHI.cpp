@@ -158,6 +158,7 @@ void D3D11RHI::Release()
     if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
     if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
+    if (FireBallCB) { FireBallCB->Release(); FireBallCB = nullptr; }
 
     // 상태 객체
     if (DepthStencilState) { DepthStencilState->Release(); DepthStencilState = nullptr; }
@@ -197,6 +198,8 @@ void D3D11RHI::CreateBlendState()
     // Create once; reuse every frame
     if (BlendState)
         return;
+    if (AddictiveBlendState)
+        return;
 
     D3D11_BLEND_DESC bd = {};
     auto& rt = bd.RenderTarget[0];
@@ -209,6 +212,11 @@ void D3D11RHI::CreateBlendState()
     rt.BlendOpAlpha = D3D11_BLEND_OP_ADD;
     rt.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     Device->CreateBlendState(&bd, &BlendState);
+
+    // 가산 블렌딩용 BlendState 생성
+    rt.SrcBlend = D3D11_BLEND_ONE;
+    rt.DestBlend = D3D11_BLEND_ONE;
+    Device->CreateBlendState(&bd, &AddictiveBlendState);
 }
 
 void D3D11RHI::CreateDepthStencilState()
@@ -376,6 +384,17 @@ void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatri
     DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB);
 }
 
+void D3D11RHI::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBallData)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(FireBallCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    memcpy(&mapped, &InFireBallData, sizeof(FireBallBufferType));
+    DeviceContext->Unmap(FireBallCB, 0);
+    
+    DeviceContext->VSSetConstantBuffers(2, 1, &FireBallCB);
+    DeviceContext->PSSetConstantBuffers(2, 1, &FireBallCB);
+}
+
 void D3D11RHI::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
@@ -484,6 +503,27 @@ void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
     else
     {
         DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    }
+}
+
+// Comment: 추가될 BlendState를 고려해 앞으로는 해당 함수 사용할 것을 권장
+void D3D11RHI::OMSetBlendState(EBlendMode BlendMode)
+{
+    float blendFactor[4] = { 0,0,0,0 };
+    switch (BlendMode)
+    {
+    case EBlendMode::Default:
+        DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+        break;
+    case EBlendMode::AlphaBlend:
+        DeviceContext->OMSetBlendState(BlendState, blendFactor, 0xffffffff);
+        break;
+    case EBlendMode::Addicitve:
+        DeviceContext->OMSetBlendState(AddictiveBlendState, blendFactor, 0xffffffff);
+        break;
+    default:
+        DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+        break;
     }
 }
 
@@ -722,6 +762,14 @@ void D3D11RHI::CreateConstantBuffer()
     scenedepthDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     scenedepthDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&scenedepthDesc, nullptr, &SceneDepthCB);
+
+    // FireBallCB
+    D3D11_BUFFER_DESC FireBallDesc = {};
+    FireBallDesc.Usage = D3D11_USAGE_DYNAMIC;
+    FireBallDesc.ByteWidth = sizeof(FireBallBufferType);
+    FireBallDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    FireBallDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&FireBallDesc, nullptr, &FireBallCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -849,6 +897,11 @@ void D3D11RHI::ReleaseSamplerState()
 
 void D3D11RHI::ReleaseBlendState()
 {
+    if (AddictiveBlendState)
+    {
+        AddictiveBlendState->Release();
+        AddictiveBlendState = nullptr;
+    }
     if (BlendState)
     {
         BlendState->Release();

@@ -2,6 +2,15 @@
 #include "RHIDevice.h"
 #include "ResourceManager.h"
 
+// for FireBall
+struct alignas(16) FireBallBufferType
+{
+    FVector4 WorldPosition;         // 16 (w=1.0 추가)
+    FLinearColor Color;             // 16 
+    FVector4 Parameters;            // 16 (Intensity, Radius, InvRadius, RadiusOff)
+};
+
+
 class D3D11RHI : public URHIDevice
 {
 public:
@@ -54,6 +63,7 @@ public:
     void UpdateInvWorldConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewProjMatrix) override;
     void UpdateViewportConstantBuffer(float StartX, float StartY, float SizeX, float SizeY);
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
+    void UpdateFireBallConstantBuffer(const FireBallBufferType & InFireBallData)  override;
 
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,
@@ -75,6 +85,7 @@ public:
     void RSSetViewport() override;
     void OMSetRenderTargets() override;
     void OMSetBlendState(bool bIsBlendMode) override;
+    void OMSetBlendState(EBlendMode BlendMode) override;
     void Present() override;
 	void PSSetDefaultSampler(UINT StartSlot) override;
 
@@ -162,6 +173,7 @@ private:
     ID3D11DepthStencilState* DepthStencilStateGreaterEqualWrite = nullptr;   // 선택사항
 
     ID3D11BlendState* BlendState{};
+    ID3D11BlendState* AddictiveBlendState{};
 
     ID3D11Texture2D* FrameBuffer{};//
     ID3D11RenderTargetView* RenderTargetView{};//
@@ -180,6 +192,7 @@ private:
     ID3D11Buffer* ViewportCB{};
     ID3D11Buffer* HeightFogCB{};
     ID3D11Buffer* SceneDepthCB{};
+    ID3D11Buffer* FireBallCB{};
 
     ID3D11Buffer* ConstantBuffer{};
 

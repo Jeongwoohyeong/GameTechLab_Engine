@@ -13,6 +13,13 @@ enum class EComparisonFunc
     Disable,
     LessEqualReadOnly,
 };
+enum class EBlendMode
+{
+    Default,    // 블렌딩 없음 (기본값)
+    AlphaBlend, // 알파 블렌딩
+    Addicitve,  // 가산 블렌딩
+
+};
 class URHIDevice
 {
 public:
@@ -61,6 +68,8 @@ public:
 
     virtual void UpdateSceneDepthBuffer(float Near, float Far) = 0;
 
+    virtual void UpdateFireBallConstantBuffer(const struct FireBallBufferType& FireBallData) = 0;
+    
     // clear
     virtual void ClearBackBuffer() = 0;
     virtual void ClearDepthBuffer(float Depth, UINT Stenci) = 0;
@@ -74,6 +83,7 @@ public:
     virtual void RSSetDecalState() = 0;
     virtual void OMSetRenderTargets() = 0;
     virtual void OMSetBlendState(bool bIsBlendMode) = 0;
+    virtual void OMSetBlendState(EBlendMode BlendMode) = 0;
     virtual void OmSetDepthStencilState(EComparisonFunc Func) = 0;
     virtual void Present() = 0;
     virtual void PSSetDefaultSampler(UINT StartSlot) = 0;
