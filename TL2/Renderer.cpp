@@ -165,6 +165,11 @@ void URenderer::UpdateHeightFogConstantBuffer(
     );
 }
 
+void URenderer::UpdateSceneDepthBuffer(float Near, float Far)
+{
+    RHIDevice->UpdateSceneDepthBuffer(Near, Far);
+}
+
 void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
     RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
@@ -642,7 +647,7 @@ void URenderer::DrawFullScreenPass()
     // Set up the pipeline for a full-screen pass                                            
     Context->IASetInputLayout(nullptr); // No input layout needed                            
     Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);                  
-    
+
     // Bind the depth buffer as a shader resource for the pixel shader                       
     ID3D11ShaderResourceView * DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthSRV();  
     Context->PSSetShaderResources(0, 1, &DepthSRV);                                          
@@ -655,4 +660,21 @@ void URenderer::DrawFullScreenPass()
     ID3D11ShaderResourceView * NullSRV = nullptr;                                            
     Context->PSSetShaderResources(0, 1, &NullSRV);                                           
 }                                                                                            
+
+void URenderer::RenderSceneDepth(float Near, float Far)
+{
+    static const UShader* SceneDepthShader = UResourceManager::GetInstance().Load<UMaterial>("SceneDepth.hlsl")->GetShader();
+
+    PrepareShader(const_cast<UShader*>(SceneDepthShader));
+    UpdateSceneDepthBuffer(Near, Far);
+
+    // 렌더 상태 설정 (블렌딩, 깊이 스텐실)
+    // 깊이 쓰기는 끄고, 깊이 테스트는 항상 통과 (기존 지오메트리 위에 그려지도록)
+    OMSetDepthStencilState(EComparisonFunc::Always);
+
+    DrawFullScreenPass();
+
+    // 렌더 상태 복원 (선택 사항이지만 좋은 습관)
+    OMSetDepthStencilState(EComparisonFunc::LessEqual); // 기본 깊이 스텐실 상태로 복원
+}
 

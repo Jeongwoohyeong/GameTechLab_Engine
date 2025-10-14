@@ -64,6 +64,8 @@ public:
         float FogMaxOpacity
     ) override;
 
+    void UpdateSceneDepthBuffer(float Near, float Far) override;
+
     void IASetPrimitiveTopology() override;
     void RSSetState(EViewModeIndex ViewModeIndex) override;
     void RSSetFrontCullState() override;
@@ -165,6 +167,7 @@ private:
     ID3D11Buffer* DecalCB{};
     ID3D11Buffer* ViewportCB{};
     ID3D11Buffer* HeightFogCB{};
+    ID3D11Buffer* SceneDepthCB{};
 
     ID3D11Buffer* ConstantBuffer{};
 

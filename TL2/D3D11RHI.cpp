@@ -61,6 +61,13 @@ struct FHeightFogConstBufferType
     float padding[3];
 };
 
+// b8
+struct FSceneDepthBufferType
+{
+    float Near;
+    float Far;
+};
+
 // b2
 struct HighLightBufferType
 {
@@ -149,6 +156,7 @@ void D3D11RHI::Release()
     if (ViewportCB) { ViewportCB->Release(); ViewportCB = nullptr; }
     if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
+    if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
 
     // 상태 객체
     if (DepthStencilState) { DepthStencilState->Release(); DepthStencilState = nullptr; }
@@ -706,6 +714,13 @@ void D3D11RHI::CreateConstantBuffer()
     fogDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     fogDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&fogDesc, nullptr, &HeightFogCB);
+
+    D3D11_BUFFER_DESC scenedepthDesc = {};
+    fogDesc.Usage = D3D11_USAGE_DYNAMIC;
+    fogDesc.ByteWidth = sizeof(FSceneDepthBufferType);
+    fogDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    fogDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&fogDesc, nullptr, &SceneDepthCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -785,6 +800,22 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
 
         DeviceContext->Unmap(HeightFogCB, 0);
         DeviceContext->PSSetConstantBuffers(7, 1, &HeightFogCB); // b7 슬롯
+    }
+}
+
+void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
+{
+    if (!SceneDepthCB) return;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(SceneDepthCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        FSceneDepthBufferType* dataPtr = reinterpret_cast<FSceneDepthBufferType*>(mapped.pData);
+        dataPtr->Near = Near;
+        dataPtr->Far = Far;
+
+        DeviceContext->Unmap(SceneDepthCB, 0);
+        DeviceContext->PSSetConstantBuffers(8, 1, &SceneDepthCB); // b8 슬롯
     }
 }
 

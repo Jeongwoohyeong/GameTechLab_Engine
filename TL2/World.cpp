@@ -529,6 +529,12 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
         HeightFog->Render(Renderer, ViewMatrix, ProjectionMatrix);
     }
 
+    // Pass 4 - View Mode : SceneDepth가 활성화되어있는 경우 실행
+
+    if (ViewModeIndex == EViewModeIndex::VMI_SceneDepth)
+    {
+        Renderer->RenderSceneDepth(Camera->GetCameraNear(), Camera->GetCameraFar());
+    }
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }

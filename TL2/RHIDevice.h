@@ -59,6 +59,8 @@ public:
         float FogMaxOpacity
     ) = 0;
 
+    virtual void UpdateSceneDepthBuffer(float Near, float Far) = 0;
+
     // clear
     virtual void ClearBackBuffer() = 0;
     virtual void ClearDepthBuffer(float Depth, UINT Stenci) = 0;

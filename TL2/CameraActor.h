@@ -31,7 +31,9 @@ protected:
 public:
     UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 
-    
+    // GetCameraInfo
+    float GetCameraNear() const;
+    float GetCameraFar() const;
 
     // Matrices
     FMatrix GetViewMatrix() const;
