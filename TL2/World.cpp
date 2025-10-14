@@ -595,7 +595,7 @@ void UWorld::RenderEngineActors(const FMatrix& ViewMatrix, const FMatrix& Projec
 void UWorld::Tick(float DeltaSeconds)
 {
     // Level의 Actors Tick
-    if (Level)
+    if (Level && WorldType == EWorldType::PIE)
     {
         for (AActor* Actor : Level->GetActors())
         {
@@ -1070,7 +1070,7 @@ void UWorld::LoadScene(const FString& SceneName)
         // Actor의 OwnedComponents에 추가
         if (AActor** OwnerActorPtr = ActorMap.Find(CompData->OwnerActorUUID))
         {
-            (*OwnerActorPtr)->OwnedComponents.Add(Comp);
+            (*OwnerActorPtr)->OwnedSceneComponents.Add(Comp);
         }
     }
 
@@ -1086,7 +1086,7 @@ void UWorld::LoadScene(const FString& SceneName)
             StaticMeshActor->SetStaticMeshComponent( Cast<UStaticMeshComponent>(StaticMeshActor->RootComponent));
 
             // CollisionComponent 찾기
-            for (UActorComponent* Comp : StaticMeshActor->OwnedComponents)
+            for (UActorComponent* Comp : StaticMeshActor->OwnedSceneComponents)
             {
                 if (UAABoundingBoxComponent* BBoxComp = Cast<UAABoundingBoxComponent>(Comp))
                 {

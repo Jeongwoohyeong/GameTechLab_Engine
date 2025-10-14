@@ -15,6 +15,7 @@
 #include "TextRenderComponent.h"    
 #include "DecalComponent.h"
 #include "SpotlightComponent.h"
+#include "RotationMovementComponent.h"
 
 #include <string>
 #include <filesystem>
@@ -145,16 +146,25 @@ void UTargetActorTransformWidget::Initialize()
 		{
 			UClass* ClassType = ClassDataPair.second;
 
-			// UActorComponent의 파생 클래스인지 확인
-			if (ClassType && ClassType->IsChildOf(UActorComponent::StaticClass()))
+			if (!ClassType)
+				continue;
+			// 메타데이터를 체크하여 TargetActorTransformWidget에서 생성 가능한지 확인
+			if (!ClassType->GetMetaDataBool("CanSpawnInTransformWidget", false))
+				continue;
+
+
+			// USceneComponent의 파생 클래스인지 확인
+			if (ClassType->IsChildOf(USceneComponent::StaticClass()))
 			{
-				// 메타데이터를 체크하여 TargetActorTransformWidget에서 생성 가능한지 확인
-				if (ClassType->GetMetaDataBool("CanSpawnInTransformWidget", false))
-				{
-					// 리스트에 추가
-					FString DisplayName = ClassDataPair.first;
-					AddableComponentTypes.push_back({ DisplayName, ClassType });
-				}
+				// 리스트에 추가
+				FString DisplayName = ClassDataPair.first;
+				AddableSceneComponentTypes.push_back({ DisplayName, ClassType });
+			}
+			else if (ClassType->IsChildOf(UActorComponent::StaticClass()))
+			{
+				// 리스트에 추가
+				FString DisplayName = ClassDataPair.first;
+				AddableNonSceneComponentTypes.push_back({ DisplayName, ClassType });
 			}
 		}
 		bComponentTypesInitialized = true;
@@ -237,144 +247,188 @@ void UTargetActorTransformWidget::RenderWidget()
 		ImGui::Text("UUID: %u", static_cast<unsigned int>(SelectedActor->UUID));
 		ImGui::Spacing();
 
+		// 선택된 Component가 USceneComponent인 경우 사용
+		USceneComponent* SceneComponent = Cast<USceneComponent>(SelectedComponent);
+
 		// 컴포넌트 추가 메뉴
-		if (SelectedComponent)
+		if (ImGui::Button("+추가"))
 		{
-			if (ImGui::Button("+추가"))
-			{
-				ImGui::OpenPopup("AddComponentPopup");
-			}
+			ImGui::OpenPopup("AddComponentPopup");
+		}
 
-			ImGui::SameLine();
+		ImGui::SameLine();
 
-			if (ImGui::Button("-삭제"))
+		if (ImGui::Button("-삭제"))
+		{
+			if (SelectedComponent && SceneComponent)
 			{
 				// 컴포넌트 삭제 시 상위 컴포넌트로 선택되도록 설정
-				USceneComponent* ParentComponent = SelectedComponent->GetAttachParent();
-				if (SelectedActor->DeleteComponent(SelectedComponent))
+				USceneComponent* ParentComponent = SceneComponent->GetAttachParent();
+				if (SelectedActor->DeleteSceneComponent(SceneComponent))
 				{
 					if (ParentComponent)
 					{
-						SelectedComponent = ParentComponent;
+						SceneComponent = ParentComponent;
 					}
 					else
 					{
-						SelectedComponent = SelectedActor->GetRootComponent();
+						SceneComponent = SelectedActor->GetRootComponent();
 					}
 				}
 			}
-
-			// "Add Component" 버튼에 대한 팝업 메뉴 정의
-			if (ImGui::BeginPopup("AddComponentPopup"))
+			else
 			{
-				ImGui::BeginChild("ComponentListScroll", ImVec2(200.0f, 150.0f), true);
+				SelectedActor->DeleteNonSceneComponent(SelectedComponent);
+				// 비계층 컴포넌트 삭제 시 자동으로 루트를 선택 컴포넌트로 등록한다.
+				SelectedComponent = SelectedActor->GetRootComponent();
+			}
+		}
 
+		// "Add Component" 버튼에 대한 팝업 메뉴 정의
+		if (ImGui::BeginPopup("AddComponentPopup"))
+		{
+			ImGui::BeginChild("ComponentListScroll", ImVec2(200.0f, 150.0f), true);
+
+			if (SelectedComponent && SceneComponent)
+			{
 				// 추가 가능한 컴포넌트 타입 목록 메뉴 표시
-				for (const TPair<FString, UClass*>& Item : AddableComponentTypes)
+				for (const TPair<FString, UClass*>& Item : AddableSceneComponentTypes)
 				{
 					if (ImGui::Selectable(Item.first.c_str()))
 					{
 						// 컴포넌트를 누르면 생성 함수를 호출합니다.
-						USceneComponent* NewSceneComponent = SelectedActor->CreateAndAttachComponent(SelectedComponent, Item.second);
+						USceneComponent* NewSceneComponent = SelectedActor->CreateAndAttachComponent(SceneComponent, Item.second);
 						// SelectedComponent를 생성된 컴포넌트로 교체합니다
-						SelectedComponent = NewSceneComponent;
+						SceneComponent = NewSceneComponent;
 						ImGui::CloseCurrentPopup();
 					}
 				}
-
-				ImGui::EndChild();
-
-				ImGui::EndPopup();
 			}
+
+			ImGui::NewLine();
+			ImGui::Separator();
+			ImGui::NewLine();
+
+			// 비계층 컴포넌트는 항상 추가할 수 있다.
+			for (const TPair<FString, UClass*>& Item : AddableNonSceneComponentTypes)
+			{
+				if (ImGui::Selectable(Item.first.c_str()))
+				{
+					// 컴포넌트를 누르면 생성 함수를 호출합니다.
+					UActorComponent* NewSceneComponent = Cast<UActorComponent>(NewObject(Item.second));
+					SelectedActor->AddNonSceneComponent(NewSceneComponent);
+					// SelectedComponent를 생성된 컴포넌트로 교체합니다
+					SelectedComponent = NewSceneComponent;
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			ImGui::EndChild();
+			ImGui::EndPopup();
 		}
 
 		// 컴포넌트 계층 구조 표시
 		ImGui::BeginChild("ComponentHierarchy", ImVec2(0, 240), true);
-		if (SelectedActor)
+		const FName ActorName = SelectedActor->GetName();
+
+		// 1. 최상위 액터 노드는 클릭해도 접을 수 없습니다.
+		ImGui::TreeNodeEx(
+			ActorName.ToString().c_str(),
+			ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen
+		);
+
+		// 2. 수동으로 들여쓰기를 추가합니다.
+		ImGui::Indent();
+
+		// 3. 하위 컴포넌트를 조건 없이 항상 그립니다.
+		USceneComponent* RootComponent = SelectedActor->GetRootComponent();
+		if (RootComponent)
 		{
-			const FName ActorName = SelectedActor->GetName();
+			RenderComponentHierarchy(RootComponent);
+		}
 
-			// 1. 최상위 액터 노드는 클릭해도 접을 수 없습니다.
-			ImGui::TreeNodeEx(
-				ActorName.ToString().c_str(),
-				ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen
-			);
+		ImGui::NewLine();
+		ImGui::Separator();
+		ImGui::NewLine();
 
-			// 2. 수동으로 들여쓰기를 추가합니다.
-			ImGui::Indent();
+		// 비계층 컴포넌트 목록 표시
+		TArray<UActorComponent*> OwnedNonSceneComponents = SelectedActor->GetOwnedNonSceneComponent();
+		for (UActorComponent* NonSceneComponent : OwnedNonSceneComponents)
+		{
+			FString ComponentName = NonSceneComponent->GetName().ToString();
+			//FString ComponentClass = NonSceneComponent->GetClass()->Name;
+			FString DisplayText = ComponentName;
 
-			// 3. 하위 컴포넌트를 조건 없이 항상 그립니다.
-			USceneComponent* RootComponent = SelectedActor->GetRootComponent();
-			if (RootComponent)
+			// 선택 가능한 항목으로 표시
+			bool bIsSelected = (SelectedComponent == NonSceneComponent);
+			if (ImGui::Selectable(DisplayText.c_str(), bIsSelected))
 			{
-				RenderComponentHierarchy(RootComponent);
+				// 클릭하면 선택
+				SelectedComponent = NonSceneComponent;
 			}
+		}
 
-			// 4. 들여쓰기를 해제합니다.
-			ImGui::Unindent();
-		}
-		else
-		{
-			ImGui::Text("No actor selected.");
-		}
+		// 4. 들여쓰기를 해제합니다.
+		ImGui::Unindent();
 		ImGui::EndChild();
 
-		// Location 편집
-		if (ImGui::DragFloat3("Location", &EditLocation.X, 0.1f))
-		{
-			bPositionChanged = true;
-		}
-
-		// Rotation 편집 (Euler angles)
-		if (ImGui::DragFloat3("Rotation", &EditRotation.X, 0.5f))
-		{
-			bRotationChanged = true;
-		}
-
-		// Scale 편집
-		ImGui::Checkbox("Uniform Scale", &bUniformScale);
-
-		if (bUniformScale)
-		{
-			float UniformScale = EditScale.X;
-			if (ImGui::DragFloat("Scale", &UniformScale, 0.01f, 0.01f, 10.0f))
-			{
-				EditScale = FVector(UniformScale, UniformScale, UniformScale);
-				bScaleChanged = true;
-			}
-		}
-		else
-		{
-			if (ImGui::DragFloat3("Scale", &EditScale.X, 0.01f, 0.01f, 10.0f))
-			{
-				bScaleChanged = true;
-			}
-		}
-
-		ImGui::Spacing();
-
-		// 실시간 적용 버튼
-		if (ImGui::Button("Apply Transform"))
-		{
-			ApplyTransformToActor();
-		}
-
-		ImGui::SameLine();
-		if (ImGui::Button("Reset Transform"))
-		{
-			UpdateTransformFromActor();
-			ResetChangeFlags();
-		}
-		
-		// TODO(KHJ): 테스트용, 완료 후 지울 것
-		if (ImGui::Button("Duplicate Test Button"))
-		{
-			DuplicateTarget();
-		}
-		
-		ImGui::Spacing();
+		ImGui::NewLine();
 		ImGui::Separator();
+		ImGui::NewLine();
 
+		if (SceneComponent)
+		{
+			// Location 편집
+			if (ImGui::DragFloat3("Location", &EditLocation.X, 0.1f))
+			{
+				bPositionChanged = true;
+			}
+
+			// Rotation 편집 (Euler angles)
+			if (ImGui::DragFloat3("Rotation", &EditRotation.X, 0.5f))
+			{
+				bRotationChanged = true;
+			}
+
+			// Scale 편집
+			ImGui::Checkbox("Uniform Scale", &bUniformScale);
+
+			if (bUniformScale)
+			{
+				float UniformScale = EditScale.X;
+				if (ImGui::DragFloat("Scale", &UniformScale, 0.01f, 0.01f, 10.0f))
+				{
+					EditScale = FVector(UniformScale, UniformScale, UniformScale);
+					bScaleChanged = true;
+				}
+			}
+			else
+			{
+				if (ImGui::DragFloat3("Scale", &EditScale.X, 0.01f, 0.01f, 10.0f))
+				{
+					bScaleChanged = true;
+				}
+			}
+
+			ImGui::Spacing();
+
+			// 실시간 적용 버튼
+			if (ImGui::Button("Apply Transform"))
+			{
+				ApplyTransformToActor();
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Reset Transform"))
+			{
+				UpdateTransformFromActor();
+				ResetChangeFlags();
+			}
+
+			ImGui::Spacing();
+			ImGui::Separator();
+		}
+		
 		// NOTE: 추후 컴포넌트별 위젯 따로 추가
 		// Actor가 AStaticMeshActor인 경우 StaticMesh 변경 UI
 		if (SelectedComponent)
@@ -854,6 +908,18 @@ void UTargetActorTransformWidget::RenderWidget()
 					SpotlightComponent->SetAttenuationRadius(attenuationRadius);
 				}
 			}
+			else if (URotationMovementComponent* RotationMovementComponent = Cast<URotationMovementComponent>(SelectedComponent))
+			{
+				FVector RotationAngle = RotationMovementComponent->GetRotationAngle();
+
+				ImGui::Separator();
+				ImGui::Text("RotationMovementComponent Settings");
+
+				// Location 편집
+				if (ImGui::DragFloat3("RotationAngle", &RotationAngle.X, 0.1f)) {}
+
+				RotationMovementComponent->SetRotationAngle(RotationAngle);
+			}
 			else
 			{
 				ImGui::Text("Selected component is not a supported type.");
@@ -940,16 +1006,17 @@ void UTargetActorTransformWidget::PostProcess()
 
 void UTargetActorTransformWidget::UpdateTransformFromActor()
 {
-	if (!SelectedActor)
+	if (!SelectedActor && !SelectedComponent)
+		return;
+	
+	USceneComponent* SceneComponent = Cast<USceneComponent>(SelectedComponent);
+	if (!SceneComponent)
 		return;
 
-	if (SelectedComponent)
-	{
-		// 액터의 현재 트랜스폼을 UI 변수로 복사
-		EditLocation = SelectedComponent->GetRelativeLocation();
-		EditRotation = SelectedComponent->GetRelativeRotation().ToEuler();
-		EditScale = SelectedComponent->GetRelativeScale();
-	}
+	// 액터의 현재 트랜스폼을 UI 변수로 복사
+	EditLocation = SceneComponent->GetRelativeLocation();
+	EditRotation = SceneComponent->GetRelativeRotation().ToEuler();
+	EditScale = SceneComponent->GetRelativeScale();
 
 	ResetChangeFlags();
 }
@@ -961,10 +1028,14 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 
 	bool bTransformHasChanged = false;
 
+	USceneComponent* SceneComponent = Cast<USceneComponent>(SelectedComponent);
+	if (!SceneComponent)
+		return;
+
 	// 변경사항이 있는 경우에만 적용
 	if (bPositionChanged)
 	{
-		SelectedComponent->SetRelativeLocation(EditLocation);
+		SceneComponent->SetRelativeLocation(EditLocation);
 		bTransformHasChanged = true;
 		UE_LOG("Transform: Applied location (%.2f, %.2f, %.2f)",
 			EditLocation.X, EditLocation.Y, EditLocation.Z);
@@ -973,7 +1044,7 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 	if (bRotationChanged)
 	{
 		FQuat NewRotation = FQuat::MakeFromEuler(EditRotation);
-		SelectedComponent->SetRelativeRotation(NewRotation);
+		SceneComponent->SetRelativeRotation(NewRotation);
 		bTransformHasChanged = true;
 		UE_LOG("Transform: Applied rotation (%.1f, %.1f, %.1f)",
 			EditRotation.X, EditRotation.Y, EditRotation.Z);
@@ -981,7 +1052,7 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 
 	if (bScaleChanged)
 	{
-		SelectedComponent->SetRelativeScale(EditScale);
+		SceneComponent->SetRelativeScale(EditScale);
 		bTransformHasChanged = true;
 		UE_LOG("Transform: Applied scale (%.2f, %.2f, %.2f)",
 			EditScale.X, EditScale.Y, EditScale.Z);

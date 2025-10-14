@@ -9,7 +9,7 @@ void ASpotlightActor::Initialize()
 	Name = "Spotlight Actor";
 	SpotlightComponent = CreateDefaultSubobject<USpotlightComponent>("SpotlightComponent");
 	RootComponent = SpotlightComponent;
-	AddComponent(SpotlightComponent);
+	AddSceneComponent(SpotlightComponent);
 
 	// Billboard Component (표시를 위해)
 	BillboardComponent = CreateDefaultSubobject<UBillboardComponent>(FName("BillboardComponent"));
@@ -32,7 +32,7 @@ ASpotlightActor::~ASpotlightActor()
 	SpotlightComponent = nullptr;
 }
 
-bool ASpotlightActor::DeleteComponent(USceneComponent* ComponentToDelete)
+bool ASpotlightActor::DeleteSceneComponent(USceneComponent* ComponentToDelete)
 {
 	// BillboardComponent 삭제 처리
 	if (ComponentToDelete == BillboardComponent)
@@ -47,7 +47,7 @@ bool ASpotlightActor::DeleteComponent(USceneComponent* ComponentToDelete)
 	}
 
 	// 부모 클래스의 원래 기능 호출
-	return AActor::DeleteComponent(ComponentToDelete);
+	return AActor::DeleteSceneComponent(ComponentToDelete);
 }
 
 void ASpotlightActor::SetSpotlightComponent(USpotlightComponent* InSpotlightComponent)
@@ -69,20 +69,20 @@ UObject* ASpotlightActor::Duplicate()
 	// 생성자가 만든 컴포넌트 삭제
 	if (DuplicatedActor->SpotlightComponent)
 	{
-		DuplicatedActor->OwnedComponents.Remove(DuplicatedActor->SpotlightComponent);
+		DuplicatedActor->OwnedSceneComponents.Remove(DuplicatedActor->SpotlightComponent);
 		ObjectFactory::DeleteObject(DuplicatedActor->SpotlightComponent);
 		DuplicatedActor->SpotlightComponent = nullptr;
 	}
 
 	if (DuplicatedActor->BillboardComponent)
 	{
-		DuplicatedActor->OwnedComponents.Remove(DuplicatedActor->BillboardComponent);
+		DuplicatedActor->OwnedSceneComponents.Remove(DuplicatedActor->BillboardComponent);
 		ObjectFactory::DeleteObject(DuplicatedActor->BillboardComponent);
 		DuplicatedActor->BillboardComponent = nullptr;
 	}
 
 	DuplicatedActor->RootComponent = nullptr;
-	DuplicatedActor->OwnedComponents.clear();
+	DuplicatedActor->OwnedSceneComponents.clear();
 
 	// 원본의 RootComponent(SpotlightComponent) 복제
 	if (OriginalRoot)
@@ -106,7 +106,7 @@ void ASpotlightActor::DuplicateSubObjects()
 	SpotlightComponent = Cast<USpotlightComponent>(RootComponent);
 
 	// BillboardComponent 찾기
-	for (UActorComponent* Comp : OwnedComponents)
+	for (UActorComponent* Comp : OwnedSceneComponents)
 	{
 		if (UBillboardComponent* BillboardComp = Cast<UBillboardComponent>(Comp))
 		{

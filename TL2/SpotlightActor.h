@@ -21,7 +21,7 @@ protected:
 	~ASpotlightActor() override;
 
 public: 
-	virtual bool DeleteComponent(USceneComponent* ComponentToDelete) override;
+	virtual bool DeleteSceneComponent(USceneComponent* ComponentToDelete) override;
 
 	USpotlightComponent* GetSpotlightCompoonent() const { return SpotlightComponent; }
 	void SetSpotlightComponent(USpotlightComponent* InSpotlightComponent);

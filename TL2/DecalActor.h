@@ -27,7 +27,7 @@ protected:
 	~ADecalActor() override;
 
 public:
-	virtual bool DeleteComponent(USceneComponent* ComponentToDelete) override;
+	virtual bool DeleteSceneComponent(USceneComponent* ComponentToDelete) override;
 
 	UDecalComponent* GetDecalComponent() const { return DecalComponent; }
 	void SetDecalComponent(UDecalComponent* InDecalComponent);	

@@ -10,7 +10,7 @@ void AStaticMeshActor::Initialize()
     Name = "Static Mesh Actor";
     StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMesh");
     RootComponent = StaticMeshComponent;
-    AddComponent(StaticMeshComponent);
+    AddSceneComponent(StaticMeshComponent);
 
     CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
     CollisionComponent->SetupAttachment(RootComponent);
@@ -58,6 +58,12 @@ UObject* AStaticMeshActor::Duplicate()
         DuplicatedActor->RootComponent = Cast<USceneComponent>(OriginalRoot->Duplicate());
     }
 
+    // Non SceneComponents 복제
+    for (UActorComponent* NonSceneComponent : OwnedNonSceneComponents)
+    {
+        DuplicatedActor->AddNonSceneComponent(Cast<UActorComponent>(NonSceneComponent->Duplicate()));
+    }
+
     // OwnedComponents 재구성 및 타입별 포인터 재설정
     DuplicatedActor->DuplicateSubObjects();
 
@@ -74,7 +80,7 @@ void AStaticMeshActor::DuplicateSubObjects()
     StaticMeshComponent = Cast<UStaticMeshComponent>(RootComponent);
 
     // CollisionComponent 찾기
-    for (UActorComponent* Comp : OwnedComponents)
+    for (UActorComponent* Comp : OwnedSceneComponents)
     {
         if (UAABoundingBoxComponent* BBoxComp = Cast<UAABoundingBoxComponent>(Comp))
         {
@@ -85,7 +91,7 @@ void AStaticMeshActor::DuplicateSubObjects()
 }
 
 // 특화된 멤버 컴포넌트 CollisionComponent, StaticMeshComponent 는 삭제 시 포인터를 초기화합니다.
-bool AStaticMeshActor::DeleteComponent(USceneComponent* ComponentToDelete)
+bool AStaticMeshActor::DeleteSceneComponent(USceneComponent* ComponentToDelete)
 {
     // 1. [자식 클래스의 추가 처리] 삭제 대상이 나의 특정 컴포넌트인지 확인합니다.
     if (ComponentToDelete == CollisionComponent)
@@ -103,5 +109,5 @@ bool AStaticMeshActor::DeleteComponent(USceneComponent* ComponentToDelete)
     // 2. [부모 클래스의 원래 기능 호출]
     // 기본적인 삭제 로직(소유 목록 제거, 메모리 해제 등)은 부모에게 위임합니다.
     // Super:: 키워드를 사용합니다.
-    return AActor::DeleteComponent(ComponentToDelete);
+    return AActor::DeleteSceneComponent(ComponentToDelete);
 }
