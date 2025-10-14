@@ -104,9 +104,17 @@ public:
     {
         return SwapChain;
     }
-    inline ID3D11ShaderResourceView* GetDepthSRV()
+    inline ID3D11ShaderResourceView* GetDepthBuffer()
     {
         return DepthSRV;
+    }
+    inline ID3D11DepthStencilView* GetDepthStencilView()
+    {
+        return DepthStencilView;
+    }
+    inline ID3D11RenderTargetView* GetRenderTargetView()
+    {
+        return RenderTargetView;
     }
 
 private:
