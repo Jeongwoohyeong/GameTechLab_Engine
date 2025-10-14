@@ -35,6 +35,25 @@ cbuffer InvMatrixBuffer : register(b10)
     matrix InvProj;
 };
 
+float ComputeHeightFog(float3 worldPos, float3 camPos)
+{
+    float3 rayDir = worldPos - camPos;
+    float d = length(rayDir);
+    float vh = rayDir.z / max(d, 1e-5); // z-axis component (instead of normalize)
+    float h0 = camPos.z;
+    
+    float adjustedDistance = min(max(0.0f, d - StartDistance), FogCutoffDistance);
+    float a = vh * FogHeightFalloff;
+    
+    float tau;
+    if (abs(a) < 1e-5)
+        tau = FogDensity * exp(-h0 * FogHeightFalloff) * adjustedDistance;
+    else
+        tau = FogDensity * exp(-h0 * FogHeightFalloff) * (1.0f - exp(-adjustedDistance * a)) / a;
+    
+    return 1.0f - exp(-tau);
+}
+
 PS_INPUT mainVS(uint VertexID : SV_VertexID)
 {
     PS_INPUT Out;
@@ -79,13 +98,9 @@ float4 mainPS(PS_INPUT In) : SV_TARGET
 
     // Step 7: Extract camera position from InvView matrix (last row/column depending on row/column-major)
     // In HLSL with row_major (default), camera position is in the 4th row
-    float3 cameraPos = float3(InvView[0][3], InvView[1][3], InvView[2][3]);
-
-    // Step 8: Calculate distance from camera to world position
-    float distance = length(worldPos.xyz - cameraPos);
-
-    // Step 9: Apply distance-based fog with start distance
-    float adjustedDistance = max(0.0f, distance - 0.5f);
-    float fogFactor = exp(-adjustedDistance * 0.33f);
-    return float4(1.0f, 0.0f, 0.0f, saturate(1.0f - fogFactor));
+    float3 camPos = float3(InvView[0][3], InvView[1][3], InvView[2][3]);
+    
+    float fogFactor = ComputeHeightFog(worldPos.xyz, camPos);
+    //return float4(1.0f, 0.0f, 0.0f, fogFactor);
+    return float4(FogInscatteringColor.xyz, FogInscatteringColor.w * fogFactor);
 }

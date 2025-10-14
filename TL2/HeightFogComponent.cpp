@@ -4,12 +4,12 @@
 //IMPLEMENT_CLASS(UHeightFogComponent)
 
 UHeightFogComponent::UHeightFogComponent()
-    : FogDensity(0.001f)       // Default fog density (adjust based on scene scale)
-    , FogHeightFalloff(0.01f)  // Default height falloff
+    : FogDensity(0.3f)       // Default fog density (adjust based on scene scale)
+    , FogHeightFalloff(0.2f)  // Default height falloff
     , StartDistance(0.0f)      // Fog starts immediately
     , FogCutoffDistance(5000.0f) // Fog cutoff distance
     , FogMaxOpacity(1.0f)      // Maximum fog opacity
-    , FogInscatteringColor(FLinearColor::White) // White fog
+    , FogInscatteringColor(FLinearColor(1.0f, 0.2f, 0, 1)) // White fog
 {
     SetMaterial("HeightFog.hlsl");
 }
