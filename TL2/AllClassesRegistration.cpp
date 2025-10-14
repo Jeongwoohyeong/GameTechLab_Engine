@@ -75,6 +75,7 @@ IMPLEMENT_CLASS(UDecalComponent)
 CLASS_META(UDecalComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(USpotlightComponent)
 IMPLEMENT_CLASS(UFireBallComponent)
+CLASS_META(UFireBallComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UHeightFogComponent)
 
 IMPLEMENT_CLASS(AActor)

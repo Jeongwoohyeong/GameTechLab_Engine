@@ -318,24 +318,27 @@ enum class EPrimitiveType : uint32
 enum class EEngineShowFlags : uint64
 {
     None = 0,
-    
+
     // Primitive rendering
     SF_Primitives = 1ull << 0,    // Show/hide all primitive geometry
     SF_StaticMeshes = 1ull << 1,  // Show/hide static mesh actors
-    
+
     // Debug features
     SF_BillboardText = 1ull << 2, // Show/hide UUID text above objects
     SF_BoundingBoxes = 1ull << 3, // Show/hide collision bounds
     SF_Grid = 1ull << 4,          // Show/hide world grid
-    
+
     // Decal Rendering
     SF_Decal = 1ull << 5,         // Show/hide decal volume line rendering, decal projection to static mesh
 
     // Lighting
     SF_Lighting = 1ull << 6,      // Enable/disable lighting
+
+    // FireBall Rendering(Spot Light)
+    SF_FireBall = 1ull << 7,
     
     // Default enabled flags
-    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal,
+    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal | SF_FireBall,
     
     // All flags (for initialization/reset)
     SF_All = 0xFFFFFFFFFFFFFFFFull
