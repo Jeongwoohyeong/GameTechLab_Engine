@@ -461,6 +461,10 @@
     <ClCompile Include="SerializationData.cpp">
       <Filter>Utilities\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="EnumUtils.cpp" />
+    <ClCompile Include="SpotlightActor.cpp" />
+    <ClCompile Include="SpotlightComponent.cpp" />
+    <ClCompile Include="FireBallComponent.cpp" />
   </ItemGroup>
   <!-- ==================== 헤더 파일 (.h) ==================== -->
   <ItemGroup>
@@ -841,6 +845,10 @@
     <ClInclude Include="SerializationData.h">
       <Filter>Utilities\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="EnumUtils.h" />
+    <ClInclude Include="SpotlightActor.h" />
+    <ClInclude Include="SpotlightComponent.h" />
+    <ClInclude Include="FireBallComponent.h" />
   </ItemGroup>
   <!-- ==================== 셰이더 파일 (.hlsl) ==================== -->
   <ItemGroup>

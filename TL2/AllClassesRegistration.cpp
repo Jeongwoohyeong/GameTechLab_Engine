@@ -54,6 +54,7 @@
 #include "OBoundingBoxComponent.h"
 #include "DecalComponent.h"
 #include "SpotlightComponent.h"
+#include "FireBallComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -71,6 +72,7 @@ IMPLEMENT_CLASS(UOBoundingBoxComponent)
 IMPLEMENT_CLASS(UDecalComponent)
 CLASS_META(UDecalComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(USpotlightComponent)
+IMPLEMENT_CLASS(UFireBallComponent)
 
 IMPLEMENT_CLASS(AActor)
 IMPLEMENT_CLASS(ACameraActor)

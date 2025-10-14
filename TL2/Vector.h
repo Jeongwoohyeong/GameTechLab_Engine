@@ -855,6 +855,64 @@ struct FTransform
     }
 };
 
+// A linear, 32-bit/component floating point RGBA color.
+struct FLinearColor
+{
+    float R, G, B, A;
+
+    FLinearColor() : R(0.0f), G(0.0f), B(0.0f), A(1.0f) {}
+    FLinearColor(float InR, float InG, float InB, float InA) :
+        R(InR), G(InG), B(InB), A(InA) {
+    }
+    // ======== Operator =======
+    FLinearColor operator+(const FLinearColor& Other) const
+    {
+        return FLinearColor(R + Other.R, G + Other.G, B + Other.B, A + Other.A);
+    }
+    FLinearColor operator-(const FLinearColor& Other) const
+    {
+        return FLinearColor(R - Other.R, G - Other.G, B - Other.B, A - Other.A);
+    }
+    FLinearColor operator*(const FLinearColor& Other) const
+    {
+        return FLinearColor(R * Other.R, G * Other.G, B * Other.B, A * Other.A);
+    }
+    FLinearColor operator*(float Scalar) const
+    {
+        return FLinearColor(R * Scalar, G * Scalar, B * Scalar, A * Scalar);
+    }
+    FLinearColor operator/(float Scalar) const
+    {
+        const float InvScalar = 1.0f / Scalar;
+        return FLinearColor(R * InvScalar, G * InvScalar, B * InvScalar, A * InvScalar);
+    }
+    FLinearColor& operator+=(const FLinearColor& Other)
+    {
+        R += Other.R; G += Other.G; B += Other.B; A += Other.A;
+        return *this;
+    }
+    FLinearColor& operator*=(float Scalar)
+    {
+        R *= Scalar; G *= Scalar; B *= Scalar; A *= Scalar;
+        return *this;
+    }
+    bool operator==(const FLinearColor& Other) const
+    {
+        // Use a small tolerance (epsilon) for robust float comparison
+        return std::abs(R - Other.R) < 1e-4f &&
+            std::abs(G - Other.G) < 1e-4f &&
+            std::abs(B - Other.B) < 1e-4f &&
+            std::abs(A - Other.A) < 1e-4f;
+    }
+    bool operator!=(const FLinearColor& Other) const
+    {
+        return !(*this == Other);
+    }
+    // ========== Utility ==========
+    
+};
+
+
 // ─────────────────────────────
 // Inline 구현부
 // ─────────────────────────────
