@@ -382,6 +382,7 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["StaticMeshShader.hlsl"] = layout;
     ShaderToInputLayoutMap["Decal.hlsl"] = layout;
     ShaderToInputLayoutMap["HeightFog.hlsl"] = layout;
+    ShaderToInputLayoutMap["SceneDepth.hlsl"] = layout;
     layout.clear();
 
     layout.Add({ "WORLDPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
@@ -397,7 +398,6 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["TextShader.hlsl"] = layout;
     layout.clear();
 
-    ShaderToInputLayoutMap["SceneDepth.hlsl"] = layout;
 }
 
 TArray<D3D11_INPUT_ELEMENT_DESC>& UResourceManager::GetProperInputLayout(const FString& InShaderName)
