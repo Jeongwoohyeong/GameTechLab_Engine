@@ -7,7 +7,8 @@ class UHeightFogComponent : public UPrimitiveComponent
 {
 public:
     DECLARE_CLASS(UHeightFogComponent, UPrimitiveComponent)
-    UHeightFogComponent();
+    UHeightFogComponent(); 
+    virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
 
 private:
     float FogDensity;

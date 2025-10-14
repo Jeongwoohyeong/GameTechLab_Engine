@@ -23,6 +23,7 @@
 #include "RenderingStats.h"
 #include "UI/StatsOverlayD2D.h"
 #include "PrimitiveComponent.h"
+#include "HeightFogComponent.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -293,8 +294,12 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
     // Pass 2를 위해 Decal을 미리 저장하기 위한 컨테이너
     TArray<UDecalComponent*> DecalVolumes;
+
     // Pass 2를 위해 StaticMesh를 미리 저장하기 위한 컨테이너
     TArray<UStaticMeshComponent*> StaticMeshes;
+
+    // Pass 3를 위해 Fog를 별도로 저장하기 위한 컨테이너
+    TArray<UHeightFogComponent*> HeightFogs;
 
     // Pass 1: 데칼을 제외한 모든 오브젝트 렌더링 (Depth 버퍼 채우기)
     for (AActor* Actor : LevelActors)
@@ -365,6 +370,12 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             {
                 if (DecalComponent)
                     continue;
+            }
+
+            if (UHeightFogComponent* HeightFog = Cast<UHeightFogComponent>(Component))
+            {
+                HeightFogs.Add(HeightFog);
+                continue;
             }
 
             if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
@@ -511,6 +522,13 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     {
         BVH->Render(Renderer);
     }
+
+    // Pass 3 - Fog 구현을 위한 Screen Aligned Quad Render 구현
+    for (const auto& HeightFog : HeightFogs)
+    {
+        HeightFog->Render(Renderer, ViewMatrix, ProjectionMatrix);
+    }
+
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 }
