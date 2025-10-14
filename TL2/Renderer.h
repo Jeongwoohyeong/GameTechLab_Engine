@@ -58,6 +58,17 @@ public:
 
     void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float InAlpha);
 
+    void UpdateHeightFogConstantBuffer(
+        const FLinearColor& FogInscatteringColor,
+        float FogDensity,
+        float FogHeightFalloff,
+        float StartDistance,
+        float FogCutoffDistance,
+        float FogMaxOpacity
+    );
+
+    void DrawFullScreenPass();
+
     void ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology);
 
     void DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);

@@ -901,6 +901,9 @@
     <FxCompile Include="Decal.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="HeightFog.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <!-- ==================== 리소스 파일 ==================== -->
   <ItemGroup>
