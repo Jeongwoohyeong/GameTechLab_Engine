@@ -158,7 +158,8 @@ void URenderer::UpdateHeightFogConstantBuffer(
     float FogHeightFalloff,
     float StartDistance,
     float FogCutoffDistance,
-    float FogMaxOpacity)
+    float FogMaxOpacity,
+    float FogHeightOffset)
 {
     RHIDevice->UpdateHeightFogConstantBuffer(
         FogInscatteringColor,
@@ -166,7 +167,8 @@ void URenderer::UpdateHeightFogConstantBuffer(
         FogHeightFalloff,
         StartDistance,
         FogCutoffDistance,
-        FogMaxOpacity
+        FogMaxOpacity,
+        FogHeightOffset
     );
 }
 
