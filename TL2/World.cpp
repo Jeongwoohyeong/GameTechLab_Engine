@@ -24,6 +24,8 @@
 #include "UI/StatsOverlayD2D.h"
 #include "PrimitiveComponent.h"
 #include "HeightFogComponent.h"
+#include "RotationMovementComponent.h"
+#include "ProjectileMovementComponent.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -896,7 +898,7 @@ void UWorld::SaveScene(const FString& SceneName)
 
         SceneData.Actors.push_back(ActorData);
 
-        // OwnedComponents 순회 (모든 컴포넌트 포함)
+        // OwnedComponents 순회
         for (UActorComponent* ActorComp : Actor->GetComponents())
         {
             if (!ActorComp) continue;
@@ -905,6 +907,7 @@ void UWorld::SaveScene(const FString& SceneName)
             UDecalComponent* DecalComponent = Cast<UDecalComponent>(ActorComp);
             UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(ActorComp);
             UTextRenderComponent* TextComponent = Cast<UTextRenderComponent>(ActorComp);
+            // TODO : spotlight serialize
 
             FComponentData* ComponentData;
 
@@ -927,6 +930,34 @@ void UWorld::SaveScene(const FString& SceneName)
             {
                 ComponentData = new FTextComponentData;
                 TextComponent->Serialize(ComponentData);
+            }
+            else
+            {
+                continue;
+            }
+
+            SceneData.Components.push_back(ComponentData);
+        }
+
+        // OwnedNonSceneComponents 순회
+        for (UActorComponent* ActorComp : Actor->GetOwnedNonSceneComponent())
+        {
+            if (!ActorComp) continue;
+
+            URotationMovementComponent* RotationMovementComponent = Cast<URotationMovementComponent>(ActorComp);
+            UProjectileMovementComponent* ProjectileMovementComponent = Cast<UProjectileMovementComponent>(ActorComp);
+
+            FComponentData* ComponentData;
+
+            if (RotationMovementComponent)
+            {
+                ComponentData = new FRotationMovementComponentData;
+                RotationMovementComponent->Serialize(ComponentData);
+            }
+            else if (ProjectileMovementComponent)
+            {
+                ComponentData = new FProjectileMovementComponentData;
+                ProjectileMovementComponent->Serialize(ComponentData);
             }
             else
             {
@@ -990,7 +1021,7 @@ void UWorld::LoadScene(const FString& SceneName)
 
     // UUID → Object 매핑 테이블
     TMap<uint32, AActor*> ActorMap;
-    TMap<uint32, USceneComponent*> ComponentMap;
+    TMap<uint32, UActorComponent*> ComponentMap;
 
     // ========================================
     // Pass 1: Actor 및 Component 생성
@@ -1014,7 +1045,7 @@ void UWorld::LoadScene(const FString& SceneName)
     // Component 생성
     for (FComponentData* ComponentData : SceneData.Components)
     {
-        USceneComponent* NewComponent = Cast<USceneComponent>(NewObject(ComponentData->Type));
+        UActorComponent* NewComponent = Cast<UActorComponent>(NewObject(ComponentData->Type));
 
         if (!NewComponent)
         {
@@ -1039,39 +1070,114 @@ void UWorld::LoadScene(const FString& SceneName)
     for (const FActorData& ActorData : SceneData.Actors)
     {
         AActor** ActorPtr = ActorMap.Find(ActorData.UUID);
-        if (!ActorPtr) continue;
+        if (!ActorPtr || !*ActorPtr) continue;
 
         AActor* Actor = *ActorPtr;
 
+        UActorComponent** ActorComponent = ComponentMap.Find(ActorData.RootComponentUUID);
+        // 비계층 컴포넌트는 RootComponentUUID가 없음
+        if (!ActorComponent || !*ActorComponent)
+            continue;
+
         // RootComponent 설정
-        if (USceneComponent** RootCompPtr = ComponentMap.Find(ActorData.RootComponentUUID))
+        if (USceneComponent* RootCompPtr = Cast<USceneComponent>(*ActorComponent))
         {
-            Actor->RootComponent = *RootCompPtr;
+            Actor->RootComponent = RootCompPtr;
         }
     }
 
-    // Component 부모-자식 관계 설정
-    for (FComponentData* CompData : SceneData.Components)
+    //// Component 부모-자식 관계 설정
+    //for (FComponentData* ComponentData : SceneData.Components)
+    //{
+    //    AActor** OwnerActorPtr = ActorMap.Find(ComponentData->OwnerActorUUID);
+    //    if (!OwnerActorPtr) continue;
+    //    AActor* OwnerActor = *OwnerActorPtr;
+    //    if (!OwnerActor) continue;
+
+    //    UActorComponent** ComponentPtr = ComponentMap.Find(ComponentData->UUID);
+    //    if (!ComponentPtr) continue;
+
+    //    UActorComponent* Component = *ComponentPtr;
+    //    if (!Component) continue;
+
+    //    // 계층 컴포넌트인 경우
+    //    if (ComponentData->IsHierarchical)
+    //    {
+    //        FSceneComponentData* SceneComponentData = dynamic_cast<FSceneComponentData*>(ComponentData);
+
+    //        USceneComponent* SceneComponent = Cast<USceneComponent>(Component);
+
+    //        // 부모 컴포넌트 연결 (ParentUUID가 0이 아니면)
+    //        if (SceneComponentData->ParentComponentUUID != 0)
+    //        {
+    //            UActorComponent** ParentComponentPtr = ComponentMap.Find(SceneComponentData->ParentComponentUUID);
+    //            if (!ParentComponentPtr) continue;
+
+    //            if (USceneComponent* ParentPtr = Cast<USceneComponent>(*ParentComponentPtr))
+    //            {
+    //                SceneComponent->SetupAttachment(ParentPtr, EAttachmentRule::KeepRelative);
+    //            }
+    //        }
+
+    //        // Actor의 OwnedComponents에 추가
+    //        OwnerActor->OwnedSceneComponents.Add(SceneComponent);
+    //    }
+    //    // 비계층 컴포넌트인 경우
+    //    else
+    //    {
+    //        OwnerActor->OwnedNonSceneComponents.Add(Component);
+    //    }
+    //}
+
+    // 계층 컴포넌트 부모-자식 관계 설정
+    for (FComponentData* ComponentData : SceneData.Components)
     {
-        USceneComponent** CompPtr = ComponentMap.Find(CompData->UUID);
-        if (!CompPtr) continue;
+        if (!ComponentData->IsHierarchical) continue;  // 계층만 처리
 
-        USceneComponent* Comp = *CompPtr;
+        FSceneComponentData* SceneComponentData = dynamic_cast<FSceneComponentData*>(ComponentData);
+        if (!SceneComponentData) continue;  // SceneComponentData 타입만
 
-        // 부모 컴포넌트 연결 (ParentUUID가 0이 아니면)
-        if (CompData->ParentComponentUUID != 0)
+        AActor** OwnerActorPtr = ActorMap.Find(SceneComponentData->OwnerActorUUID);
+        if (!OwnerActorPtr || !*OwnerActorPtr) continue;
+
+        UActorComponent** ComponentPtr = ComponentMap.Find(SceneComponentData->UUID);
+        if (!ComponentPtr || !*ComponentPtr) continue;
+
+        USceneComponent* SceneComponent = Cast<USceneComponent>(*ComponentPtr);
+        if (!SceneComponent) continue;  // SceneComponent 타입만
+
+        // 부모 컴포넌트 연결
+        if (SceneComponentData->ParentComponentUUID != 0)
         {
-            if (USceneComponent** ParentPtr = ComponentMap.Find(CompData->ParentComponentUUID))
+            UActorComponent** ParentComponentPtr = ComponentMap.Find(SceneComponentData->ParentComponentUUID);
+            if (ParentComponentPtr && *ParentComponentPtr)
             {
-                Comp->SetupAttachment(*ParentPtr, EAttachmentRule::KeepRelative);
+                if (USceneComponent* ParentComp = Cast<USceneComponent>(*ParentComponentPtr))
+                {
+                    SceneComponent->SetupAttachment(ParentComp, EAttachmentRule::KeepRelative);
+                }
             }
         }
 
-        // Actor의 OwnedComponents에 추가
-        if (AActor** OwnerActorPtr = ActorMap.Find(CompData->OwnerActorUUID))
-        {
-            (*OwnerActorPtr)->OwnedSceneComponents.Add(Comp);
-        }
+        // Actor의 OwnedSceneComponents에 추가
+        (*OwnerActorPtr)->OwnedSceneComponents.Add(SceneComponent);
+    }
+
+    // 비계층 컴포넌트 설정
+    for (FComponentData* ComponentData : SceneData.Components)
+    {
+        if (ComponentData->IsHierarchical) continue;  // 비계층만 처리
+
+        AActor** OwnerActorPtr = ActorMap.Find(ComponentData->OwnerActorUUID);
+        if (!OwnerActorPtr || !*OwnerActorPtr) continue;
+
+        UActorComponent** ComponentPtr = ComponentMap.Find(ComponentData->UUID);
+        if (!ComponentPtr || !*ComponentPtr) continue;
+
+        UActorComponent* Component = *ComponentPtr;
+
+        // Actor의 OwnedNonSceneComponents에 추가
+        (*OwnerActorPtr)->OwnedNonSceneComponents.Add(Component);
     }
 
     // Actor를 Level에 추가
@@ -1110,7 +1216,7 @@ void UWorld::LoadScene(const FString& SceneName)
         InitializeSceneGraph(Level->GetActors());
     }
 
-    UE_LOG("Scene V2 loaded successfully: %s", SceneName.c_str());
+    UE_LOG("Scene loaded successfully: %s", SceneName.c_str());
 }
 
 AGizmoActor* UWorld::GetGizmoActor()

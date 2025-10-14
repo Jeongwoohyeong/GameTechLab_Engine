@@ -167,6 +167,7 @@
     <ClCompile Include="HeightFogComponent.cpp" />
     <ClCompile Include="FireBallComponent.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
+    <ClCompile Include="ProjectileMovementComponent.cpp" />
     <ClCompile Include="SpotlightActor.cpp" />
     <ClCompile Include="SpotlightComponent.cpp" />
     <ClCompile Include="DecalActor.cpp" />
@@ -378,6 +379,7 @@
     <ClInclude Include="HeightFogComponent.h" />
     <ClInclude Include="FireBallComponent.h" />
     <ClInclude Include="MovementComponent.h" />
+    <ClInclude Include="ProjectileMovementComponent.h" />
     <ClInclude Include="SpotlightActor.h" />
     <ClInclude Include="SpotlightComponent.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />

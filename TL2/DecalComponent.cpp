@@ -299,7 +299,6 @@ void UDecalComponent::DeSerialize(FObjectData* Data)
     FDecalComponentData* ComponentData = dynamic_cast<FDecalComponentData*>(Data);
     assert(ComponentData, "UStaticMeshComponent::DeSerialize got wrong data type.");
 
-    UE_LOG("decal");
     USceneComponent::DeSerialize(Data);
 
     if (!ComponentData->Texture.empty())
