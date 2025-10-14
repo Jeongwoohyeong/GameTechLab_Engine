@@ -29,8 +29,9 @@ public:
 
     void SetMainViewPort();
 
-
     void OnShutdown();
+
+    SViewportWindow** GetViewports() { return Viewports; }
 
     static SViewportWindow* ActiveViewport; // 현재 드래그 중인 뷰포트
 private:
