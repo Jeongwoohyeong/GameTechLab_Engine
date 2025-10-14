@@ -524,6 +524,14 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     }
 
     // Pass 3 - Fog 구현을 위한 Screen Aligned Quad Render 구현
+    // Update viewport buffer for correct UV mapping in multi-viewport setup
+    Renderer->UpdateViewportBuffer(
+        static_cast<float>(Viewport->GetStartX()),
+        static_cast<float>(Viewport->GetStartY()),
+        static_cast<float>(Viewport->GetSizeX()),
+        static_cast<float>(Viewport->GetSizeY())
+    );
+
     for (const auto& HeightFog : HeightFogs)
     {
         HeightFog->Render(Renderer, ViewMatrix, ProjectionMatrix);

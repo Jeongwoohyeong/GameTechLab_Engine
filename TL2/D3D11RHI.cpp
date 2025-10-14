@@ -766,15 +766,25 @@ void D3D11RHI::UpdateViewportConstantBuffer(float StartX, float StartY, float Si
 {
     if (!ViewportCB) return;
 
+    // Normalize viewport coordinates to [0,1] range using swapchain size
+    float screenWidth = ViewportInfo.Width;
+    float screenHeight = ViewportInfo.Height;
+
     ViewportBufferType data;
-    data.ViewportRect = FVector4(StartX, StartY, SizeX, SizeY);
+    // Pass normalized coordinates: x/y = normalized start, z/w = normalized size
+    data.ViewportRect = FVector4(
+        StartX / screenWidth,
+        StartY / screenHeight,
+        SizeX / screenWidth,
+        SizeY / screenHeight
+    );
 
     D3D11_MAPPED_SUBRESOURCE mapped;
     if (SUCCEEDED(DeviceContext->Map(ViewportCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
     {
         memcpy(mapped.pData, &data, sizeof(ViewportBufferType));
         DeviceContext->Unmap(ViewportCB, 0);
-        DeviceContext->PSSetConstantBuffers(6, 1, &ViewportCB);
+        DeviceContext->PSSetConstantBuffers(8, 1, &ViewportCB); // b8 slot (avoid collision with DecalCB at b6)
     }
 }
 
