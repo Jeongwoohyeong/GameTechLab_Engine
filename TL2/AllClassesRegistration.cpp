@@ -57,6 +57,8 @@
 #include "SpotlightComponent.h"
 #include "HeightFogComponent.h"
 #include "FireBallComponent.h"
+#include "MovementComponent.h"
+#include "RotationMovementComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -99,6 +101,8 @@ IMPLEMENT_CLASS(UTextRenderComponent)
 CLASS_META(UTextRenderComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UBillboardComponent)
 CLASS_META(UBillboardComponent, CanSpawnInTransformWidget, "true")
+IMPLEMENT_CLASS(URotationMovementComponent)
+CLASS_META(URotationMovementComponent, CanSpawnInTransformWidget, "true")
 
 // Managers / Systems
 IMPLEMENT_CLASS(UInputManager)

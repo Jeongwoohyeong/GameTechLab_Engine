@@ -77,15 +77,21 @@ public:
         T* Comp = ObjectFactory::NewObject<T>();
         Comp->SetOwner(this);
        // Comp->SetName(SubobjectName);  //나중에 추가 구현
-        AddComponent(Comp);
+        AddSceneComponent(Comp);
         return Comp;
     }
 
     // 지정된 부모 하위에 새로운 컴포넌트를 생성하고 붙입니다.
     USceneComponent* CreateAndAttachComponent(USceneComponent* ParentComponent, UClass* ComponentClass);
     // 이 액터가 소유한 씬 컴포넌트를 안전하게 제거하고 삭제합니다.
-    virtual bool DeleteComponent(USceneComponent* ComponentToDelete);
-    void AddComponent(USceneComponent* InComponent);
+    virtual bool DeleteSceneComponent(USceneComponent* ComponentToDelete);
+    void AddSceneComponent(USceneComponent* InComponent);
+    
+    void AddNonSceneComponent(UActorComponent* InComponent);
+    void DeleteNonSceneComponent(UActorComponent* InComponent);
+    
+    TArray<UActorComponent*> GetOwnedNonSceneComponent();
+
     // Duplicate function
     UObject* Duplicate() override;
     void DuplicateSubObjects() override;
@@ -97,7 +103,6 @@ public:
     bool GetActorHiddenInGame() const { return bHiddenInGame; }
     bool IsActorVisible() const { return !bHiddenInGame; }
 
-
     // Tick Enabled Check
     bool IsActorTickEnabled() const { return bCanEverTick; }
 
@@ -105,9 +110,6 @@ public:
     bool ShouldTickInEditor() const { return bTickInEditor; }
     bool CanTickInPlayMode() const { return bCanEverTick && !bHiddenInGame; }
     void SetEditorTickEnabled(bool bEnableTick) { bTickInEditor = bEnableTick; }
-
-    
-
 
     UWorld* GetWorld() const override final;
     // TODO(KHJ): 제거 필요
@@ -124,7 +126,8 @@ public:
     // [PIE] Duplicate 복사
     USceneComponent* RootComponent = nullptr;
     // [PIE] RootComponent 복사가 끝나면 자식 컴포넌트를 순회하면서 OwnedComponents에 루트와 하위 컴포넌트 모두 추가
-    TSet<UActorComponent*> OwnedComponents;
+    TSet<UActorComponent*> OwnedSceneComponents;
+    TArray<UActorComponent*> OwnedNonSceneComponents;
     
     // [PIE] ???
     UAABoundingBoxComponent* CollisionComponent = nullptr;
