@@ -388,7 +388,7 @@ void D3D11RHI::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBall
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
     DeviceContext->Map(FireBallCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-    memcpy(&mapped, &InFireBallData, sizeof(FireBallBufferType));
+    memcpy(mapped.pData, &InFireBallData, sizeof(FireBallBufferType));
     DeviceContext->Unmap(FireBallCB, 0);
     
     DeviceContext->VSSetConstantBuffers(2, 1, &FireBallCB);
