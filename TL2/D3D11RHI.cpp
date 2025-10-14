@@ -158,6 +158,7 @@ void D3D11RHI::Release()
     if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
     if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
+    if (InvMatrixCB) { InvMatrixCB->Release(); InvMatrixCB = nullptr; }
 
     // 상태 객체
     if (DepthStencilState) { DepthStencilState->Release(); DepthStencilState = nullptr; }
@@ -722,6 +723,14 @@ void D3D11RHI::CreateConstantBuffer()
     scenedepthDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     scenedepthDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&scenedepthDesc, nullptr, &SceneDepthCB);
+
+    // b10 : InvMatrixBuffer (3 matrices: InvWorld, InvView, InvProj)
+    D3D11_BUFFER_DESC invMatrixDesc = {};
+    invMatrixDesc.Usage = D3D11_USAGE_DYNAMIC;
+    invMatrixDesc.ByteWidth = sizeof(FMatrix) * 3;  // 3 float4x4 matrices = 192 bytes
+    invMatrixDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    invMatrixDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&invMatrixDesc, nullptr, &InvMatrixCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -835,6 +844,31 @@ void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
 
         DeviceContext->Unmap(SceneDepthCB, 0);
         DeviceContext->PSSetConstantBuffers(9, 1, &SceneDepthCB); // b9 슬롯
+    }
+}
+
+void D3D11RHI::UpdateInvMatrixConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix)
+{
+    if (!InvMatrixCB) return;
+
+    struct InvMatrixBufferType
+    {
+        FMatrix InvWorld;
+        FMatrix InvView;
+        FMatrix InvProj;
+    };
+
+    InvMatrixBufferType data;
+    data.InvWorld = InvWorldMatrix;
+    data.InvView = InvViewMatrix;
+    data.InvProj = InvProjMatrix;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(InvMatrixCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        memcpy(mapped.pData, &data, sizeof(InvMatrixBufferType));
+        DeviceContext->Unmap(InvMatrixCB, 0);
+        DeviceContext->PSSetConstantBuffers(10, 1, &InvMatrixCB); // b10 slot
     }
 }
 

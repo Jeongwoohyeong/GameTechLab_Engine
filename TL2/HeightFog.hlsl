@@ -27,10 +27,12 @@ struct PS_INPUT
 Texture2D SceneDepthTexture : register(t0);
 SamplerState DefaultSampler : register(s0);
 
-cbuffer InvViewProjMatrixBuffer : register(b4)
+// b10: Inverse matrix buffer (3 matrices: InvWorld, InvView, InvProj)
+cbuffer InvMatrixBuffer : register(b10)
 {
-    matrix InvViewProj;
     matrix InvWorld;
+    matrix InvView;
+    matrix InvProj;
 };
 
 PS_INPUT mainVS(uint VertexID : SV_VertexID)
@@ -44,7 +46,7 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
     };
     
     Out.position = float4(pos[VertexID], 0.1f, 1.0f);
-    Out.texCoord = (pos[VertexID] + float2(1.0, -1.0)) * float2(0.5, -0.5);
+    Out.texCoord = (pos[VertexID] + float2(1.0f, -1.0f)) * float2(0.5f, -0.5f);
     Out.normal = float3(0.0f, 0.0f, 1.0f); // Default normal
     Out.color = float4(1.0f, 0.0f, 0.0f, 0.2f); // Default color
     
@@ -53,15 +55,37 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
 
 float4 mainPS(PS_INPUT In) : SV_TARGET
 {
-    // ViewportRect contains normalized [0,1] coordinates (CPU normalizes by screen size)
-    // In.texCoord is [0,1] within the viewport's fullscreen quad
-    // Map viewport-local UV to global depth buffer UV
+    // Step 1: Get viewport-corrected UV for depth sampling
     float2 depthUV = ViewportRect.xy + In.texCoord * ViewportRect.zw;
 
-    // Sample depth using corrected UV
+    // Step 2: Sample depth from depth buffer
     float depth = SceneDepthTexture.Sample(DefaultSampler, depthUV).r;
 
-    // Visualize depth (enhance near 1.0 range for better visibility)
-    depth = (depth - 0.99f) * 100.0f;
-    return float4(depth, depth, depth, 1.0f);
+    // Step 3: Convert UV [0,1] to NDC [-1,1]
+    float2 ndcXY;
+    ndcXY.x = In.texCoord.x * 2.0f - 1.0f;      // [0,1] → [-1,1]
+    ndcXY.y = 1.0f - In.texCoord.y * 2.0f; // [0,1] → [1,-1] (Y flip for DirectX)
+
+    // Step 4: Construct clip space position (homogeneous coordinates)
+    // IMPORTANT: Use raw depth value, not modified depth!
+    float4 clipPos = float4(ndcXY, depth, 1.0f);
+
+    // Step 5: Compute InvViewProj = InvView * InvProj (matrix multiplication in shader)
+    matrix InvViewProj = mul(InvView, InvProj);
+
+    // Step 6: Transform to world space using inverse ViewProj matrix
+    float4 worldPos = mul(InvViewProj, clipPos);
+    worldPos.xyz /= worldPos.w;  // Perspective division (critical!)
+
+    // Step 7: Extract camera position from InvView matrix (last row/column depending on row/column-major)
+    // In HLSL with row_major (default), camera position is in the 4th row
+    float3 cameraPos = float3(InvView[0][3], InvView[1][3], InvView[2][3]);
+
+    // Step 8: Calculate distance from camera to world position
+    float distance = length(worldPos.xyz - cameraPos);
+
+    // Step 9: Apply distance-based fog with start distance
+    float adjustedDistance = max(0.0f, distance - 0.5f);
+    float fogFactor = exp(-adjustedDistance * 0.33f);
+    return float4(1.0f, 0.0f, 0.0f, saturate(1.0f - fogFactor));
 }

@@ -132,6 +132,11 @@ void URenderer::UpdateInvWorldBuffer(const FMatrix& InvWorldMatrix, const FMatri
     RHIDevice->UpdateInvWorldConstantBuffer(InvWorldMatrix, InvViewProjMatrix);
 }
 
+void URenderer::UpdateInvMatrixBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix)
+{
+    RHIDevice->UpdateInvMatrixConstantBuffer(InvWorldMatrix, InvViewMatrix, InvProjMatrix);
+}
+
 void URenderer::UpdateViewportBuffer(float StartX, float StartY, float SizeX, float SizeY)
 {
     static_cast<D3D11RHI*>(RHIDevice)->UpdateViewportConstantBuffer(StartX, StartY, SizeX, SizeY);
