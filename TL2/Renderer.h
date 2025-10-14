@@ -67,7 +67,10 @@ public:
         float FogMaxOpacity
     );
 
+    void UpdateSceneDepthBuffer(float Near, float Far);
+
     void DrawFullScreenPass();
+    void RenderSceneDepth(float Near, float Far);
 
     void ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology);
 

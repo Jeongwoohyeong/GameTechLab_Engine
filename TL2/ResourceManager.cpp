@@ -396,6 +396,8 @@ void UResourceManager::InitShaderILMap()
     layout.Add({ "UVRECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 });
     ShaderToInputLayoutMap["TextShader.hlsl"] = layout;
     layout.clear();
+
+    ShaderToInputLayoutMap["SceneDepth.hlsl"] = layout;
 }
 
 TArray<D3D11_INPUT_ELEMENT_DESC>& UResourceManager::GetProperInputLayout(const FString& InShaderName)

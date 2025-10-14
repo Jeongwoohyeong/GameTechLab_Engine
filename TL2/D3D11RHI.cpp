@@ -61,6 +61,14 @@ struct FHeightFogConstBufferType
     float padding[3];
 };
 
+// b8
+struct FSceneDepthBufferType
+{
+    float Near;
+    float Far;
+    float padding[2];
+};
+
 // b2
 struct HighLightBufferType
 {
@@ -149,6 +157,7 @@ void D3D11RHI::Release()
     if (ViewportCB) { ViewportCB->Release(); ViewportCB = nullptr; }
     if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
+    if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
 
     // 상태 객체
     if (DepthStencilState) { DepthStencilState->Release(); DepthStencilState = nullptr; }
@@ -706,6 +715,13 @@ void D3D11RHI::CreateConstantBuffer()
     fogDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     fogDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&fogDesc, nullptr, &HeightFogCB);
+
+    D3D11_BUFFER_DESC scenedepthDesc = {};
+    scenedepthDesc.Usage = D3D11_USAGE_DYNAMIC;
+    scenedepthDesc.ByteWidth = sizeof(FSceneDepthBufferType);
+    scenedepthDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    scenedepthDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&scenedepthDesc, nullptr, &SceneDepthCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -795,6 +811,30 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
 
         DeviceContext->Unmap(HeightFogCB, 0);
         DeviceContext->PSSetConstantBuffers(7, 1, &HeightFogCB); // b7 슬롯
+    }
+}
+
+void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
+{
+    if (!SceneDepthCB)
+    {
+        UE_LOG("aslkdjsalwjkljl");
+        return;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(SceneDepthCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        FSceneDepthBufferType* dataPtr = reinterpret_cast<FSceneDepthBufferType*>(mapped.pData);
+        dataPtr->Near = Near;
+        dataPtr->Far = Far;
+
+        UE_LOG("Updating SceneDepth CB: Near=%.2f, Far=%.2f\n", Near, Far);
+        UE_LOG("CB written: Near=%.2f, Far=%.2f\n", dataPtr->Near, dataPtr->Far);
+        UE_LOG("CB bound to slot 8\n");
+
+        DeviceContext->Unmap(SceneDepthCB, 0);
+        DeviceContext->PSSetConstantBuffers(9, 1, &SceneDepthCB); // b9 슬롯
     }
 }
 
@@ -967,6 +1007,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
 }
+
 void D3D11RHI::CreateBackBufferAndDepthStencil(UINT width, UINT height)
 {
     // 기존 바인딩 해제 후 뷰 해제

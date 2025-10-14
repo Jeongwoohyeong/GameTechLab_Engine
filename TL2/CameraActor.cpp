@@ -106,6 +106,9 @@ ACameraActor::~ACameraActor()
     CameraComponent = nullptr;
 }
 
+float ACameraActor::GetCameraNear() const { return CameraComponent->GetNearClip(); }
+float ACameraActor::GetCameraFar() const { return CameraComponent->GetFarClip(); }
+
 FMatrix ACameraActor::GetViewMatrix() const
 {
     return CameraComponent ? CameraComponent->GetViewMatrix() : FMatrix::Identity();

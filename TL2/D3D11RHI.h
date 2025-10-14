@@ -64,6 +64,8 @@ public:
         float FogMaxOpacity
     ) override;
 
+    void UpdateSceneDepthBuffer(float Near, float Far) override;
+
     void IASetPrimitiveTopology() override;
     void RSSetState(EViewModeIndex ViewModeIndex) override;
     void RSSetFrontCullState() override;
@@ -113,6 +115,10 @@ public:
     inline ID3D11RenderTargetView* GetRenderTargetView()
     {
         return RenderTargetView;
+    }
+    inline ID3D11SamplerState* GetDefaultSampler()
+    {
+        return DefaultSamplerState;
     }
 
 private:
@@ -173,6 +179,7 @@ private:
     ID3D11Buffer* DecalCB{};
     ID3D11Buffer* ViewportCB{};
     ID3D11Buffer* HeightFogCB{};
+    ID3D11Buffer* SceneDepthCB{};
 
     ID3D11Buffer* ConstantBuffer{};
 
