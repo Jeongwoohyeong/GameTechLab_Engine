@@ -876,6 +876,9 @@
       <Filter>Actors</Filter>
     </ClInclude>
     <ClInclude Include="FireBallComponent.h" />
+    <ClInclude Include="Color.h">
+      <Filter>Math &amp; Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <!-- ==================== 셰이더 파일 (.hlsl) ==================== -->
   <ItemGroup>
