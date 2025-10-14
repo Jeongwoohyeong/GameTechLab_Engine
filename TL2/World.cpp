@@ -388,8 +388,19 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 //    Renderer->OMSetDepthStencilState(EComparisonFunc::Always);
                 //}
 
-                Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
-                Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);
+                if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_PostProcess))
+                {
+                    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA))
+                    {
+                        Renderer->UpdateOffscreenRenderTarget(Viewport->GetSizeX(), Viewport->GetSizeY());
+                        
+                    }
+                }
+                else
+                {
+                    Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
+                    Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);                        
+                }                
 
                 //// depth test 원래대로 복원
                 //if (bIsSelected)

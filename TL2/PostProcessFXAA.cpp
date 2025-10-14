@@ -26,6 +26,7 @@ void FPostProcessFXAA::Render(ID3D11ShaderResourceView* InSceneTextureSRV)
 
     PrepareShader();
     RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &InSceneTextureSRV);
+    RHIDevice->PSSetDefaultSampler(0);
     RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     RHIDevice->GetDeviceContext()->Draw(3,0);
 
