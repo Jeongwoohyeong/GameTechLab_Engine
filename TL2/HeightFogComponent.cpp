@@ -50,3 +50,55 @@ void UHeightFogComponent::Render(URenderer* Renderer, const FMatrix& View, const
     Renderer->OMSetBlendState(false); // 블렌딩 비활성화
     Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual); // 기본 깊이 스텐실 상태로 복원
 }
+
+UObject* UHeightFogComponent::Duplicate()
+{
+    UHeightFogComponent* DuplicatedComponent = Cast<UHeightFogComponent>(NewObject(GetClass()));
+    CopyCommonProperties(DuplicatedComponent);
+
+    DuplicatedComponent->Material = this->Material;
+    DuplicatedComponent->FogDensity = this->FogDensity;
+    DuplicatedComponent->FogHeightFalloff = this->FogHeightFalloff;
+    DuplicatedComponent->StartDistance = this->StartDistance;
+    DuplicatedComponent->FogCutoffDistance = this->FogCutoffDistance;
+    DuplicatedComponent->FogMaxOpacity = this->FogMaxOpacity;
+    DuplicatedComponent->FogInscatteringColor = this->FogInscatteringColor;
+
+    DuplicatedComponent->DuplicateSubObjects();
+    return DuplicatedComponent;
+}
+
+void UHeightFogComponent::DuplicateSubObjects()
+{
+    Super_t::DuplicateSubObjects();
+}
+
+void UHeightFogComponent::Serialize(FObjectData* Data)
+{
+    FHeightFogComponentData* ComponentData = dynamic_cast<FHeightFogComponentData*>(Data);
+    assert(ComponentData, "UHeightFogComponent::Serialize got wrong data type.");
+
+    USceneComponent::Serialize(Data);
+
+    ComponentData->FogDensity = FogDensity;
+    ComponentData->FogHeightFalloff = FogHeightFalloff;
+    ComponentData->StartDistance = StartDistance;
+    ComponentData->FogCutoffDistance = FogCutoffDistance;
+    ComponentData->FogMaxOpacity = FogMaxOpacity;
+    ComponentData->FogInscatteringColor = FogInscatteringColor;
+}
+
+void UHeightFogComponent::DeSerialize(FObjectData* Data)
+{
+    FHeightFogComponentData* ComponentData = dynamic_cast<FHeightFogComponentData*>(Data);
+    assert(ComponentData, "UHeightFogComponent::DeSerialize got wrong data type.");
+
+    USceneComponent::DeSerialize(Data);
+
+    FogDensity = ComponentData->FogDensity;
+    FogHeightFalloff = ComponentData->FogHeightFalloff;
+    StartDistance = ComponentData->StartDistance;
+    FogCutoffDistance = ComponentData->FogCutoffDistance;
+    FogMaxOpacity = ComponentData->FogMaxOpacity;
+    FogInscatteringColor = ComponentData->FogInscatteringColor;
+}

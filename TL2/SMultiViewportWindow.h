@@ -45,7 +45,7 @@ private:
     SSplitter* SingleLayout = nullptr;
 
     // 뷰포트
-    SViewportWindow* Viewports[4];
+    SViewportWindow* Viewports[4] = {nullptr, nullptr, nullptr, nullptr};
     SViewportWindow* MainViewport;
  
     SSplitterH* LeftTop;

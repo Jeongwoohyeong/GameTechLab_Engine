@@ -107,8 +107,18 @@ void UEditorEngine::StartPIE()
     // GWorld를 PIE 월드로 전환
     GWorld = PIEWorld;
 
-    // 메인 뷰포트 ViewportClient를 PIE 월드로 전환
-    PIEWorld->GetMainViewport()->GetViewportClient()->SetWorld(PIEWorld);
+    // 모든 뷰포트의 ViewportClient를 PIE 월드로 전환
+    if (SMultiViewportWindow* MultiViewport = EditorWorld->GetMultiViewportWindow())
+    {
+        SViewportWindow** Viewports = MultiViewport->GetViewports();
+        for (int i = 0; i < 4; ++i)
+        {
+            if (Viewports[i] && Viewports[i]->GetViewportClient())
+            {
+                Viewports[i]->GetViewportClient()->SetWorld(PIEWorld);
+            }
+        }
+    }
 
 
     GameEngine = NewObject<UGameEngine>();
@@ -137,13 +147,20 @@ void UEditorEngine::EndPIE()
     // PIE 종료 시 선택 해제 (PIE 액터 참조 제거)
     USelectionManager::GetInstance().ClearSelection();
 
-    // ViewportClient의 World를 에디터 월드로 복원
+    // 모든 뷰포트의 ViewportClient를 에디터 월드로 복원
     UWorld* EditorWorld = GetWorld(EWorldType::Editor);
-    if (EditorWorld && EditorWorld->GetMainViewport())
+    if (EditorWorld)
     {
-        if (FViewportClient* ViewportClient = EditorWorld->GetMainViewport()->GetViewportClient())
+        if (SMultiViewportWindow* MultiViewport = EditorWorld->GetMultiViewportWindow())
         {
-            ViewportClient->SetWorld(EditorWorld);
+            SViewportWindow** Viewports = MultiViewport->GetViewports();
+            for (int i = 0; i < 4; ++i)
+            {
+                if (Viewports[i] && Viewports[i]->GetViewportClient())
+                {
+                    Viewports[i]->GetViewportClient()->SetWorld(EditorWorld);
+                }
+            }
         }
     }
 
