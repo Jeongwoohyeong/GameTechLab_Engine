@@ -152,6 +152,7 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
             FDecalComponentData* DecalData = dynamic_cast<FDecalComponentData*>(SceneComponent);
             FBillboardComponentData* BillboardData = dynamic_cast<FBillboardComponentData*>(SceneComponent);
             FTextComponentData* TextData = dynamic_cast<FTextComponentData*>(SceneComponent);
+            FHeightFogComponentData* HeightFogData = dynamic_cast<FHeightFogComponentData*>(SceneComponent);
 
             if (StaticMeshData)
             {
@@ -230,6 +231,35 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
                     FString AssetPath = NormalizePath(TextData->Text);
                     oss << "      \"Text\" : \"" << AssetPath << "\"";
                 }
+            }
+            else if (HeightFogData)
+            {
+                oss << ",\n";
+                oss << "      \"FogDensity\" : \"" << HeightFogData->FogDensity << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogHeightFalloff\" : \"" << HeightFogData->FogHeightFalloff << "\"";
+
+                oss << ",\n";
+                oss << "      \"StartDistance\" : \"" << HeightFogData->StartDistance << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogCutoffDistance\" : \"" << HeightFogData->FogCutoffDistance << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogMaxOpacity\" : \"" << HeightFogData->FogMaxOpacity << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogInscatteringColorR\" : \"" << HeightFogData->FogInscatteringColor.R << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogInscatteringColorG\" : \"" << HeightFogData->FogInscatteringColor.G << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogInscatteringColorB\" : \"" << HeightFogData->FogInscatteringColor.B << "\"";
+
+                oss << ",\n";
+                oss << "      \"FogInscatteringColorA\" : \"" << HeightFogData->FogInscatteringColor.A << "\"";
             }
         }
         // 비계층 컴포넌트일때
@@ -420,6 +450,34 @@ FSceneData FSceneLoader::Parse(const JSON& Json)
                     DecalData->bIsLoop = CompJson.at("Loop").ToString() == "true";
                 if (CompJson.hasKey("ElapsedTime"))
                     DecalData->ElapsedTime = stof(CompJson.at("ElapsedTime").ToString());
+            }
+            else if (CompJson.at("Type").ToString() == "UHeightFogComponent")
+            {
+                ComponentData = new FHeightFogComponentData;
+
+                FHeightFogComponentData* HeightFogData = dynamic_cast<FHeightFogComponentData*>(ComponentData);
+
+                // Type별 속성
+                if (CompJson.hasKey("FogDensity"))
+                    HeightFogData->FogDensity = stof(CompJson.at("FogDensity").ToString());
+                if (CompJson.hasKey("FogHeightFalloff"))
+                    HeightFogData->FogHeightFalloff = stof(CompJson.at("FogHeightFalloff").ToString());
+                if (CompJson.hasKey("StartDistance"))
+                    HeightFogData->StartDistance = stof(CompJson.at("StartDistance").ToString());
+                if (CompJson.hasKey("FogCutoffDistance"))
+                    HeightFogData->FogCutoffDistance = stof(CompJson.at("FogCutoffDistance").ToString());
+                if (CompJson.hasKey("FogMaxOpacity"))
+                    HeightFogData->FogMaxOpacity = stof(CompJson.at("FogMaxOpacity").ToString());
+
+                // FLinearColor 복원
+                if (CompJson.hasKey("FogInscatteringColorR"))
+                    HeightFogData->FogInscatteringColor.R = stof(CompJson.at("FogInscatteringColorR").ToString());
+                if (CompJson.hasKey("FogInscatteringColorG"))
+                    HeightFogData->FogInscatteringColor.G = stof(CompJson.at("FogInscatteringColorG").ToString());
+                if (CompJson.hasKey("FogInscatteringColorB"))
+                    HeightFogData->FogInscatteringColor.B = stof(CompJson.at("FogInscatteringColorB").ToString());
+                if (CompJson.hasKey("FogInscatteringColorA"))
+                    HeightFogData->FogInscatteringColor.A = stof(CompJson.at("FogInscatteringColorA").ToString());
             }
             else if (CompJson.at("Type").ToString() == "URotationMovementComponent")
             {

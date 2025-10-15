@@ -24,6 +24,7 @@
 #include "UI/StatsOverlayD2D.h"
 #include "PrimitiveComponent.h"
 #include "HeightFogComponent.h"
+#include "HeightFog.h"
 #include "RotationMovementComponent.h"
 #include "ProjectileMovementComponent.h"
 #include "FireBallComponent.h"
@@ -954,6 +955,7 @@ void UWorld::SaveScene(const FString& SceneName)
             UDecalComponent* DecalComponent = Cast<UDecalComponent>(ActorComp);
             UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(ActorComp);
             UTextRenderComponent* TextComponent = Cast<UTextRenderComponent>(ActorComp);
+            UHeightFogComponent* HeightFogComponent = Cast<UHeightFogComponent>(ActorComp);
             // TODO : spotlight serialize
 
             FComponentData* ComponentData;
@@ -977,6 +979,11 @@ void UWorld::SaveScene(const FString& SceneName)
             {
                 ComponentData = new FTextComponentData;
                 TextComponent->Serialize(ComponentData);
+            }
+            else if (HeightFogComponent)
+            {
+                ComponentData = new FHeightFogComponentData;
+                HeightFogComponent->Serialize(ComponentData);
             }
             else
             {
