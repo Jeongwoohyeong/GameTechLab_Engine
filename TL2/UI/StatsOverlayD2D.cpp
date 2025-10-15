@@ -209,6 +209,7 @@ void UStatsOverlayD2D::Draw()
 
         nextY += panelHeight + 8.0f;
     }
+    if (bShowPickingtime)
     {
         wchar_t buf[256];
         const URenderingStatsCollector& Instance = URenderingStatsCollector::GetInstance();
@@ -359,6 +360,11 @@ void UStatsOverlayD2D::SetShowDecalStats(bool b)
     bShowDecalStats = b;
 }
 
+void UStatsOverlayD2D::SetShowPickingTime(bool b)
+{
+    bShowPickingtime = b;
+}
+
 void UStatsOverlayD2D::ToggleFPS()
 {
     bShowFPS = !bShowFPS;
@@ -377,4 +383,9 @@ void UStatsOverlayD2D::ToggleRenderStats()
 void UStatsOverlayD2D::ToggleDecalStats()
 {
     bShowDecalStats = !bShowDecalStats;
+}
+
+void UStatsOverlayD2D::TogglePickingStats()
+{
+    bShowPickingtime = !bShowPickingtime;
 }
