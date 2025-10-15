@@ -12,8 +12,15 @@ public:
 	void Initialize() override;
 
 	UHeightFogComponent* GetHeightFogComponent() const { return HeightFogComponent; }
+	void SetHeightFogComponent(UHeightFogComponent* InHeightFogComponent) { HeightFogComponent = InHeightFogComponent; }
+
+	// PIE 복제
+	UObject* Duplicate() override;
+	void DuplicateSubObjects() override;
+
 protected:
 	~AHeightFog() override;
+
 private:
-	UHeightFogComponent* HeightFogComponent;
+	UHeightFogComponent* HeightFogComponent = nullptr;
 };
