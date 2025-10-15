@@ -596,6 +596,9 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             {
                 if (StaticMeshComponent && StaticMeshComponent->IsActive())
                 {
+                    // YUptoZUp이 반영되지 않은 World Matrix를 보낸다.
+                    Renderer->UpdateRealWorldBuffer(StaticMeshComponent->GetRealWorldMatrix());
+
                     // 수정된 프로젝션 행렬을 사용하여 렌더링
                     Renderer->UpdateConstantBuffer(StaticMeshComponent->GetWorldMatrix(), ViewMatrix, FireballProjectionMatrix);
                     Renderer->DrawSimpleMesh(StaticMeshComponent->GetStaticMesh());
