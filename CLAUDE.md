@@ -57,6 +57,17 @@ A DirectX 11-based 3D rendering engine and editor that mimics Unreal Engine 4's 
   - `UCameraComponent` - Camera view
   - `UGizmoComponent` - Editor gizmo manipulation
   - `UPrimitiveComponent` - Renderable geometry base
+  - `UDecalComponent` - Projected decal rendering
+  - `USpotlightComponent` - Spot light with cone angle
+  - `UFireBallComponent` - Custom fireball effect rendering
+  - `UHeightFogComponent` - Height-based fog effect
+  - `UBillboardComponent` - 2D sprite billboarding
+  - `UTextRenderComponent` - 3D text rendering
+  - `UMovementComponent` - Base movement component
+  - `URotationMovementComponent` - Automatic rotation
+  - `UProjectileMovementComponent` - Physics-based projectile motion
+  - `UAABoundingBoxComponent` - Axis-aligned bounding box
+  - `UOBoundingBoxComponent` - Oriented bounding box
 
 ### World & Level Management
 
@@ -112,7 +123,20 @@ A DirectX 11-based 3D rendering engine and editor that mimics Unreal Engine 4's 
 - `SWindow` - Base window class with rect-based layout
 - `SSplitter` - Resizable split containers (horizontal/vertical)
 - `SViewportWindow` - 3D scene viewport window
-- `SMultiViewportWindow` - Multi-viewport container
+- `SMultiViewportWindow` - Multi-viewport container with layout switching
+
+**Viewport Layout Switching** (`SMultiViewportWindow.h`)
+- Animated transitions between layouts using ease-in-out interpolation
+- `SwitchLayout()` - Switch between FourSplit and SingleMain modes
+- `SwitchPanel()` - Maximize/restore individual viewports with smooth animation
+- Layout state persisted in Editor.ini
+- `ActiveViewport` tracking for proper input routing during drag operations
+
+**Menu Bar System** (`MenuBarWidget.h`)
+- UE-style menu bar with File, Edit, Window, Help menus
+- Callbacks for menu actions (OnFileMenuAction, OnEditMenuAction, etc.)
+- Integrates with SMultiViewportWindow for layout control
+- ImGui-based rendering at top of editor window
 
 **Show Flags** (`Enums.h: EEngineShowFlags`)
 - Bit-flag based rendering toggles
@@ -151,6 +175,13 @@ A DirectX 11-based 3D rendering engine and editor that mimics Unreal Engine 4's 
 - Automatic OBJ preloading from `Data/` folder
 - Prevents duplicate resource loads
 - Binary cache invalidation on source file changes
+
+**Editor Configuration System** (`pch.h`)
+- Global `EditorINI` (TMap<FString, FString>) stores editor preferences
+- Persists splitter ratios, camera positions, and UI layout states
+- Automatically saved on shutdown via `SMultiViewportWindow::OnShutdown()`
+- Automatically loaded on startup via `SMultiViewportWindow::LoadSplitterConfig()`
+- Common settings: "RootSplitter", "TopPanel", "LeftPanel", "BottomPanel", "LeftTop", "LeftBottom" ratios
 
 ### Coordinate System
 
@@ -197,7 +228,20 @@ public:
 // MyActor.cpp
 IMPLEMENT_CLASS(AMyActor)
 AMyActor::AMyActor() { /* constructor */ }
+
+// IMPORTANT: Add to AllClassesRegistration.cpp
+#include "MyActor.h"
+IMPLEMENT_CLASS(AMyActor)
+CLASS_META(AMyActor, Spawnable, "true")  // Optional: makes it spawnable in editor
 ```
+
+**Class Registration** (`AllClassesRegistration.cpp`)
+- ALL new classes MUST be registered in `AllClassesRegistration.cpp`
+- Use `IMPLEMENT_CLASS(ClassName)` macro for basic registration
+- Use `CLASS_META(ClassName, MetaKey, "MetaValue")` for additional metadata
+- Common metadata:
+  - `Spawnable, "true"` - Makes actor spawnable in Scene Manager
+  - `CanSpawnInTransformWidget, "true"` - Allows component in transform widget
 
 ### Spawning Actors
 
@@ -241,6 +285,7 @@ RootComponent = MeshComp; // Set as root
 - **UI Widgets**: `TL2/UI/Widget/` - ImGui-based editor UI
 - **Scene Manager**: `SceneManagerWidget.cpp` - World Outliner equivalent
 - **All Classes Registration**: `AllClassesRegistration.cpp` - Central place where all IMPLEMENT_CLASS macros are included
+- **Precompiled Header**: `pch.h` / `pch.cpp` - Contains common includes, global variables like `EditorINI` and `DeltaSeconds`
 
 ## Debugging & Testing
 

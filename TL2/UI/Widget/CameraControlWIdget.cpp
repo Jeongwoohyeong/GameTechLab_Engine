@@ -10,6 +10,7 @@
 #include "SViewportWindow.h"
 #include "SMultiViewportWindow.h"
 #include "ObjectIterator.h"
+#include "EditorEngine.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -67,6 +68,7 @@ void UCameraControlWidget::Update()
 
 TArray<ACameraActor*> UCameraControlWidget::GetCurrentCamera() const
 {
+	/*
 	TArray<ACameraActor*> Cameras;
 
 	UWorld* World = GetWorld();
@@ -82,6 +84,31 @@ TArray<ACameraActor*> UCameraControlWidget::GetCurrentCamera() const
 			Cameras.Add(Camera);
 		}
 	}
+	*/
+
+	TArray<ACameraActor*> Cameras;
+
+	// PIE 중에도 에디터 월드를 사용하도록 수정
+	UEditorEngine* EditorEngine = Cast<UEditorEngine>(GetEngine());
+	if (!EditorEngine)
+		return Cameras;
+
+	UWorld* EditorWorld = EditorEngine->GetWorld(EWorldType::Editor);
+	if (!EditorWorld ||
+		!EditorWorld->GetMultiViewportWindow() ||
+		!EditorWorld->GetMultiViewportWindow()->GetViewports())
+		return Cameras;
+
+	SViewportWindow** Viewports = EditorWorld->GetMultiViewportWindow()->GetViewports();
+	if (!Viewports)
+		return Cameras;
+
+	for (int64 i = 0; i < 4; i++)
+	{
+		Cameras.push_back(Viewports[i]->GetViewportClient()->GetCamera());
+	}
+
+	return Cameras;
 }
 
 void UCameraControlWidget::RenderWidget()
@@ -106,17 +133,20 @@ void UCameraControlWidget::RenderWidget()
 	ImGui::TextUnformatted("Camera Transform");
 	ImGui::Spacing();
 
-	// 카메라 이동속도 표시 및 조절 (World와 동기화)
-	if (UIManager && UIManager->GetWorld())
+	// 카메라 이동속도 표시 및 조절 (Editor World와 동기화)
+	UEditorEngine* EditorEngine = Cast<UEditorEngine>(GetEngine());
+	UWorld* EditorWorld = EditorEngine ? EditorEngine->GetWorld(EWorldType::Editor) : nullptr;
+
+	if (EditorWorld && EditorWorld->GetCameraActor())
 	{
-		// World에서 현재 카메라 이동 속도 가져오기
-		float WorldMoveSpeed = UIManager->GetWorld()->GetCameraActor()->GetCameraSpeed();
-		
+		// Editor World에서 현재 카메라 이동 속도 가져오기
+		float WorldMoveSpeed = EditorWorld->GetCameraActor()->GetCameraSpeed();
+
 		ImGui::Text("Move Speed: %.1f", WorldMoveSpeed);
 		if (ImGui::SliderFloat("##MoveSpeed", &WorldMoveSpeed, 1.0f, 20.0f, "%.1f"))
 		{
-			// World에 카메라 이동속도 설정
-			UIManager->GetWorld()->GetCameraActor()->SetCameraSpeed(WorldMoveSpeed);
+			// Editor World에 카메라 이동속도 설정
+			EditorWorld->GetCameraActor()->SetCameraSpeed(WorldMoveSpeed);
 			// 위젯의 로컬 값도 업데이트
 			CameraMoveSpeed = WorldMoveSpeed;
 		}

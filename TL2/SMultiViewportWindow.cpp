@@ -280,7 +280,6 @@ void SMultiViewportWindow::OnMouseUp(FVector2D MousePos, uint32 Button)
 void SMultiViewportWindow::OnShutdown()
 {
 	SaveSplitterConfig();
-
 }
 
 void SMultiViewportWindow::StartExpandAnimation(SWindow* TargetViewport)
