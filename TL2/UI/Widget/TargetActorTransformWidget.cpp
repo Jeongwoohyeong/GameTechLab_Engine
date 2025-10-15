@@ -18,6 +18,7 @@
 #include "RotationMovementComponent.h"
 #include "ProjectileMovementComponent.h"
 #include "HeightFogComponent.h"
+#include "FireBallComponent.h"
 
 #include <string>
 #include <filesystem>
@@ -982,6 +983,44 @@ void UTargetActorTransformWidget::RenderWidget()
 				if (ImGui::ColorEdit4("##FogColor", color))
 				{
 					HeightFogComponent->SetFogInscatteringColor(FLinearColor(color[0], color[1], color[2], color[3]));
+				}
+			}
+			else if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(SelectedComponent))
+			{
+				ImGui::Separator();
+				ImGui::Text("FireBall Component Settings");
+
+				// Intensity
+				float Intensity = FireBallComponent->GetIntensity();
+				if (ImGui::DragFloat("Intensity", &Intensity, 0.1f, 0.0f, 100.0f))
+				{
+					FireBallComponent->SetIntensity(Intensity);
+				}
+
+				// Radius
+				float Radius = FireBallComponent->GetRadius();
+				if (ImGui::DragFloat("Radius", &Radius, 0.1f, 0.1f, 1000.0f))
+				{
+					FireBallComponent->SetRadius(Radius);
+				}
+
+				// Falloff
+				float Falloff = FireBallComponent->GetRadiusFallOff();
+				if (ImGui::DragFloat("Falloff", &Falloff, 0.1f, 0.1f, 10.0f))
+				{
+					FireBallComponent->SetRadiusFallOff(Falloff);
+				}
+
+				ImGui::Spacing();
+
+				// Color
+				FLinearColor FireballColor = FireBallComponent->GetColor();
+				float color[4] = { FireballColor.R, FireballColor.G, FireballColor.B, FireballColor.A };
+
+				ImGui::Text("Color");
+				if (ImGui::ColorEdit4("##FireBallColor", color))
+				{
+					FireBallComponent->SetColor(FLinearColor(color[0], color[1], color[2], color[3]));
 				}
 			}
 			else
