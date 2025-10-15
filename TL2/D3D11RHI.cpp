@@ -117,7 +117,12 @@ struct BillboardBufferType
     FVector cameraUp;*/
 };
 
-
+struct FFXAABufferType
+{
+    FVector4 ViewportRect;
+    int Mode;
+    FVector Pad;
+};
 
 void D3D11RHI::Initialize(HWND hWindow)
 {
@@ -129,6 +134,7 @@ void D3D11RHI::Initialize(HWND hWindow)
     CreateConstantBuffer();
 	CreateDepthStencilState();
 	CreateSamplerState();
+    CreateOffscreenBuffer();
     UResourceManager::GetInstance().Initialize(Device,DeviceContext);
 
     // Initialize Direct2D overlay after device/swapchain ready
@@ -149,6 +155,7 @@ void D3D11RHI::Release()
         DeviceContext->Flush();
     }
 
+    ReleaseOffscreenBuffer();
     ReleaseSamplerState();
 
     // 상수버퍼
@@ -228,6 +235,12 @@ void D3D11RHI::CreateBlendState()
     Device->CreateBlendState(&bd, &AddictiveBlendState);
 }
 
+void D3D11RHI::ClearOffscreenBackBuffer()
+{
+    float ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };    
+    DeviceContext->ClearRenderTargetView(OffscreenRTV, ClearColor);
+}
+
 void D3D11RHI::CreateDepthStencilState()
 {
     D3D11_DEPTH_STENCIL_DESC desc = {};
@@ -278,6 +291,32 @@ void D3D11RHI::CreateSamplerState()
     SampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	HRESULT HR = Device->CreateSamplerState(&SampleDesc, &DefaultSamplerState);
+}
+
+void D3D11RHI::CreateOffscreenBuffer()
+{
+    // 이전 프레임에 존재한 Offscreenbuffer 해제
+    ReleaseOffscreenBuffer();
+
+    D3D11_TEXTURE2D_DESC OffscreenTextureDesc = {};    
+    OffscreenTextureDesc.Width = static_cast<UINT>(ViewportInfo.Width);
+    OffscreenTextureDesc.Height = static_cast<UINT>(ViewportInfo.Height);
+    OffscreenTextureDesc.MipLevels = 1;
+    OffscreenTextureDesc.ArraySize = 1;
+    OffscreenTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    OffscreenTextureDesc.SampleDesc.Count = 1;
+    OffscreenTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+    // 생성된 텍스처는 pixel shader에서 사용되고, 렌더 타겟으로도 쓰임
+    OffscreenTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+
+    HRESULT HR = Device->CreateTexture2D(&OffscreenTextureDesc, nullptr, &OffscreenTexture);
+    assert(SUCCEEDED(HR) && "Fail OffscreenTexture");
+
+    HR = Device->CreateRenderTargetView(OffscreenTexture, nullptr, &OffscreenRTV);
+    assert(SUCCEEDED(HR) && "Fail OffscreenRTV");
+
+    HR = Device->CreateShaderResourceView(OffscreenTexture, nullptr, &OffscreenSRV);
+    assert(SUCCEEDED(HR) && "Fail OffscreenSRV");
 }
 
 HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* device, const FMeshData* meshData, ID3D11Buffer** outBuffer)
@@ -397,6 +436,21 @@ void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatri
     DeviceContext->Unmap(DecalCB, 0);
     DeviceContext->VSSetConstantBuffers(6, 1, &DecalCB); // b6 슬롯
     DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB);
+}
+
+void D3D11RHI::UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(FXAACB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    
+    auto DataPtr = reinterpret_cast<FFXAABufferType*>(mapped.pData);
+    DataPtr->ViewportRect = ViewportRect;
+    DataPtr->Mode = Mode;
+    DataPtr->Pad = {};
+    
+    DeviceContext->Unmap(FXAACB, 0);
+
+    DeviceContext->PSSetConstantBuffers(0, 1, &FXAACB);
 }
 
 void D3D11RHI::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
@@ -519,6 +573,12 @@ void D3D11RHI::RSSetViewport()
 void D3D11RHI::OMSetRenderTargets()
 {
     DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
+}
+
+void D3D11RHI::OMSetRenderTargetsNoDepth()
+{
+    // Post Process에서 dephtstencil 불필요
+    DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
 }
 
 void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
@@ -814,6 +874,13 @@ void D3D11RHI::CreateConstantBuffer()
     FireBallDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     FireBallDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&FireBallDesc, nullptr, &RealWorldCB);
+
+    D3D11_BUFFER_DESC FXAADesc = {};
+    FXAADesc.Usage = D3D11_USAGE_DYNAMIC;
+    FXAADesc.ByteWidth = sizeof(FFXAABufferType);
+    FXAADesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    FXAADesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&FXAADesc, nullptr, &FXAACB);    
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -957,6 +1024,12 @@ void D3D11RHI::UpdateInvMatrixConstantBuffer(const FMatrix& InvWorldMatrix, cons
     }
 }
 
+void D3D11RHI::OMSetRenderTargetToOffscreen()
+{
+    // offscreen texture를 렌더타겟으로 설정
+    DeviceContext->OMSetRenderTargets(1, &OffscreenRTV, DepthStencilView);
+}
+
 void D3D11RHI::ReleaseSamplerState()
 {
     if (DefaultSamplerState)
@@ -1053,6 +1126,27 @@ void D3D11RHI::ReleaseDeviceAndSwapChain()
 
 }
 
+void D3D11RHI::ReleaseOffscreenBuffer()
+{
+    if (OffscreenSRV)
+    {
+        OffscreenSRV->Release();
+        OffscreenSRV = nullptr;
+    }
+
+    if (OffscreenRTV)
+    {
+        OffscreenRTV->Release();
+        OffscreenRTV = nullptr;
+    }
+
+    if (OffscreenTexture)
+    {
+        OffscreenTexture->Release();
+        OffscreenTexture = nullptr;
+    }
+}
+
 void D3D11RHI::OmSetDepthStencilState(EComparisonFunc Func)
 {
     switch (Func)
@@ -1105,6 +1199,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
         return;
 
     // 기존 리소스 해제
+    ReleaseOffscreenBuffer();
     ReleaseFrameBuffer();
 
     // 스왑체인 버퍼 리사이즈
@@ -1122,7 +1217,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
     }
 
     // 새 프레임버퍼/RTV/DSV 생성
-    CreateFrameBuffer();
+    CreateFrameBuffer();    
 
     // 뷰포트 갱신
     ViewportInfo.TopLeftX = 0.0f;
@@ -1133,6 +1228,8 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
     ViewportInfo.MaxDepth = 1.0f;
 
     DeviceContext->RSSetViewports(1, &ViewportInfo);
+
+    CreateOffscreenBuffer();
 }
 
 void D3D11RHI::CreateBackBufferAndDepthStencil(UINT width, UINT height)
@@ -1254,4 +1351,9 @@ void D3D11RHI::ResizeSwapChain(UINT width, UINT height)
 void D3D11RHI::PSSetDefaultSampler(UINT StartSlot)
 {
 	DeviceContext->PSSetSamplers(StartSlot, 1, &DefaultSamplerState);
+}
+
+void D3D11RHI::UnbindRenderTargets()
+{
+    DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 }

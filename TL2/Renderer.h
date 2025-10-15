@@ -12,6 +12,7 @@ class URHIDevice;
 class UShader;
 class UStaticMesh;
 struct FMaterialSlot;
+class FPostProcessFXAA;
 
 class URenderer
 {
@@ -77,7 +78,7 @@ public:
     );
 
     void UpdateSceneDepthBuffer(float Near, float Far);
-
+    
     void DrawFullScreenPass();
     void RenderSceneDepth(float Near, float Far);
 
@@ -109,7 +110,12 @@ public:
 
 	void EndFrame();
 
+    void RenderPostProcess();
+
     void OMSetDepthStencilState(EComparisonFunc Func);
+
+    // FXAA
+    void SetOffscreenRenderTarget(const FVector4& ViewportRect, int32 Mode, bool bIsEnabled);
 
     URHIDevice* GetRHIDevice() { return RHIDevice; }
 private:
@@ -137,6 +143,13 @@ private:
     ID3D11Buffer* LastIndexBuffer = nullptr;
     D3D11_PRIMITIVE_TOPOLOGY LastPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
     ID3D11ShaderResourceView* LastTextureSRV = nullptr;
+
+    // FXAA
+    FPostProcessFXAA* FXAAPass = nullptr;
+    FVector4 ViewportRect;
+    int32 Mode = 0;
+    bool bIsFXAAEnabled = false;
+    
 
     void InitializeLineBatch();
     void ResetRenderStateTracking();

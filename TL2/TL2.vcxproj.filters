@@ -466,7 +466,6 @@
     <ClCompile Include="SerializationData.cpp">
       <Filter>Utilities\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="EnumUtils.cpp" />
     <ClCompile Include="SpotlightActor.cpp">
       <Filter>Actors</Filter>
     </ClCompile>
@@ -481,6 +480,10 @@
     </ClCompile>
     <ClCompile Include="HeightFog.cpp">
       <Filter>Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessFXAA.cpp" />
+    <ClCompile Include="EnumUtils.cpp">
+      <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="FireBallComponent.cpp" />
     <ClCompile Include="MovementComponent.cpp">
@@ -871,7 +874,6 @@
     <ClInclude Include="SerializationData.h">
       <Filter>Utilities\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="EnumUtils.h" />
     <ClInclude Include="SpotlightActor.h">
       <Filter>Actors</Filter>
     </ClInclude>
@@ -886,6 +888,10 @@
     </ClInclude>
     <ClInclude Include="HeightFog.h">
       <Filter>Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessFXAA.h" />
+    <ClInclude Include="EnumUtils.h">
+      <Filter>Utilities</Filter>
     </ClInclude>
     <ClInclude Include="FireBallComponent.h" />
     <ClInclude Include="Color.h">
@@ -931,6 +937,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SceneDepth.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="FXAAShader.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="FireBallShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

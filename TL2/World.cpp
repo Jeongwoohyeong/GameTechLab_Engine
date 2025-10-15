@@ -251,7 +251,7 @@ void UWorld::SetRenderer(URenderer* InRenderer)
 }
 
 void UWorld::Render()
-{
+{    
     Renderer->BeginFrame();
     UIManager.Render();
 
@@ -261,7 +261,7 @@ void UWorld::Render()
     {
         MultiViewport->OnRender();
     }
-
+    Renderer->RenderPostProcess();
     //프레임 종료 
     UIManager.EndFrame();
     Renderer->EndFrame();
@@ -269,6 +269,26 @@ void UWorld::Render()
 
 void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 {
+    if (Viewport->GetSizeX() != 0 && Viewport->GetSizeY() != 0)
+    {
+        bool bIsFXAAEnabled =
+                Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_PostProcess) &&
+                Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
+        FVector4 ViewportRect = {
+            static_cast<float>(Viewport->GetStartX()),
+            static_cast<float>(Viewport->GetStartY()),
+            static_cast<float>(Viewport->GetSizeX()),
+            static_cast<float>(Viewport->GetSizeY())
+        };
+        Renderer->SetOffscreenRenderTarget(ViewportRect, 0, bIsFXAAEnabled);
+        if (bIsFXAAEnabled)
+        {
+            Renderer->GetRHIDevice()->OMSetRenderTargetToOffscreen();
+            Renderer->GetRHIDevice()->ClearOffscreenBackBuffer();
+        }
+    }
+   
+    
     // 뷰포트의 실제 크기로 aspect ratio 계산
     float ViewportAspectRatio = static_cast<float>(Viewport->GetSizeX()) / static_cast<float>(
         Viewport->GetSizeY());

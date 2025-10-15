@@ -339,6 +339,10 @@ enum class EEngineShowFlags : uint64
     SF_FireBall = 1ull << 8,
     SF_Fog = 1ull << 9,
     
+    // Post Process
+    SF_PostProcess = 1ull << 10,
+    SF_FXAA = 1ull << 11,
+    
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal | SF_FireBall | SF_Fog,
     

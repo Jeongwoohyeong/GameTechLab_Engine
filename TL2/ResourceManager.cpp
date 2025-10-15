@@ -405,6 +405,7 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["TextShader.hlsl"] = layout;
     layout.clear();
 
+    ShaderToInputLayoutMap["FXAAShader.hlsl"] = layout;
 }
 
 TArray<D3D11_INPUT_ELEMENT_DESC>& UResourceManager::GetProperInputLayout(const FString& InShaderName)

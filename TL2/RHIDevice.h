@@ -48,6 +48,7 @@ public:
     virtual void CreateBlendState() = 0;
 	virtual void CreateDepthStencilState() = 0;
     virtual void CreateShader(ID3D11InputLayout** OutSimpleInputLayout, ID3D11VertexShader** OutSimpleVertexShader, ID3D11PixelShader** OutSimplePixelShader) = 0;
+    virtual void CreateOffscreenBuffer() = 0;
 
     // update
     virtual void UpdateConstantBuffers(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix) = 0;
@@ -72,11 +73,20 @@ public:
     virtual void UpdateSceneDepthBuffer(float Near, float Far) = 0;
 
     virtual void UpdateFireBallConstantBuffer(const struct FireBallBufferType& FireBallData) = 0;
+    
+    // FXAA
+    virtual void UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode) = 0;
+    virtual void OMSetRenderTargetToOffscreen() = 0;
+    virtual ID3D11ShaderResourceView* GetOffscreenSRV() const = 0;    
+
     virtual void UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix) = 0;
 
     // clear
     virtual void ClearBackBuffer() = 0;
     virtual void ClearDepthBuffer(float Depth, UINT Stenci) = 0;
+
+    // FXAA
+    virtual void ClearOffscreenBackBuffer() = 0;    
 
     virtual void IASetPrimitiveTopology() = 0;
     virtual void RSSetViewport() = 0;
@@ -86,10 +96,12 @@ public:
     virtual void RSSetDefaultState() = 0;
     virtual void RSSetDecalState() = 0;
     virtual void OMSetRenderTargets() = 0;
+    virtual void OMSetRenderTargetsNoDepth() = 0;
     virtual void OMSetBlendState(bool bIsBlendMode) = 0;
     virtual void OMSetBlendState(EBlendMode BlendMode) = 0;
     virtual void OmSetDepthStencilState(EComparisonFunc Func) = 0;
     virtual void Present() = 0;
     virtual void PSSetDefaultSampler(UINT StartSlot) = 0;
+    virtual void UnbindRenderTargets() = 0;
 };
 

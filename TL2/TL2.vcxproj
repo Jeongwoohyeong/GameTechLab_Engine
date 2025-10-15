@@ -162,12 +162,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
+    <FxCompile Include="FXAAShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <ClCompile Include="HeightFog.cpp" />
     <ClCompile Include="EnumUtils.cpp" />
     <ClCompile Include="HeightFogComponent.cpp" />
     <ClCompile Include="FireBallComponent.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="ProjectileMovementComponent.cpp" />
+    <ClCompile Include="PostProcessFXAA.cpp" />
     <ClCompile Include="SpotlightActor.cpp" />
     <ClCompile Include="SpotlightComponent.cpp" />
     <ClCompile Include="DecalActor.cpp" />
@@ -381,6 +387,7 @@
     <ClInclude Include="HeightFog.h" />
     <ClInclude Include="EnumUtils.h" />
     <ClInclude Include="HeightFogComponent.h" />
+    <ClInclude Include="PostProcessFXAA.h" />
     <ClInclude Include="FireBallComponent.h" />
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="ProjectileMovementComponent.h" />

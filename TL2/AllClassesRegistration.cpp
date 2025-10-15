@@ -60,6 +60,8 @@
 #include "MovementComponent.h"
 #include "RotationMovementComponent.h"
 #include "ProjectileMovementComponent.h"
+#include "MovementComponent.h"
+#include "RotationMovementComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 

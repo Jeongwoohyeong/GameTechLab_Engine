@@ -10,7 +10,6 @@ struct alignas(16) FireBallBufferType
     FVector4 Parameters;            // 16 (Intensity, Radius, InvRadius, RadiusOff)
 };
 
-
 class D3D11RHI : public URHIDevice
 {
 public:
@@ -33,6 +32,9 @@ public:
     void ClearBackBuffer() override;
     void ClearDepthBuffer(float Depth, UINT Stencil) override;
     void CreateBlendState() override;
+
+    // FXAA
+    void ClearOffscreenBackBuffer() override;
 
     template<typename TVertex>
     static HRESULT CreateVertexBufferImpl(ID3D11Device* device, const FMeshData& mesh, ID3D11Buffer** outBuffer, D3D11_USAGE usage, UINT cpuAccessFlags);
@@ -66,6 +68,7 @@ public:
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
     void UpdateFireBallConstantBuffer(const FireBallBufferType & InFireBallData)  override;
     void UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix) override;
+    void UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode) override;
 
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,
@@ -78,6 +81,9 @@ public:
     ) override;
 
     void UpdateSceneDepthBuffer(float Near, float Far) override;
+    
+    // FXAA
+    void OMSetRenderTargetToOffscreen() override;    
 
     void IASetPrimitiveTopology() override;
     void RSSetState(EViewModeIndex ViewModeIndex) override;
@@ -87,10 +93,12 @@ public:
     void RSSetDecalState() override;
     void RSSetViewport() override;
     void OMSetRenderTargets() override;
+    void OMSetRenderTargetsNoDepth() override;
     void OMSetBlendState(bool bIsBlendMode) override;
     void OMSetBlendState(EBlendMode BlendMode) override;
     void Present() override;
 	void PSSetDefaultSampler(UINT StartSlot) override;
+    void UnbindRenderTargets() override;
 
     void CreateShader(ID3D11InputLayout** OutSimpleInputLayout, ID3D11VertexShader** OutSimpleVertexShader, ID3D11PixelShader** OutSimplePixelShader) override;
 
@@ -134,6 +142,10 @@ public:
     {
         return DefaultSamplerState;
     }
+    inline ID3D11ShaderResourceView* GetOffscreenSRV() const override
+    {
+        return OffscreenSRV;
+    }
 
 private:
     void CreateDeviceAndSwapChain(HWND hWindow)override; // 여기서 디바이스, 디바이스 컨택스트, 스왑체인, 뷰포트를 초기화한다
@@ -143,12 +155,19 @@ private:
     void CreateDepthStencilState() override;
 	void CreateSamplerState();
 
+    // FXAA
+    void CreateOffscreenBuffer() override;
+    
+
     // release
 	void ReleaseSamplerState();
     void ReleaseBlendState();
     void ReleaseRasterizerState(); // rs
     void ReleaseFrameBuffer(); // fb, rtv
     void ReleaseDeviceAndSwapChain();
+
+    // FXAA
+    void ReleaseOffscreenBuffer();
  
 	void OmSetDepthStencilState(EComparisonFunc Func) override;
     
@@ -184,6 +203,11 @@ private:
     ID3D11DepthStencilView* DepthStencilView{};//
     ID3D11ShaderResourceView* DepthSRV{}; // Depth buffer를 셰이더에서 읽기 위한 SRV
 
+    // FXAA
+    ID3D11Texture2D* OffscreenTexture{};
+    ID3D11RenderTargetView* OffscreenRTV;
+    ID3D11ShaderResourceView* OffscreenSRV;
+
     // 버퍼 핸들
     ID3D11Buffer* ModelCB{};
     ID3D11Buffer* ViewProjCB{};
@@ -199,6 +223,7 @@ private:
     ID3D11Buffer* FireBallCB{};
     ID3D11Buffer* RealWorldCB{};
     ID3D11Buffer* InvMatrixCB{};  // b10: InvWorld, InvView, InvProj matrices
+    ID3D11Buffer* FXAACB{};
 
     ID3D11Buffer* ConstantBuffer{};
 

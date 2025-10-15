@@ -1110,7 +1110,7 @@ void UTargetActorTransformWidget::PostProcess()
 void UTargetActorTransformWidget::UpdateTransformFromActor()
 {
 	if (!SelectedActor && !SelectedComponent)
-		return;
+		return;	
 	
 	USceneComponent* SceneComponent = Cast<USceneComponent>(SelectedComponent);
 	if (!SceneComponent)
