@@ -14,7 +14,7 @@
 URenderer::URenderer(URHIDevice* InDevice) : RHIDevice(InDevice)
 {
     InitializeLineBatch();
-    FXAA = new FPostProcessFXAA(InDevice);
+    FXAAPass = new FPostProcessFXAA(InDevice);
 }
 
 URenderer::~URenderer()
@@ -35,14 +35,14 @@ void URenderer::BeginFrame()
 
     // TODO flag에 따라 분기처리 추가
     // Post Proccess On
-    //if (/*TODO flag 추가*/)    
+    if (bIsFXAAEnabled)    
     {
         // offscreen 버퍼 설정
-        RHIDevice->OMSetRnederTargetToOffscreen();
+        RHIDevice->OMSetRenderTargetToOffscreen();
         RHIDevice->ClearOffscreenBackBuffer();
     }
-    //else
     // Post Proccess Off
+    else
     {        
         RHIDevice->OMSetRenderTargets();
         RHIDevice->ClearBackBuffer();
@@ -549,20 +549,7 @@ void URenderer::EndFrame()
     
     // 현재 프레임 통계를 업데이트
     const FRenderingStats& CurrentStats = StatsCollector.GetCurrentFrameStats();
-    StatsCollector.UpdateFrameStats(CurrentStats);
-
-    // Post Process pass
-    //if (/*TODO flag */)
-    {
-        RHIDevice->OMSetRenderTargetsNoDepth();
-        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
-        if (FXAA)
-        {
-            FXAA->Render(SceneSRV);
-        }
-    }
-    
-    
+    StatsCollector.UpdateFrameStats(CurrentStats);    
     
     // 평균 통계를 얻어서 오버레이에 업데이트
     const FRenderingStats& AvgStats = StatsCollector.GetAverageStats();
@@ -572,8 +559,34 @@ void URenderer::EndFrame()
         AvgStats.TextureChanges,
         AvgStats.ShaderChanges
     );
-    
+    if (bIsFXAAEnabled)
+    {
+        RHIDevice->UnbindRenderTargets();
+        RHIDevice->OMSetRenderTargetsNoDepth();
+        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
+        if (FXAAPass)
+        {
+            RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
+            FXAAPass->Render(SceneSRV);
+        }        
+    }
     RHIDevice->Present();
+}
+
+void URenderer::RenderPostProcess()
+{
+    // Post Process pass
+    if (bIsFXAAEnabled)
+    {
+        RHIDevice->UnbindRenderTargets();
+        RHIDevice->OMSetRenderTargetsNoDepth();
+        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
+        if (FXAAPass)
+        {
+            RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
+            FXAAPass->Render(SceneSRV);
+        }        
+    }
 }
 
 void URenderer::OMSetDepthStencilState(EComparisonFunc Func)
@@ -581,17 +594,11 @@ void URenderer::OMSetDepthStencilState(EComparisonFunc Func)
     RHIDevice->OmSetDepthStencilState(Func);
 }
 
-void URenderer::UpdateOffscreenRenderTarget(UINT Width, UINT Height)
+void URenderer::SetOffscreenRenderTarget(const FVector4& InViewportRect, int32 InMode, bool bIsEnabled)
 {
-    if ((Width == 0) || (Height == 0) && (Width == OffscreenWidth) && (Height == OffscreenHeight))
-    {
-        return;
-    }
-
-    OffscreenWidth = Width;
-    OffscreenHeight = Height;
-
-    RHIDevice->CreateOffscreenBuffer(OffscreenWidth, OffscreenHeight);
+    bIsFXAAEnabled = bIsEnabled;
+    ViewportRect = InViewportRect;
+    Mode = InMode;
 }
 
 void URenderer::InitializeLineBatch()

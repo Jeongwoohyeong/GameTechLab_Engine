@@ -10,7 +10,6 @@ struct alignas(16) FireBallBufferType
     FVector4 Parameters;            // 16 (Intensity, Radius, InvRadius, RadiusOff)
 };
 
-
 class D3D11RHI : public URHIDevice
 {
 public:
@@ -68,6 +67,7 @@ public:
     void UpdateViewportConstantBuffer(float StartX, float StartY, float SizeX, float SizeY);
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
     void UpdateFireBallConstantBuffer(const FireBallBufferType & InFireBallData)  override;
+    void UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode) override;
 
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,
@@ -82,7 +82,7 @@ public:
     void UpdateSceneDepthBuffer(float Near, float Far) override;
     
     // FXAA
-    void OMSetRnederTargetToOffscreen() override;    
+    void OMSetRenderTargetToOffscreen() override;    
 
     void IASetPrimitiveTopology() override;
     void RSSetState(EViewModeIndex ViewModeIndex) override;
@@ -97,6 +97,7 @@ public:
     void OMSetBlendState(EBlendMode BlendMode) override;
     void Present() override;
 	void PSSetDefaultSampler(UINT StartSlot) override;
+    void UnbindRenderTargets() override;
 
     void CreateShader(ID3D11InputLayout** OutSimpleInputLayout, ID3D11VertexShader** OutSimpleVertexShader, ID3D11PixelShader** OutSimplePixelShader) override;
 
@@ -154,7 +155,7 @@ private:
 	void CreateSamplerState();
 
     // FXAA
-    void CreateOffscreenBuffer(UINT Width, UINT Height) override;
+    void CreateOffscreenBuffer() override;
     
 
     // release
@@ -219,6 +220,7 @@ private:
     ID3D11Buffer* SceneDepthCB{};
     ID3D11Buffer* FireBallCB{};
     ID3D11Buffer* InvMatrixCB{};  // b10: InvWorld, InvView, InvProj matrices
+    ID3D11Buffer* FXAACB{};
 
     ID3D11Buffer* ConstantBuffer{};
 

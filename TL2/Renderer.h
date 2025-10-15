@@ -77,7 +77,7 @@ public:
     );
 
     void UpdateSceneDepthBuffer(float Near, float Far);
-
+    
     void DrawFullScreenPass();
     void RenderSceneDepth(float Near, float Far);
 
@@ -109,10 +109,12 @@ public:
 
 	void EndFrame();
 
+    void RenderPostProcess();
+
     void OMSetDepthStencilState(EComparisonFunc Func);
 
     // FXAA
-    void UpdateOffscreenRenderTarget(UINT Width, UINT Height);
+    void SetOffscreenRenderTarget(const FVector4& ViewportRect, int32 Mode, bool bIsEnabled);
 
     URHIDevice* GetRHIDevice() { return RHIDevice; }
 private:
@@ -142,9 +144,11 @@ private:
     ID3D11ShaderResourceView* LastTextureSRV = nullptr;
 
     // FXAA
-    FPostProcessFXAA* FXAA = nullptr;
-    UINT OffscreenWidth = 0;
-    UINT OffscreenHeight = 0;
+    FPostProcessFXAA* FXAAPass = nullptr;
+    FVector4 ViewportRect;
+    int32 Mode = 0;
+    bool bIsFXAAEnabled = false;
+    
 
     void InitializeLineBatch();
     void ResetRenderStateTracking();

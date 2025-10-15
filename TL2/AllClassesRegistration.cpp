@@ -107,8 +107,6 @@ IMPLEMENT_CLASS(UBillboardComponent)
 CLASS_META(UBillboardComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(URotationMovementComponent)
 CLASS_META(URotationMovementComponent, CanSpawnInTransformWidget, "true")
-IMPLEMENT_CLASS(URotationMovementComponent)
-CLASS_META(URotationMovementComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UProjectileMovementComponent)
 CLASS_META(UProjectileMovementComponent, CanSpawnInTransformWidget, "true")
 

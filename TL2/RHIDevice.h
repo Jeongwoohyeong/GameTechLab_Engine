@@ -47,7 +47,7 @@ public:
     virtual void CreateBlendState() = 0;
 	virtual void CreateDepthStencilState() = 0;
     virtual void CreateShader(ID3D11InputLayout** OutSimpleInputLayout, ID3D11VertexShader** OutSimpleVertexShader, ID3D11PixelShader** OutSimplePixelShader) = 0;
-    virtual void CreateOffscreenBuffer(UINT Width, UINT Height) = 0;
+    virtual void CreateOffscreenBuffer() = 0;
 
     // update
     virtual void UpdateConstantBuffers(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix) = 0;
@@ -74,7 +74,8 @@ public:
     virtual void UpdateFireBallConstantBuffer(const struct FireBallBufferType& FireBallData) = 0;
     
     // FXAA
-    virtual void OMSetRnederTargetToOffscreen() = 0;
+    virtual void UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode) = 0;
+    virtual void OMSetRenderTargetToOffscreen() = 0;
     virtual ID3D11ShaderResourceView* GetOffscreenSRV() const = 0;    
 
     // clear
@@ -98,5 +99,6 @@ public:
     virtual void OmSetDepthStencilState(EComparisonFunc Func) = 0;
     virtual void Present() = 0;
     virtual void PSSetDefaultSampler(UINT StartSlot) = 0;
+    virtual void UnbindRenderTargets() = 0;
 };
 

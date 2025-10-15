@@ -250,7 +250,7 @@ void UWorld::SetRenderer(URenderer* InRenderer)
 }
 
 void UWorld::Render()
-{
+{    
     Renderer->BeginFrame();
     UIManager.Render();
 
@@ -260,7 +260,6 @@ void UWorld::Render()
     {
         MultiViewport->OnRender();
     }
-
     //프레임 종료 
     UIManager.EndFrame();
     Renderer->EndFrame();
@@ -407,19 +406,8 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
                 //    Renderer->OMSetDepthStencilState(EComparisonFunc::Always);
                 //}
 
-                if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_PostProcess))
-                {
-                    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA))
-                    {
-                        Renderer->UpdateOffscreenRenderTarget(Viewport->GetSizeX(), Viewport->GetSizeY());
-                        
-                    }
-                }
-                else
-                {
-                    Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
-                    Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);                        
-                }                
+                Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
+                Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);
 
                 //// depth test 원래대로 복원
                 //if (bIsSelected)
@@ -604,6 +592,22 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     if (ViewModeIndex == EViewModeIndex::VMI_SceneDepth)
     {
         Renderer->RenderSceneDepth(Camera->GetCameraNear(), Camera->GetCameraFar());
+    }
+
+    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_PostProcess))
+    {
+        if (Viewport->GetSizeX() == 0 || Viewport->GetSizeY() == 0)
+        {
+            return;
+        }
+        bool bIsFXAAEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
+        FVector4 ViewportRect = {
+            static_cast<float>(Viewport->GetStartX()),
+            static_cast<float>(Viewport->GetStartY()),
+            static_cast<float>(Viewport->GetSizeX()),
+            static_cast<float>(Viewport->GetSizeY())
+        };
+        Renderer->SetOffscreenRenderTarget(ViewportRect, 1, bIsFXAAEnabled);
     }
 }
 

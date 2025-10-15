@@ -23,15 +23,15 @@ void FPostProcessFXAA::Render(ID3D11ShaderResourceView* InSceneTextureSRV)
     {
         return;
     }
-
+    
     PrepareShader();
     RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &InSceneTextureSRV);
     RHIDevice->PSSetDefaultSampler(0);
     RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     RHIDevice->GetDeviceContext()->Draw(3,0);
 
-    ID3D11ShaderResourceView* NullSRV = nullptr;
-    RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &NullSRV);
+    ID3D11ShaderResourceView* NullSRV[1] = {nullptr};
+    RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, NullSRV);
 }
 
 void FPostProcessFXAA::PrepareShader() const
@@ -39,6 +39,6 @@ void FPostProcessFXAA::PrepareShader() const
     ID3D11DeviceContext* DeviceContext = RHIDevice->GetDeviceContext();
     DeviceContext->VSSetShader(FXAAShader->GetVertexShader(), nullptr, 0);
     DeviceContext->PSSetShader(FXAAShader->GetPixelShader(), nullptr, 0);
-    DeviceContext->IASetInputLayout(nullptr);
+    DeviceContext->IASetInputLayout(FXAAShader->GetInputLayout());
     
 }

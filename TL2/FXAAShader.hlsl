@@ -1,9 +1,9 @@
 cbuffer ScreenSizeBuffer : register(b0)
 {
-    float2 RcpScreenSize;
+    float4 ViewportRect;
     // Edge 강조 모드와 FXAA 모드를 위한 int flag
     int Mode;
-    int pad;
+    float3 Pad;
 }
 
 struct PS_INPUT
@@ -17,6 +17,12 @@ SamplerState DefaultSampler : register(s0);
 
 #define FXAAMode 0
 #define EdgeMode 1
+#define LumaFactor float3(0.299f, 0.587f, 0.114f)
+
+float Luma(float3 RGB)
+{
+    return dot(RGB, LumaFactor);
+}
 
 PS_INPUT mainVS(uint VertexID : SV_VertexID)
 {
@@ -31,122 +37,95 @@ PS_INPUT mainVS(uint VertexID : SV_VertexID)
 
 float4 mainPS(PS_INPUT Input) : SV_Target
 {
-    float2 FinalTexCoord = Input.TexCoord;
+    uint Width, Height;
+    SceneTexture.GetDimensions(Width, Height);
+    float2 SceneSize = float2(Width, Height) * ViewportRect.zw;
+    float2 RcpScreenSize = 1.0f / SceneSize;
+    float2 ViewportTexCoord = ViewportRect.xy + Input.TexCoord * ViewportRect.zw;
+
+    float2 FinalTexCoord = ViewportTexCoord;
     // 경계 판단의 최소 Luma Contrast값
-    const float EdgeThreshold           = 0.166f;
+    const float EdgeThreshold           = 0.125f;
     // 어두운 영역 노이즈 무시용 최소 Luma값
-    const float EdgeThresholdMin        = 0.0833f;
-    // 경계 끝 탐색의 밥복 회수
-    const int EdgeSearchIteration       = 10;
+    const float EdgeThresholdMin        = 0.0312f;
     // 서브픽셀 블렌딩 강도
-    const float BlendIntensity          = 0.75f;
+    const float BlendIntensity          = 0.5f;
 
-    // Luma 계산을 위한 값
-    const float3 LumaFactor = float3(0.299f, 0.587f, 0.114f);
-
-    // 현재 픽셀 (main pixel)
-    float3 ColorM = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0).rgb;
-    float LumaM = dot(ColorM, LumaFactor);
-
-    // 상(N), 하(S), 좌(W), 우(E) 픽셀 Luma
-    float3 ColorN = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(0, -1)).rgb;
-    float LumaN = dot(ColorN, LumaFactor);
-
-    float3 ColorS = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(0, 1)).rgb;
-    float LumaS = dot(ColorS, LumaFactor);
-
-    float3 ColorW = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(-1, 0)).rgb;
-    float LumaW = dot(ColorW, LumaFactor);
-
-    float3 ColorE = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(1, 0)).rgb;
-    float LumaE = dot(ColorE, LumaFactor);
-
+    float ColorM = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0).rgb;
+    // 상하좌우 픽셀
+    float ColorN = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, -1)).rgb;
+    float ColorS = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, 1)).rgb;
+    float ColorW = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, 0)).rgb;
+    float ColorE = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, 0)).rgb;
+    
+    // 현재 픽셀    
+    float LumaM = Luma(ColorM);
+    // 상하좌우 픽셀
+    float LumaN = Luma(ColorN);
+    float LumaS = Luma(ColorS);
+    float LumaW = Luma(ColorW);
+    float LumaE = Luma(ColorE);
+    
     // 경계 존재 여부 검사
     float LumaMin = min(LumaM, min(min(LumaN, LumaS), min(LumaW, LumaE)));
     float LumaMax = max(LumaM, max(max(LumaN, LumaS), max(LumaW, LumaE)));
-    float LumaRange = LumaMax - LumaMin;
+    float LumaContrast = LumaMax - LumaMin;
 
+    float3 Average = (ColorM + ColorS + ColorW + ColorE) * 0.25f;
+    
     // Luma Contrast가 Threshold 미만이면 early return
-    if (LumaRange < max(EdgeThresholdMin, LumaMax * EdgeThreshold))
-    {
-        return float4(ColorM, 1.0f);        
+    if (LumaContrast < max(EdgeThresholdMin, LumaMax * EdgeThreshold))
+    {        
+        float3 Smooth = lerp(ColorM, Average, BlendIntensity);
+        return float4(Smooth, 1.0f);        
     }
-
-    // 3x3 영역 Luma Sampling으로 경계 방향 정밀하게 판단
-    float3 ColorNW = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(-1, -1)).rgb;
-    float LumaNW = dot(ColorNW, LumaFactor);
-    float3 ColorNE = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(1, -1)).rgb;
-    float LumaNE = dot(ColorNE, LumaFactor);
-    float3 ColorSW = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(-1, 1)).rgb;
-    float LumaSW = dot(ColorSW, LumaFactor);
-    float3 ColorSE = SceneTexture.SampleLevel(DefaultSampler, Input.TexCoord, 0, int2(1, 1)).rgb;
-    float LumaSE = dot(ColorSE, LumaFactor);
-
+    
+    // 3x3 영역 Luma Sampling으로 경계 방향 정밀하게 판단    
+    float LumaNW = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, -1)).rgb);
+    float LumaNE = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, -1)).rgb);    
+    float LumaSW = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, 1)).rgb);    
+    float LumaSE = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, 1)).rgb);
+    
     // 수평/수직 경계 검사 - sobel filter 이용
     float EdgeHorizontal = abs(LumaNW + 2 * LumaN + LumaNE - LumaSW - 2 * LumaS - LumaSE);
     float EdgeVertical = abs(LumaNW + 2 * LumaW + LumaSW - LumaNE - 2 * LumaE - LumaSE);
     if (Mode == FXAAMode)
     {
-        bool bIsHorizontal = EdgeHorizontal >= EdgeVertical;
+        // 경계 방향 벡터 계산
+        float2 Direction;
+        Direction.x = -((LumaNW + LumaNE) - (LumaSW + LumaSE));
+        Direction.y = ((LumaNW + LumaSW) - (LumaNE + LumaSE));
 
-        float2 Step = bIsHorizontal ? float2(0.0f, RcpScreenSize.Y) : float2(RcpScreenSize.X, 0.0f);
+        // 방향 벡터 안정화 및 UV 공간으로 전환 - 공부
+        float DirectionReduce = max((LumaN + LumaS + LumaW + LumaE) * (0.25 * 0.125), 1.0f / 128.0f);
+        float RcpDirMin = 1.0f / (min(abs(Direction.x), abs(Direction.y)) + DirectionReduce);
+        Direction = clamp(Direction * RcpDirMin, -8.0f, 8.0f) * RcpScreenSize;
 
-        // Positive 방향
-        float2 PositivePosition = Input.TexCoord + Step;
-        // Negative 방향
-        float2 NegativePosition = Input.TexCoord - Step;
+        // 서브 픽셀 샘플링 - 공부
+        float3 RgbA = 0.5 *
+            (SceneTexture.Sample(DefaultSampler, ViewportTexCoord + Direction * (1.0 / 3.0 - 0.5)).rgb +
+            SceneTexture.Sample(DefaultSampler, ViewportTexCoord + Direction * (2.0 / 3.0 - 0.5)).rgb);
 
-        float PositiveLumaEnd = bIsHorizontal ? LumaS : LumaE;
-        float NegativeLumaEnd = bIsHorizontal ? LumaN : LumaW;
-        float PositiveGradient = PositiveLumaEnd - LumaM;
-        float NegativeGradient = NegativeLumaEnd - LumaM;
+        float3 RgbB = RgbA * 0.5 + 0.25 * (
+            SceneTexture.Sample(DefaultSampler, ViewportTexCoord + Direction * -0.5).rgb +
+            SceneTexture.Sample(DefaultSampler, ViewportTexCoord + Direction * 0.5).rgb);
 
-        // Positive 방향 탐색
-        for (int i = 0; i < EdgeSearchIteration; i++)
-        {
-            float3 PositiveColor = SceneTexture.SampleLevel(DefaultSampler, PositivePosition, 0).rgb;
-            float PositiveLuma = dot(PositiveColor, LumaFactor) - LumaM;
-            if ((PositiveLuma * PositiveGradient) < 0.0f)
-            {
-                PositivePosition -= Step;
-                break;
-            }
-            PositivePosition += Step;
-        }
+        // 과 블러 방지
+        float LumaB = Luma(RgbB);
+        float3 Result = (LumaB < LumaMin || LumaB > LumaMax) ? RgbA : RgbB;
 
-        // Negative 방향 탐색
-        for (int i = 0; i < EdgeSearchIteration; i++)
-        {
-            float3 NegativeColor = SceneTexture.SampleLevel(DefaultSampler, NegativePosition, 0).rgb;
-            float NegativeLuma = dot(NegativeColor, LumaFactor) - LumaM;
-            if ((NegativeLuma * NegativeGradient) < 0.0f)
-            {
-                NegativePosition -= Step;
-                break;
-            }
-            NegativePosition -= Step;
-        }
+        // 강한 경계에 미세한 블렌딩 추가
+        Result = lerp(Result, Average, saturate(BlendIntensity) * 0.25f);
 
-        // 서브 픽셀 블렌딩
-        float NegativeDistance = bIsHorizontal
-                                     ? (Input.TexCoord.y - NegativePosition.y)
-                                     : (Input.TexCoord.x - NegativePosition.x);
-        float PositiveDistance = bIsHorizontal
-                                     ? (PositivePosition.y - Input.TexCoord.y)
-                                     : (PositivePosition.x - Input.TexCoord.x);
-
-        float Direction = (NegativeDistance < PositiveDistance) ? -1.0f : 1.0f;
-        float Ratio = min(NegativeDistance, PositiveDistance) / (NegativeDistance + PositiveDistance);
-        float PixelOffset = (Ratio - 0.5f) * BlendIntensity;
-        FinalTexCoord += Direction * Step * PixelOffset;
+        return float4(Result, 1.0f);        
     }
     else if (Mode == EdgeMode)
     {
         float EdgeStrength = saturate(EdgeHorizontal + EdgeVertical);
-
+    
         return float4(0.0f, EdgeStrength, 0.0f, 1.0f);
     }
     
-
-    return SceneTexture.SampleLevel(DefaultSampler, FinalTexCoord, 0);
+    
+    return SceneTexture.SampleLevel(DefaultSampler, FinalTexCoord, 0).rgba;
 }
