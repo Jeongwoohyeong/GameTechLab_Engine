@@ -390,7 +390,6 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             // FireBall Pass를 위해 FireBall 데이터 수집
             if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(Component) )
             {
-                //if (!Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FireBall))
                 {
                     // 실제로 그리는게 아닌 정보 수집
                     FireBallComponent->Render(Renderer, ViewMatrix, ProjectionMatrix);
@@ -564,11 +563,24 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
     const TArray<FireBallBufferType>& FireBallDatas = Renderer->GetFrameFireBallData();
     if (!FireBallDatas.empty() && Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FireBall))
     {
+        // Fireball Pass를 위한 프로젝션 행렬을 약간 수정하여 Z-fighting 방지
+        FMatrix FireballProjectionMatrix = ProjectionMatrix;
+        // Z-fighting을 해결하기 위한 작은 오프셋 값. 
+        // 행렬의 3행 3열과 4행 3열을 수정하여 z값을 미세하게 줄여(카메라에 가깝게 만듦) 
+        // 따라서 깊이 테스트를 통과가능
+        float epsilon = 0.0001f; 
+        FireballProjectionMatrix.M[2][2] *= (1.0f - epsilon);
+        FireballProjectionMatrix.M[3][2] *= (1.0f - epsilon);
+
+        // 가산 블렌딩
         Renderer->OMSetBlendState(EBlendMode::Addicitve);
-        Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly);
+        // 깊이 테스트: LESSEQUAL, 깊이 쓰기 비활성화
+        Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly); 
         Renderer->RSSetDefaultState();
+
         UShader* FireBalllShader = ResourceManager.Load<UShader>("FireBallShader.hlsl");
         Renderer->PrepareShader(FireBalllShader);
+
         for (const FireBallBufferType& FireBallData : FireBallDatas)
         {
             Renderer->UpdateFireBallConstantBuffer(FireBallData);
@@ -577,7 +589,8 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             {
                 if (StaticMeshComponent && StaticMeshComponent->IsActive())
                 {
-                    Renderer->UpdateConstantBuffer(StaticMeshComponent->GetWorldMatrix(), ViewMatrix, ProjectionMatrix);
+                    // 수정된 프로젝션 행렬을 사용하여 렌더링
+                    Renderer->UpdateConstantBuffer(StaticMeshComponent->GetWorldMatrix(), ViewMatrix, FireballProjectionMatrix);
                     Renderer->DrawSimpleMesh(StaticMeshComponent->GetStaticMesh());
                 }
             }
