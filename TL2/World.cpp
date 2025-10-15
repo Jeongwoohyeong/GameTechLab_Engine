@@ -365,22 +365,24 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             // Decal Show Flag가 켜져 있다면
             if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal))
             {
-                // Pass 2를 위해 Decal과 Static 메시를 별도로 저장
+                // Pass 2를 위해 Decal을 별도로 저장
                 if (DecalComponent)
                 {
                     DecalVolumes.Push(DecalComponent);
                 }
-
-                UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component);
-                if (StaticMeshComponent)
-                {
-                    StaticMeshes.Push(StaticMeshComponent);
-                }
             }
             else
             {
+                // Decal Show Flag가 꺼져있으면 DecalComponent는 무시
                 if (DecalComponent)
                     continue;
+            }
+
+            // StaticMeshComponent는 데칼과 파이어볼 모두 사용하므로 플래그와 무관하게 항상 수집
+            
+            if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Component))
+            {
+                StaticMeshes.Push(StaticMeshComponent);
             }
 
             if (UHeightFogComponent* HeightFog = Cast<UHeightFogComponent>(Component))
@@ -392,6 +394,10 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(Component) )
             {
                 {
+                    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_DebugLines))
+                    {
+                        FireBallComponent->AddDebugLine(Renderer);
+                    }
                     // 실제로 그리는게 아닌 정보 수집
                     FireBallComponent->Render(Renderer, ViewMatrix, ProjectionMatrix);
                     continue;
