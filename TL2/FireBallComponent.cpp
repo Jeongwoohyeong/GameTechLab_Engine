@@ -47,9 +47,19 @@ void UFireBallComponent::DeSerialize(FObjectData* Data)
 
 UObject* UFireBallComponent::Duplicate()
 {
-	return nullptr;
+	UFireBallComponent* DuplicatedComponent = Cast<UFireBallComponent>(NewObject(GetClass()));
+	CopyCommonProperties(DuplicatedComponent);
+
+	DuplicatedComponent->Color = this->Color;
+	DuplicatedComponent->Intensity = this->Intensity;
+	DuplicatedComponent->Radius = this->Radius;
+	DuplicatedComponent->RadiusFallOff = this->RadiusFallOff;
+
+	DuplicatedComponent->DuplicateSubObjects();
+	return DuplicatedComponent;
 }
 
 void UFireBallComponent::DuplicateSubObjects()
 {
+	Super_t::DuplicateSubObjects();
 }
