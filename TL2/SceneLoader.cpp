@@ -262,7 +262,6 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
                 oss << ",\n";
                 oss << "      \"FogInscatteringColorA\" : \"" << HeightFogData->FogInscatteringColor.A << "\"";
             }
-        }
             else if (FireBallData)
             {
                 oss << ",\n";
