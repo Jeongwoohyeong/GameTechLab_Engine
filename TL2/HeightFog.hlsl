@@ -48,10 +48,11 @@ float ComputeHeightFog(float3 worldPos, float3 camPos)
     // Apply start distance offset
     float adjustedDistance = max(0.0f, d - StartDistance);
     
-    // Early exit for cutoff distance (optimization + max opacity)
+    // Early exit for cutoff distance (optimization + zero opacity)
     if (FogCutoffDistance > 0.0f && adjustedDistance > FogCutoffDistance)
     {
-        return FogMaxOpacity; // Maximum fog beyond cutoff
+        return 0.0f; // Minimum fog beyond cutoff
+        //return FogMaxOpacity; // Maximum fog beyond cutoff
     }
 
     // Height-integrated exponential fog (Iquilezles formula)
