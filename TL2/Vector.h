@@ -839,6 +839,7 @@ struct FTransform
     FTransform(const FVector& T, const FQuat& R, const FVector& S) : Rotation(R), Translation(T), Scale3D(S) {}
 
     FMatrix ToMatrixWithScaleLocalXYZ() const;
+    FMatrix GetRealWorldMatrix() const;
     // 합성 (this * Other)
     FTransform operator*(const FTransform& Other) const;
 
@@ -1099,6 +1100,27 @@ inline FMatrix FTransform::ToMatrixWithScaleLocalXYZ() const
     R.M[3][3] = 1.0f;
 
     return YUpToZUp * R; // 결과 = S * R(q) * T
+    //return R; // 결과 = S * R(q) * T
+}
+
+inline FMatrix FTransform::GetRealWorldMatrix() const
+{
+    // Rotation(FQuat)은 이미 로컬 XYZ 순서로 만들어져 있다고 가정
+    FMatrix R = MakeRotationRowMajorFromQuat(Rotation);
+
+    // 행별 스케일(S * R): 각 "행"에 스케일 적용
+    R.M[0][0] *= Scale3D.X; R.M[0][1] *= Scale3D.X; R.M[0][2] *= Scale3D.X;
+    R.M[1][0] *= Scale3D.Y; R.M[1][1] *= Scale3D.Y; R.M[1][2] *= Scale3D.Y;
+    R.M[2][0] *= Scale3D.Z; R.M[2][1] *= Scale3D.Z; R.M[2][2] *= Scale3D.Z;
+
+    // 동차좌표 마무리 + Translation(last row)
+    R.M[0][3] = 0.0f; R.M[1][3] = 0.0f; R.M[2][3] = 0.0f;
+    R.M[3][0] = Translation.X;
+    R.M[3][1] = Translation.Y;
+    R.M[3][2] = Translation.Z;
+    R.M[3][3] = 1.0f;
+
+    return R; // 결과 = S * R(q) * T
     //return R; // 결과 = S * R(q) * T
 }
 

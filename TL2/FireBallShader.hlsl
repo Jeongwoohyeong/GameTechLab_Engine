@@ -14,6 +14,12 @@ cbuffer FireBallConstants : register(b2)
     float4 FireBallColor;           // .rgba
     float4 FireBallParams;          // .x = Intensity, .y = Radius, .z = InvRadius, .w = RadiusFallOff
 }
+
+cbuffer RealModelBuffer : register(b3)
+{
+    row_major float4x4 RealWorldMatrix;
+}
+
 struct VS_INPUT
 {
     float3 position : POSITION; // Input position from vertex buffer
@@ -32,20 +38,39 @@ PS_INPUT mainVS(VS_INPUT input)
 {
     PS_INPUT output;
     
-    float4 worldPosition = mul(float4(input.position, 1.0f), WorldMatrix);
-    
+    float4 worldPosition = mul(float4(input.position, 1.0f), RealWorldMatrix);
     output.worldPosition = worldPosition.xyz;
+    output.normal = mul(input.normal, (float3x3)RealWorldMatrix); // 로컬 노말 -> 월드 노말
     
-    output.position = mul(worldPosition, ViewMatrix);
+    float tmp = worldPosition.y;
+    worldPosition.y = worldPosition.z;
+    worldPosition.z = tmp;
+    
+    tmp = output.normal.y;
+    output.normal.y = output.normal.z;
+    output.normal.z = tmp;
+    
+    output.position = mul(float4(input.position, 1.0f), WorldMatrix);
+    output.position = mul(output.position, ViewMatrix);
     output.position = mul(output.position, ProjectionMatrix);
-    output.normal = mul(input.normal, (float3x3) WorldMatrix); // 로컬 노말 -> 월드 노말
     return output;
 }
 
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
-    // 픽셀의 worldPos to 빛의 위치 벡터
+    /*
+    // 광원이 반대편에서 비추는 문제 발견
+    // 모든 축 부호 반전 시도
+    float3 transformedLight = float3(
+        FireBallWorldPosition.x,
+        FireBallWorldPosition.z,
+        FireBallWorldPosition.y
+    );
+    
+    float3 toLight = transformedLight - input.worldPosition;
+    */
     float3 toLight = FireBallWorldPosition.xyz - input.worldPosition;
+    
     // 거리 계산
     float distance = length(toLight);
     

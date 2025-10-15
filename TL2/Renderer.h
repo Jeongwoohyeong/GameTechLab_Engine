@@ -65,6 +65,7 @@ public:
     void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float InAlpha);
 
     void UpdateFireBallConstantBuffer(const struct FireBallBufferType& InFireBallData);
+    void UpdateRealWorldBuffer(const FMatrix& InRealWorldMatrix);
 
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,

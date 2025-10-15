@@ -188,6 +188,11 @@ FMatrix USceneComponent::GetWorldMatrix() const
     return GetWorldTransform().ToMatrixWithScaleLocalXYZ();
 }
 
+FMatrix USceneComponent::GetRealWorldMatrix() const
+{
+    return GetWorldTransform().GetRealWorldMatrix();
+}
+
 // ──────────────────────────────
 // Attach / Detach
 // ──────────────────────────────

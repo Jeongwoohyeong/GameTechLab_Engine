@@ -79,6 +79,8 @@ public:
     virtual void OMSetRenderTargetToOffscreen() = 0;
     virtual ID3D11ShaderResourceView* GetOffscreenSRV() const = 0;    
 
+    virtual void UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix) = 0;
+
     // clear
     virtual void ClearBackBuffer() = 0;
     virtual void ClearDepthBuffer(float Depth, UINT Stenci) = 0;

@@ -327,20 +327,21 @@ enum class EEngineShowFlags : uint64
     SF_BillboardText = 1ull << 2, // Show/hide UUID text above objects
     SF_BoundingBoxes = 1ull << 3, // Show/hide collision bounds
     SF_Grid = 1ull << 4,          // Show/hide world grid
+    SF_DebugLines = 1ull << 5,    // Show/hide Debug Lines
 
     // Decal Rendering
-    SF_Decal = 1ull << 5,         // Show/hide decal volume line rendering, decal projection to static mesh
+    SF_Decal = 1ull << 6,         // Show/hide decal volume line rendering, decal projection to static mesh
 
     // Lighting
-    SF_Lighting = 1ull << 6,      // Enable/disable lighting
+    SF_Lighting = 1ull << 7,      // Enable/disable lighting
 
     // FireBall Rendering(Spot Light)
-    SF_FireBall = 1ull << 7,
-    SF_Fog = 1ull << 8,
-
+    SF_FireBall = 1ull << 8,
+    SF_Fog = 1ull << 9,
+    
     // Post Process
-    SF_PostProcess = 1ull << 9,
-    SF_FXAA = 1ull << 10,
+    SF_PostProcess = 1ull << 10,
+    SF_FXAA = 1ull << 11,
     
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal | SF_FireBall | SF_Fog,
