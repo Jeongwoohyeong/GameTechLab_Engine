@@ -1,18 +1,55 @@
 ﻿#include "pch.h"
 #include "FireBallComponent.h"
+#include "Renderer.h"
+#include "World.h" 
 UFireBallComponent::UFireBallComponent() : Intensity(10.f), Radius(50.f), RadiusFallOff(2.f), Color(FLinearColor(1.f, .5f, .1f, 1.f))
 {
-	//Super_t::SetMaterial("FireBallShader.hlsl");
 }
-
 void UFireBallComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
 	FVector4 WorldLocation(GetWorldLocation().X, GetWorldLocation().Y, GetWorldLocation().Z, 1.0f);
 	float InvRadius = Radius > 0.f ? 1.f / Radius : 0.f;
 	FVector4 Parameters(Intensity, Radius, InvRadius, RadiusFallOff);
 	FireBallBufferType FireBallData = { WorldLocation, Color, Parameters };
-
 	Renderer->AddFireBallToScene(FireBallData);
+}
+
+void UFireBallComponent::AddDebugLine(URenderer* Renderer)
+{
+	// 에디터에서만 보이도록 디버그 렌더링 처리
+	if (GetWorld() && !GetWorld()->IsPIEWorld())
+	{
+		const FVector Center = GetWorldLocation();
+		const float Radius = GetRadius();
+		const int32 Segments = 32; // 구를 표현할 선분의 개수
+
+		// 3개의 축(XY, XZ, YZ)에 대한 원을 그려 구를 표현합니다.
+		FVector OldPoint_XY = Center + FVector(Radius, 0.f, 0.f);
+		FVector OldPoint_XZ = Center + FVector(Radius, 0.f, 0.f);
+		FVector OldPoint_YZ = Center + FVector(0.f, Radius, 0.f);
+
+		for (int32 i = 1; i <= Segments; ++i)
+		{
+			const float Angle = static_cast<float>(i) / Segments * 2.0f * PI;
+			const float Sin = sinf(Angle);
+			const float Cos = cosf(Angle);
+
+			// XY 평면의 원
+			FVector NewPoint_XY = Center + FVector(Radius * Cos, Radius * Sin, 0.f);
+			Renderer->AddLine(OldPoint_XY, NewPoint_XY);
+			OldPoint_XY = NewPoint_XY;
+
+			// XZ 평면의 원
+			FVector NewPoint_XZ = Center + FVector(Radius * Cos, 0.f, Radius * Sin);
+			Renderer->AddLine(OldPoint_XZ, NewPoint_XZ);
+			OldPoint_XZ = NewPoint_XZ;
+
+			// YZ 평면의 원
+			FVector NewPoint_YZ = Center + FVector(0.f, Radius * Cos, Radius * Sin);
+			Renderer->AddLine(OldPoint_YZ, NewPoint_YZ);
+			OldPoint_YZ = NewPoint_YZ;
+		}
+	}
 }
 
 void UFireBallComponent::Serialize(FObjectData* Data)
