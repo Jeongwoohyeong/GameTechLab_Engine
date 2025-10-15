@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "Color.h"
+
 // ========================================
 // Version 1 (Legacy - 하위 호환용)
 // ========================================
@@ -76,8 +78,18 @@ struct FDecalComponentData : public FSceneComponentData
     bool bIsFadeEnabled = false;
     bool bIsFadeStart = false;
     bool bIsLoop = false;
-    
+
     float ElapsedTime = 0.0f;
+};
+
+struct FHeightFogComponentData : public FSceneComponentData
+{
+    float FogDensity = 0.1f;
+    float FogHeightFalloff = 0.2f;
+    float StartDistance = 0.0f;
+    float FogCutoffDistance = 500.0f;
+    float FogMaxOpacity = 1.0f;
+    FLinearColor FogInscatteringColor;
 };
 
 struct FRotationMovementComponentData : public FComponentData
