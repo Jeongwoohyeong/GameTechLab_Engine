@@ -336,9 +336,10 @@ enum class EEngineShowFlags : uint64
 
     // FireBall Rendering(Spot Light)
     SF_FireBall = 1ull << 7,
+    SF_Fog = 1ull << 8,
     
     // Default enabled flags
-    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal | SF_FireBall,
+    SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_Grid | SF_Decal | SF_FireBall | SF_Fog,
     
     // All flags (for initialization/reset)
     SF_All = 0xFFFFFFFFFFFFFFFFull
