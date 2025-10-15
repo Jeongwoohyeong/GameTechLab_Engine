@@ -1114,7 +1114,7 @@ bool CPickingSystem::CheckGizmoComponentPicking(const UStaticMeshComponent* Comp
     return false;
 }
 
-bool CPickingSystem::CheckActorPicking(const AActor* Actor, const FRay& Ray, float& OutDistance)
+bool CPickingSystem:: CheckActorPicking(const AActor* Actor, const FRay& Ray, float& OutDistance)
 {
     if (!Actor) return false;
 
@@ -1513,7 +1513,7 @@ AActor* CPickingSystem::PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
         UPrimitiveComponent* HitPrimitive = BVH->Intersect(ray.Origin, ray.Direction, HitDistance);
         if (HitPrimitive && !HitPrimitive->GetOwner()->GetActorHiddenInGame())
         {
-           uint64_t GlobalBVHCycleDiff = GlobalBVHPickingTimer.Finish();
+            uint64_t GlobalBVHCycleDiff = GlobalBVHPickingTimer.Finish();
             double GlobalBVHPickingTimeMs = FPlatformTime::ToMilliseconds(GlobalBVHCycleDiff);
             URenderingStatsCollector::GetInstance().UpdatePickingStats(GlobalBVHPickingTimeMs);
             char buf[256];
@@ -1522,23 +1522,6 @@ AActor* CPickingSystem::PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
             return HitPrimitive->GetOwner();
         }
     }
-   /* FBVH* BVH = GetEngine()->GetWorld()->GetBVH();
-    if (BVH)
-    {
-        float hitDistance;
-        AActor* HitActor = BVH->Intersect(ray.Origin, ray.Direction, hitDistance);
-
-        if (HitActor && !HitActor->GetActorHiddenInGame())
-        {
-            uint64_t GlobalBVHCycleDiff = GlobalBVHPickingTimer.Finish();
-            double GlobalBVHPickingTimeMs = FPlatformTime::ToMilliseconds(GlobalBVHCycleDiff);
-            URenderingStatsCollector::GetInstance().UpdatePickingStats(GlobalBVHPickingTimeMs);
-            char buf[256];
-            sprintf_s(buf, "[Global BVH Pick] Hit actor at distance %.3f (Time: %.3fms)\n", hitDistance, GlobalBVHPickingTimeMs);
-            UE_LOG(buf);
-            return HitActor;
-        }
-    }*/
 
     // BVH 실패 시 브루트 포스 백업
     for (int i = 0; i < Actors.Num(); ++i)
