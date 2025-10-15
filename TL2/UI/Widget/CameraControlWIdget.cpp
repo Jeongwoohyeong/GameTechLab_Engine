@@ -11,6 +11,7 @@
 #include "SMultiViewportWindow.h"
 #include "ObjectIterator.h"
 #include "EditorEngine.h"
+#include "GameEngine.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -68,44 +69,40 @@ void UCameraControlWidget::Update()
 
 TArray<ACameraActor*> UCameraControlWidget::GetCurrentCamera() const
 {
-	/*
 	TArray<ACameraActor*> Cameras;
 
-	UWorld* World = GetWorld();
-	if (!World)
-		return Cameras;
-
-	// 방법 1: 월드에서 모든 카메라 액터 찾기
-	for (TObjectIterator<ACameraActor> It; It; ++It)
-	{
-		ACameraActor* Camera = *It;
-		if (Camera)
-		{
-			Cameras.Add(Camera);
-		}
-	}
-	*/
-
-	TArray<ACameraActor*> Cameras;
-
-	// PIE 중에도 에디터 월드를 사용하도록 수정
 	UEditorEngine* EditorEngine = Cast<UEditorEngine>(GetEngine());
 	if (!EditorEngine)
 		return Cameras;
 
-	UWorld* EditorWorld = EditorEngine->GetWorld(EWorldType::Editor);
-	if (!EditorWorld ||
-		!EditorWorld->GetMultiViewportWindow() ||
-		!EditorWorld->GetMultiViewportWindow()->GetViewports())
+	// PIE 중일 때는 PIE 월드, 아니면 에디터 월드 사용
+	UWorld* TargetWorld = nullptr;
+	if (EditorEngine->GameEngine && EditorEngine->GameEngine->GameWorld)
+	{
+		// PIE 실행 중 - PIE 월드 사용
+		TargetWorld = EditorEngine->GetWorld(EWorldType::PIE);
+	}
+	else
+	{
+		// 에디터 모드 - 에디터 월드 사용
+		TargetWorld = EditorEngine->GetWorld(EWorldType::Editor);
+	}
+
+	if (!TargetWorld ||
+		!TargetWorld->GetMultiViewportWindow() ||
+		!TargetWorld->GetMultiViewportWindow()->GetViewports())
 		return Cameras;
 
-	SViewportWindow** Viewports = EditorWorld->GetMultiViewportWindow()->GetViewports();
+	SViewportWindow** Viewports = TargetWorld->GetMultiViewportWindow()->GetViewports();
 	if (!Viewports)
 		return Cameras;
 
 	for (int64 i = 0; i < 4; i++)
 	{
-		Cameras.push_back(Viewports[i]->GetViewportClient()->GetCamera());
+		if (Viewports[i] && Viewports[i]->GetViewportClient())
+		{
+			Cameras.push_back(Viewports[i]->GetViewportClient()->GetCamera());
+		}
 	}
 
 	return Cameras;
