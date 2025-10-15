@@ -492,6 +492,9 @@
     <ClCompile Include="RotationMovementComponent.cpp">
       <Filter>Components\Movement</Filter>
     </ClCompile>
+    <ClCompile Include="ProjectileMovementComponent.cpp">
+      <Filter>Components\Movement</Filter>
+    </ClCompile>
   </ItemGroup>
   <!-- ==================== 헤더 파일 (.h) ==================== -->
   <ItemGroup>
@@ -898,6 +901,9 @@
       <Filter>Components\Movement</Filter>
     </ClInclude>
     <ClInclude Include="RotationMovementComponent.h">
+      <Filter>Components\Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectileMovementComponent.h">
       <Filter>Components\Movement</Filter>
     </ClInclude>
   </ItemGroup>

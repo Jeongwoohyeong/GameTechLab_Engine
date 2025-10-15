@@ -39,6 +39,7 @@ private:
     void RenderDecalSection(FViewport* Viewport);
     void RenderLightingSection(FViewport* Viewport);
     void RenderPostProcessSection(FViewport* Viewport);
+    void RenderFogSection(FViewport* Viewport);
 
     /** 전체 제어 버튼들 */
     void RenderControlButtons(FViewport* Viewport);

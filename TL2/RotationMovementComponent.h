@@ -15,22 +15,11 @@ public:
 	void Move(float DeltaSeconds) override;
 	void TickComponent(float DeltaSeconds) override;
 
-	UObject* Duplicate()
-	{
-		URotationMovementComponent* DuplicatedComponent = NewObject<URotationMovementComponent>(*this);
+	UObject* Duplicate() override;
+	void DuplicateSubObjects() override;
 
-		// 복제된 컴포넌트는 초기화되지 않은 상태로 시작
-		DuplicatedComponent->bIsInitialized = false;
-		DuplicatedComponent->RotationAngle = RotationAngle;
-
-		DuplicatedComponent->DuplicateSubObjects();
-		return DuplicatedComponent;
-	}
-
-	void DuplicateSubObjects()
-	{
-		Super_t::DuplicateSubObjects();
-	}
+	void Serialize(FObjectData* Data) override;
+	void DeSerialize(FObjectData* Data) override;
 
 private:
 	FVector RotationAngle{0.0f, 0.0f, 10.0f};

@@ -172,6 +172,7 @@
     <ClCompile Include="HeightFogComponent.cpp" />
     <ClCompile Include="FireBallComponent.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
+    <ClCompile Include="ProjectileMovementComponent.cpp" />
     <ClCompile Include="PostProcessFXAA.cpp" />
     <ClCompile Include="SpotlightActor.cpp" />
     <ClCompile Include="SpotlightComponent.cpp" />
@@ -330,6 +331,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="FireBallShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="HeightFog.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -385,6 +390,7 @@
     <ClInclude Include="PostProcessFXAA.h" />
     <ClInclude Include="FireBallComponent.h" />
     <ClInclude Include="MovementComponent.h" />
+    <ClInclude Include="ProjectileMovementComponent.h" />
     <ClInclude Include="SpotlightActor.h" />
     <ClInclude Include="SpotlightComponent.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />

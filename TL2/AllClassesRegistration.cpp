@@ -59,6 +59,9 @@
 #include "FireBallComponent.h"
 #include "MovementComponent.h"
 #include "RotationMovementComponent.h"
+#include "ProjectileMovementComponent.h"
+#include "MovementComponent.h"
+#include "RotationMovementComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -77,6 +80,7 @@ IMPLEMENT_CLASS(UDecalComponent)
 CLASS_META(UDecalComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(USpotlightComponent)
 IMPLEMENT_CLASS(UFireBallComponent)
+CLASS_META(UFireBallComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(UHeightFogComponent)
 
 IMPLEMENT_CLASS(AActor)
@@ -103,6 +107,10 @@ IMPLEMENT_CLASS(UBillboardComponent)
 CLASS_META(UBillboardComponent, CanSpawnInTransformWidget, "true")
 IMPLEMENT_CLASS(URotationMovementComponent)
 CLASS_META(URotationMovementComponent, CanSpawnInTransformWidget, "true")
+IMPLEMENT_CLASS(URotationMovementComponent)
+CLASS_META(URotationMovementComponent, CanSpawnInTransformWidget, "true")
+IMPLEMENT_CLASS(UProjectileMovementComponent)
+CLASS_META(UProjectileMovementComponent, CanSpawnInTransformWidget, "true")
 
 // Managers / Systems
 IMPLEMENT_CLASS(UInputManager)

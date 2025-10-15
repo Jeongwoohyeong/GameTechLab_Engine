@@ -13,6 +13,13 @@ enum class EComparisonFunc
     Disable,
     LessEqualReadOnly,
 };
+enum class EBlendMode
+{
+    Default,    // 블렌딩 없음 (기본값)
+    AlphaBlend, // 알파 블렌딩
+    Addicitve,  // 가산 블렌딩
+
+};
 class URHIDevice
 {
 public:
@@ -50,6 +57,7 @@ public:
     virtual void UpdateColorConstantBuffers(const FVector4& InColor) = 0;
     virtual void UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec) = 0;
     virtual void UpdateInvWorldConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewProjMatrix) = 0;
+    virtual void UpdateInvMatrixConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix) = 0;
     virtual void UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatrix& InDecalMVP, const float Alpha) = 0;
     virtual void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,
@@ -57,11 +65,14 @@ public:
         float FogHeightFalloff,
         float StartDistance,
         float FogCutoffDistance,
-        float FogMaxOpacity
+        float FogMaxOpacity,
+        float FogHeightOffset
     ) = 0;
 
     virtual void UpdateSceneDepthBuffer(float Near, float Far) = 0;
 
+    virtual void UpdateFireBallConstantBuffer(const struct FireBallBufferType& FireBallData) = 0;
+    
     // FXAA
     virtual void OMSetRnederTargetToOffscreen() = 0;
     virtual ID3D11ShaderResourceView* GetOffscreenSRV() const = 0;    
@@ -83,6 +94,7 @@ public:
     virtual void OMSetRenderTargets() = 0;
     virtual void OMSetRenderTargetsNoDepth() = 0;
     virtual void OMSetBlendState(bool bIsBlendMode) = 0;
+    virtual void OMSetBlendState(EBlendMode BlendMode) = 0;
     virtual void OmSetDepthStencilState(EComparisonFunc Func) = 0;
     virtual void Present() = 0;
     virtual void PSSetDefaultSampler(UINT StartSlot) = 0;

@@ -58,7 +58,8 @@ struct FHeightFogConstBufferType
     float StartDistance;
     float FogCutoffDistance;
     float FogMaxOpacity;
-    float padding[3];
+    float FogHeightOffset;
+    float padding[2];
 };
 
 // b8
@@ -159,6 +160,8 @@ void D3D11RHI::Release()
     if (HeightFogCB) { HeightFogCB->Release(); HeightFogCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
     if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
+    if (InvMatrixCB) { InvMatrixCB->Release(); InvMatrixCB = nullptr; }
+    if (FireBallCB) { FireBallCB->Release(); FireBallCB = nullptr; }
 
     // 상태 객체
     if (DepthStencilState) { DepthStencilState->Release(); DepthStencilState = nullptr; }
@@ -198,6 +201,8 @@ void D3D11RHI::CreateBlendState()
     // Create once; reuse every frame
     if (BlendState)
         return;
+    if (AddictiveBlendState)
+        return;
 
     D3D11_BLEND_DESC bd = {};
     auto& rt = bd.RenderTarget[0];
@@ -210,6 +215,11 @@ void D3D11RHI::CreateBlendState()
     rt.BlendOpAlpha = D3D11_BLEND_OP_ADD;
     rt.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     Device->CreateBlendState(&bd, &BlendState);
+
+    // 가산 블렌딩용 BlendState 생성
+    rt.SrcBlend = D3D11_BLEND_ONE;
+    rt.DestBlend = D3D11_BLEND_ONE;
+    Device->CreateBlendState(&bd, &AddictiveBlendState);
 }
 
 void D3D11RHI::ClearOffscreenBackBuffer()
@@ -409,6 +419,17 @@ void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatri
     DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB);
 }
 
+void D3D11RHI::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBallData)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(FireBallCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    memcpy(mapped.pData, &InFireBallData, sizeof(FireBallBufferType));
+    DeviceContext->Unmap(FireBallCB, 0);
+    
+    DeviceContext->VSSetConstantBuffers(2, 1, &FireBallCB);
+    DeviceContext->PSSetConstantBuffers(2, 1, &FireBallCB);
+}
+
 void D3D11RHI::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
@@ -523,6 +544,27 @@ void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
     else
     {
         DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    }
+}
+
+// Comment: 추가될 BlendState를 고려해 앞으로는 해당 함수 사용할 것을 권장
+void D3D11RHI::OMSetBlendState(EBlendMode BlendMode)
+{
+    float blendFactor[4] = { 0,0,0,0 };
+    switch (BlendMode)
+    {
+    case EBlendMode::Default:
+        DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+        break;
+    case EBlendMode::AlphaBlend:
+        DeviceContext->OMSetBlendState(BlendState, blendFactor, 0xffffffff);
+        break;
+    case EBlendMode::Addicitve:
+        DeviceContext->OMSetBlendState(AddictiveBlendState, blendFactor, 0xffffffff);
+        break;
+    default:
+        DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+        break;
     }
 }
 
@@ -761,6 +803,22 @@ void D3D11RHI::CreateConstantBuffer()
     scenedepthDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     scenedepthDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&scenedepthDesc, nullptr, &SceneDepthCB);
+
+    // b10 : InvMatrixBuffer (3 matrices: InvWorld, InvView, InvProj)
+    D3D11_BUFFER_DESC invMatrixDesc = {};
+    invMatrixDesc.Usage = D3D11_USAGE_DYNAMIC;
+    invMatrixDesc.ByteWidth = sizeof(FMatrix) * 3;  // 3 float4x4 matrices = 192 bytes
+    invMatrixDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    invMatrixDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&invMatrixDesc, nullptr, &InvMatrixCB);
+
+    // FireBallCB
+    D3D11_BUFFER_DESC FireBallDesc = {};
+    FireBallDesc.Usage = D3D11_USAGE_DYNAMIC;
+    FireBallDesc.ByteWidth = sizeof(FireBallBufferType);
+    FireBallDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    FireBallDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&FireBallDesc, nullptr, &FireBallCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)
@@ -833,7 +891,8 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
     float FogHeightFalloff,
     float StartDistance,
     float FogCutoffDistance,
-    float FogMaxOpacity)
+    float FogMaxOpacity,
+    float FogHeightOffset)
 {
     if (!HeightFogCB) return;
 
@@ -847,6 +906,7 @@ void D3D11RHI::UpdateHeightFogConstantBuffer(
         dataPtr->StartDistance = StartDistance;
         dataPtr->FogCutoffDistance = FogCutoffDistance;
         dataPtr->FogMaxOpacity = FogMaxOpacity;
+        dataPtr->FogHeightOffset = FogHeightOffset;
 
         DeviceContext->Unmap(HeightFogCB, 0);
         DeviceContext->PSSetConstantBuffers(7, 1, &HeightFogCB); // b7 슬롯
@@ -877,6 +937,31 @@ void D3D11RHI::UpdateSceneDepthBuffer(float Near, float Far)
     }
 }
 
+void D3D11RHI::UpdateInvMatrixConstantBuffer(const FMatrix& InvWorldMatrix, const FMatrix& InvViewMatrix, const FMatrix& InvProjMatrix)
+{
+    if (!InvMatrixCB) return;
+
+    struct InvMatrixBufferType
+    {
+        FMatrix InvWorld;
+        FMatrix InvView;
+        FMatrix InvProj;
+    };
+
+    InvMatrixBufferType data;
+    data.InvWorld = InvWorldMatrix;
+    data.InvView = InvViewMatrix;
+    data.InvProj = InvProjMatrix;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(InvMatrixCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        memcpy(mapped.pData, &data, sizeof(InvMatrixBufferType));
+        DeviceContext->Unmap(InvMatrixCB, 0);
+        DeviceContext->PSSetConstantBuffers(10, 1, &InvMatrixCB); // b10 slot
+    }
+}
+
 void D3D11RHI::OMSetRnederTargetToOffscreen()
 {
     // offscreen texture를 렌더타겟으로 설정
@@ -894,6 +979,11 @@ void D3D11RHI::ReleaseSamplerState()
 
 void D3D11RHI::ReleaseBlendState()
 {
+    if (AddictiveBlendState)
+    {
+        AddictiveBlendState->Release();
+        AddictiveBlendState = nullptr;
+    }
     if (BlendState)
     {
         BlendState->Release();
@@ -1163,30 +1253,32 @@ void D3D11RHI::ResizeSwapChain(UINT width, UINT height)
 {
     if (!SwapChain) return;
 
-    // 렌더링 완료까지 대기 (중요!)
+    // 1. Flush + Unbind render targets
     if (DeviceContext) {
         DeviceContext->Flush();
-    }
-
-    // 현재 렌더 타겟 언바인딩
-    if (DeviceContext) {
         DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
     }
 
-    // 기존 뷰 해제
-    if (RenderTargetView) { RenderTargetView->Release(); RenderTargetView = nullptr; }
-    if (DepthStencilView) { DepthStencilView->Release(); DepthStencilView = nullptr; }
-    if (FrameBuffer) { FrameBuffer->Release(); FrameBuffer = nullptr; }
+    // 2. Release all views (includes DepthSRV for HeightFog shader)
+    ReleaseFrameBuffer();
 
-    // 스왑체인 버퍼 리사이즈
+    // 3. Resize swap chain buffers
     HRESULT hr = SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-    if (FAILED(hr)) { UE_LOG("ResizeBuffers failed!\n"); return; }
+    if (FAILED(hr)) {
+        UE_LOG("ResizeBuffers failed!\n");
+        return;
+    }
 
-    // 다시 RTV/DSV 만들기
-    CreateBackBufferAndDepthStencil(width, height);
+    // 4. Recreate all views (includes DepthSRV with proper TYPELESS format)
+    CreateFrameBuffer();
 
-    // 뷰포트도 갱신
-    setviewort(width, height);
+    // 5. Update viewport dimensions
+    SetViewport(width, height);
+
+    // 6. Rebind render targets immediately (safety measure, also done in BeginFrame)
+    if (DeviceContext && RenderTargetView && DepthStencilView) {
+        DeviceContext->OMSetRenderTargets(1, &RenderTargetView, DepthStencilView);
+    }
 }
 
 void D3D11RHI::PSSetDefaultSampler(UINT StartSlot)
