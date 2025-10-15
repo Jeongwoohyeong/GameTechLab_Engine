@@ -271,9 +271,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 {
     if (Viewport->GetSizeX() != 0 && Viewport->GetSizeY() != 0)
     {
-        bool bIsFXAAEnabled =
-                Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_PostProcess) &&
-                Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
+        bool bIsFXAAEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
         FVector4 ViewportRect = {
             static_cast<float>(Viewport->GetStartX()),
             static_cast<float>(Viewport->GetStartY()),

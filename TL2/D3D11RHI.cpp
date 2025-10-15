@@ -121,7 +121,8 @@ struct FFXAABufferType
 {
     FVector4 ViewportRect;
     int Mode;
-    FVector Pad;
+    // EdgeThreshold, EdgeThresholdMin, BlendIntensity
+    FVector Parameters;
 };
 
 void D3D11RHI::Initialize(HWND hWindow)
@@ -446,7 +447,7 @@ void D3D11RHI::UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode
     auto DataPtr = reinterpret_cast<FFXAABufferType*>(mapped.pData);
     DataPtr->ViewportRect = ViewportRect;
     DataPtr->Mode = Mode;
-    DataPtr->Pad = {};
+    DataPtr->Parameters = {};
     
     DeviceContext->Unmap(FXAACB, 0);
 

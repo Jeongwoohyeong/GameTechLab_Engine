@@ -79,7 +79,7 @@ void UShowFlagWidget::RenderWidget()
 
                 RenderShowFlagCheckbox("Bounds", EEngineShowFlags::SF_BoundingBoxes, Viewport);
                 ImGui::SameLine();
-                RenderShowFlagCheckbox("Post Process", EEngineShowFlags::SF_PostProcess, Viewport);
+                RenderShowFlagCheckbox("Post Process", EEngineShowFlags::SF_FXAA, Viewport);
             }
             else
             {
@@ -132,7 +132,6 @@ void UShowFlagWidget::SyncWithViewport(FViewport* Viewport)
     bBoundingBoxes = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes);
     bGrid = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
     bLighting = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
-    bIsPostProcess = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_PostProcess);
     bIsFXAA = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
 }
 
@@ -208,10 +207,6 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
         case EEngineShowFlags::SF_Fog:
             ImGui::Text("안개 효과 활성화/비활성화");
             ImGui::Text("Fog 컴포넌트의 활성화 여부를 결정합니다.");
-            break;
-        case EEngineShowFlags::SF_PostProcess:
-            ImGui::Text("후처리 효과 활성화/비활성화");
-            ImGui::Text("후처리 효과를 켜거나 끕니다.");
             break;
         case EEngineShowFlags::SF_FXAA:
             ImGui::Text("FXAA 효과 활성화/비활성화");
@@ -324,11 +319,8 @@ void UShowFlagWidget::RenderPostProcessSection(FViewport* Viewport)
     ImGui::PushStyleColor(ImGuiCol_Text, HeaderColor);
     if (ImGui::TreeNode("Post Process"))
     {
-        ImGui::PopStyleColor();
-
-        RenderShowFlagCheckbox("Post Process", EEngineShowFlags::SF_PostProcess, Viewport);
-
-        ImGui::Indent(15.0f);
+        ImGui::PopStyleColor();        
+        
         RenderShowFlagCheckbox("FXAA", EEngineShowFlags::SF_FXAA, Viewport);
         ImGui::Unindent(15.0f);
 
