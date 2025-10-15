@@ -237,8 +237,7 @@ void D3D11RHI::CreateBlendState()
 
 void D3D11RHI::ClearOffscreenBackBuffer()
 {
-    //float ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
-    float ClearColor[4] = { 1.f, 0.f, 1.f, 1.0f };
+    float ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };    
     DeviceContext->ClearRenderTargetView(OffscreenRTV, ClearColor);
 }
 

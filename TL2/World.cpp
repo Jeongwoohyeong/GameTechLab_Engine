@@ -280,7 +280,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
             static_cast<float>(Viewport->GetSizeX()),
             static_cast<float>(Viewport->GetSizeY())
         };
-        Renderer->SetOffscreenRenderTarget(ViewportRect, 3, bIsFXAAEnabled);
+        Renderer->SetOffscreenRenderTarget(ViewportRect, 0, bIsFXAAEnabled);
         if (bIsFXAAEnabled)
         {
             Renderer->GetRHIDevice()->OMSetRenderTargetToOffscreen();

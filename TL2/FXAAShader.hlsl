@@ -39,9 +39,11 @@ float4 mainPS(PS_INPUT Input) : SV_Target
 {
     uint Width, Height;
     SceneTexture.GetDimensions(Width, Height);
-    float2 SceneSize = float2(Width, Height) * ViewportRect.zw;
-    float2 RcpScreenSize = 1.0f / SceneSize;
+    float2 SceneSize = float2(Width, Height);
+    float2 RcpScreenSize = 1.0f / SceneSize / ViewportRect.zw;
     float2 ViewportTexCoord = ViewportRect.xy + Input.TexCoord * ViewportRect.zw;
+    ViewportTexCoord /= SceneSize;
+    //return float4(SceneTexture.Sample(DefaultSampler, ViewportTexCoord / SceneSize).rgb, 1.0f);
 
     float2 FinalTexCoord = ViewportTexCoord;
     // 경계 판단의 최소 Luma Contrast값
@@ -122,7 +124,7 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     {
         float EdgeStrength = saturate(EdgeHorizontal + EdgeVertical);
     
-        return float4(0.0f, EdgeStrength, 0.0f, 1.0f);
+        return float4(0.0f, 1.0f, 0.0f, 1.0f);
     }
 
     // 여기까지 도달하면 잘못된 모드 입력된거임
