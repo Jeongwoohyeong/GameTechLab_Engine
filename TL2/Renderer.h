@@ -115,7 +115,7 @@ public:
     void OMSetDepthStencilState(EComparisonFunc Func);
 
     // FXAA
-    void SetOffscreenRenderTarget(const FVector4& ViewportRect, int32 Mode, bool bIsEnabled);
+    void SetOffscreenRenderTarget(const FFXAABufferType& InBufferData, bool bIsEnabled);
 
     URHIDevice* GetRHIDevice() { return RHIDevice; }
 private:
@@ -146,6 +146,7 @@ private:
 
     // FXAA
     FPostProcessFXAA* FXAAPass = nullptr;
+    FFXAABufferType FXAABufferData{};
     FVector4 ViewportRect;
     int32 Mode = 0;
     bool bIsFXAAEnabled = false;

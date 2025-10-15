@@ -162,6 +162,36 @@ void USceneIOWidget::RenderSaveLoadSection()
 	{
 		CreateNewLevel();
 	}
+
+	ImGui::Separator();
+	ImGui::Text("FXAA Control");
+	UWorld* CurrentWorld = UUIManager::GetInstance().GetWorld();
+	FFXAABufferType& FXAAParameter = CurrentWorld->GetFXAAParameters(bIsFXAAEnabled);
+	if (CurrentWorld)
+	{
+		bool bIsChanged = false;
+		bIsChanged |= ImGui::DragFloat("EdgeThreshold", &FXAAParameter.Parameters.X, 0.001f, 0.0f, 1.0f);
+		bIsChanged |= ImGui::DragFloat("MinmumLuma", &FXAAParameter.Parameters.Y, 0.001f, 0.0f, 1.0f);
+		bIsChanged |= ImGui::DragFloat("BlendIntensity", &FXAAParameter.Parameters.Z, 0.001f, 0.0f, 1.0f);
+		bIsChanged |= ImGui::InputInt("Mode", &FXAAParameter.Mode, 1);
+		FXAAParameter.Mode = std::max(0, FXAAParameter.Mode);
+		bIsChanged |= ImGui::InputInt("SplitBar On", &FXAAParameter.bIsSplitEnabled, 1);
+		if (FXAAParameter.bIsSplitEnabled < 0)
+		{
+			FXAAParameter.bIsSplitEnabled = 0;
+		}
+		else if (FXAAParameter.bIsSplitEnabled > 1)
+		{
+			FXAAParameter.bIsSplitEnabled = 1;
+		}
+		ImGui::DragFloat("Split Position", &FXAAParameter.SplitPosition, 0.01f, 0.0f, 1.0f);
+		if (bIsChanged)
+		{
+			CurrentWorld->SetFXAAParameters(FXAAParameter);
+		}		
+	}
+	ImGui::Separator();
+	
 }
 
 void USceneIOWidget::RenderStatusMessage()

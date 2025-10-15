@@ -271,14 +271,16 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 {
     if (Viewport->GetSizeX() != 0 && Viewport->GetSizeY() != 0)
     {
-        bool bIsFXAAEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
+        bIsFXAAEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
         FVector4 ViewportRect = {
             static_cast<float>(Viewport->GetStartX()),
             static_cast<float>(Viewport->GetStartY()),
             static_cast<float>(Viewport->GetSizeX()),
             static_cast<float>(Viewport->GetSizeY())
         };
-        Renderer->SetOffscreenRenderTarget(ViewportRect, 0, bIsFXAAEnabled);
+        FXAAData.ViewportRect = ViewportRect;
+        FXAAData.Pad = {};
+        Renderer->SetOffscreenRenderTarget(FXAAData, bIsFXAAEnabled);
         if (bIsFXAAEnabled)
         {
             Renderer->GetRHIDevice()->OMSetRenderTargetToOffscreen();
@@ -1458,6 +1460,12 @@ void UWorld::RequestRebuildBVH()
         }
         BVH->Build(Primitives);
     }
+}
+
+FFXAABufferType& UWorld::GetFXAAParameters(bool& OutFlag)
+{
+    OutFlag = bIsFXAAEnabled;
+    return FXAAData;
 }
 
 /**

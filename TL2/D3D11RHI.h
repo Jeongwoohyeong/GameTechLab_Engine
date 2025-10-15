@@ -10,6 +10,17 @@ struct alignas(16) FireBallBufferType
     FVector4 Parameters;            // 16 (Intensity, Radius, InvRadius, RadiusOff)
 };
 
+struct FFXAABufferType
+{
+    FVector4 ViewportRect;
+    int Mode;
+    // EdgeThreshold, EdgeThresholdMin, BlendIntensity
+    FVector Parameters;
+    float SplitPosition;
+    int bIsSplitEnabled;
+    FVector2D Pad;
+};
+
 class D3D11RHI : public URHIDevice
 {
 public:
@@ -68,7 +79,7 @@ public:
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
     void UpdateFireBallConstantBuffer(const FireBallBufferType & InFireBallData)  override;
     void UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix) override;
-    void UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode) override;
+    void UpdateFXAAConstantBuffer(const FFXAABufferType& InBufferData) override;
 
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,

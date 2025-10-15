@@ -5,6 +5,9 @@ cbuffer ScreenSizeBuffer : register(b0)
     int Mode;
     // EdgeThreshold, EdgeThresholdMin, BlendIntensity
     float3 Parameters;
+    float SplitPosition;
+    int bIsSplitEnabled;
+    float2 Pad;
 }
 
 struct PS_INPUT
@@ -45,15 +48,31 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     float2 ViewportTexCoord = ViewportRect.xy + Input.TexCoord * ViewportRect.zw;
     ViewportTexCoord /= SceneSize;
 
+    // default parameter 0.125, 0.0312, 0.5
     // 경계 판단의 최소 Luma Contrast값
-    const float EdgeThreshold           = 0.125f;
+    float EdgeThreshold           = Parameters.x;
     // 어두운 영역 노이즈 무시용 최소 Luma값
-    const float EdgeThresholdMin        = 0.0312f;
+    float EdgeThresholdMin        = Parameters.y;
     // 서브픽셀 블렌딩 강도
-    const float BlendIntensity          = 0.75f;
+    float BlendIntensity          = Parameters.z;
 
     // 픽셀 컬러
-    float3 ColorM = SceneTexture.Sample(DefaultSampler, ViewportTexCoord).rgb;    
+    float3 ColorM = SceneTexture.Sample(DefaultSampler, ViewportTexCoord).rgb;
+
+    if (bIsSplitEnabled == 1)
+    {
+        const float LindWidth = 0.002f;
+        if (abs(Input.TexCoord.x - SplitPosition) < LindWidth)
+        {
+            return float4(1.0f, 0.0f, 0.0f, 1.0f);
+        }
+
+        if (Input.TexCoord.x > SplitPosition)
+        {
+            return float4(ColorM, 1.0f);
+        }
+    }
+    
     float3 ColorN = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(0, -RcpScreenSize.y)).rgb;
     float3 ColorS = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(0, RcpScreenSize.y)).rgb;
     float3 ColorW = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(-RcpScreenSize.x, 0)).rgb;

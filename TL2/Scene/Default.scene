@@ -1,32 +1,848 @@
 {
   "Version" : 2,
-  "NextUUID" : 590,
+  "NextUUID" : 743,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [4000.000000],
-    "Location" : [-5.459226, -2.204089, 3.017748],
+    "Location" : [-8.730305, -2.606651, 5.216443],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 7.999998, -1.800001]
+    "Rotation" : [0.000000, 26.499977, 10.800029]
   },
   "Actors" : [
     {
-      "UUID" : 584,
+      "UUID" : 591,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_1",
+      "RootComponentUUID" : 592
+    },
+    {
+      "UUID" : 594,
       "Type" : "AStaticMeshActor",
       "Name" : "AStaticMeshActor_2",
-      "RootComponentUUID" : 585
+      "RootComponentUUID" : 595
+    },
+    {
+      "UUID" : 597,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_3",
+      "RootComponentUUID" : 598
+    },
+    {
+      "UUID" : 600,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_4",
+      "RootComponentUUID" : 601
+    },
+    {
+      "UUID" : 603,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_5",
+      "RootComponentUUID" : 604
+    },
+    {
+      "UUID" : 606,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_6",
+      "RootComponentUUID" : 607
+    },
+    {
+      "UUID" : 609,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_7",
+      "RootComponentUUID" : 610
+    },
+    {
+      "UUID" : 612,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_8",
+      "RootComponentUUID" : 613
+    },
+    {
+      "UUID" : 615,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_9",
+      "RootComponentUUID" : 616
+    },
+    {
+      "UUID" : 618,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_10",
+      "RootComponentUUID" : 619
+    },
+    {
+      "UUID" : 621,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_11",
+      "RootComponentUUID" : 622
+    },
+    {
+      "UUID" : 624,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_12",
+      "RootComponentUUID" : 625
+    },
+    {
+      "UUID" : 627,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_13",
+      "RootComponentUUID" : 628
+    },
+    {
+      "UUID" : 630,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_14",
+      "RootComponentUUID" : 631
+    },
+    {
+      "UUID" : 633,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_15",
+      "RootComponentUUID" : 634
+    },
+    {
+      "UUID" : 636,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_16",
+      "RootComponentUUID" : 637
+    },
+    {
+      "UUID" : 639,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_17",
+      "RootComponentUUID" : 640
+    },
+    {
+      "UUID" : 642,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_18",
+      "RootComponentUUID" : 643
+    },
+    {
+      "UUID" : 645,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_19",
+      "RootComponentUUID" : 646
+    },
+    {
+      "UUID" : 648,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_20",
+      "RootComponentUUID" : 649
+    },
+    {
+      "UUID" : 651,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_21",
+      "RootComponentUUID" : 652
+    },
+    {
+      "UUID" : 654,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_22",
+      "RootComponentUUID" : 655
+    },
+    {
+      "UUID" : 657,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_23",
+      "RootComponentUUID" : 658
+    },
+    {
+      "UUID" : 660,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_24",
+      "RootComponentUUID" : 661
+    },
+    {
+      "UUID" : 663,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_25",
+      "RootComponentUUID" : 664
+    },
+    {
+      "UUID" : 666,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_26",
+      "RootComponentUUID" : 667
+    },
+    {
+      "UUID" : 669,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_27",
+      "RootComponentUUID" : 670
+    },
+    {
+      "UUID" : 672,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_28",
+      "RootComponentUUID" : 673
+    },
+    {
+      "UUID" : 675,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_29",
+      "RootComponentUUID" : 676
+    },
+    {
+      "UUID" : 678,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_30",
+      "RootComponentUUID" : 679
+    },
+    {
+      "UUID" : 681,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_31",
+      "RootComponentUUID" : 682
+    },
+    {
+      "UUID" : 684,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_32",
+      "RootComponentUUID" : 685
+    },
+    {
+      "UUID" : 687,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_33",
+      "RootComponentUUID" : 688
+    },
+    {
+      "UUID" : 690,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_34",
+      "RootComponentUUID" : 691
+    },
+    {
+      "UUID" : 693,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_35",
+      "RootComponentUUID" : 694
+    },
+    {
+      "UUID" : 696,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_36",
+      "RootComponentUUID" : 697
+    },
+    {
+      "UUID" : 699,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_37",
+      "RootComponentUUID" : 700
+    },
+    {
+      "UUID" : 702,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_38",
+      "RootComponentUUID" : 703
+    },
+    {
+      "UUID" : 705,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_39",
+      "RootComponentUUID" : 706
+    },
+    {
+      "UUID" : 708,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_40",
+      "RootComponentUUID" : 709
+    },
+    {
+      "UUID" : 711,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_41",
+      "RootComponentUUID" : 712
+    },
+    {
+      "UUID" : 714,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_42",
+      "RootComponentUUID" : 715
+    },
+    {
+      "UUID" : 717,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_43",
+      "RootComponentUUID" : 718
+    },
+    {
+      "UUID" : 720,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_44",
+      "RootComponentUUID" : 721
+    },
+    {
+      "UUID" : 723,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_45",
+      "RootComponentUUID" : 724
+    },
+    {
+      "UUID" : 726,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_46",
+      "RootComponentUUID" : 727
+    },
+    {
+      "UUID" : 729,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_47",
+      "RootComponentUUID" : 730
+    },
+    {
+      "UUID" : 732,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_48",
+      "RootComponentUUID" : 733
+    },
+    {
+      "UUID" : 735,
+      "Type" : "AStaticMeshActor",
+      "Name" : "AStaticMeshActor_49",
+      "RootComponentUUID" : 736
     }
   ],
   "Components" : [
     {
-      "UUID" : 585,
-      "OwnerActorUUID" : 584,
+      "UUID" : 592,
+      "OwnerActorUUID" : 591,
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.091495, -1.541337, 2.666400],
+      "RelativeLocation" : [-1.476638, -4.622181, -1.883450],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/fxaatest.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 595,
+      "OwnerActorUUID" : 594,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-0.382549, 2.092196, 0.353557],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 598,
+      "OwnerActorUUID" : 597,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [3.663290, -1.000549, 3.556475],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 601,
+      "OwnerActorUUID" : 600,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [4.100924, -2.915586, -2.499313],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 604,
+      "OwnerActorUUID" : 603,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [3.496964, 2.733085, 1.470840],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 607,
+      "OwnerActorUUID" : 606,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.442945, 0.480209, -3.077639],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 610,
+      "OwnerActorUUID" : 609,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [0.690176, 1.915799, 0.220191],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 613,
+      "OwnerActorUUID" : 612,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-4.334086, 4.338359, 0.026398],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 616,
+      "OwnerActorUUID" : 615,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.649159, -3.679464, 3.884853],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 619,
+      "OwnerActorUUID" : 618,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [0.860775, -0.288858, 2.470626],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 622,
+      "OwnerActorUUID" : 621,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-4.680777, 1.219977, 1.694235],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 625,
+      "OwnerActorUUID" : 624,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.810694, -1.382641, -2.409589],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 628,
+      "OwnerActorUUID" : 627,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [4.903562, -3.740196, -0.669118],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 631,
+      "OwnerActorUUID" : 630,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.616505, -1.498916, -1.089053],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 634,
+      "OwnerActorUUID" : 633,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.624744, 4.246498, 3.315989],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 637,
+      "OwnerActorUUID" : 636,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.640004, -4.935911, 1.617023],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 640,
+      "OwnerActorUUID" : 639,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [0.436872, 3.675802, 4.469893],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 643,
+      "OwnerActorUUID" : 642,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.259224, 2.406537, 3.652608],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 646,
+      "OwnerActorUUID" : 645,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [3.151189, -3.946196, 4.824518],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 649,
+      "OwnerActorUUID" : 648,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.949248, 4.831232, 0.890683],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 652,
+      "OwnerActorUUID" : 651,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [1.171453, 2.972045, 0.576343],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 655,
+      "OwnerActorUUID" : 654,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [0.948058, -1.328623, -1.196173],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 658,
+      "OwnerActorUUID" : 657,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [4.041413, -0.201575, -2.001556],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 661,
+      "OwnerActorUUID" : 660,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.349772, 1.342967, -3.483230],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 664,
+      "OwnerActorUUID" : 663,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [4.645986, 3.970000, -4.123203],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 667,
+      "OwnerActorUUID" : 666,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.485580, 4.767448, -0.689871],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 670,
+      "OwnerActorUUID" : 669,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [3.386486, -2.567675, 3.302561],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 673,
+      "OwnerActorUUID" : 672,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.826869, -2.402265, 3.775903],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 676,
+      "OwnerActorUUID" : 675,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-2.798090, -3.904080, 1.736961],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 679,
+      "OwnerActorUUID" : 678,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [3.328501, 1.559954, -2.802057],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 682,
+      "OwnerActorUUID" : 681,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.765831, -4.571826, 1.472060],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 685,
+      "OwnerActorUUID" : 684,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-0.137791, -2.064425, 0.558947],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 688,
+      "OwnerActorUUID" : 687,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-2.573778, 1.808069, 1.128727],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 691,
+      "OwnerActorUUID" : 690,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-1.481216, -2.956175, 4.123508],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 694,
+      "OwnerActorUUID" : 693,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-4.302347, -4.794611, 0.977050],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 697,
+      "OwnerActorUUID" : 696,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [4.816889, 2.722404, -2.925657],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 700,
+      "OwnerActorUUID" : 699,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-4.217200, 1.447950, 2.826167],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 703,
+      "OwnerActorUUID" : 702,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-2.664113, 1.580096, -0.591907],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 706,
+      "OwnerActorUUID" : 705,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-2.404401, 2.954649, -2.695547],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 709,
+      "OwnerActorUUID" : 708,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-2.596972, -0.624256, -3.489639],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 712,
+      "OwnerActorUUID" : 711,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [1.374096, -3.292489, -0.242470],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 715,
+      "OwnerActorUUID" : 714,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [1.985687, 0.576343, -4.248940],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 718,
+      "OwnerActorUUID" : 717,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [2.068697, -1.458937, 4.992981],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 721,
+      "OwnerActorUUID" : 720,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.399915, -1.816919, 1.342357],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 724,
+      "OwnerActorUUID" : 723,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [1.768701, 4.894406, 4.956664],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 727,
+      "OwnerActorUUID" : 726,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [3.499405, -4.456160, -0.196692],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 730,
+      "OwnerActorUUID" : 729,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [0.604419, -1.818750, -1.642659],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 733,
+      "OwnerActorUUID" : 732,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-4.431135, -3.664815, 4.972533],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
+    },
+    {
+      "UUID" : 736,
+      "OwnerActorUUID" : 735,
+      "IsHierarchical" : "true",
+      "Type" : "UStaticMeshComponent",
+      "ParentComponentUUID" : 0,
+      "RelativeLocation" : [-3.165532, 1.185797, 3.548235],
+      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     }
   ]
 }

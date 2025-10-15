@@ -136,6 +136,9 @@ public:
 	/** === 액터의 트랜스폼 변경 시 BVH 업데이트 하도록 표시 */
 	void MarkBVHDirty() { bIsBVHDirty = true; }
 	void RequestRebuildBVH();
+
+	FFXAABufferType& GetFXAAParameters(bool &OutFlag);
+	void SetFXAAParameters(const FFXAABufferType& InParameters) { FXAAData = InParameters;}
 private:
 	// 싱글톤 매니저 참조
 	UResourceManager& ResourceManager;
@@ -173,7 +176,13 @@ private:
 
 	UOctree* Octree;
 	FBVH* BVH;
-	bool bIsBVHDirty = false; 
+	bool bIsBVHDirty = false;
+
+	FFXAABufferType FXAAData{
+		{}, 0,
+		FVector{0.125f, 0.0312f, 0.5f},
+		0.0f, 0, {}};
+	bool bIsFXAAEnabled = false;
 };
 template<class T>
 inline T* UWorld::SpawnActor()

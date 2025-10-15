@@ -606,7 +606,7 @@ void URenderer::RenderPostProcess()
         ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();        
         if (FXAAPass)
         {
-            RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
+            RHIDevice->UpdateFXAAConstantBuffer(FXAABufferData);
             FXAAPass->Render(SceneSRV);
         }
         // ID3D11DeviceContext* Context = RHIDevice->GetDeviceContext();
@@ -631,11 +631,10 @@ void URenderer::OMSetDepthStencilState(EComparisonFunc Func)
     RHIDevice->OmSetDepthStencilState(Func);
 }
 
-void URenderer::SetOffscreenRenderTarget(const FVector4& InViewportRect, int32 InMode, bool bIsEnabled)
+void URenderer::SetOffscreenRenderTarget(const FFXAABufferType& InBufferData, bool bIsEnabled)
 {
+    FXAABufferData = InBufferData;
     bIsFXAAEnabled = bIsEnabled;
-    ViewportRect = InViewportRect;
-    Mode = InMode;
 }
 
 void URenderer::InitializeLineBatch()
