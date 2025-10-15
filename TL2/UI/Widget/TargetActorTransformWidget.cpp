@@ -945,14 +945,14 @@ void UTargetActorTransformWidget::RenderWidget()
 
 				// Fog Density
 				float FogDensity = HeightFogComponent->GetFogDensity();
-				if (ImGui::DragFloat("Fog Density", &FogDensity, 0.01f, 0.0f, 10.0f))
+				if (ImGui::DragFloat("Fog Density", &FogDensity, 0.001f, 0.0f, 10.0f))
 				{
 					HeightFogComponent->SetFogDensity(FogDensity);
 				}
 
 				// Fog Height Falloff
 				float FogHeightFalloff = HeightFogComponent->GetFogHeightFalloff();
-				if (ImGui::DragFloat("Fog Height Falloff", &FogHeightFalloff, 0.01f, 0.0f, 10.0f))
+				if (ImGui::DragFloat("Fog Height Falloff", &FogHeightFalloff, 0.001f, 0.0f, 10.0f))
 				{
 					HeightFogComponent->SetFogHeightFalloff(FogHeightFalloff);
 				}
@@ -966,14 +966,14 @@ void UTargetActorTransformWidget::RenderWidget()
 
 				// Fog Cutoff Distance
 				float FogCutoffDistance = HeightFogComponent->GetFogCutoffDistance();
-				if (ImGui::DragFloat("Fog Cutoff Distance", &FogCutoffDistance, 10.0f, 0.0f, 10000.0f))
+				if (ImGui::DragFloat("Fog Cutoff Distance", &FogCutoffDistance, 1.0f, 0.0f, 10000.0f))
 				{
 					HeightFogComponent->SetFogCutoffDistance(FogCutoffDistance);
 				}
 
 				// Fog Max Opacity
 				float FogMaxOpacity = HeightFogComponent->GetFogMaxOpacity();
-				if (ImGui::DragFloat("Fog Max Opacity", &FogMaxOpacity, 0.01f, 0.0f, 1.0f))
+				if (ImGui::DragFloat("Fog Max Opacity", &FogMaxOpacity, 0.001f, 0.0f, 1.0f))
 				{
 					HeightFogComponent->SetFogMaxOpacity(FogMaxOpacity);
 				}
