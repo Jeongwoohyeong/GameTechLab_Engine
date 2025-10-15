@@ -192,6 +192,7 @@ private:
     ID3D11DepthStencilState* DepthStencilStateAlwaysNoWrite = nullptr;       // 기즈모/오버레이
     ID3D11DepthStencilState* DepthStencilStateDisable = nullptr;              // 깊이 테스트/쓰기 모두 끔
     ID3D11DepthStencilState* DepthStencilStateGreaterEqualWrite = nullptr;   // 선택사항
+    ID3D11DepthStencilState* DepthStencilStateGreaterEqualReadOnly = nullptr;
 
     ID3D11BlendState* BlendState{};
     ID3D11BlendState* AddictiveBlendState{};

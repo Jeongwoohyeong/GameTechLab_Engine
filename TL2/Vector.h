@@ -581,6 +581,20 @@ struct alignas(16) FMatrix
             0, 0, 0, 1
         );
     }
+    /**
+     * @brief FVector를 기반으로 이동 행렬을 생성
+     * @param Translation 이동할 위치 벡터 (Tx, Ty, Tz)
+     * @return 생성된 이동 행렬
+     */
+    static FMatrix CreateTranslation(const FVector& Translation)
+    {
+        return FMatrix(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            Translation.X, Translation.Y, Translation.Z, 1
+        );
+    }
 
     // 행렬 == 행렬
     bool operator==(const FMatrix& B) const noexcept

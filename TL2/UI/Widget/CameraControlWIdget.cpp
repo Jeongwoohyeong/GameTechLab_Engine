@@ -10,6 +10,8 @@
 #include "SViewportWindow.h"
 #include "SMultiViewportWindow.h"
 #include "ObjectIterator.h"
+#include "EditorEngine.h"
+#include "GameEngine.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -69,19 +71,41 @@ TArray<ACameraActor*> UCameraControlWidget::GetCurrentCamera() const
 {
 	TArray<ACameraActor*> Cameras;
 
-	UWorld* World = GetWorld();
-	if (!World)
+	UEditorEngine* EditorEngine = Cast<UEditorEngine>(GetEngine());
+	if (!EditorEngine)
 		return Cameras;
 
-	// 방법 1: 월드에서 모든 카메라 액터 찾기
-	for (TObjectIterator<ACameraActor> It; It; ++It)
+	// PIE 중일 때는 PIE 월드, 아니면 에디터 월드 사용
+	UWorld* TargetWorld = nullptr;
+	if (EditorEngine->GameEngine && EditorEngine->GameEngine->GameWorld)
 	{
-		ACameraActor* Camera = *It;
-		if (Camera)
+		// PIE 실행 중 - PIE 월드 사용
+		TargetWorld = EditorEngine->GetWorld(EWorldType::PIE);
+	}
+	else
+	{
+		// 에디터 모드 - 에디터 월드 사용
+		TargetWorld = EditorEngine->GetWorld(EWorldType::Editor);
+	}
+
+	if (!TargetWorld ||
+		!TargetWorld->GetMultiViewportWindow() ||
+		!TargetWorld->GetMultiViewportWindow()->GetViewports())
+		return Cameras;
+
+	SViewportWindow** Viewports = TargetWorld->GetMultiViewportWindow()->GetViewports();
+	if (!Viewports)
+		return Cameras;
+
+	for (int64 i = 0; i < 4; i++)
+	{
+		if (Viewports[i] && Viewports[i]->GetViewportClient())
 		{
-			Cameras.Add(Camera);
+			Cameras.push_back(Viewports[i]->GetViewportClient()->GetCamera());
 		}
 	}
+
+	return Cameras;
 }
 
 void UCameraControlWidget::RenderWidget()
@@ -106,17 +130,20 @@ void UCameraControlWidget::RenderWidget()
 	ImGui::TextUnformatted("Camera Transform");
 	ImGui::Spacing();
 
-	// 카메라 이동속도 표시 및 조절 (World와 동기화)
-	if (UIManager && UIManager->GetWorld())
+	// 카메라 이동속도 표시 및 조절 (Editor World와 동기화)
+	UEditorEngine* EditorEngine = Cast<UEditorEngine>(GetEngine());
+	UWorld* EditorWorld = EditorEngine ? EditorEngine->GetWorld(EWorldType::Editor) : nullptr;
+
+	if (EditorWorld && EditorWorld->GetCameraActor())
 	{
-		// World에서 현재 카메라 이동 속도 가져오기
-		float WorldMoveSpeed = UIManager->GetWorld()->GetCameraActor()->GetCameraSpeed();
-		
+		// Editor World에서 현재 카메라 이동 속도 가져오기
+		float WorldMoveSpeed = EditorWorld->GetCameraActor()->GetCameraSpeed();
+
 		ImGui::Text("Move Speed: %.1f", WorldMoveSpeed);
 		if (ImGui::SliderFloat("##MoveSpeed", &WorldMoveSpeed, 1.0f, 20.0f, "%.1f"))
 		{
-			// World에 카메라 이동속도 설정
-			UIManager->GetWorld()->GetCameraActor()->SetCameraSpeed(WorldMoveSpeed);
+			// Editor World에 카메라 이동속도 설정
+			EditorWorld->GetCameraActor()->SetCameraSpeed(WorldMoveSpeed);
 			// 위젯의 로컬 값도 업데이트
 			CameraMoveSpeed = WorldMoveSpeed;
 		}

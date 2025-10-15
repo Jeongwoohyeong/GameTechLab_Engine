@@ -26,6 +26,12 @@ public:
     void SetFogMaxOpacity(float Value) { FogMaxOpacity = Value; }
     void SetFogInscatteringColor(const FLinearColor& Value) { FogInscatteringColor = Value; }
 
+    // Serialization & Duplication
+    virtual UObject* Duplicate() override;
+    virtual void DuplicateSubObjects() override;
+    void Serialize(FObjectData* Data) override;
+    void DeSerialize(FObjectData* Data) override;
+
 private:
     float FogDensity;
     float FogHeightFalloff;
