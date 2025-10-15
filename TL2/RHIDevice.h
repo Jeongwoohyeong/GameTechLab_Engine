@@ -72,7 +72,8 @@ public:
     virtual void UpdateSceneDepthBuffer(float Near, float Far) = 0;
 
     virtual void UpdateFireBallConstantBuffer(const struct FireBallBufferType& FireBallData) = 0;
-    
+    virtual void UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix) = 0;
+
     // clear
     virtual void ClearBackBuffer() = 0;
     virtual void ClearDepthBuffer(float Depth, UINT Stenci) = 0;

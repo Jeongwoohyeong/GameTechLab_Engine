@@ -86,6 +86,12 @@ struct ColorBufferType
     FVector4 Color;
 };
 
+// b3: RealModel
+struct RealWorldBufferType
+{
+    FMatrix RealWorld;
+};
+
 // b4: Decal
 struct DecalBufferType
 {
@@ -94,7 +100,6 @@ struct DecalBufferType
     float Alpha;
     float Pad[3];
 };
-
 
 // b5: Viewport 정보 (데칼용 Screen-Space UV 계산)
 struct ViewportBufferType
@@ -161,6 +166,7 @@ void D3D11RHI::Release()
     if (SceneDepthCB) { SceneDepthCB->Release(); SceneDepthCB = nullptr; }
     if (InvMatrixCB) { InvMatrixCB->Release(); InvMatrixCB = nullptr; }
     if (FireBallCB) { FireBallCB->Release(); FireBallCB = nullptr; }
+    if (RealWorldCB) { RealWorldCB->Release(); RealWorldCB = nullptr; }
 
     // 상태 객체
     if (DepthStencilState) { DepthStencilState->Release(); DepthStencilState = nullptr; }
@@ -393,17 +399,6 @@ void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatri
     DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB);
 }
 
-void D3D11RHI::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBallData)
-{
-    D3D11_MAPPED_SUBRESOURCE mapped;
-    DeviceContext->Map(FireBallCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-    memcpy(mapped.pData, &InFireBallData, sizeof(FireBallBufferType));
-    DeviceContext->Unmap(FireBallCB, 0);
-    
-    DeviceContext->VSSetConstantBuffers(2, 1, &FireBallCB);
-    DeviceContext->PSSetConstantBuffers(2, 1, &FireBallCB);
-}
-
 void D3D11RHI::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
@@ -453,6 +448,30 @@ void D3D11RHI::UpdateColorConstantBuffers(const FVector4& InColor)
         DeviceContext->Unmap(ColorCB, 0);
         DeviceContext->PSSetConstantBuffers(3, 1, &ColorCB); // b3 슬롯
     }
+}
+
+void D3D11RHI::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBallData)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(FireBallCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    memcpy(mapped.pData, &InFireBallData, sizeof(FireBallBufferType));
+    DeviceContext->Unmap(FireBallCB, 0);
+
+    DeviceContext->VSSetConstantBuffers(2, 1, &FireBallCB);
+    DeviceContext->PSSetConstantBuffers(2, 1, &FireBallCB);
+}
+
+void D3D11RHI::UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix)
+{
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(RealWorldCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+    auto* dataPtr = reinterpret_cast<RealWorldBufferType*>(mapped.pData);
+    {
+        dataPtr->RealWorld = RealWorldMatrix;
+    }
+    DeviceContext->Unmap(RealWorldCB, 0);
+
+    DeviceContext->VSSetConstantBuffers(3, 1, &RealWorldCB);
 }
 
 void D3D11RHI::IASetPrimitiveTopology()
@@ -787,6 +806,14 @@ void D3D11RHI::CreateConstantBuffer()
     FireBallDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     FireBallDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&FireBallDesc, nullptr, &FireBallCB);
+
+    // FireBallCB
+    D3D11_BUFFER_DESC RealWorldDesc = {};
+    FireBallDesc.Usage = D3D11_USAGE_DYNAMIC;
+    FireBallDesc.ByteWidth = sizeof(RealWorldBufferType);
+    FireBallDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    FireBallDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&FireBallDesc, nullptr, &RealWorldCB);
 }
 
 void D3D11RHI::UpdateUVScrollConstantBuffers(const FVector2D& Speed, float TimeSec)

@@ -19,8 +19,9 @@ public:
 	void SetRadiusFallOff(float InRadiusFallOff) { RadiusFallOff = InRadiusFallOff; }
 	void SetColor(FLinearColor InColor) { Color = InColor; }
 
-	
+	// 실제로 그리지 않고 FireBallBufferType만 수집합니다.
 	void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
+	void AddDebugLine(URenderer* Renderer);
 	
 	void Serialize(FObjectData* Data) override;
 	void DeSerialize(FObjectData* Data) override;

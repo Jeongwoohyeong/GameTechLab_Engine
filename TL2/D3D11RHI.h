@@ -65,6 +65,7 @@ public:
     void UpdateViewportConstantBuffer(float StartX, float StartY, float SizeX, float SizeY);
     void UpdateDecalConstantBuffer(const FMatrix& WorldMVP, const FMatrix& DecalMVP, const float Alpha) override;
     void UpdateFireBallConstantBuffer(const FireBallBufferType & InFireBallData)  override;
+    void UpdateRealWorldBuffer(const FMatrix& RealWorldMatrix) override;
 
     void UpdateHeightFogConstantBuffer(
         const FLinearColor& FogInscatteringColor,
@@ -196,6 +197,7 @@ private:
     ID3D11Buffer* HeightFogCB{};
     ID3D11Buffer* SceneDepthCB{};
     ID3D11Buffer* FireBallCB{};
+    ID3D11Buffer* RealWorldCB{};
     ID3D11Buffer* InvMatrixCB{};  // b10: InvWorld, InvView, InvProj matrices
 
     ID3D11Buffer* ConstantBuffer{};

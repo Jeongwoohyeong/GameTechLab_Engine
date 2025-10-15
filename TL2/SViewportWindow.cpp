@@ -282,6 +282,13 @@ void SViewportWindow::RenderToolbar()
 				Viewport->ToggleShowFlag(EEngineShowFlags::SF_BoundingBoxes);
 			}
 
+			// Debug Lines
+			bool bDebugLinesEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_DebugLines);
+			if (ImGui::Checkbox("Debug Lines", &bDebugLinesEnabled))
+			{
+				Viewport->ToggleShowFlag(EEngineShowFlags::SF_DebugLines);
+			}
+
 			// Decal
 			bool bDecalEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Decal);
 			if (ImGui::Checkbox("Decal", &bDecalEnabled))
@@ -294,6 +301,13 @@ void SViewportWindow::RenderToolbar()
 			if (ImGui::Checkbox("Fog", &bFogEnabled))
 			{
 				Viewport->ToggleShowFlag(EEngineShowFlags::SF_Fog);
+			}
+
+			// FireBall
+			bool bFireBallEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FireBall);
+			if (ImGui::Checkbox("FireBall", &bFireBallEnabled))
+			{
+				Viewport->ToggleShowFlag(EEngineShowFlags::SF_FireBall);
 			}
 
 			ImGui::EndCombo();

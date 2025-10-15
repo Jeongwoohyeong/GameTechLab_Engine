@@ -181,6 +181,10 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
             ImGui::Text("월드 그리드 표시/숨김");
             ImGui::Text("3D 공간의 참조용 격자를 표시합니다.");
             break;
+        case EEngineShowFlags::SF_DebugLines:
+            ImGui::Text("디버그용 라인 표시/숨김");
+            ImGui::Text("디버그용 라인 표시 여부를 결정합니다.");
+            break;
         case EEngineShowFlags::SF_Decal:
             ImGui::Text("데칼 볼륨 및 데칼 투영 표시/숨김");
             ImGui::Text("데칼 컴포넌트의 활성화 여부를 결정합니다.");
@@ -188,6 +192,10 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
         case EEngineShowFlags::SF_Lighting:
             ImGui::Text("조명 효과 활성화/비활성화");
             ImGui::Text("라이팅 계산을 켜거나 끕니다.");
+            break;
+        case EEngineShowFlags::SF_FireBall:
+            ImGui::Text("파이어볼(Spot Light) 효과 활성화/비활성화");
+            ImGui::Text("파이어볼의 Light를 켜거나 끕니다.");
             break;
         case EEngineShowFlags::SF_Fog:
             ImGui::Text("안개 효과 활성화/비활성화");
@@ -245,6 +253,7 @@ void UShowFlagWidget::RenderDebugSection(FViewport* Viewport)
         RenderShowFlagCheckbox("Billboard Text", EEngineShowFlags::SF_BillboardText, Viewport);
         RenderShowFlagCheckbox("Bounding Boxes", EEngineShowFlags::SF_BoundingBoxes, Viewport);
         RenderShowFlagCheckbox("Grid", EEngineShowFlags::SF_Grid, Viewport);
+        RenderShowFlagCheckbox("Debug Lines", EEngineShowFlags::SF_DebugLines, Viewport);
 
         ImGui::TreePop();
     }
@@ -279,6 +288,7 @@ void UShowFlagWidget::RenderLightingSection(FViewport* Viewport)
         ImGui::PopStyleColor();
 
         RenderShowFlagCheckbox("Lighting", EEngineShowFlags::SF_Lighting, Viewport);
+        RenderShowFlagCheckbox("FireBall", EEngineShowFlags::SF_FireBall, Viewport);
 
         ImGui::TreePop();
     }
