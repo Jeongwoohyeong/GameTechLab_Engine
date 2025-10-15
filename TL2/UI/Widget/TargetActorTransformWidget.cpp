@@ -17,6 +17,7 @@
 #include "SpotlightComponent.h"
 #include "RotationMovementComponent.h"
 #include "ProjectileMovementComponent.h"
+#include "HeightFogComponent.h"
 
 #include <string>
 #include <filesystem>
@@ -930,6 +931,58 @@ void UTargetActorTransformWidget::RenderWidget()
 				if (ImGui::DragFloat3("Launch Direction", &LaunchDirection.X, 0.1f)) {}
 
 				ProjectileMovementComponent->SetLaunchDirection(LaunchDirection);
+			}
+			else if (UHeightFogComponent* HeightFogComponent = Cast<UHeightFogComponent>(SelectedComponent))
+			{
+				ImGui::Separator();
+				ImGui::Text("HeightFog Component Settings");
+
+				// Fog Density
+				float FogDensity = HeightFogComponent->GetFogDensity();
+				if (ImGui::DragFloat("Fog Density", &FogDensity, 0.01f, 0.0f, 10.0f))
+				{
+					HeightFogComponent->SetFogDensity(FogDensity);
+				}
+
+				// Fog Height Falloff
+				float FogHeightFalloff = HeightFogComponent->GetFogHeightFalloff();
+				if (ImGui::DragFloat("Fog Height Falloff", &FogHeightFalloff, 0.01f, 0.0f, 10.0f))
+				{
+					HeightFogComponent->SetFogHeightFalloff(FogHeightFalloff);
+				}
+
+				// Start Distance
+				float StartDistance = HeightFogComponent->GetStartDistance();
+				if (ImGui::DragFloat("Start Distance", &StartDistance, 1.0f, 0.0f, 10000.0f))
+				{
+					HeightFogComponent->SetStartDistance(StartDistance);
+				}
+
+				// Fog Cutoff Distance
+				float FogCutoffDistance = HeightFogComponent->GetFogCutoffDistance();
+				if (ImGui::DragFloat("Fog Cutoff Distance", &FogCutoffDistance, 10.0f, 0.0f, 10000.0f))
+				{
+					HeightFogComponent->SetFogCutoffDistance(FogCutoffDistance);
+				}
+
+				// Fog Max Opacity
+				float FogMaxOpacity = HeightFogComponent->GetFogMaxOpacity();
+				if (ImGui::DragFloat("Fog Max Opacity", &FogMaxOpacity, 0.01f, 0.0f, 1.0f))
+				{
+					HeightFogComponent->SetFogMaxOpacity(FogMaxOpacity);
+				}
+
+				ImGui::Spacing();
+
+				// Fog Inscattering Color
+				FLinearColor FogColor = HeightFogComponent->GetFogInscatteringColor();
+				float color[4] = { FogColor.R, FogColor.G, FogColor.B, FogColor.A };
+
+				ImGui::Text("Fog Inscattering Color");
+				if (ImGui::ColorEdit4("##FogColor", color))
+				{
+					HeightFogComponent->SetFogInscatteringColor(FLinearColor(color[0], color[1], color[2], color[3]));
+				}
 			}
 			else
 			{

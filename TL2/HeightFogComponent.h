@@ -7,8 +7,24 @@ class UHeightFogComponent : public UPrimitiveComponent
 {
 public:
     DECLARE_CLASS(UHeightFogComponent, UPrimitiveComponent)
-    UHeightFogComponent(); 
+    UHeightFogComponent();
     virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
+
+    // Getters
+    float GetFogDensity() const { return FogDensity; }
+    float GetFogHeightFalloff() const { return FogHeightFalloff; }
+    float GetStartDistance() const { return StartDistance; }
+    float GetFogCutoffDistance() const { return FogCutoffDistance; }
+    float GetFogMaxOpacity() const { return FogMaxOpacity; }
+    FLinearColor GetFogInscatteringColor() const { return FogInscatteringColor; }
+
+    // Setters
+    void SetFogDensity(float Value) { FogDensity = Value; }
+    void SetFogHeightFalloff(float Value) { FogHeightFalloff = Value; }
+    void SetStartDistance(float Value) { StartDistance = Value; }
+    void SetFogCutoffDistance(float Value) { FogCutoffDistance = Value; }
+    void SetFogMaxOpacity(float Value) { FogMaxOpacity = Value; }
+    void SetFogInscatteringColor(const FLinearColor& Value) { FogInscatteringColor = Value; }
 
 private:
     float FogDensity;
