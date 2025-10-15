@@ -231,7 +231,8 @@ void D3D11RHI::CreateBlendState()
 
 void D3D11RHI::ClearOffscreenBackBuffer()
 {
-    float ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
+    //float ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f };
+    float ClearColor[4] = { 1.f, 0.f, 1.f, 1.0f };
     DeviceContext->ClearRenderTargetView(OffscreenRTV, ClearColor);
 }
 
@@ -297,7 +298,7 @@ void D3D11RHI::CreateOffscreenBuffer()
     OffscreenTextureDesc.Height = static_cast<UINT>(ViewportInfo.Height);
     OffscreenTextureDesc.MipLevels = 1;
     OffscreenTextureDesc.ArraySize = 1;
-    OffscreenTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    OffscreenTextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     OffscreenTextureDesc.SampleDesc.Count = 1;
     OffscreenTextureDesc.Usage = D3D11_USAGE_DEFAULT;
     // 생성된 텍스처는 pixel shader에서 사용되고, 렌더 타겟으로도 쓰임

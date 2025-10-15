@@ -35,19 +35,21 @@ void URenderer::BeginFrame()
 
     // TODO flag에 따라 분기처리 추가
     // Post Proccess On
-    if (bIsFXAAEnabled)    
-    {
-        // offscreen 버퍼 설정
-        RHIDevice->OMSetRenderTargetToOffscreen();
-        RHIDevice->ClearOffscreenBackBuffer();
-    }
-    // Post Proccess Off
-    else
-    {        
-        RHIDevice->OMSetRenderTargets();
-        RHIDevice->ClearBackBuffer();
-    }
-        
+    // if (bIsFXAAEnabled)    
+    // {
+    //     // offscreen 버퍼 설정
+    //     RHIDevice->OMSetRenderTargetToOffscreen();
+    //     RHIDevice->ClearOffscreenBackBuffer();
+    // }
+    // // Post Proccess Off
+    // else
+    // {        
+    //     RHIDevice->OMSetRenderTargets();
+    //     RHIDevice->ClearBackBuffer();
+    // }
+
+    RHIDevice->OMSetRenderTargets();
+    RHIDevice->ClearBackBuffer();
     
     // 백버퍼/깊이버퍼를 클리어
     RHIDevice->ClearDepthBuffer(1.0f, 0);                 // 깊이값 초기화
@@ -544,6 +546,38 @@ void URenderer::SetViewModeType(EViewModeIndex ViewModeIndex)
 void URenderer::EndFrame()
 {
     // 렌더링 통계 수집 종료
+    // URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
+    // StatsCollector.EndFrame();
+    //
+    // // 현재 프레임 통계를 업데이트
+    // const FRenderingStats& CurrentStats = StatsCollector.GetCurrentFrameStats();
+    // StatsCollector.UpdateFrameStats(CurrentStats);    
+    //
+    // // 평균 통계를 얻어서 오버레이에 업데이트
+    // const FRenderingStats& AvgStats = StatsCollector.GetAverageStats();
+    // UStatsOverlayD2D::Get().UpdateRenderingStats(
+    //     AvgStats.TotalDrawCalls,
+    //     AvgStats.MaterialChanges,
+    //     AvgStats.TextureChanges,
+    //     AvgStats.ShaderChanges
+    // );
+    // if (bIsFXAAEnabled)
+    // {
+    //     RHIDevice->UnbindRenderTargets();
+    //     RHIDevice->OMSetRenderTargetsNoDepth();
+    //     ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
+    //     if (FXAAPass)
+    //     {
+    //         RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
+    //         FXAAPass->Render(SceneSRV);
+    //     }        
+    // }
+    RHIDevice->Present();
+}
+
+void URenderer::RenderPostProcess()
+{
+    // 렌더링 통계 수집 종료
     URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
     StatsCollector.EndFrame();
     
@@ -559,33 +593,31 @@ void URenderer::EndFrame()
         AvgStats.TextureChanges,
         AvgStats.ShaderChanges
     );
-    if (bIsFXAAEnabled)
-    {
-        RHIDevice->UnbindRenderTargets();
-        RHIDevice->OMSetRenderTargetsNoDepth();
-        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
-        if (FXAAPass)
-        {
-            RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
-            FXAAPass->Render(SceneSRV);
-        }        
-    }
-    RHIDevice->Present();
-}
-
-void URenderer::RenderPostProcess()
-{
     // Post Process pass
     if (bIsFXAAEnabled)
     {
         RHIDevice->UnbindRenderTargets();
         RHIDevice->OMSetRenderTargetsNoDepth();
-        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();
+        ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();        
         if (FXAAPass)
         {
             RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
             FXAAPass->Render(SceneSRV);
-        }        
+        }
+        // ID3D11DeviceContext* Context = RHIDevice->GetDeviceContext();
+        // ID3D11Texture2D* dst = nullptr;
+        // static_cast<D3D11RHI*>(RHIDevice)->GetSwapChain()->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&dst);
+        // ID3D11Resource* src = nullptr;
+        // RHIDevice->GetOffscreenSRV()->GetResource(&src);
+        //
+        // if (dst && src)
+        // {
+        //     RHIDevice->UnbindRenderTargets();
+        //     Context->CopyResource(dst, src);
+        //     RHIDevice->OMSetRenderTargets();
+        // }
+        // if (dst) dst->Release();
+        // if (src) src->Release();
     }
 }
 

@@ -51,16 +51,15 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     // 서브픽셀 블렌딩 강도
     const float BlendIntensity          = 0.5f;
 
-    float ColorM = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0).rgb;
-    // 상하좌우 픽셀
-    float ColorN = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, -1)).rgb;
-    float ColorS = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, 1)).rgb;
-    float ColorW = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, 0)).rgb;
-    float ColorE = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, 0)).rgb;
+    // 픽셀 컬러
+    float3 ColorM = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0).rgb;    
+    float3 ColorN = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, -1)).rgb;
+    float3 ColorS = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, 1)).rgb;
+    float3 ColorW = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, 0)).rgb;
+    float3 ColorE = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, 0)).rgb;
     
-    // 현재 픽셀    
-    float LumaM = Luma(ColorM);
-    // 상하좌우 픽셀
+    // 픽셀 Luma
+    float LumaM = Luma(ColorM);    
     float LumaN = Luma(ColorN);
     float LumaS = Luma(ColorS);
     float LumaW = Luma(ColorW);
@@ -71,7 +70,7 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     float LumaMax = max(LumaM, max(max(LumaN, LumaS), max(LumaW, LumaE)));
     float LumaContrast = LumaMax - LumaMin;
 
-    float3 Average = (ColorM + ColorS + ColorW + ColorE) * 0.25f;
+    float3 Average = (ColorN + ColorS + ColorW + ColorE) * 0.25f;
     
     // Luma Contrast가 Threshold 미만이면 early return
     if (LumaContrast < max(EdgeThresholdMin, LumaMax * EdgeThreshold))
@@ -125,7 +124,7 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     
         return float4(0.0f, EdgeStrength, 0.0f, 1.0f);
     }
-    
-    
-    return SceneTexture.SampleLevel(DefaultSampler, FinalTexCoord, 0).rgba;
+
+    // 여기까지 도달하면 잘못된 모드 입력된거임
+    return float4(1, 0, 0, 1);    
 }
