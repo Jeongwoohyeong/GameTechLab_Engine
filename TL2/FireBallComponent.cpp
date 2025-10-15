@@ -2,8 +2,9 @@
 #include "FireBallComponent.h"
 #include "Renderer.h"
 #include "World.h" 
-UFireBallComponent::UFireBallComponent() : Intensity(10.f), Radius(50.f), RadiusFallOff(2.f), Color(FLinearColor(1.f, .5f, .1f, 1.f))
+UFireBallComponent::UFireBallComponent() : Intensity(10.f), Radius(10.f), RadiusFallOff(2.f), Color(FLinearColor(1.f, .5f, .1f, 1.f))
 {
+	bCanEverTick = true;
 }
 void UFireBallComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
@@ -34,7 +35,7 @@ void UFireBallComponent::AddDebugLine(URenderer* Renderer)
 	{
 		const FVector Center = GetWorldLocation();
 		const float Radius = GetRadius();
-		const int32 Segments = 32; // 구를 표현할 선분의 개수
+		const int32 Segments = 64; // 구를 표현할 선분의 개수
 
 		// 3개의 축(XY, XZ, YZ)에 대한 원을 그려 구를 표현합니다.
 		FVector OldPoint_XY = Center + FVector(Radius, 0.f, 0.f);
@@ -112,4 +113,79 @@ UObject* UFireBallComponent::Duplicate()
 void UFireBallComponent::DuplicateSubObjects()
 {
 	Super_t::DuplicateSubObjects();
+}
+
+void UFireBallComponent::BeginPlay()
+{
+	Super_t::BeginPlay();
+	OriginalIntensity = Intensity;
+	OriginalRadius = Radius;
+	OriginalColor = Color;
+	StartExplosion();
+}
+
+void UFireBallComponent::TickComponent(float DeltaTime)
+{
+	//float TotalTime = GetWorld()->GetTimeSeconds();
+
+	//// 1. 빛의 세기(Intensity)를 Sin 함수를 이용해 80% ~ 120% 사이에서 변화시킵니다.
+	////    Sin 함수의 결과는 -1.0 ~ 1.0 이므로, 0.0 ~ 1.0 범위로 바꾸어 사용합니다.
+	//float Pulse = (sin(TotalTime * 2.0f) + 1.0f) * 0.5f; // 0.0 ~ 1.0 사이로 Pulsing
+	//float MinIntensity = OriginalIntensity * 0.8f; // OriginalIntensity는 멤버 변수로 저장해둔 초기값
+	//float MaxIntensity = OriginalIntensity * 1.2f;
+	//SetIntensity(MinIntensity + (MaxIntensity - MinIntensity) * Pulse);
+
+	//// 2. 빛의 색상(Color)을 주황색과 붉은색 사이에서 미세하게 변화시킵니다.
+	//FLinearColor OrangeColor(1.0f, 0.5f, 0.1f);
+	//FLinearColor RedColor(1.0f, 0.2f, 0.0f);
+	//SetColor(FLinearColor::Lerp(OrangeColor, RedColor, Pulse));
+
+	if (bIsExploding)
+	{
+		// 시간을 계속 누적
+		EffectTimer += DeltaTime;
+
+		const float TotalCycleDuration = ExplosionDuration + CooldownDuration;
+
+		//// 1. 폭발 단계 (예: 0초 ~ 1초)
+		//if (EffectTimer < ExplosionDuration)
+		//{
+		//	float Alpha = EffectTimer / ExplosionDuration;
+
+		//	float EaseOutAlpha = 1.0f - pow(1.0f - Alpha, 3.0f);
+		//	float FadeAlpha = 1.0f - Alpha;
+
+		//	//SetRadius(OriginalRadius + (OriginalRadius * 4.0f * EaseOutAlpha)); // 기본 크기에서 5배까지 커짐
+		//	SetIntensity(OriginalIntensity * 2.0f * FadeAlpha);
+		//}
+		//// 2. 대기(두근거림) 단계 (예: 1초 ~ 3초)
+		//else if (EffectTimer < TotalCycleDuration)
+		{
+			// 살아 숨 쉬는 듯한 불꽃 효과 (Pulsing)
+			float TotalTime = GetWorld()->GetTimeSeconds();
+
+			float Pulse = (sin(TotalTime * 5.0f) + 1.0f) * 0.5f; // 좀 더 빠르게 두근거리도록 속도 증가
+			float MinIntensity = OriginalIntensity * 0.5f; // 더 약하게 두근거리도록 범위 조절
+			float MaxIntensity = OriginalIntensity * 1.0f;
+
+			SetRadius(OriginalRadius); // 기본 크기 유지
+			SetIntensity(MinIntensity + (MaxIntensity - MinIntensity) * Pulse);
+			SetColor(FLinearColor::Lerp(OriginalColor, FLinearColor::Red, Pulse));
+		}
+		//// 3. 사이클 초기화
+		//else
+		//{
+		//	// 타이머를 리셋하여 다음 폭발 사이클을 시작
+		//	EffectTimer = 0.0f;
+		//}
+
+	}
+}
+
+void UFireBallComponent::StartExplosion()
+{
+	bIsExploding = true;
+	EffectTimer = 0.0f;
+	ExplosionDuration = 2.0f;
+	CooldownDuration = 2.0f;
 }

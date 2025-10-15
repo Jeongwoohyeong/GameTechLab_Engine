@@ -62,7 +62,19 @@ struct FLinearColor
         return !(*this == Other);
     }
     // ========== Utility ==========
-
+    /**
+     * @brief 두 FLinearColor 사이를 선형 보간
+     * @param A 시작 색상
+     * @param B 끝 색상
+     * @param Alpha 보간 계수 (0.0 = A, 1.0 = B)
+     * @return 보간된 색상
+     */
+    static FLinearColor Lerp(const FLinearColor& A, const FLinearColor& B, float Alpha)
+    {
+        // Alpha 값을 0.0 ~ 1.0 사이로 제한하여 안정성을 높입니다.
+        const float ClampedAlpha = std::max(0.0f, std::min(1.0f, Alpha));
+        return A * (1.0f - ClampedAlpha) + B * ClampedAlpha;
+    }
 };
 
 
