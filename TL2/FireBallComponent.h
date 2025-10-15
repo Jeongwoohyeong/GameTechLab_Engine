@@ -28,10 +28,25 @@ public:
 
 	UObject* Duplicate() override;
 	void DuplicateSubObjects() override;
+
+	void BeginPlay() override;
+	void TickComponent(float DeltaTime) override;
+	// Tick전용
+	void StartExplosion();
+
 private:
 	float Intensity;
 	float Radius;
 	float RadiusFallOff;
 	FLinearColor Color;
+
+	// Tick 전용
+	bool bIsExploding = false;
+	float EffectTimer = 0.0f;         // 효과의 전체 시간을 추적하는 타이머
+	float ExplosionDuration = 1.0f; // 폭발이 지속되는 시간 (초)
+	float CooldownDuration = 2.0f;  // 폭발 후 다음 폭발까지 대기하는 시간 (초)
+	float OriginalIntensity;
+	float OriginalRadius;
+	FLinearColor OriginalColor;
 };
 

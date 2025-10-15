@@ -689,6 +689,7 @@ void UWorld::Tick(float DeltaSeconds)
     // Level의 Actors Tick
     if (Level && WorldType == EWorldType::PIE)
     {
+        TotalTimeSeconds += DeltaSeconds;
         for (AActor* Actor : Level->GetActors())
         {
             if (Actor && Actor->IsActorTickEnabled())
@@ -738,7 +739,7 @@ void UWorld::Tick(float DeltaSeconds)
 
 float UWorld::GetTimeSeconds() const
 {
-    return 0.0f;
+    return TotalTimeSeconds;
 }
 
 bool UWorld::FrustumCullActors(const FFrustum& ViewFrustum, const AActor* Actor, int & FrustumCullCount)
@@ -1384,6 +1385,7 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
     {
         PIEWorld->InitializeSceneGraph(PIEWorld->Level->GetActors());
     }
+    
     return PIEWorld;
 }
 
@@ -1413,6 +1415,7 @@ void UWorld::CleanupWorld()
                 Actor->EndPlay(EEndPlayReason::Quit);
             }
         }
+        TotalTimeSeconds = 0.0f;
     }
 }
 

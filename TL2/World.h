@@ -154,6 +154,9 @@ private:
 	// 렌더러 (월드가 소유)
 	URenderer* Renderer;
 
+	// 월드 총 경과 시간
+	float TotalTimeSeconds = 0.0f;
+
 	// 메인 뷰포트
 	SViewportWindow* MainViewport = nullptr;
 	// 멀티 뷰포트 윈도우
@@ -176,8 +179,8 @@ private:
 
 	UOctree* Octree;
 	FBVH* BVH;
-	bool bIsBVHDirty = false;
-
+	bool bIsBVHDirty = false; 
+	
 	FFXAABufferType FXAAData{
 		{}, 0,
 		FVector{0.125f, 0.0312f, 0.5f},

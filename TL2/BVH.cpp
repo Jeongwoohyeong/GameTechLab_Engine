@@ -449,12 +449,14 @@ bool FBVH::IntersectNode(int NodeIndex,
     const FBVHNode& Node = Nodes[NodeIndex];
 
     float tNear;
+    // Ray와 노드의 AABB 충돌 안하면 Prunning
     if (!Ray.IntersectAABB(Node.BoundingBox, tNear))
         return false;
 
     if (tNear >= InOutDistance)
         return false;
 
+    // 리프인 경우
     if (Node.IsLeaf())
     {
         bool bHit = false;
@@ -582,7 +584,67 @@ bool FBVH::IntersectPrimitive(const UPrimitiveComponent* Primitive, const FVecto
 {
     // This needs a proper implementation based on primitive type
     // For now, we can just intersect with the AABB as a proxy
-    return Primitive->GetWorldBound().RayIntersects(RayOrigin, RayDirection, OutDistance);
+    //return Primitive->GetWorldBound().RayIntersects(RayOrigin, RayDirection, OutDistance);
+    
+    const UStaticMeshComponent* StaticMeshComponent = Cast<const UStaticMeshComponent>(Primitive);
+    if (!StaticMeshComponent)
+    {
+        // StaticMeshComponent가 아니면 기존 방식(AABB)으로 처리
+        return Primitive->GetWorldBound().RayIntersects(RayOrigin, RayDirection, OutDistance);
+    }
+
+    const UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
+    const FStaticMesh* MeshAsset = StaticMesh ? StaticMesh->GetStaticMeshAsset() : nullptr;
+    if (!MeshAsset || MeshAsset->Vertices.empty() || MeshAsset->Indices.empty())
+    {
+        // 메시 데이터가 없으면 AABB 검사로 대체
+        return Primitive->GetWorldBound().RayIntersects(RayOrigin, RayDirection, OutDistance);
+    }
+
+    // --- 묄러-트럼보어 검사 로직 시작 ---
+
+    FRay WorldRay = { RayOrigin, RayDirection };
+    float ClosestT = FLT_MAX;
+    bool bHasHit = false;
+
+    // 메시의 모든 삼각형을 순회
+    for (uint32 i = 0; i + 2 < MeshAsset->Indices.size(); i += 3)
+    {
+        // 1. 로컬 공간의 정점 인덱스 가져오기
+        const uint32 i0 = MeshAsset->Indices[i + 0];
+        const uint32 i1 = MeshAsset->Indices[i + 1];
+        const uint32 i2 = MeshAsset->Indices[i + 2];
+
+        // 2. 로컬 공간 정점 위치 가져오기
+        const FVector& v0_local = MeshAsset->Vertices[i0].pos;
+        const FVector& v1_local = MeshAsset->Vertices[i1].pos;
+        const FVector& v2_local = MeshAsset->Vertices[i2].pos;
+
+        // 3. 월드 행렬을 이용해 정점을 월드 공간으로 변환
+        const FMatrix& WorldMatrix = Primitive->GetWorldMatrix();
+        FVector v0_world = TransformPosition(v0_local, WorldMatrix);
+        FVector v1_world = TransformPosition(v1_local, WorldMatrix);
+        FVector v2_world = TransformPosition(v2_local, WorldMatrix);
+
+        // 4. 월드 공간 삼각형과 월드 공간 레이로 교차 검사
+        float t_hit;
+        if (IntersectRayTriangleMT(WorldRay, v0_world, v1_world, v2_world, t_hit))
+        {
+            if (t_hit < ClosestT)
+            {
+                ClosestT = t_hit;
+                bHasHit = true;
+            }
+        }
+    }
+
+    if (bHasHit)
+    {
+        OutDistance = ClosestT;
+        return true;
+    }
+
+    return false;
 }
 
 void FBVH::Render(URenderer* Renderer) const
