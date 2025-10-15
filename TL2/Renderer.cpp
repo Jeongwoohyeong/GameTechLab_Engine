@@ -23,6 +23,11 @@ URenderer::~URenderer()
     {
         delete LineBatchData;
     }
+
+    if (FXAAPass)
+    {
+        delete FXAAPass;
+    }
 }
 
 void URenderer::BeginFrame()
