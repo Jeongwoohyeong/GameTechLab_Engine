@@ -269,14 +269,17 @@ void UTargetActorTransformWidget::RenderWidget()
 				USceneComponent* ParentComponent = SceneComponent->GetAttachParent();
 				if (SelectedActor->DeleteSceneComponent(SceneComponent))
 				{
+					// 삭제 직후 SelectedComponent를 즉시 업데이트
 					if (ParentComponent)
 					{
-						SceneComponent = ParentComponent;
+						SelectedComponent = ParentComponent;
 					}
 					else
 					{
-						SceneComponent = SelectedActor->GetRootComponent();
+						SelectedComponent = SelectedActor->GetRootComponent();
 					}
+
+					UpdateTransformFromActor();
 				}
 			}
 			else
@@ -284,6 +287,8 @@ void UTargetActorTransformWidget::RenderWidget()
 				SelectedActor->DeleteNonSceneComponent(SelectedComponent);
 				// 비계층 컴포넌트 삭제 시 자동으로 루트를 선택 컴포넌트로 등록한다.
 				SelectedComponent = SelectedActor->GetRootComponent();
+
+				UpdateTransformFromActor();
 			}
 		}
 
@@ -1109,7 +1114,7 @@ void UTargetActorTransformWidget::PostProcess()
 
 void UTargetActorTransformWidget::UpdateTransformFromActor()
 {
-	if (!SelectedActor && !SelectedComponent)
+	if (!SelectedActor || !SelectedComponent)
 		return;	
 	
 	USceneComponent* SceneComponent = Cast<USceneComponent>(SelectedComponent);
