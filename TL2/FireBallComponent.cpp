@@ -7,7 +7,20 @@ UFireBallComponent::UFireBallComponent() : Intensity(10.f), Radius(50.f), Radius
 
 void UFireBallComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
-	FVector4 WorldLocation(GetWorldLocation().X, GetWorldLocation().Y, GetWorldLocation().Z, 1.0f);
+	//FVector4 WorldLocation(GetWorldLocation().X, GetWorldLocation().Y, GetWorldLocation().Z, 1.0f);
+
+	/*const FMatrix YUpToZUp =
+	{
+		 0,  1,  0, 0 ,
+		 0,  0,  1, 0 ,
+		 1, 0,  0, 0 ,
+		 0,  0,  0, 1
+	};
+	
+	WorldLocation = YUpToZUp * WorldLocation;*/
+
+	FVector4 WorldLocation = FVector4(0.0f, 0.0f, 0.0f, 1.0f) * GetRealWorldMatrix();
+
 	float InvRadius = Radius > 0.f ? 1.f / Radius : 0.f;
 	FVector4 Parameters(Intensity, Radius, InvRadius, RadiusFallOff);
 	FireBallBufferType FireBallData = { WorldLocation, Color, Parameters };

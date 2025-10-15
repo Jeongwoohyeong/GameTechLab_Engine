@@ -187,6 +187,11 @@ void URenderer::UpdateFireBallConstantBuffer(const FireBallBufferType& InFireBal
     RHIDevice->UpdateFireBallConstantBuffer(InFireBallData);
 }
 
+void URenderer::UpdateRealWorldBuffer(const FMatrix& InRealWorldMatrix)
+{
+    RHIDevice->UpdateRealWorldBuffer(InRealWorldMatrix);
+}
+
 void URenderer::ProjectDecalToStaticMesh(UDecalComponent* Comp, UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
     RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
