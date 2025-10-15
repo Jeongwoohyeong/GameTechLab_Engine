@@ -96,6 +96,9 @@ void UShowFlagWidget::RenderWidget()
                 ImGui::Separator();
 
                 RenderLightingSection(Viewport);
+                ImGui::Separator();
+
+                RenderFogSection(Viewport);
             }
         }
         ImGui::EndChild();
@@ -186,6 +189,10 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
             ImGui::Text("조명 효과 활성화/비활성화");
             ImGui::Text("라이팅 계산을 켜거나 끕니다.");
             break;
+        case EEngineShowFlags::SF_Fog:
+            ImGui::Text("안개 효과 활성화/비활성화");
+            ImGui::Text("Fog 컴포넌트의 활성화 여부를 결정합니다.");
+            break;
         default:
             ImGui::Text("Show Flag 설정");
             break;
@@ -272,6 +279,23 @@ void UShowFlagWidget::RenderLightingSection(FViewport* Viewport)
         ImGui::PopStyleColor();
 
         RenderShowFlagCheckbox("Lighting", EEngineShowFlags::SF_Lighting, Viewport);
+
+        ImGui::TreePop();
+    }
+    else
+    {
+        ImGui::PopStyleColor();
+    }
+}
+
+void UShowFlagWidget::RenderFogSection(FViewport* Viewport)
+{
+    ImGui::PushStyleColor(ImGuiCol_Text, HeaderColor);
+    if (ImGui::TreeNode("Fog"))
+    {
+        ImGui::PopStyleColor();
+
+        RenderShowFlagCheckbox("Fog", EEngineShowFlags::SF_Fog, Viewport);
 
         ImGui::TreePop();
     }

@@ -551,11 +551,13 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
         static_cast<float>(Viewport->GetSizeY())
     );
 
-    for (const auto& HeightFog : HeightFogs)
+    if (Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_Fog))
     {
-        HeightFog->Render(Renderer, ViewMatrix, ProjectionMatrix);
+        for (const auto& HeightFog : HeightFogs)
+        {
+            HeightFog->Render(Renderer, ViewMatrix, ProjectionMatrix);
+        }
     }
-
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 
     // FireBall Pass
