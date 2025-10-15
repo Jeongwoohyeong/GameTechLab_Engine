@@ -967,6 +967,8 @@ void UWorld::SaveScene(const FString& SceneName)
             UDecalComponent* DecalComponent = Cast<UDecalComponent>(ActorComp);
             UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(ActorComp);
             UTextRenderComponent* TextComponent = Cast<UTextRenderComponent>(ActorComp);
+            UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(ActorComp);
+
             // TODO : spotlight serialize
 
             FComponentData* ComponentData;
@@ -990,6 +992,11 @@ void UWorld::SaveScene(const FString& SceneName)
             {
                 ComponentData = new FTextComponentData;
                 TextComponent->Serialize(ComponentData);
+            }
+            else if (FireBallComponent)
+            {
+                ComponentData = new FFireBallComponentData;
+                FireBallComponent->Serialize(ComponentData);
             }
             else
             {

@@ -152,6 +152,7 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
             FDecalComponentData* DecalData = dynamic_cast<FDecalComponentData*>(SceneComponent);
             FBillboardComponentData* BillboardData = dynamic_cast<FBillboardComponentData*>(SceneComponent);
             FTextComponentData* TextData = dynamic_cast<FTextComponentData*>(SceneComponent);
+            FFireBallComponentData* FireBallData = dynamic_cast<FFireBallComponentData*>(SceneComponent);
 
             if (StaticMeshData)
             {
@@ -230,6 +231,17 @@ void FSceneLoader::Save(const FSceneData& SceneData, const FString& SceneName)
                     FString AssetPath = NormalizePath(TextData->Text);
                     oss << "      \"Text\" : \"" << AssetPath << "\"";
                 }
+            }
+            else if (FireBallData)
+            {
+                oss << ",\n";
+                oss << "      \"Color\" : [" << FireBallData->Color.R << ", " << FireBallData->Color.G << ", " << FireBallData->Color.B << ", " << FireBallData->Color.A << "]";
+                oss << ",\n";
+                oss << "      \"Intensity\" : \"" << FireBallData->Intensity << "\"";
+                oss << ",\n";
+                oss << "      \"Radius\" : \"" << FireBallData->Radius << "\"";
+                oss << ",\n";
+                oss << "      \"Falloff\" : \"" << FireBallData->FallOff << "\"";
             }
         }
         // 비계층 컴포넌트일때
@@ -420,6 +432,28 @@ FSceneData FSceneLoader::Parse(const JSON& Json)
                     DecalData->bIsLoop = CompJson.at("Loop").ToString() == "true";
                 if (CompJson.hasKey("ElapsedTime"))
                     DecalData->ElapsedTime = stof(CompJson.at("ElapsedTime").ToString());
+            }
+            else if (CompJson.at("Type").ToString() == "UFireBallComponent")
+            {
+                ComponentData = new FFireBallComponentData;
+                FFireBallComponentData* FireBallData = dynamic_cast<FFireBallComponentData*>(ComponentData);
+
+                if (CompJson.hasKey("Color"))
+                {
+                    auto colorArr = CompJson.at("Color");
+                    FireBallData->Color = FLinearColor(
+                        (float)colorArr[0].ToFloat(),
+                        (float)colorArr[1].ToFloat(),
+                        (float)colorArr[2].ToFloat(),
+                        (float)colorArr[3].ToFloat()
+                    );
+                }
+                if (CompJson.hasKey("Intensity"))
+                    FireBallData->Intensity = stof(CompJson.at("Intensity").ToString());
+                if (CompJson.hasKey("Radius"))
+                    FireBallData->Radius = stof(CompJson.at("Radius").ToString());
+                if (CompJson.hasKey("Falloff"))
+                    FireBallData->FallOff = stof(CompJson.at("Falloff").ToString());
             }
             else if (CompJson.at("Type").ToString() == "URotationMovementComponent")
             {

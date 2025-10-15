@@ -1,5 +1,5 @@
 ﻿#pragma once
-
+#include "Color.h"
 // ========================================
 // Version 1 (Legacy - 하위 호환용)
 // ========================================
@@ -62,7 +62,13 @@ struct FTextComponentData : public FSceneComponentData
 {
     FString Text;
 };
-
+struct FFireBallComponentData : public FSceneComponentData
+{
+    FLinearColor Color;
+    float Intensity;
+    float Radius;
+    float FallOff;
+};
 struct FDecalComponentData : public FSceneComponentData
 {
     FString Texture;  // Asset path

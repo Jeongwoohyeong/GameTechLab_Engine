@@ -22,6 +22,9 @@ public:
 	
 	void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
 	
+	void Serialize(FObjectData* Data) override;
+	void DeSerialize(FObjectData* Data) override;
+
 	UObject* Duplicate() override;
 	void DuplicateSubObjects() override;
 private:
