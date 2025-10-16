@@ -15,13 +15,17 @@ public:
     void SetShowMemory(bool b);
     void SetShowRenderStats(bool b);
     void SetShowDecalStats(bool b);
+    void SetShowPickingTime(bool b);
     void ToggleFPS();
     void ToggleMemory();
     void ToggleRenderStats();
     void ToggleDecalStats();
+    void TogglePickingStats();
     bool IsFPSVisible() const { return bShowFPS; }
     bool IsMemoryVisible() const { return bShowMemory; }
     bool IsRenderStatsVisible() const { return bShowRenderStats; }
+    bool IsDecalStatsVisible() const { return bShowDecalStats; }
+    bool IsPickingtimeVisible() const { return bShowPickingtime; }
     
     // 렌더링 통계 업데이트
     void UpdateRenderingStats(uint32 InDrawCalls, uint32 InMaterialChanges,
@@ -58,6 +62,7 @@ private:
     bool bShowMemory = true;
     bool bShowRenderStats = true;
     bool bShowDecalStats = true;
+    bool bShowPickingtime = true;
     
     // 렌더링 통계 데이터
     uint32 CurrentDrawCalls = 0;

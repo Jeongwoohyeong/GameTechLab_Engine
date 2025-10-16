@@ -3,7 +3,11 @@ cbuffer ScreenSizeBuffer : register(b0)
     float4 ViewportRect;
     // Edge 강조 모드와 FXAA 모드를 위한 int flag
     int Mode;
-    float3 Pad;
+    // EdgeThreshold, EdgeThresholdMin, BlendIntensity
+    float3 Parameters;
+    float SplitPosition;
+    int bIsSplitEnabled;
+    float2 Pad;
 }
 
 struct PS_INPUT
@@ -40,25 +44,39 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     uint Width, Height;
     SceneTexture.GetDimensions(Width, Height);
     float2 SceneSize = float2(Width, Height);
-    float2 RcpScreenSize = 1.0f / SceneSize / ViewportRect.zw;
+    float2 RcpScreenSize = 1.0f / SceneSize;
     float2 ViewportTexCoord = ViewportRect.xy + Input.TexCoord * ViewportRect.zw;
     ViewportTexCoord /= SceneSize;
-    //return float4(SceneTexture.Sample(DefaultSampler, ViewportTexCoord / SceneSize).rgb, 1.0f);
 
-    float2 FinalTexCoord = ViewportTexCoord;
+    // default parameter 0.125, 0.0312, 0.5
     // 경계 판단의 최소 Luma Contrast값
-    const float EdgeThreshold           = 0.125f;
+    float EdgeThreshold           = Parameters.x;
     // 어두운 영역 노이즈 무시용 최소 Luma값
-    const float EdgeThresholdMin        = 0.0312f;
+    float EdgeThresholdMin        = Parameters.y;
     // 서브픽셀 블렌딩 강도
-    const float BlendIntensity          = 0.5f;
+    float BlendIntensity          = Parameters.z;
 
     // 픽셀 컬러
-    float3 ColorM = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0).rgb;    
-    float3 ColorN = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, -1)).rgb;
-    float3 ColorS = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(0, 1)).rgb;
-    float3 ColorW = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, 0)).rgb;
-    float3 ColorE = SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, 0)).rgb;
+    float3 ColorM = SceneTexture.Sample(DefaultSampler, ViewportTexCoord).rgb;
+
+    if (bIsSplitEnabled == 1)
+    {
+        const float LindWidth = 0.002f;
+        if (abs(Input.TexCoord.x - SplitPosition) < LindWidth)
+        {
+            return float4(1.0f, 0.0f, 0.0f, 1.0f);
+        }
+
+        if (Input.TexCoord.x > SplitPosition)
+        {
+            return float4(ColorM, 1.0f);
+        }
+    }
+    
+    float3 ColorN = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(0, -RcpScreenSize.y)).rgb;
+    float3 ColorS = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(0, RcpScreenSize.y)).rgb;
+    float3 ColorW = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(-RcpScreenSize.x, 0)).rgb;
+    float3 ColorE = SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(RcpScreenSize.x, 0)).rgb;
     
     // 픽셀 Luma
     float LumaM = Luma(ColorM);    
@@ -72,26 +90,34 @@ float4 mainPS(PS_INPUT Input) : SV_Target
     float LumaMax = max(LumaM, max(max(LumaN, LumaS), max(LumaW, LumaE)));
     float LumaContrast = LumaMax - LumaMin;
 
-    float3 Average = (ColorN + ColorS + ColorW + ColorE) * 0.25f;
-    
-    // Luma Contrast가 Threshold 미만이면 early return
-    if (LumaContrast < max(EdgeThresholdMin, LumaMax * EdgeThreshold))
-    {        
-        float3 Smooth = lerp(ColorM, Average, BlendIntensity);
-        return float4(Smooth, 1.0f);        
-    }
+    float3 Average = (ColorN + ColorS + ColorW + ColorE) * 0.25f;    
     
     // 3x3 영역 Luma Sampling으로 경계 방향 정밀하게 판단    
-    float LumaNW = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, -1)).rgb);
-    float LumaNE = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, -1)).rgb);    
-    float LumaSW = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(-1, 1)).rgb);    
-    float LumaSE = Luma(SceneTexture.SampleLevel(DefaultSampler, ViewportTexCoord, 0, int2(1, 1)).rgb);
+    float LumaNW = Luma(SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(-RcpScreenSize.x, -RcpScreenSize.y)).rgb);
+    float LumaNE = Luma(SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(RcpScreenSize.x, -RcpScreenSize.y)).rgb);    
+    float LumaSW = Luma(SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(-RcpScreenSize.x, RcpScreenSize.y)).rgb);    
+    float LumaSE = Luma(SceneTexture.Sample(DefaultSampler, ViewportTexCoord + float2(RcpScreenSize.x, RcpScreenSize.y)).rgb);
     
     // 수평/수직 경계 검사 - sobel filter 이용
     float EdgeHorizontal = abs(LumaNW + 2 * LumaN + LumaNE - LumaSW - 2 * LumaS - LumaSE);
     float EdgeVertical = abs(LumaNW + 2 * LumaW + LumaSW - LumaNE - 2 * LumaE - LumaSE);
+    if (Mode == EdgeMode)
+    {
+        float EdgeStrength = saturate(EdgeHorizontal + EdgeVertical);
+    
+        return float4(0.0f, EdgeStrength, 0.0f, 1.0f);
+    }
+    
     if (Mode == FXAAMode)
     {
+        // Luma Contrast가 Threshold 미만이면 early return
+        if (LumaContrast < max(EdgeThresholdMin, LumaMax * EdgeThreshold))
+        {        
+            //float3 Smooth = lerp(ColorM, Average, BlendIntensity);
+            //return float4(Smooth, 1.0f);
+            return float4(ColorM, 1.0f);
+        }
+        
         // 경계 방향 벡터 계산
         float2 Direction;
         Direction.x = -((LumaNW + LumaNE) - (LumaSW + LumaSE));
@@ -118,15 +144,10 @@ float4 mainPS(PS_INPUT Input) : SV_Target
         // 강한 경계에 미세한 블렌딩 추가
         Result = lerp(Result, Average, saturate(BlendIntensity) * 0.25f);
 
-        return float4(Result, 1.0f);        
+        return float4(Result, 1.0f);
     }
-    else if (Mode == EdgeMode)
-    {
-        float EdgeStrength = saturate(EdgeHorizontal + EdgeVertical);
-    
-        return float4(0.0f, 1.0f, 0.0f, 1.0f);
-    }
+   
 
     // 여기까지 도달하면 잘못된 모드 입력된거임
-    return float4(1, 0, 0, 1);    
+    return float4(1, 0, 0, 1);
 }

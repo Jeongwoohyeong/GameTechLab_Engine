@@ -313,6 +313,20 @@ void SViewportWindow::RenderToolbar()
 			ImGui::EndCombo();
 		}
 
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(85.0f);
+		if (ImGui::BeginCombo("##Post Process", "Post Process"))
+		{
+			bool bIsFXAAEnabled = Viewport->IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
+			if (ImGui::Checkbox(("FXAA"), &bIsFXAAEnabled))
+			{
+				Viewport->ToggleShowFlag(EEngineShowFlags::SF_FXAA);
+			}
+
+			ImGui::EndCombo();
+		}
+		
+
 		// PIE Play/Stop 버튼
 		ImGui::SameLine();
 		UEngine* Engine = GetEngine();

@@ -117,12 +117,7 @@ struct BillboardBufferType
     FVector cameraUp;*/
 };
 
-struct FFXAABufferType
-{
-    FVector4 ViewportRect;
-    int Mode;
-    FVector Pad;
-};
+
 
 void D3D11RHI::Initialize(HWND hWindow)
 {
@@ -438,15 +433,12 @@ void D3D11RHI::UpdateDecalConstantBuffer(const FMatrix& InWorldMVP, const FMatri
     DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB);
 }
 
-void D3D11RHI::UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode)
+void D3D11RHI::UpdateFXAAConstantBuffer(const FFXAABufferType& InBufferData)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
     DeviceContext->Map(FXAACB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
     
-    auto DataPtr = reinterpret_cast<FFXAABufferType*>(mapped.pData);
-    DataPtr->ViewportRect = ViewportRect;
-    DataPtr->Mode = Mode;
-    DataPtr->Pad = {};
+    memcpy(mapped.pData, &InBufferData, sizeof(FFXAABufferType));
     
     DeviceContext->Unmap(FXAACB, 0);
 

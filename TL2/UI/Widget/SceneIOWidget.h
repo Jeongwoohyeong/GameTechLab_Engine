@@ -50,5 +50,7 @@ private:
 	// Scene format version
 	bool bUseV2Format = true;  // 기본값: Version 2 사용
 
+	bool bIsFXAAEnabled = false;
+
 	static constexpr float STATUS_MESSAGE_DURATION = 3.0f;
 };

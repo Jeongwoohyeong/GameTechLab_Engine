@@ -23,6 +23,11 @@ URenderer::~URenderer()
     {
         delete LineBatchData;
     }
+
+    if (FXAAPass)
+    {
+        delete FXAAPass;
+    }
 }
 
 void URenderer::BeginFrame()
@@ -606,7 +611,7 @@ void URenderer::RenderPostProcess()
         ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetOffscreenSRV();        
         if (FXAAPass)
         {
-            RHIDevice->UpdateFXAAConstantBuffer(ViewportRect, Mode);
+            RHIDevice->UpdateFXAAConstantBuffer(FXAABufferData);
             FXAAPass->Render(SceneSRV);
         }
         // ID3D11DeviceContext* Context = RHIDevice->GetDeviceContext();
@@ -631,11 +636,10 @@ void URenderer::OMSetDepthStencilState(EComparisonFunc Func)
     RHIDevice->OmSetDepthStencilState(Func);
 }
 
-void URenderer::SetOffscreenRenderTarget(const FVector4& InViewportRect, int32 InMode, bool bIsEnabled)
+void URenderer::SetOffscreenRenderTarget(const FFXAABufferType& InBufferData, bool bIsEnabled)
 {
+    FXAABufferData = InBufferData;
     bIsFXAAEnabled = bIsEnabled;
-    ViewportRect = InViewportRect;
-    Mode = InMode;
 }
 
 void URenderer::InitializeLineBatch()
@@ -814,35 +818,43 @@ void URenderer::ClearLineBatch()
 }
 
 // TODO : Resource는 달라질 수 있으니, 나중에 좀 더 구조화하기
-void URenderer::DrawFullScreenPass()                                                         
-{                                                                                            
-    ID3D11DeviceContext * Context = RHIDevice->GetDeviceContext();                           
-    
-    // Set up the pipeline for a full-screen pass                                            
-    Context->IASetInputLayout(nullptr); // No input layout needed                            
-    Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);                  
-    
-    // Unbind DepthStencilView Before Using Depth Buffer
-    ID3D11RenderTargetView* RTV = static_cast<D3D11RHI*>(RHIDevice)->GetRenderTargetView();
-    Context->OMSetRenderTargets(1, &RTV, NULL);
+void URenderer::DrawFullScreenPass()
+{
+    ID3D11DeviceContext * Context = RHIDevice->GetDeviceContext();
 
-    // Bind the depth buffer as a shader resource for the pixel shader                       
-    ID3D11ShaderResourceView* DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthBuffer();  
+    // Set up the pipeline for a full-screen pass
+    Context->IASetInputLayout(nullptr); // No input layout needed
+    Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    // IMPORTANT: Get currently bound render targets to preserve FXAA offscreen rendering
+    // (Previously always used main backbuffer RTV, breaking Fog+FXAA compatibility)
+    ID3D11RenderTargetView* CurrentRTV = nullptr;
+    ID3D11DepthStencilView* CurrentDSV = nullptr;
+    Context->OMGetRenderTargets(1, &CurrentRTV, &CurrentDSV);
+
+    // Unbind DepthStencilView before using depth buffer as SRV (DirectX requirement)
+    Context->OMSetRenderTargets(1, &CurrentRTV, nullptr);
+
+    // Bind the depth buffer as a shader resource for the pixel shader
+    ID3D11ShaderResourceView* DepthSRV = static_cast<D3D11RHI*>(RHIDevice)->GetDepthBuffer();
     Context->PSSetShaderResources(0, 1, &DepthSRV);
     ID3D11SamplerState* Sampler = static_cast<D3D11RHI*>(RHIDevice)->GetDefaultSampler();
     Context->PSSetSamplers(0, 1, &Sampler);
 
-    // Draw a single triangle that covers the screen                                         
-    Context->Draw(3, 0);                                                                     
+    // Draw a single triangle that covers the screen
+    Context->Draw(3, 0);
     URenderingStatsCollector::GetInstance().IncrementDrawCalls();
-    
-    // Unbind the SRV to avoid holding a reference                                           
-    ID3D11ShaderResourceView * NullSRV = nullptr;                                            
+
+    // Unbind the SRV to avoid holding a reference
+    ID3D11ShaderResourceView * NullSRV = nullptr;
     Context->PSSetShaderResources(0, 1, &NullSRV);
 
-    // Rebind DepthStencilView after using DepthBuffer
-    ID3D11DepthStencilView* DepthStencilView = static_cast<D3D11RHI*>(RHIDevice)->GetDepthStencilView();
-    Context->OMSetRenderTargets(1, &RTV, DepthStencilView);
+    // Rebind original depth stencil view
+    Context->OMSetRenderTargets(1, &CurrentRTV, CurrentDSV);
+
+    // Release COM references acquired by OMGetRenderTargets
+    if (CurrentRTV) CurrentRTV->Release();
+    if (CurrentDSV) CurrentDSV->Release();
 }                                                                                            
 
 void URenderer::RenderSceneDepth(float Near, float Far)

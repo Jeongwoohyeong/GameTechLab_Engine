@@ -3,6 +3,8 @@
 #include <d3dcompiler.h>
 #include "Vector.h"
 #include "Color.h"
+struct FFXAABufferType;
+
 enum class EComparisonFunc
 {
     Always,
@@ -75,7 +77,7 @@ public:
     virtual void UpdateFireBallConstantBuffer(const struct FireBallBufferType& FireBallData) = 0;
     
     // FXAA
-    virtual void UpdateFXAAConstantBuffer(const FVector4& ViewportRect, int32 Mode) = 0;
+    virtual void UpdateFXAAConstantBuffer(const FFXAABufferType& InBufferData) = 0;
     virtual void OMSetRenderTargetToOffscreen() = 0;
     virtual ID3D11ShaderResourceView* GetOffscreenSRV() const = 0;    
 

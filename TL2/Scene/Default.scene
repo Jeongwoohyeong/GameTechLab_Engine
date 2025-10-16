@@ -1,863 +1,320 @@
 {
   "Version" : 2,
-  "NextUUID" : 832,
+  "NextUUID" : 743,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
-    "FarClip" : [100.000000],
-    "Location" : [-20.781815, 0.049348, 1.583350],
+    "FarClip" : [4000.000000],
+    "Location" : [-8.730305, -2.606651, 5.216443],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 3.700000, -0.200000]
+    "Rotation" : [0.000000, 26.499977, 10.800029]
   },
   "Actors" : [
     {
-      "UUID" : 528,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_1",
-      "RootComponentUUID" : 529
-    },
-    {
-      "UUID" : 531,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_2",
-      "RootComponentUUID" : 532
-    },
-    {
-      "UUID" : 534,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_3",
-      "RootComponentUUID" : 535
-    },
-    {
-      "UUID" : 537,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_4",
-      "RootComponentUUID" : 538
-    },
-    {
-      "UUID" : 540,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_5",
-      "RootComponentUUID" : 541
-    },
-    {
-      "UUID" : 543,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_6",
-      "RootComponentUUID" : 544
-    },
-    {
-      "UUID" : 546,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_7",
-      "RootComponentUUID" : 547
-    },
-    {
-      "UUID" : 549,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_8",
-      "RootComponentUUID" : 550
-    },
-    {
-      "UUID" : 552,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_9",
-      "RootComponentUUID" : 553
-    },
-    {
-      "UUID" : 555,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_10",
-      "RootComponentUUID" : 556
-    },
-    {
-      "UUID" : 558,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_11",
-      "RootComponentUUID" : 559
-    },
-    {
-      "UUID" : 561,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_12",
-      "RootComponentUUID" : 562
-    },
-    {
-      "UUID" : 564,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_13",
-      "RootComponentUUID" : 565
-    },
-    {
-      "UUID" : 567,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_14",
-      "RootComponentUUID" : 568
-    },
-    {
-      "UUID" : 570,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_15",
-      "RootComponentUUID" : 571
-    },
-    {
-      "UUID" : 573,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_16",
-      "RootComponentUUID" : 574
-    },
-    {
-      "UUID" : 576,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_17",
-      "RootComponentUUID" : 577
-    },
-    {
-      "UUID" : 579,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_18",
-      "RootComponentUUID" : 580
-    },
-    {
-      "UUID" : 582,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_19",
-      "RootComponentUUID" : 583
-    },
-    {
-      "UUID" : 585,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_20",
-      "RootComponentUUID" : 586
-    },
-    {
-      "UUID" : 588,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_21",
-      "RootComponentUUID" : 589
-    },
-    {
       "UUID" : 591,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_22",
+      "Name" : "AStaticMeshActor_1",
       "RootComponentUUID" : 592
     },
     {
       "UUID" : 594,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_23",
+      "Name" : "AStaticMeshActor_2",
       "RootComponentUUID" : 595
     },
     {
       "UUID" : 597,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_24",
+      "Name" : "AStaticMeshActor_3",
       "RootComponentUUID" : 598
     },
     {
       "UUID" : 600,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_25",
+      "Name" : "AStaticMeshActor_4",
       "RootComponentUUID" : 601
     },
     {
       "UUID" : 603,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_26",
+      "Name" : "AStaticMeshActor_5",
       "RootComponentUUID" : 604
     },
     {
       "UUID" : 606,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_27",
+      "Name" : "AStaticMeshActor_6",
       "RootComponentUUID" : 607
     },
     {
       "UUID" : 609,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_28",
+      "Name" : "AStaticMeshActor_7",
       "RootComponentUUID" : 610
     },
     {
       "UUID" : 612,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_29",
+      "Name" : "AStaticMeshActor_8",
       "RootComponentUUID" : 613
     },
     {
       "UUID" : 615,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_30",
+      "Name" : "AStaticMeshActor_9",
       "RootComponentUUID" : 616
     },
     {
       "UUID" : 618,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_31",
+      "Name" : "AStaticMeshActor_10",
       "RootComponentUUID" : 619
     },
     {
       "UUID" : 621,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_32",
+      "Name" : "AStaticMeshActor_11",
       "RootComponentUUID" : 622
     },
     {
       "UUID" : 624,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_33",
+      "Name" : "AStaticMeshActor_12",
       "RootComponentUUID" : 625
     },
     {
       "UUID" : 627,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_34",
+      "Name" : "AStaticMeshActor_13",
       "RootComponentUUID" : 628
     },
     {
       "UUID" : 630,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_35",
+      "Name" : "AStaticMeshActor_14",
       "RootComponentUUID" : 631
     },
     {
       "UUID" : 633,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_36",
+      "Name" : "AStaticMeshActor_15",
       "RootComponentUUID" : 634
     },
     {
       "UUID" : 636,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_37",
+      "Name" : "AStaticMeshActor_16",
       "RootComponentUUID" : 637
     },
     {
       "UUID" : 639,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_38",
+      "Name" : "AStaticMeshActor_17",
       "RootComponentUUID" : 640
     },
     {
       "UUID" : 642,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_39",
+      "Name" : "AStaticMeshActor_18",
       "RootComponentUUID" : 643
     },
     {
       "UUID" : 645,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_40",
+      "Name" : "AStaticMeshActor_19",
       "RootComponentUUID" : 646
     },
     {
       "UUID" : 648,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_41",
+      "Name" : "AStaticMeshActor_20",
       "RootComponentUUID" : 649
     },
     {
       "UUID" : 651,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_42",
+      "Name" : "AStaticMeshActor_21",
       "RootComponentUUID" : 652
     },
     {
       "UUID" : 654,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_43",
+      "Name" : "AStaticMeshActor_22",
       "RootComponentUUID" : 655
     },
     {
       "UUID" : 657,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_44",
+      "Name" : "AStaticMeshActor_23",
       "RootComponentUUID" : 658
     },
     {
       "UUID" : 660,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_45",
+      "Name" : "AStaticMeshActor_24",
       "RootComponentUUID" : 661
     },
     {
       "UUID" : 663,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_46",
+      "Name" : "AStaticMeshActor_25",
       "RootComponentUUID" : 664
     },
     {
       "UUID" : 666,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_47",
+      "Name" : "AStaticMeshActor_26",
       "RootComponentUUID" : 667
     },
     {
       "UUID" : 669,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_48",
+      "Name" : "AStaticMeshActor_27",
       "RootComponentUUID" : 670
     },
     {
       "UUID" : 672,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_49",
+      "Name" : "AStaticMeshActor_28",
       "RootComponentUUID" : 673
     },
     {
       "UUID" : 675,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_50",
+      "Name" : "AStaticMeshActor_29",
       "RootComponentUUID" : 676
     },
     {
       "UUID" : 678,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_51",
+      "Name" : "AStaticMeshActor_30",
       "RootComponentUUID" : 679
     },
     {
       "UUID" : 681,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_52",
+      "Name" : "AStaticMeshActor_31",
       "RootComponentUUID" : 682
     },
     {
       "UUID" : 684,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_53",
+      "Name" : "AStaticMeshActor_32",
       "RootComponentUUID" : 685
     },
     {
       "UUID" : 687,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_54",
+      "Name" : "AStaticMeshActor_33",
       "RootComponentUUID" : 688
     },
     {
       "UUID" : 690,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_55",
+      "Name" : "AStaticMeshActor_34",
       "RootComponentUUID" : 691
     },
     {
       "UUID" : 693,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_56",
+      "Name" : "AStaticMeshActor_35",
       "RootComponentUUID" : 694
     },
     {
       "UUID" : 696,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_57",
+      "Name" : "AStaticMeshActor_36",
       "RootComponentUUID" : 697
     },
     {
       "UUID" : 699,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_58",
+      "Name" : "AStaticMeshActor_37",
       "RootComponentUUID" : 700
     },
     {
       "UUID" : 702,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_59",
+      "Name" : "AStaticMeshActor_38",
       "RootComponentUUID" : 703
     },
     {
       "UUID" : 705,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_60",
+      "Name" : "AStaticMeshActor_39",
       "RootComponentUUID" : 706
     },
     {
       "UUID" : 708,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_61",
+      "Name" : "AStaticMeshActor_40",
       "RootComponentUUID" : 709
     },
     {
       "UUID" : 711,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_62",
+      "Name" : "AStaticMeshActor_41",
       "RootComponentUUID" : 712
     },
     {
       "UUID" : 714,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_63",
+      "Name" : "AStaticMeshActor_42",
       "RootComponentUUID" : 715
     },
     {
       "UUID" : 717,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_64",
+      "Name" : "AStaticMeshActor_43",
       "RootComponentUUID" : 718
     },
     {
       "UUID" : 720,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_65",
+      "Name" : "AStaticMeshActor_44",
       "RootComponentUUID" : 721
     },
     {
       "UUID" : 723,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_66",
+      "Name" : "AStaticMeshActor_45",
       "RootComponentUUID" : 724
     },
     {
       "UUID" : 726,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_67",
+      "Name" : "AStaticMeshActor_46",
       "RootComponentUUID" : 727
     },
     {
       "UUID" : 729,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_68",
+      "Name" : "AStaticMeshActor_47",
       "RootComponentUUID" : 730
     },
     {
       "UUID" : 732,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_69",
+      "Name" : "AStaticMeshActor_48",
       "RootComponentUUID" : 733
     },
     {
       "UUID" : 735,
       "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_70",
+      "Name" : "AStaticMeshActor_49",
       "RootComponentUUID" : 736
-    },
-    {
-      "UUID" : 738,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_71",
-      "RootComponentUUID" : 739
-    },
-    {
-      "UUID" : 741,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_72",
-      "RootComponentUUID" : 742
-    },
-    {
-      "UUID" : 744,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_73",
-      "RootComponentUUID" : 745
-    },
-    {
-      "UUID" : 747,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_74",
-      "RootComponentUUID" : 748
-    },
-    {
-      "UUID" : 750,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_75",
-      "RootComponentUUID" : 751
-    },
-    {
-      "UUID" : 753,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_76",
-      "RootComponentUUID" : 754
-    },
-    {
-      "UUID" : 756,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_77",
-      "RootComponentUUID" : 757
-    },
-    {
-      "UUID" : 759,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_78",
-      "RootComponentUUID" : 760
-    },
-    {
-      "UUID" : 762,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_79",
-      "RootComponentUUID" : 763
-    },
-    {
-      "UUID" : 765,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_80",
-      "RootComponentUUID" : 766
-    },
-    {
-      "UUID" : 768,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_81",
-      "RootComponentUUID" : 769
-    },
-    {
-      "UUID" : 771,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_82",
-      "RootComponentUUID" : 772
-    },
-    {
-      "UUID" : 774,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_83",
-      "RootComponentUUID" : 775
-    },
-    {
-      "UUID" : 777,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_84",
-      "RootComponentUUID" : 778
-    },
-    {
-      "UUID" : 780,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_85",
-      "RootComponentUUID" : 781
-    },
-    {
-      "UUID" : 783,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_86",
-      "RootComponentUUID" : 784
-    },
-    {
-      "UUID" : 786,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_87",
-      "RootComponentUUID" : 787
-    },
-    {
-      "UUID" : 789,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_88",
-      "RootComponentUUID" : 790
-    },
-    {
-      "UUID" : 792,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_89",
-      "RootComponentUUID" : 793
-    },
-    {
-      "UUID" : 795,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_90",
-      "RootComponentUUID" : 796
-    },
-    {
-      "UUID" : 798,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_91",
-      "RootComponentUUID" : 799
-    },
-    {
-      "UUID" : 801,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_92",
-      "RootComponentUUID" : 802
-    },
-    {
-      "UUID" : 804,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_93",
-      "RootComponentUUID" : 805
-    },
-    {
-      "UUID" : 807,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_94",
-      "RootComponentUUID" : 808
-    },
-    {
-      "UUID" : 810,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_95",
-      "RootComponentUUID" : 811
-    },
-    {
-      "UUID" : 813,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_96",
-      "RootComponentUUID" : 814
-    },
-    {
-      "UUID" : 816,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_97",
-      "RootComponentUUID" : 817
-    },
-    {
-      "UUID" : 819,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_98",
-      "RootComponentUUID" : 820
-    },
-    {
-      "UUID" : 822,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_99",
-      "RootComponentUUID" : 823
-    },
-    {
-      "UUID" : 825,
-      "Type" : "AStaticMeshActor",
-      "Name" : "AStaticMeshActor_100",
-      "RootComponentUUID" : 826
-    },
-    {
-      "UUID" : 828,
-      "Type" : "AHeightFog",
-      "Name" : "AHeightFog_1",
-      "RootComponentUUID" : 829
     }
   ],
   "Components" : [
-    {
-      "UUID" : 529,
-      "OwnerActorUUID" : 528,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.097476, -0.003510, 0.313578],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 532,
-      "OwnerActorUUID" : 531,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.096988, 4.507736, -1.409802],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 535,
-      "OwnerActorUUID" : 534,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.609272, 1.883144, -3.326670],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 538,
-      "OwnerActorUUID" : 537,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-0.348674, -4.889523, 1.233711],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 541,
-      "OwnerActorUUID" : 540,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.327585, -3.235420, -1.028321],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 544,
-      "OwnerActorUUID" : 543,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.771111, -4.815058, 0.287942],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 547,
-      "OwnerActorUUID" : 546,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.603595, -4.193396, -0.320597],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 550,
-      "OwnerActorUUID" : 549,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.816217, -2.466048, -3.184454],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 553,
-      "OwnerActorUUID" : 552,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.792383, 4.695730, -0.882748],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 556,
-      "OwnerActorUUID" : 555,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.561174, -3.996246, -4.350261],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 559,
-      "OwnerActorUUID" : 558,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.098605, 2.239906, -3.044679],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 562,
-      "OwnerActorUUID" : 561,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.584063, 0.469527, 3.208868],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 565,
-      "OwnerActorUUID" : 564,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.327097, 0.625172, -3.433790],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 568,
-      "OwnerActorUUID" : 567,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.144078, -1.874599, -4.535508],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 571,
-      "OwnerActorUUID" : 570,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.321696, 0.179601, 1.155583],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 574,
-      "OwnerActorUUID" : 573,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.063326, -3.615375, -2.364727],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 577,
-      "OwnerActorUUID" : 576,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.185705, -2.217017, 1.780602],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 580,
-      "OwnerActorUUID" : 579,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.183233, 3.429518, -4.994202],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 583,
-      "OwnerActorUUID" : 582,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.302378, -1.470840, -4.084139],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 586,
-      "OwnerActorUUID" : 585,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-0.696585, -0.749687, 3.821985],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 589,
-      "OwnerActorUUID" : 588,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.352519, -3.778039, -2.668081],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
     {
       "UUID" : 592,
       "OwnerActorUUID" : 591,
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.461470, -0.804925, 3.740195],
+      "RelativeLocation" : [-1.476638, -4.622181, -1.883450],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 595,
@@ -865,10 +322,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.466353, 0.950804, 0.049898],
+      "RelativeLocation" : [-0.382549, 2.092196, 0.353557],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 598,
@@ -876,10 +333,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.533402, -0.220496, 0.035249],
+      "RelativeLocation" : [3.663290, -1.000549, 3.556475],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 601,
@@ -887,10 +344,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.041047, 2.640004, -2.816096],
+      "RelativeLocation" : [4.100924, -2.915586, -2.499313],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 604,
@@ -898,10 +355,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.958434, -0.869930, -4.012116],
+      "RelativeLocation" : [3.496964, 2.733085, 1.470840],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 607,
@@ -909,10 +366,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.279977, -0.668813, -4.100009],
+      "RelativeLocation" : [-3.442945, 0.480209, -3.077639],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 610,
@@ -920,10 +377,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.516923, -1.894742, 4.794610],
+      "RelativeLocation" : [0.690176, 1.915799, 0.220191],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 613,
@@ -931,10 +388,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.046540, -0.714286, -1.273995],
+      "RelativeLocation" : [-4.334086, 4.338359, 0.026398],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 616,
@@ -942,10 +399,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.499924, -0.814997, -2.766961],
+      "RelativeLocation" : [2.649159, -3.679464, 3.884853],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 619,
@@ -953,10 +410,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.593310, -1.951811, -4.711600],
+      "RelativeLocation" : [0.860775, -0.288858, 2.470626],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 622,
@@ -964,10 +421,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.117924, 4.842219, -2.553941],
+      "RelativeLocation" : [-4.680777, 1.219977, 1.694235],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 625,
@@ -975,10 +432,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.065249, -3.367260, 3.500931],
+      "RelativeLocation" : [-3.810694, -1.382641, -2.409589],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 628,
@@ -986,10 +443,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.355175, 1.590472, -4.240089],
+      "RelativeLocation" : [4.903562, -3.740196, -0.669118],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 631,
@@ -997,10 +454,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.812922, -3.774682, 1.505020],
+      "RelativeLocation" : [2.616505, -1.498916, -1.089053],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 634,
@@ -1008,10 +465,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.575396, -3.543046, -4.211097],
+      "RelativeLocation" : [2.624744, 4.246498, 3.315989],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 637,
@@ -1019,10 +476,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.093814, -0.487533, -2.441938],
+      "RelativeLocation" : [2.640004, -4.935911, 1.617023],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 640,
@@ -1030,10 +487,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-0.383465, -4.447310, 4.314249],
+      "RelativeLocation" : [0.436872, 3.675802, 4.469893],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 643,
@@ -1041,10 +498,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.603870, 0.161901, 0.763421],
+      "RelativeLocation" : [-3.259224, 2.406537, 3.652608],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 646,
@@ -1052,10 +509,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.457198, -4.099093, -2.060762],
+      "RelativeLocation" : [3.151189, -3.946196, 4.824518],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 649,
@@ -1063,10 +520,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.119541, 1.387524, -2.622608],
+      "RelativeLocation" : [-3.949248, 4.831232, 0.890683],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 652,
@@ -1074,10 +531,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.634083, -1.949065, 1.466872],
+      "RelativeLocation" : [1.171453, 2.972045, 0.576343],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 655,
@@ -1085,10 +542,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.456282, 3.126774, 1.572466],
+      "RelativeLocation" : [0.948058, -1.328623, -1.196173],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 658,
@@ -1096,10 +553,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.256569, 4.427473, 0.619678],
+      "RelativeLocation" : [4.041413, -0.201575, -2.001556],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 661,
@@ -1107,10 +564,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.808161, -3.537248, 2.293923],
+      "RelativeLocation" : [2.349772, 1.342967, -3.483230],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 664,
@@ -1118,10 +575,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.955260, 3.164311, -2.622913],
+      "RelativeLocation" : [4.645986, 3.970000, -4.123203],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 667,
@@ -1129,10 +586,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.964232, 4.703361, -4.548936],
+      "RelativeLocation" : [2.485580, 4.767448, -0.689871],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 670,
@@ -1140,10 +597,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.078646, -4.458296, 1.062197],
+      "RelativeLocation" : [3.386486, -2.567675, 3.302561],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 673,
@@ -1151,10 +608,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.931852, 4.311808, -0.636158],
+      "RelativeLocation" : [-3.826869, -2.402265, 3.775903],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 676,
@@ -1162,10 +619,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.154363, 3.376110, 3.633686],
+      "RelativeLocation" : [-2.798090, -3.904080, 1.736961],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 679,
@@ -1173,10 +630,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.014069, -3.128910, -2.569201],
+      "RelativeLocation" : [3.328501, 1.559954, -2.802057],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 682,
@@ -1184,10 +641,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-0.018464, -2.982727, 4.712821],
+      "RelativeLocation" : [-3.765831, -4.571826, 1.472060],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 685,
@@ -1195,10 +652,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.620380, -3.289132, 1.611224],
+      "RelativeLocation" : [-0.137791, -2.064425, 0.558947],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 688,
@@ -1206,10 +663,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.442152, 1.285592, 1.865749],
+      "RelativeLocation" : [-2.573778, 1.808069, 1.128727],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 691,
@@ -1217,10 +674,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.433516, -0.983764, -0.220496],
+      "RelativeLocation" : [-1.481216, -2.956175, 4.123508],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 694,
@@ -1228,10 +685,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.844966, 1.913053, -4.077120],
+      "RelativeLocation" : [-4.302347, -4.794611, 0.977050],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 697,
@@ -1239,10 +696,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.771844, 1.369823, -4.409772],
+      "RelativeLocation" : [4.816889, 2.722404, -2.925657],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 700,
@@ -1250,10 +707,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.454939, -4.830317, 0.814081],
+      "RelativeLocation" : [-4.217200, 1.447950, 2.826167],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 703,
@@ -1261,10 +718,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.623310, -0.948668, -2.613147],
+      "RelativeLocation" : [-2.664113, 1.580096, -0.591907],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 706,
@@ -1272,10 +729,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.959716, 4.536729, 3.818628],
+      "RelativeLocation" : [-2.404401, 2.954649, -2.695547],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 709,
@@ -1283,10 +740,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.241737, 2.241737, -0.797601],
+      "RelativeLocation" : [-2.596972, -0.624256, -3.489639],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 712,
@@ -1294,10 +751,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.131748, -3.173772, -3.456679],
+      "RelativeLocation" : [1.374096, -3.292489, -0.242470],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 715,
@@ -1305,10 +762,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.758019, 2.839289, -1.754662],
+      "RelativeLocation" : [1.985687, 0.576343, -4.248940],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 718,
@@ -1316,10 +773,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.604481, 2.281106, 0.529038],
+      "RelativeLocation" : [2.068697, -1.458937, 4.992981],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 721,
@@ -1327,10 +784,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.336040, 1.104923, -4.298990],
+      "RelativeLocation" : [-3.399915, -1.816919, 1.342357],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 724,
@@ -1338,10 +795,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.788415, -4.855648, -4.511399],
+      "RelativeLocation" : [1.768701, 4.894406, 4.956664],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 727,
@@ -1349,10 +806,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.422712, -0.896787, -2.531358],
+      "RelativeLocation" : [3.499405, -4.456160, -0.196692],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 730,
@@ -1360,10 +817,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-0.413983, -0.716422, 3.971831],
+      "RelativeLocation" : [0.604419, -1.818750, -1.642659],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 733,
@@ -1371,10 +828,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.220984, 0.100253, 4.831537],
+      "RelativeLocation" : [-4.431135, -3.664815, 4.972533],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     },
     {
       "UUID" : 736,
@@ -1382,359 +839,10 @@
       "IsHierarchical" : "true",
       "Type" : "UStaticMeshComponent",
       "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.779687, 3.831141, -4.980468],
+      "RelativeLocation" : [-3.165532, 1.185797, 3.548235],
       "RelativeRotation" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 739,
-      "OwnerActorUUID" : 738,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.664815, 2.014985, -1.718955],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 742,
-      "OwnerActorUUID" : 741,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.979888, 2.833796, 2.370220],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 745,
-      "OwnerActorUUID" : 744,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.379284, -0.086825, -2.968993],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 748,
-      "OwnerActorUUID" : 747,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.308146, -3.262887, 1.214179],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 751,
-      "OwnerActorUUID" : 750,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.852809, -1.357921, -1.582537],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 754,
-      "OwnerActorUUID" : 753,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.880062, -1.524857, 2.701956],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 757,
-      "OwnerActorUUID" : 756,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.895962, 3.289437, 1.637166],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 760,
-      "OwnerActorUUID" : 759,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.359722, -0.779595, -1.477554],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 763,
-      "OwnerActorUUID" : 762,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.946288, 3.452102, -4.628590],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 766,
-      "OwnerActorUUID" : 765,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [0.003204, 4.736014, 0.255898],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 769,
-      "OwnerActorUUID" : 768,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.738883, -1.432997, -4.963988],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 772,
-      "OwnerActorUUID" : 771,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-2.584765, -1.022828, 1.020081],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 775,
-      "OwnerActorUUID" : 774,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.226081, -2.952208, -1.070742],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 778,
-      "OwnerActorUUID" : 777,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.244057, 3.425550, 1.495255],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 781,
-      "OwnerActorUUID" : 780,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.469405, 2.919553, -0.311747],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 784,
-      "OwnerActorUUID" : 783,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.688406, 4.786370, -0.078585],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 787,
-      "OwnerActorUUID" : 786,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.062502, 1.335642, 4.423200],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 790,
-      "OwnerActorUUID" : 789,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.454543, -3.565630, -2.597888],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 793,
-      "OwnerActorUUID" : 792,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-0.619373, -0.011139, -0.026093],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 796,
-      "OwnerActorUUID" : 795,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-4.732353, -3.397778, -2.941221],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 799,
-      "OwnerActorUUID" : 798,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.016419, -1.699118, -4.851985],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 802,
-      "OwnerActorUUID" : 801,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [4.989013, 4.977416, -0.494858],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 805,
-      "OwnerActorUUID" : 804,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.624958, 1.605121, -4.211707],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 808,
-      "OwnerActorUUID" : 807,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.561357, -4.569689, -0.999329],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 811,
-      "OwnerActorUUID" : 810,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.530046, 4.588305, -2.622608],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 814,
-      "OwnerActorUUID" : 813,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.587604, 2.211829, -4.235206],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 817,
-      "OwnerActorUUID" : 816,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-1.738792, -1.726890, -0.167394],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 820,
-      "OwnerActorUUID" : 819,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [3.080691, -3.572649, 1.503799],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 823,
-      "OwnerActorUUID" : 822,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [2.754448, -0.931577, -3.592181],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 826,
-      "OwnerActorUUID" : 825,
-      "IsHierarchical" : "true",
-      "Type" : "UStaticMeshComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [1.105838, -4.821162, -1.486709],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Cube.obj"
-    },
-    {
-      "UUID" : 829,
-      "OwnerActorUUID" : 828,
-      "IsHierarchical" : "true",
-      "Type" : "UHeightFogComponent",
-      "ParentComponentUUID" : 0,
-      "RelativeLocation" : [-3.312021, -1.884670, -0.470138],
-      "RelativeRotation" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "FogDensity" : "0.100000",
-      "FogHeightFalloff" : "0.200000",
-      "StartDistance" : "0.000000",
-      "FogCutoffDistance" : "500.000000",
-      "FogMaxOpacity" : "1.000000",
-      "FogInscatteringColorR" : "0.000000",
-      "FogInscatteringColorG" : "0.000000",
-      "FogInscatteringColorB" : "1.000000",
-      "FogInscatteringColorA" : "1.000000"
+      "StaticMesh" : "Data/bitten_apple_mid.obj"
     }
   ]
 }

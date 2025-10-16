@@ -8,6 +8,7 @@
 #include <cctype>
 #include <cstring>
 #include <algorithm>
+#include "../StatsOverlayD2D.h"
 
 using std::max;
 using std::min;
@@ -43,6 +44,11 @@ void UConsoleWidget::Initialize()
     Commands.Add("STAT FPS");
     Commands.Add("STAT MEMORY");
     Commands.Add("STAT NONE");
+    bShowFPS = UStatsOverlayD2D::Get().IsFPSVisible();
+    bShowMemory = UStatsOverlayD2D::Get().IsMemoryVisible();
+    bShowRenderStats = UStatsOverlayD2D::Get().IsRenderStatsVisible();
+    bShowDecalStats = UStatsOverlayD2D::Get().IsDecalStatsVisible();
+    bShowPickingTime = UStatsOverlayD2D::Get().IsPickingtimeVisible();
     
     // Add welcome messages
     AddLog("=== Console Widget Initialized ===");
@@ -105,6 +111,41 @@ void UConsoleWidget::RenderToolbar()
     if (ImGui::BeginPopup("Options"))
     {
         ImGui::Checkbox("Auto-scroll", &AutoScroll);
+        ImGui::EndPopup();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button("Stats"))
+    {
+        ImGui::OpenPopup("Stats");
+    }
+    if (ImGui::BeginPopup("Stats"))
+    {        
+        if(ImGui::Checkbox("FPS", &bShowFPS))
+        {
+            UStatsOverlayD2D::Get().ToggleFPS();
+        }
+
+        if (ImGui::Checkbox("Picking", &bShowPickingTime))
+        {
+            UStatsOverlayD2D::Get().TogglePickingStats();
+        }
+
+        if(ImGui::Checkbox("Memory", &bShowMemory))
+        {
+            UStatsOverlayD2D::Get().ToggleMemory();
+        }
+
+        if(ImGui::Checkbox("RenderStats", &bShowRenderStats))
+        {
+            UStatsOverlayD2D::Get().ToggleRenderStats();
+        }
+
+        if(ImGui::Checkbox("DecalStats", &bShowDecalStats))
+        {
+            UStatsOverlayD2D::Get().ToggleDecalStats();
+        }
+
         ImGui::EndPopup();
     }
     
@@ -285,7 +326,9 @@ void UConsoleWidget::ExecCommand(const char* command_line)
     {
         UStatsOverlayD2D::Get().SetShowFPS(false);
         UStatsOverlayD2D::Get().SetShowMemory(false);
+        UStatsOverlayD2D::Get().SetShowRenderStats(false);
         UStatsOverlayD2D::Get().SetShowDecalStats(false);
+        UStatsOverlayD2D::Get().SetShowPickingTime(false);
         AddLog("STAT: OFF");
     }
     else

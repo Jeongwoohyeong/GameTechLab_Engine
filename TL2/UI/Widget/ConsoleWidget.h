@@ -39,6 +39,13 @@ private:
     bool ScrollToBottom;
     ImGuiTextFilter Filter;
 
+    // Stats
+    bool bShowFPS = false;
+    bool bShowMemory = false;
+    bool bShowRenderStats = false;
+    bool bShowDecalStats = false;
+    bool bShowPickingTime = false;
+
     // Helper methods
     static int TextEditCallbackStub(ImGuiInputTextCallbackData* data);
     int TextEditCallback(ImGuiInputTextCallbackData* data);
