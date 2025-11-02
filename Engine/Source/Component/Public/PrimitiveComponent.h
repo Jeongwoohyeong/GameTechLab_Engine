@@ -2,6 +2,7 @@
 #include "Component/Public/SceneComponent.h"
 #include "Physics/Public/BoundingVolume.h"
 #include "Core/Public/Object.h" // GetUObjectArray 사용 예정
+#include "Global/DelegateMacros.h"
 
 UCLASS()
 class UPrimitiveComponent : public USceneComponent
@@ -141,8 +142,10 @@ public:
 		* @param bFromSweep Sweep으로부터 발생했는지 여부 (현재 미사용)
 		* @param SweepResult Sweep 결과 (현재 미사용)
 		*/
-	TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32, bool, const FHitResult&> OnComponentBeginOverlap;
-
+	//TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32, bool, const FHitResult&> OnComponentBeginOverlap;
+	DECLARE_DYNAMIC_DELEGATE(FOnComponentBeginOverlap, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32, bool, const FHitResult&)
+	FOnComponentBeginOverlap OnComponentBeginOverlap;
+	
 	/**
 	 * @brief 오버랩 종료 이벤트
 	 * @param OverlappedComponent 오버랩된 컴포넌트 (이 컴포넌트)
@@ -150,7 +153,9 @@ public:
 	 * @param OtherComp 상대 컴포넌트
 	 * @param OtherBodyIndex 상대 바디 인덱스 (현재 미사용, 확장용)
 	 */
-	TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32> OnComponentEndOverlap;
+	//TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32> OnComponentEndOverlap;
+	DECLARE_DYNAMIC_DELEGATE(FOnComponentEndOverlap, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32)
+	FOnComponentEndOverlap OnComponentEndOverlap;
 
 	/**
 	 * @brief Hit(충돌) 이벤트
@@ -160,7 +165,10 @@ public:
 	 * @param NormalImpulse 충격량 벡터 (현재 미사용, 물리 엔진 연동 시 사용)
 	 * @param Hit Hit 결과 정보
 	 */
-	TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&> OnComponentHit;
+	//TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&> OnComponentHit;
+	DECLARE_DYNAMIC_DELEGATE(FOnComponentHit, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&)
+	FOnComponentHit OnComponentHit;
+	
 	TDelegate<int> TestDelegate;
 protected:
 	TArray<FOverlapInfo> OverlapInfos;

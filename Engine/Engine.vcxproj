@@ -856,6 +856,12 @@
     <Content Include="Asset\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\123\123_AStaticMeshActor_999.lua" />
+    <Content Include="Scripts\123\example_coroutine.lua" />
+    <Content Include="Scripts\template.lua" />
+    <Content Include="Scripts\template_factory.lua" />
+    <Content Include="Scripts\template_safe.lua" />
+    <Content Include="Scripts\Untitled\Untitled_AStaticMeshActor_0.lua" />
     <Content Include="Source\Component\Public\LightComponentBase.h" />
     <Content Include="Source\Manager\Coroutine\Public\LuaCoroutineManager.h" />
     <Content Include="Source\Pawn\Public\Pawn.h" />
