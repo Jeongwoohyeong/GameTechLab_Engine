@@ -14,12 +14,15 @@
 #include "Component/Collision/Public/CapsuleComponent.h"
 #include "Physics/Public/BoundingSphere.h"
 #include "Physics/Public/BoundingCapsule.h"
+#include "Physics/Public/CollisionUtil.h"
 
 IMPLEMENT_ABSTRACT_CLASS(UPrimitiveComponent, USceneComponent)
 
 UPrimitiveComponent::UPrimitiveComponent()
 {
 	bCanEverTick = true;
+	TestDelegate.AddDynamic(this, &UPrimitiveComponent::TestFunc);
+
 }
 
 void UPrimitiveComponent::TickComponent(float DeltaTime)
@@ -167,6 +170,11 @@ UObject* UPrimitiveComponent::Duplicate()
 	PrimitiveComponent->bVisible = bVisible;
 	PrimitiveComponent->bReceivesDecals = bReceivesDecals;
 
+	// Collision Settings
+	PrimitiveComponent->bGenerateOverlapEvents = bGenerateOverlapEvents;
+	PrimitiveComponent->bGenerateHitEvents = bGenerateHitEvents;
+	PrimitiveComponent->bBlockComponent = bBlockComponent;
+
 	PrimitiveComponent->Vertices = Vertices;
 	PrimitiveComponent->Indices = Indices;
 	PrimitiveComponent->VertexBuffer = VertexBuffer;
@@ -193,13 +201,33 @@ void UPrimitiveComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 
 	if (bInIsLoading)
 	{
+		// Visibility
 		FString VisibleString;
 		FJsonSerializer::ReadString(InOutHandle, "bVisible", VisibleString, "true");
 		SetVisibility(VisibleString == "true");
+
+		// Collision Settings
+		FString GenerateOverlapString;
+		FJsonSerializer::ReadString(InOutHandle, "bGenerateOverlapEvents", GenerateOverlapString, "true");
+		bGenerateOverlapEvents = (GenerateOverlapString == "true");
+
+		FString GenerateHitString;
+		FJsonSerializer::ReadString(InOutHandle, "bGenerateHitEvents", GenerateHitString, "false");
+		bGenerateHitEvents = (GenerateHitString == "true");
+
+		FString BlockComponentString;
+		FJsonSerializer::ReadString(InOutHandle, "bBlockComponent", BlockComponentString, "false");
+		bBlockComponent = (BlockComponentString == "true");
 	}
 	else
 	{
+		// Visibility
 		InOutHandle["bVisible"] = bVisible ? "true" : "false";
+
+		// Collision Settings
+		InOutHandle["bGenerateOverlapEvents"] = bGenerateOverlapEvents ? "true" : "false";
+		InOutHandle["bGenerateHitEvents"] = bGenerateHitEvents ? "true" : "false";
+		InOutHandle["bBlockComponent"] = bBlockComponent ? "true" : "false";
 	}
 
 }
@@ -208,11 +236,6 @@ void UPrimitiveComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
  *	Collision Section
    ========================= */
 
-/*	
-	현재는 AABB 기반의 단순 충돌입니다.
-	OBB는 GetWorldAABB에서 월드 AABB로 변환되므로 그대로 동작합니다. 
-	스피어/캡슐은 AABB 근사로 처리합니다.
-*/
 bool UPrimitiveComponent::IsOverlappingComponent(const UPrimitiveComponent* Other) const
 {
 	if (Other == nullptr || Other == this)
@@ -269,50 +292,169 @@ bool UPrimitiveComponent::IsOverlappingActor(const AActor* Other) const
 
 void UPrimitiveComponent::UpdateOverlaps()
 {
+	// 이전 프레임 정보 백업
+	PreviousOverlapInfos = OverlapInfos;
+
+	// 현재 프레임 충돌 정보 초기화
 	OverlapInfos.clear();
 
-	if (!bGenerateOverlapEvents)
+	if (!bGenerateOverlapEvents && !bGenerateHitEvents)
 	{
 		return;
 	}
 
 	AActor* ThisOwner = GetOwner();
-	const TArray<UObject*>& Objects = GetUObjectArray();
+	if (!ThisOwner)
+	{
+		UE_LOG("UpdateOverlaps: Owner is nullptr!");
+		return;  // Owner가 없으면 충돌 검사 불가
+	}
+	// ========== 디버깅 로그 추가 ==========
+	//UE_LOG("UpdateOverlaps: Owner = %s", ThisOwner->GetName().ToString().c_str());
+	// ========== 1차 충돌 검사: 옥트리 (Broad Phase) ==========
 
+	// Actor의 Outer는 Level이다
+	ULevel* Level = Cast<ULevel>(ThisOwner->GetOuter());
+	if (!Level || !Level->GetStaticOctree())
+	{
+		UE_LOG("UpdateOverlaps: Level or Octree is nullptr!");
+		return;  // 옥트리가 없으면 검사 불가
+	}
+	//UE_LOG("UpdateOverlaps: Level = %s, Octree exists", Level->GetName().ToString().c_str());
+	FOctree* Octree = Level->GetStaticOctree();
+
+	// 이 컴포넌트의 AABB
 	FVector ThisMin, ThisMax;
 	GetWorldAABB(ThisMin, ThisMax);
 	FAABB ThisAABB(ThisMin, ThisMax);
 
-	for (UObject* Obj : Objects)
+	// 옥트리에서 AABB 겹치는 후보군 추출
+	TArray<UPrimitiveComponent*> Candidates;
+	Octree->QueryOverlap(ThisAABB, Candidates);
+	//UE_LOG("UpdateOverlaps: Octree candidates = %d", Candidates.size());
+	// 동적 오브젝트도 포함 (옥트리에 없는 움직이는 오브젝트들)
+	const TArray<UPrimitiveComponent*>& DynamicPrimitives = Level->GetDynamicPrimitives();
+	//UE_LOG("UpdateOverlaps: Dynamic primitives = %d", DynamicPrimitives.size());
+	for (UPrimitiveComponent* DynamicPrim : DynamicPrimitives)
 	{
-		UPrimitiveComponent* OtherPrim = Cast<UPrimitiveComponent>(Obj);
-		if (OtherPrim == nullptr || OtherPrim == this)
+		if (DynamicPrim && DynamicPrim != this)
+		{
+			Candidates.push_back(DynamicPrim);
+		}
+	}
+
+	//UE_LOG("UpdateOverlaps: Total candidates = %d", Candidates.size());
+	// ========== 2차 충돌 검사: Narrow Phase ==========
+
+	// ShapeComponent인지 확인 (Shape가 아니면 정밀 검사 불가)
+	UShapeComponent* ThisShape = Cast<UShapeComponent>(this);
+	if (!ThisShape)
+	{
+		return;  // Shape가 아니면 Narrow Phase 불가
+	}
+
+	for (UPrimitiveComponent* Candidate : Candidates)
+	{
+		// 자기 자신 제외
+		if (Candidate == this)
 		{
 			continue;
 		}
 
-		// Owner가 없는 프리미티브는 스킵
-		if (OtherPrim->GetOwner() == nullptr)
+		// Owner가 없는 컴포넌트 제외
+		if (!Candidate->GetOwner())
 		{
 			continue;
 		}
 
-		// 같은 액터 내부끼리는 스킵(필요 시 제거 가능)
-		if (ThisOwner != nullptr && OtherPrim->GetOwner() == ThisOwner)
+		// 같은 Actor 내부 컴포넌트끼리 제외 (필요 시 제거 가능)
+		if (ThisOwner && Candidate->GetOwner() == ThisOwner)
 		{
 			continue;
 		}
 
-		FVector OtherMin, OtherMax;
-		OtherPrim->GetWorldAABB(OtherMin, OtherMax);
+		// 상대도 ShapeComponent여야 정밀 검사 가능
+		UShapeComponent* OtherShape = Cast<UShapeComponent>(Candidate);
+		if (!OtherShape)
+		{
+			continue;
+		}
 
-		FAABB OtherAABB(OtherMin, OtherMax);
-		if (ThisAABB.IsIntersected(OtherAABB))
+		// Narrow Phase 충돌 검사
+		if (CollisionUtil::TestOverlap(ThisShape, OtherShape))
 		{
 			FOverlapInfo Info;
-			Info.OtherComponent = OtherPrim;
-			Info.OtherActor = OtherPrim->GetOwner();
+			Info.OtherComponent = Candidate;
+			Info.OtherActor = Candidate->GetOwner();
 			OverlapInfos.push_back(Info);
+
+			// ========== Hit 이벤트 처리 (블로킹 충돌) ==========
+			if (bGenerateHitEvents && bBlockComponent && Candidate->bBlockComponent)
+			{
+				// Hit 이벤트 발생 (양쪽이 모두 Block일 때)
+				FHitResult HitResult;
+				HitResult.Component = Candidate;
+				HitResult.Actor = Candidate->GetOwner();
+				HitResult.ImpactPoint = (GetWorldLocation() + Candidate->GetWorldLocation()) * 0.5f;
+				HitResult.ImpactNormal = (GetWorldLocation() - Candidate->GetWorldLocation()).GetNormalized();
+				HitResult.Distance = FVector::Dist(GetWorldLocation(), Candidate->GetWorldLocation());
+
+				FVector NormalImpulse = FVector::ZeroVector();  // 물리 엔진 연동 시 계산
+				//OnComponentHit.BroadCast(this, Candidate->GetOwner(), Candidate, NormalImpulse, HitResult);
+				// TODO(SDM): 디버그용 로그
+				TestDelegate.BroadCast(testvalue);
+				testvalue++;
+			}
+		}
+	}
+	// ========== 델리게이트 호출: BeginOverlap / EndOverlap ==========
+
+	if (bGenerateOverlapEvents)
+	{
+		// 빠른 검색을 위해 Set으로 변환
+		TSet<UPrimitiveComponent*> CurrentSet;
+		for (const FOverlapInfo& Info : OverlapInfos)
+		{
+			CurrentSet.insert(Info.OtherComponent);
+		}
+
+		TSet<UPrimitiveComponent*> PreviousSet;
+		for (const FOverlapInfo& Info : PreviousOverlapInfos)
+		{
+			PreviousSet.insert(Info.OtherComponent);
+		}
+
+		// BeginOverlap: 현재 Set에 있지만 이전 Set에 없는 것
+		for (const FOverlapInfo& CurrentInfo : OverlapInfos)
+		{
+			if (PreviousSet.find(CurrentInfo.OtherComponent) == PreviousSet.end())
+			{
+				// 새로 시작된 충돌
+				FHitResult SweepResult;
+				OnComponentBeginOverlap.BroadCast(
+					this,
+					CurrentInfo.OtherActor,
+					CurrentInfo.OtherComponent,
+					0,      // OtherBodyIndex (미사용)
+					false,  // bFromSweep (미사용)
+					SweepResult
+				);
+			}
+		}
+
+		// EndOverlap: 이전 Set에 있지만 현재 Set에 없는 것
+		for (const FOverlapInfo& PrevInfo : PreviousOverlapInfos)
+		{
+			if (CurrentSet.find(PrevInfo.OtherComponent) == CurrentSet.end())
+			{
+				// 종료된 충돌
+				OnComponentEndOverlap.BroadCast(
+					this,
+					PrevInfo.OtherActor,
+					PrevInfo.OtherComponent,
+					0  // OtherBodyIndex (미사용)
+				);
+			}
 		}
 	}
 }

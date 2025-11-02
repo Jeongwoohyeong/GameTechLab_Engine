@@ -200,20 +200,15 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 	}
 
 	ImGui::Spacing();
-	bool bUseScript = InSelectedActor->IsUsingScript();
-	if (ImGui::Checkbox("Use Lua Script", &bUseScript))
-	{
-		InSelectedActor->SetUseScript(bUseScript);
-		if (bUseScript)
-		{
-			InSelectedActor->BindSelfLuaProperties();
-		}
-	}
 
 	FString ScriptPath = InSelectedActor->GetLuaScriptPathName();
 	bool bHasScript = !ScriptPath.empty();
 
-	ImGui::SameLine();
+	// 버튼 스타일 - 검은색 계열
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+
 	if (ImGui::Button("Create Script"))
 	{
 		//  현재 엔진 루트에서 template.lua를 찾아, 선택된 액터만의 스크립트 파일을 만들어 줌
@@ -222,16 +217,24 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 		{
 			ScriptPath = InSelectedActor->GetLuaScriptPathName();
 			bHasScript = !ScriptPath.empty();
-			bUseScript = InSelectedActor->IsUsingScript();
 		}
 	}
-	
+
 	ImGui::SameLine();
 	if (ImGui::Button("Edit Script"))
 	{
 		EditLuaScript(ScriptPath);
 	}
-	
+
+	ImGui::SameLine();
+	if (ImGui::Button("Detach Script"))
+	{
+		DetachLuaScript(InSelectedActor);
+		ScriptPath = InSelectedActor->GetLuaScriptPathName();
+		bHasScript = !ScriptPath.empty();
+	}
+
+	ImGui::PopStyleColor(3);
 
 	ImGui::NewLine();
 
@@ -247,6 +250,11 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 			}
 		}
 		std::sort(SceneFolders.begin(), SceneFolders.end());
+
+		// 콤보박스 스타일 - 검은색 계열
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
 
 		const char* ScenePreview = SelectedScriptFolder.empty() ? "Select Scene" : SelectedScriptFolder.c_str();
 		if (ImGui::BeginCombo("Scene##LuaScript", ScenePreview))
@@ -295,7 +303,6 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 							{
 								ScriptPath = InSelectedActor->GetLuaScriptPathName();
 								bHasScript = !ScriptPath.empty();
-								bUseScript = InSelectedActor->IsUsingScript();
 							}
 						}
 						if (bScriptSelected)
@@ -316,6 +323,8 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 	{
 		ImGui::TextColored(ImVec4(0.8f, 0.4f, 0.4f, 1.0f), "Scripts folder not found: %s", ScriptsRoot.string().c_str());
 	}
+
+	ImGui::PopStyleColor(3);
 
 	if (bHasScript)
 	{
@@ -544,6 +553,40 @@ void UActorDetailWidget::EditLuaScript(const FString& ScriptPath)
 #else
     UE_LOG_WARNING("ActorDetailWidget: Edit Script is not supported on this platform.");
 #endif
+}
+
+void UActorDetailWidget::DetachLuaScript(AActor* InSelectedActor)
+{
+    if (!InSelectedActor)
+    {
+        UE_LOG_WARNING("ActorDetailWidget: Cannot detach script - No actor selected");
+        return;
+    }
+
+    FString CurrentScriptPath = InSelectedActor->GetLuaScriptPathName();
+    if (CurrentScriptPath.empty())
+    {
+        UE_LOG_WARNING("ActorDetailWidget: Actor has no script attached");
+        return;
+    }
+
+    // Lua 스크립트 컴포넌트에서 스크립트 해제
+    if (ULuaScriptComponent* LuaComponent = InSelectedActor->GetLuaScriptComponent())
+    {
+        LuaComponent->SetScriptName("");
+    }
+
+    // Actor의 UseScript 플래그 끄기
+    InSelectedActor->SetUseScript(false);
+
+    // UI 상태 초기화
+    SelectedScriptFolder.clear();
+    SelectedScriptFile.clear();
+    SyncScriptSelection(InSelectedActor);
+
+    UE_LOG_SUCCESS("ActorDetailWidget: Detached Lua script '%s' from actor '%s'",
+                   CurrentScriptPath.c_str(),
+                   InSelectedActor->GetName().ToString().c_str());
 }
 
 
@@ -980,49 +1023,61 @@ void UActorDetailWidget::RenderTransformEdit()
 
 	// Location
 	ImDrawList* DrawList = ImGui::GetWindowDrawList();
-	static FVector cachedLocation = FVector::ZeroVector();
+	static FVector CachedLocation = FVector::ZeroVector();
 	static bool bIsDraggingLocation = false;
 	static USceneComponent* lastDraggedLocationComponent = nullptr;
-	static bool lastShowWorldLocation = false;
+	static bool LastShowWorldLocation = false;
 
 	// 컴포넌트 전환 또는 World/Local 모드 전환 시 캐싱
-	if (lastDraggedLocationComponent != SceneComponent || lastShowWorldLocation != bShowWorldLocation)
+	if (lastDraggedLocationComponent != SceneComponent || LastShowWorldLocation != bShowWorldLocation)
 	{
-		cachedLocation = bShowWorldLocation ? SceneComponent->GetWorldLocation() : SceneComponent->GetRelativeLocation();
+		CachedLocation = bShowWorldLocation ? SceneComponent->GetWorldLocation() : SceneComponent->GetRelativeLocation();
 		lastDraggedLocationComponent = SceneComponent;
-		lastShowWorldLocation = bShowWorldLocation;
+		LastShowWorldLocation = bShowWorldLocation;
 		bIsDraggingLocation = false;
 	}
 
 	// 드래그 중이 아닐 때만 동기화
 	if (!bIsDraggingLocation)
 	{
-		cachedLocation = bShowWorldLocation ? SceneComponent->GetWorldLocation() : SceneComponent->GetRelativeLocation();
+		CachedLocation = bShowWorldLocation ? SceneComponent->GetWorldLocation() : SceneComponent->GetRelativeLocation();
 	}
 
-	float PosArray[3] = { cachedLocation.X, cachedLocation.Y, cachedLocation.Z };
+	float PosArray[3] = { CachedLocation.X, CachedLocation.Y, CachedLocation.Z };
 	bool PosChanged = false;
 
 	// Location Label (드롭다운 메뉴)
-	const char* LocationLabel = bShowWorldLocation ? "Absolute Location" : "Location";
+	bool bIsAbsoluteLocation = SceneComponent->IsUsingAbsoluteLocation();
+	const char* LocationLabel = bIsAbsoluteLocation ? "Absolute Location" : "Location";
 	ImGui::SetNextItemWidth(120.0f); // 고정 너비로 테이블 정렬
 	if (ImGui::BeginCombo("##LocationMode", LocationLabel, ImGuiComboFlags_NoArrowButton))
 	{
-		bool bSelectWorld = bShowWorldLocation;
-		bool bSelectLocal = !bShowWorldLocation;
-
-		if (ImGui::Selectable("Absolute Location", bSelectWorld))
+		if (ImGui::Selectable("Absolute Location", bIsAbsoluteLocation))
 		{
+			if (!bIsAbsoluteLocation)
+			{
+				// 현재 월드 위치를 유지하면서 Absolute로 전환
+				FVector CurrentWorldLocation = SceneComponent->GetWorldLocation();
+				SceneComponent->SetAbsoluteLocation(true);
+				SceneComponent->SetRelativeLocation(CurrentWorldLocation);
+			}
 			bShowWorldLocation = true;
-			cachedLocation = SceneComponent->GetWorldLocation();
-			lastShowWorldLocation = bShowWorldLocation;
+			CachedLocation = SceneComponent->GetWorldLocation();
+			LastShowWorldLocation = bShowWorldLocation;
 			bIsDraggingLocation = false;
 		}
-		if (ImGui::Selectable("Location", bSelectLocal))
+		if (ImGui::Selectable("Location", !bIsAbsoluteLocation))
 		{
+			if (bIsAbsoluteLocation)
+			{
+				// 현재 월드 위치를 유지하면서 Relative로 전환
+				FVector CurrentWorldLocation = SceneComponent->GetWorldLocation();
+				SceneComponent->SetAbsoluteLocation(false);
+				SceneComponent->SetWorldLocation(CurrentWorldLocation);
+			}
 			bShowWorldLocation = false;
-			cachedLocation = SceneComponent->GetRelativeLocation();
-			lastShowWorldLocation = bShowWorldLocation;
+			CachedLocation = SceneComponent->GetRelativeLocation();
+			LastShowWorldLocation = bShowWorldLocation;
 			bIsDraggingLocation = false;
 		}
 		ImGui::EndCombo();
@@ -1070,16 +1125,16 @@ void UActorDetailWidget::RenderTransformEdit()
 
 	if (PosChanged)
 	{
-		cachedLocation.X = PosArray[0];
-		cachedLocation.Y = PosArray[1];
-		cachedLocation.Z = PosArray[2];
+		CachedLocation.X = PosArray[0];
+		CachedLocation.Y = PosArray[1];
+		CachedLocation.Z = PosArray[2];
 		if (bShowWorldLocation)
 		{
-			SceneComponent->SetWorldLocation(cachedLocation);
+			SceneComponent->SetWorldLocation(CachedLocation);
 		}
 		else
 		{
-			SceneComponent->SetRelativeLocation(cachedLocation);
+			SceneComponent->SetRelativeLocation(CachedLocation);
 		}
 	}
 
@@ -1146,23 +1201,35 @@ void UActorDetailWidget::RenderTransformEdit()
 	bool RotChanged = false;
 
 	// Rotation Label (드롭다운 메뉴)
-	const char* RotationLabel = bShowWorldRotation ? "Absolute Rotation" : "Rotation";
+	bool bIsAbsoluteRotation = SceneComponent->IsUsingAbsoluteRotation();
+	const char* RotationLabel = bIsAbsoluteRotation ? "Absolute Rotation" : "Rotation";
 	ImGui::SetNextItemWidth(120.0f); // 고정 너비로 테이블 정렬
 	if (ImGui::BeginCombo("##RotationMode", RotationLabel, ImGuiComboFlags_NoArrowButton))
 	{
-		bool bSelectWorld = bShowWorldRotation;
-		bool bSelectLocal = !bShowWorldRotation;
-
-		if (ImGui::Selectable("Absolute Rotation", bSelectWorld))
+		if (ImGui::Selectable("Absolute Rotation", bIsAbsoluteRotation))
 		{
+			if (!bIsAbsoluteRotation)
+			{
+				// 현재 월드 회전을 유지하면서 Absolute로 전환
+				FQuaternion CurrentWorldRotation = SceneComponent->GetWorldRotationAsQuaternion();
+				SceneComponent->SetAbsoluteRotation(true);
+				SceneComponent->SetRelativeRotation(CurrentWorldRotation);
+			}
 			bShowWorldRotation = true;
 			cachedRotation = SceneComponent->GetWorldRotationAsQuaternion().ToEuler();
 			lastShowWorldRotation = bShowWorldRotation;
 			lastDraggedComponent = SceneComponent;
 			bIsDraggingRotation = false;
 		}
-		if (ImGui::Selectable("Rotation", bSelectLocal))
+		if (ImGui::Selectable("Rotation", !bIsAbsoluteRotation))
 		{
+			if (bIsAbsoluteRotation)
+			{
+				// 현재 월드 회전을 유지하면서 Relative로 전환
+				FQuaternion CurrentWorldRotation = SceneComponent->GetWorldRotationAsQuaternion();
+				SceneComponent->SetAbsoluteRotation(false);
+				SceneComponent->SetWorldRotation(CurrentWorldRotation);
+			}
 			bShowWorldRotation = false;
 			cachedRotation = SceneComponent->GetRelativeRotation().ToEuler();
 			lastShowWorldRotation = bShowWorldRotation;
@@ -1220,11 +1287,11 @@ void UActorDetailWidget::RenderTransformEdit()
 		cachedRotation.Z = RotArray[2];
 		if (bShowWorldRotation)
 		{
-			SceneComponent->SetWorldRotationPreservingChildren(cachedRotation);
+			SceneComponent->SetWorldRotation(cachedRotation);
 		}
 		else
 		{
-			SceneComponent->SetRelativeRotationPreservingChildren(FQuaternion::FromEuler(cachedRotation));
+			SceneComponent->SetRelativeRotation(FQuaternion::FromEuler(cachedRotation));
 		}
 	}
 

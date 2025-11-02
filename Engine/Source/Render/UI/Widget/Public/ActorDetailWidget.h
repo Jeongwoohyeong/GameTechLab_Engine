@@ -54,6 +54,7 @@ private:
 
 	bool CreateLuaScriptForActor(AActor* InSelectedActor);
 	void EditLuaScript(const FString& ScriptPath);
+	void DetachLuaScript(AActor* InSelectedActor);
 	bool ApplySelectedScript(AActor* InSelectedActor);
 	void DecomposeMatrix(const FMatrix& InMatrix, FVector& OutLocation, FVector& OutRotation, FVector& OutScale);
 

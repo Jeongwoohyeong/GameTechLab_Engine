@@ -49,6 +49,7 @@
 #include "Source/Editor/Public/EditorEngine.h"
 #include "Global/Delegate.h"
 #include "Global/WeakObjectPtr.h"
+#include "Source/Global/Octree.h"
 
 using std::clamp;
 using std::unordered_map;

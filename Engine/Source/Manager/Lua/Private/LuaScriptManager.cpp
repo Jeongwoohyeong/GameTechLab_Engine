@@ -2,9 +2,19 @@
 
 #include "Source/Manager/Lua/Public/LuaScriptManager.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Component/Public/ActorComponent.h"
+#include "Component/Public/SceneComponent.h"
+#include "Component/Public/PrimitiveComponent.h"
+#include "Component/Mesh/Public/MeshComponent.h"
+#include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Actor/Public/Actor.h"
 #include "Global/Vector.h"
+#include "Global/Quaternion.h"
 #include "Manager/Path/Public/PathManager.h"
+#include "Manager/Coroutine/Public/LuaCoroutineManager.h"
+#include "Manager/Input/Public/InputManager.h"
+#include "Level/Public/World.h"
+#include "Editor/Public/EditorEngine.h"
 
 #include <iostream>
 #include <filesystem>
@@ -63,6 +73,37 @@ namespace
 #else
         return Owner->HasBegunPlay();
 #endif
+    }
+}
+
+// Lua Binding Helper Templates
+namespace LuaBindingHelpers
+{
+    // Enum을 문자열로 받는 메서드 바인딩 헬퍼
+    template<typename ClassType, typename EnumType, typename MethodType>
+    auto BindEnumMethod(MethodType method)
+    {
+        return [method](ClassType* obj, const std::string& enumName) -> bool {
+            auto enumValue = TEnumReflector<EnumType>::FromString(enumName.c_str());
+            if (enumValue.has_value()) {
+                return (obj->*method)(enumValue.value());
+            }
+            return false;
+        };
+    }
+
+    // FName을 문자열로 반환하는 GetName 헬퍼
+    template<typename T>
+    std::string GetNameAsString(const T& obj)
+    {
+        return obj.GetName().ToString();
+    }
+
+    // UUID를 int로 반환하는 헬퍼
+    template<typename T>
+    int GetUUIDAsInt(T& obj)
+    {
+        return obj.GetUUID();
     }
 }
 
@@ -135,32 +176,79 @@ FLuaScriptManager::FLuaScriptManager()
 {
 }
 
-FLuaScriptManager::~FLuaScriptManager() = default;
+FLuaScriptManager::~FLuaScriptManager()
+{
+    // Ensure proper cleanup order to prevent Access Violations during shutdown
+
+    // Only cleanup if we haven't already shut down
+    if (bIsStartedUp)
+    {
+        // ShutDown() handles all cleanup properly
+        ShutDown();
+    }
+    else if (LuaState)
+    {
+        // If somehow LuaState exists but we're not started up, clean it anyway
+        ScriptCache.clear();
+        ActiveComponents.clear();
+        LuaState.reset();
+    }
+    
+    UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager destroyed safely.");
+}
 
 void FLuaScriptManager::StartUp()
 {
+    // Lua 가상 머신생성 
     LuaState = std::make_unique<sol::state>();
 
-    // Open standard libraries (io, string, math, etc.)
-    LuaState->open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::math, sol::lib::table);
-
-    std::cout << "LuaManager started." << std::endl;
-
+    // Lua 표준 라이브러리 로드 (io, string, math, coroutine, etc.)
+    LuaState->open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::math, sol::lib::table, sol::lib::coroutine);
+    
+    UE_LOG_SYSTEM("LuaManager started.");
+    
     // Bind all C++ types
     BindTypes();
+
+    // Start coroutine manager
+    FLuaCoroutineManager::GetInstance().StartUp();
+
     bIsStartedUp = true;
 }
 
 void FLuaScriptManager::ShutDown()
 {
+    if (!bIsStartedUp)
+    {
+        return; // Already shut down
+    }
+    
+    UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager shutting down...");
+
+    // 1. Shutdown coroutine manager first (stops all coroutines)
+    FLuaCoroutineManager::GetInstance().ShutDown();
+
+    // 2. Clear all Lua objects BEFORE destroying LuaState
+    //    This is critical - sol::object destructors need valid LuaState
+    ScriptCache.clear();
+    ActiveComponents.clear();
+
+    // 3. Now it's safe to destroy the Lua state
     LuaState.reset();
-    std::cout << "LuaManager shut down." << std::endl;
+
+    // 4. Mark as shut down
+    bIsStartedUp = false;
+    
+    UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager shut down successfully.");
 }
 
 void FLuaScriptManager::Tick(float deltaTime)
 {
-    // Hot reload check (optional)
+    // 1. Lua 파일이 수정됐는지 체크 → 수정됐으면 자동 리로드
     HotReloadLuaScript();
+
+    // 2. Lua 코루틴들 업데이트 (비동기 로직 처리)
+    FLuaCoroutineManager::GetInstance().Tick(deltaTime);
 }
 
 void FLuaScriptManager::RegisterComponent(ULuaScriptComponent* component)
@@ -187,7 +275,7 @@ sol::load_result FLuaScriptManager::LoadScript(const std::string& filePath)
     if (!script.valid())
     {
         sol::error err = script;
-        std::cerr << "Failed to load script: " << resolvedPath << "\nError: " << err.what() << std::endl;
+        UE_LOG_ERROR("Failed to load script: %s\nError: %s", resolvedPath.string().c_str(), err.what());
     }
 
     return script;
@@ -202,12 +290,13 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
 
     namespace fs = std::filesystem;
 
+    // 1. 스크립트 파일 경로 찾기
     fs::path resolvedPath = ResolveLuaScriptPath(ScriptName);
     std::error_code ec;
 
     if (!fs::exists(resolvedPath, ec) || ec)
     {
-        std::cerr << "[ERROR] CreateLuaTable: Script file does not exist: " << resolvedPath << std::endl;
+        UE_LOG_ERROR("CreateLuaTable: Script file does not exist: %s", resolvedPath.string().c_str());
         ScriptCache.erase(ScriptName);
         return sol::table();
     }
@@ -215,19 +304,20 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
     auto nowWriteTime = fs::last_write_time(resolvedPath, ec);
     if (ec)
     {
-        std::cerr << "[ERROR] CreateLuaTable: Failed to get file timestamp for " << resolvedPath << " (" << ec.message() << ")" << std::endl;
+        UE_LOG_ERROR("CreateLuaTable: Failed to get file timestamp for %s (%s)", resolvedPath.string().c_str(), ec.message().c_str());
         return sol::table();
     }
 
     auto it = ScriptCache.find(ScriptName);
     if (it == ScriptCache.end() || it->second.LastWriteTime != nowWriteTime)
     {
+        // 3. 스크립트 실행
         sol::protected_function_result result = LuaState->script_file(resolvedPath.string());
 
         if (!result.valid())
         {
             sol::error err = result;
-            std::cerr << "[ERROR] Lua script execution failed (" << ScriptName << "): " << err.what() << std::endl;
+            UE_LOG_ERROR("Lua script execution failed (%s): %s", ScriptName.c_str(), err.what());
             return sol::table();
         }
 
@@ -236,7 +326,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         // Script can return either a table (old pattern) or a factory function (new pattern)
         if (!returnValue.is<sol::table>() && !returnValue.is<sol::function>())
         {
-            std::cerr << "[ERROR] CreateLuaTable: Script must return a table or factory function." << std::endl;
+            UE_LOG_ERROR("CreateLuaTable: Script must return a table or factory function.");
             return sol::table();
         }
 
@@ -271,13 +361,13 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         if (!callResult.valid())
         {
             sol::error err = callResult;
-            std::cerr << "[ERROR] Factory function failed for " << ScriptName << ": " << err.what() << std::endl;
+            UE_LOG_ERROR("Factory function failed for %s: %s", ScriptName.c_str(), err.what());
             return sol::table();
         }
 
         if (!callResult.get<sol::object>().is<sol::table>())
         {
-            std::cerr << "[ERROR] Factory function did not return a table for " << ScriptName << std::endl;
+            UE_LOG_ERROR("Factory function did not return a table for %s", ScriptName.c_str());
             return sol::table();
         }
 
@@ -298,7 +388,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         return newEnv;
     }
 
-    std::cerr << "[ERROR] Script did not return a table or factory function: " << ScriptName << std::endl;
+    UE_LOG_ERROR("Script did not return a table or factory function: %s", ScriptName.c_str());
     return sol::table();
 }
 
@@ -306,9 +396,13 @@ void FLuaScriptManager::HotReloadLuaScript()
 {
     namespace fs = std::filesystem;
 
+    // 변경된 스크립트 목록
     TSet<FString> Changed;
-    auto CopyCache = ScriptCache; // copy keys and times
 
+    // 캐시 복사
+    auto CopyCache = ScriptCache; 
+
+    // 캐시된 모든 스크립트 검사
     for (auto& [Path, Info] : CopyCache)
     {
         fs::path resolvedPath = Info.ResolvedPath;
@@ -317,6 +411,7 @@ void FLuaScriptManager::HotReloadLuaScript()
             resolvedPath = ResolveLuaScriptPath(Path);
         }
 
+        // 파일이 삭제되었는지 확인
         std::error_code ec;
         if (!fs::exists(resolvedPath, ec) || ec)
         {
@@ -325,29 +420,30 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
+        // 파일 수정 시간 확인
         auto currentWriteTime = fs::last_write_time(resolvedPath, ec);
         if (ec)
         {
             continue;
         }
 
+        // 수정 시간이 바뀌었다 = 파일이 수정됨!
         if (currentWriteTime != Info.LastWriteTime)
         {
-            ScriptCache.erase(Path);
-            Changed.insert(Path);
+            ScriptCache.erase(Path); // 캐시에서 제거
+            Changed.insert(Path);    // 변경 목록에 추가
         }
     }
 
-    if (Changed.empty())
+    if (Changed.empty())  // 변경 없으면 종료
     {
         return;
     }
 
-    // Make a copy of ActiveComponents to safely iterate
-    // This prevents crashes from dangling pointers that may exist in the list
+    // ActiveComponents 복사 (안전한 순회를 위해)
     TArray<ULuaScriptComponent*> ComponentsCopy = ActiveComponents;
 
-    // Clear the original list - we'll rebuild it with valid components only
+    // 원본 리스트 초기화 (유효한 것만 다시 추가할 예정)
     ActiveComponents.clear();
 
     for (ULuaScriptComponent* Comp : ComponentsCopy)
@@ -358,15 +454,14 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
-        // Safely get owner - returns nullptr if access violation occurs
+        // 안전하게 Owner 가져오기 (댕글링 포인터 방지)
         AActor* Owner = SafeGetOwner(Comp);
         if (!Owner)
         {
-            // Component is invalid (dangling pointer or access violation)
             continue;
         }
 
-        // Safely check if actor has begun play - returns false if access violation occurs
+        // BeginPlay 호출되었는지 확인
         bool bHasBegunPlay = SafeHasBegunPlay(Owner);
         if (!bHasBegunPlay)
         {
@@ -375,8 +470,7 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
-        // Component and Owner are valid and have begun play
-        // Add back to active list (rebuilds the list with only verified valid components)
+        // 유효한 컴포넌트만 다시 추가
         ActiveComponents.push_back(Comp);
 
         const FString& ScriptName = Comp->GetScriptName();
@@ -385,28 +479,30 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
+        // 이 컴포넌트의 스크립트가 변경되었는지 확인
         if (Changed.count(Comp->GetScriptName()) > 0)
         {
             if (AActor* Owner = Comp->GetOwner())
             {
-                std::cout << "[HOT RELOAD] Reloading script: " << Comp->GetScriptName() << std::endl;
+                UE_LOG_SUCCESS("[HOT RELOAD] Reloading script: ");
 
+                // C++와 Lua 연결 다시 설정
                 bool bBindSuccess = Owner->BindSelfLuaProperties();
                 if (bBindSuccess)
                 {
                     sol::table& LuaTable = Comp->GetLuaSelfTable();
-                    std::cout << "[HOT RELOAD] Script reloaded successfully!" << std::endl;
+                    UE_LOG_SUCCESS("[HOT RELOAD] Script reloaded successfully!");
 
-                    // Call BeginPlay to reinitialize the script state
+                    // BeginPlay 다시 호출 (초기화)
                     if (LuaTable.valid() && LuaTable["BeginPlay"].valid())
                     {
-                        std::cout << "[HOT RELOAD] Calling BeginPlay for: " << Comp->GetScriptName() << std::endl;
+                        UE_LOG_SUCCESS("[HOT RELOAD] Calling BeginPlay for:");
                         Comp->ActivateFunction(FString("BeginPlay"));
                     }
                 }
                 else
                 {
-                    std::cout << "[HOT RELOAD] Failed to reload script: " << Comp->GetScriptName() << std::endl;
+                    UE_LOG_ERROR("[HOT RELOAD] Failed to reload script: %s", Comp->GetScriptName().c_str());
                 }
             }
         }
@@ -415,12 +511,14 @@ void FLuaScriptManager::HotReloadLuaScript()
 
 void FLuaScriptManager::ReloadScript(const std::string& filePath)
 {
-    std::cout << "Hot-reloading script: " << filePath << std::endl;
+    UE_LOG_INFO("Hot-reloading script: %s", filePath.c_str());
     // Note: Now handled by HotReloadLuaScript
 }
 
 void FLuaScriptManager::BindTypes()
 {
+    using namespace LuaBindingHelpers;
+
     // Create EngineTypes table
     sol::table EngineTypes = LuaState->create_table("EngineTypes");
 
@@ -445,21 +543,205 @@ void FLuaScriptManager::BindTypes()
         "One", &FVector::OneVector
     );
 
+    // --- FQuaternion Binding ---
+    EngineTypes.new_usertype<FQuaternion>("FQuaternion",
+        sol::call_constructor,
+        sol::constructors<FQuaternion(), FQuaternion(float, float, float, float)>(),
+        // Variables
+        "X", &FQuaternion::X,
+        "Y", &FQuaternion::Y,
+        "Z", &FQuaternion::Z,
+        "W", &FQuaternion::W,
+        // Static functions
+        "Identity", &FQuaternion::Identity,
+        "FromEuler", &FQuaternion::FromEuler,
+        "FromAxisAngle", &FQuaternion::FromAxisAngle,
+        "MakeFromDirection", &FQuaternion::MakeFromDirection,
+        // Methods
+        "ToEuler", &FQuaternion::ToEuler,
+        "Normalize", &FQuaternion::Normalize,
+        "Conjugate", &FQuaternion::Conjugate,
+        "Inverse", &FQuaternion::Inverse,
+        "RotateVector", sol::resolve<FVector(const FVector&) const>(&FQuaternion::RotateVector),
+        // Operators
+        sol::meta_function::multiplication, &FQuaternion::operator*
+    );
+
+    // --- FVector4 Binding ---
+    EngineTypes.new_usertype<FVector4>("FVector4",
+        sol::call_constructor,
+        sol::constructors<FVector4(), FVector4(float, float, float, float)>(),
+        // Variables
+        "X", &FVector4::X,
+        "Y", &FVector4::Y,
+        "Z", &FVector4::Z,
+        "W", &FVector4::W,
+        // Operators
+        sol::meta_function::addition, sol::resolve<FVector4(const FVector4&) const>(&FVector4::operator+),
+        sol::meta_function::subtraction, sol::resolve<FVector4(const FVector4&) const>(&FVector4::operator-),
+        sol::meta_function::multiplication, sol::resolve<FVector4(float) const>(&FVector4::operator*),
+        sol::meta_function::division, &FVector4::operator/,
+        // Static functions
+        "Zero", &FVector4::ZeroVector,
+        "One", &FVector4::OneVector
+    );
+
     // --- AActor Binding ---
     LuaState->new_usertype<AActor>("AActor",
         sol::no_constructor,
+        // Location
         "ActorLocation", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "SetActorLocation", &AActor::SetActorLocation,
         "GetActorLocation", &AActor::GetActorLocation,
-        "GetName", [](const AActor& actor) { return actor.GetName().ToString(); },
+        // Rotation
+        "ActorRotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
+        "SetActorRotation", &AActor::SetActorRotation,
+        "GetActorRotation", &AActor::GetActorRotation,
+        // Scale
+        "ActorScale3D", sol::property(&AActor::GetActorScale3D, &AActor::SetActorScale3D),
+        "SetActorScale3D", &AActor::SetActorScale3D,
+        "GetActorScale3D", &AActor::GetActorScale3D,
+        // Components
+        "GetOwnedComponents", &AActor::GetOwnedComponents,
+        "GetRootComponent", &AActor::GetRootComponent,
+        // Misc
+        "GetName", &GetNameAsString<AActor>,
         "GetUUID", &AActor::GetUUID,
-        "UUID", sol::property([](AActor& actor) { return actor.GetUUID(); }),
-        "PrintLocation", &AActor::PrintLocation
+        "UUID", sol::property(&GetUUIDAsInt<AActor>),
+        "PrintLocation", &AActor::PrintLocation,
+        "SetIsPendingDestroy", &AActor::SetIsPendingDestroy,
+        "IsPendingDestroy", &AActor::IsPendingDestroy
     );
 
     // --- Global Functions ---
     LuaState->set_function("Print", [](const std::string& message) {
-        std::cout << "[LUA] " << message << std::endl;
+        UE_LOG("[LUA] %s", message.c_str());
     });
+
+    // --- InputManager Binding ---
+    LuaState->set_function("GetInputManager", []() -> UInputManager* {
+        return &UInputManager::GetInstance();
+    });
+
+    LuaState->new_usertype<UInputManager>("UInputManager",
+        sol::no_constructor,
+        // Keyboard input (템플릿 헬퍼 사용)
+        "IsKeyDown", BindEnumMethod<UInputManager, EKeyInput>(&UInputManager::IsKeyDown),
+        "IsKeyPressed", BindEnumMethod<UInputManager, EKeyInput>(&UInputManager::IsKeyPressed),
+        "IsKeyReleased", BindEnumMethod<UInputManager, EKeyInput>(&UInputManager::IsKeyReleased),
+        // Mouse input
+        "GetMousePosition", &UInputManager::GetMousePosition,
+        "GetMouseDelta", &UInputManager::GetMouseDelta,
+        "GetMouseWheelDelta", &UInputManager::GetMouseWheelDelta,
+        "GetMouseNDCPosition", &UInputManager::GetMouseNDCPosition,
+        "IsWindowFocused", &UInputManager::IsWindowFocused
+    );
+
+    // --- UWorld Binding ---
+    LuaState->set_function("GetWorld", []() {
+        return GWorld;
+    });
+
+    LuaState->new_usertype<UWorld>("UWorld",
+        sol::no_constructor,
+        // Actor spawning (by class name string)
+        "SpawnActor", [](UWorld* world, const std::string& className) {
+            UClass* ActorClass = UClass::FindClass(className);
+            if (!ActorClass) {
+                UE_LOG_ERROR("[Lua] Failed to find class: %s", className.c_str());
+                return (AActor*)nullptr;
+            }
+            return world->SpawnActor(ActorClass);
+        },
+        // Actor destruction (deferred via pending destroy)
+        "DestroyActor", &UWorld::DestroyActor
+    );
+
+    // --- UActorComponent Binding ---
+    LuaState->new_usertype<UActorComponent>("UActorComponent",
+        sol::no_constructor,
+        "GetName", &GetNameAsString<UActorComponent>,
+        "GetOwner", &UActorComponent::GetOwner,
+        "CanEverTick", &UActorComponent::CanEverTick,
+        "SetCanEverTick", &UActorComponent::SetCanEverTick,
+        "IsEditorOnly", &UActorComponent::IsEditorOnly,
+        "SetIsEditorOnly", &UActorComponent::SetIsEditorOnly,
+        "IsVisualizationComponent", &UActorComponent::IsVisualizationComponent
+    );
+
+    // --- USceneComponent Binding (inherits from UActorComponent) ---
+    LuaState->new_usertype<USceneComponent>("USceneComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UActorComponent>(),
+        "GetName", &GetNameAsString<USceneComponent>,
+        "GetOwner", &USceneComponent::GetOwner,
+        // Relative transforms (local to parent)
+        "GetRelativeLocation", &USceneComponent::GetRelativeLocation,
+        "GetRelativeRotation", &USceneComponent::GetRelativeRotation,
+        "GetRelativeScale3D", &USceneComponent::GetRelativeScale3D,
+        "SetRelativeLocation", &USceneComponent::SetRelativeLocation,
+        "SetRelativeRotation", &USceneComponent::SetRelativeRotation,
+        "SetRelativeScale3D", &USceneComponent::SetRelativeScale3D,
+        // World transforms (absolute)
+        "GetWorldLocation", &USceneComponent::GetWorldLocation,
+        "GetWorldRotation", &USceneComponent::GetWorldRotation,  // Returns FVector (Euler angles)
+        "GetWorldRotationAsQuaternion", &USceneComponent::GetWorldRotationAsQuaternion,
+        "GetWorldScale3D", &USceneComponent::GetWorldScale3D
+    );
+
+    // --- UPrimitiveComponent Binding (inherits from USceneComponent) ---
+    LuaState->new_usertype<UPrimitiveComponent>("UPrimitiveComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<USceneComponent>(),
+        "GetName", &GetNameAsString<UPrimitiveComponent>,
+        "GetOwner", &UPrimitiveComponent::GetOwner,
+        // Visibility
+        "IsVisible", &UPrimitiveComponent::IsVisible,
+        "SetVisibility", &UPrimitiveComponent::SetVisibility,
+        // Picking
+        "CanPick", &UPrimitiveComponent::CanPick,
+        "SetCanPick", &UPrimitiveComponent::SetCanPick,
+        // Color
+        "GetColor", &UPrimitiveComponent::GetColor,
+        "SetColor", &UPrimitiveComponent::SetColor,
+        // Collision/Overlap
+        "IsOverlappingComponent", &UPrimitiveComponent::IsOverlappingComponent,
+        "IsOverlappingActor", &UPrimitiveComponent::IsOverlappingActor,
+        // Collision settings
+        "bGenerateOverlapEvents", &UPrimitiveComponent::bGenerateOverlapEvents,
+        "bGenerateHitEvents", &UPrimitiveComponent::bGenerateHitEvents
+    );
+
+    // --- UMeshComponent Binding (inherits from UPrimitiveComponent) ---
+    LuaState->new_usertype<UMeshComponent>("UMeshComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UPrimitiveComponent>(),
+        "GetName", &GetNameAsString<UMeshComponent>,
+        "GetOwner", &UMeshComponent::GetOwner
+    );
+
+    // --- UStaticMeshComponent Binding (inherits from UMeshComponent) ---
+    LuaState->new_usertype<UStaticMeshComponent>("UStaticMeshComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UMeshComponent>(),
+        "GetName", &GetNameAsString<UStaticMeshComponent>,
+        "GetOwner", &UStaticMeshComponent::GetOwner,
+        // Static Mesh
+        "GetStaticMesh", &UStaticMeshComponent::GetStaticMesh,
+        "SetStaticMesh", &UStaticMeshComponent::SetStaticMesh,
+        // Material
+        "GetMaterial", &UStaticMeshComponent::GetMaterial,
+        "SetMaterial", &UStaticMeshComponent::SetMaterial,
+        // Scroll
+        "EnableScroll", &UStaticMeshComponent::EnableScroll,
+        "DisableScroll", &UStaticMeshComponent::DisableScroll,
+        "IsScrollEnabled", &UStaticMeshComponent::IsScrollEnabled,
+        "GetElapsedTime", &UStaticMeshComponent::GetElapsedTime,
+        "SetElapsedTime", &UStaticMeshComponent::SetElapsedTime,
+        // Normal Map
+        "EnableNormalMap", &UStaticMeshComponent::EnableNormalMap,
+        "DisableNormalMap", &UStaticMeshComponent::DisableNormalMap,
+        "IsNormalMapEnabled", &UStaticMeshComponent::IsNormalMapEnabled
+    );
 }

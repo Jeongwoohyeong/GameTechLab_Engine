@@ -17,6 +17,8 @@ public:
     void SetCapsuleHalfHeight(float InHalfHeight);
     void SetCapsuleRadius(float InRadius);
     FColor GetDefaultWireColor() const override;
+    FVector GetUpVector() const;
+
 
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
     virtual UObject* Duplicate() override;
@@ -25,6 +27,6 @@ protected:
     void DuplicateSubObjects(UObject* DuplicatedObject) override;
 
 protected:
-    float CapsuleHalfHeight = 88.f; 
-    float CapsuleRadius = 34.f;
+    float CapsuleHalfHeight = 2.f; 
+    float CapsuleRadius = 1.f;
 };
