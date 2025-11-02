@@ -153,19 +153,20 @@ FLuaScriptManager::~FLuaScriptManager()
         ActiveComponents.clear();
         LuaState.reset();
     }
-
-    std::cout << "[Shutdown] FLuaScriptManager destroyed safely." << std::endl;
+    
+    UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager destroyed safely.");
 }
 
 void FLuaScriptManager::StartUp()
 {
+    // Lua 가상 머신생성 
     LuaState = std::make_unique<sol::state>();
 
-    // Open standard libraries (io, string, math, coroutine, etc.)
+    // Lua 표준 라이브러리 로드 (io, string, math, coroutine, etc.)
     LuaState->open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::math, sol::lib::table, sol::lib::coroutine);
-
-    std::cout << "LuaManager started." << std::endl;
-
+    
+    UE_LOG_SYSTEM("LuaManager started.");
+    
     // Bind all C++ types
     BindTypes();
 
@@ -181,8 +182,8 @@ void FLuaScriptManager::ShutDown()
     {
         return; // Already shut down
     }
-
-    std::cout << "[Shutdown] FLuaScriptManager shutting down..." << std::endl;
+    
+    UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager shutting down...");
 
     // 1. Shutdown coroutine manager first (stops all coroutines)
     FLuaCoroutineManager::GetInstance().ShutDown();
@@ -197,16 +198,16 @@ void FLuaScriptManager::ShutDown()
 
     // 4. Mark as shut down
     bIsStartedUp = false;
-
-    std::cout << "[Shutdown] FLuaScriptManager shut down successfully." << std::endl;
+    
+    UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager shut down successfully.");
 }
 
 void FLuaScriptManager::Tick(float deltaTime)
 {
-    // Hot reload check (optional)
+    // 1. Lua 파일이 수정됐는지 체크 → 수정됐으면 자동 리로드
     HotReloadLuaScript();
 
-    // Update coroutines
+    // 2. Lua 코루틴들 업데이트 (비동기 로직 처리)
     FLuaCoroutineManager::GetInstance().Tick(deltaTime);
 }
 
@@ -249,6 +250,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
 
     namespace fs = std::filesystem;
 
+    // 1. 스크립트 파일 경로 찾기
     fs::path resolvedPath = ResolveLuaScriptPath(ScriptName);
     std::error_code ec;
 
@@ -269,6 +271,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
     auto it = ScriptCache.find(ScriptName);
     if (it == ScriptCache.end() || it->second.LastWriteTime != nowWriteTime)
     {
+        // 3. 스크립트 실행
         sol::protected_function_result result = LuaState->script_file(resolvedPath.string());
 
         if (!result.valid())
@@ -353,9 +356,13 @@ void FLuaScriptManager::HotReloadLuaScript()
 {
     namespace fs = std::filesystem;
 
+    // 변경된 스크립트 목록
     TSet<FString> Changed;
-    auto CopyCache = ScriptCache; // copy keys and times
 
+    // 캐시 복사
+    auto CopyCache = ScriptCache; 
+
+    // 캐시된 모든 스크립트 검사
     for (auto& [Path, Info] : CopyCache)
     {
         fs::path resolvedPath = Info.ResolvedPath;
@@ -364,6 +371,7 @@ void FLuaScriptManager::HotReloadLuaScript()
             resolvedPath = ResolveLuaScriptPath(Path);
         }
 
+        // 파일이 삭제되었는지 확인
         std::error_code ec;
         if (!fs::exists(resolvedPath, ec) || ec)
         {
@@ -372,29 +380,30 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
+        // 파일 수정 시간 확인
         auto currentWriteTime = fs::last_write_time(resolvedPath, ec);
         if (ec)
         {
             continue;
         }
 
+        // 수정 시간이 바뀌었다 = 파일이 수정됨!
         if (currentWriteTime != Info.LastWriteTime)
         {
-            ScriptCache.erase(Path);
-            Changed.insert(Path);
+            ScriptCache.erase(Path); // 캐시에서 제거
+            Changed.insert(Path);    // 변경 목록에 추가
         }
     }
 
-    if (Changed.empty())
+    if (Changed.empty())  // 변경 없으면 종료
     {
         return;
     }
 
-    // Make a copy of ActiveComponents to safely iterate
-    // This prevents crashes from dangling pointers that may exist in the list
+    // ActiveComponents 복사 (안전한 순회를 위해)
     TArray<ULuaScriptComponent*> ComponentsCopy = ActiveComponents;
 
-    // Clear the original list - we'll rebuild it with valid components only
+    // 원본 리스트 초기화 (유효한 것만 다시 추가할 예정)
     ActiveComponents.clear();
 
     for (ULuaScriptComponent* Comp : ComponentsCopy)
@@ -405,15 +414,14 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
-        // Safely get owner - returns nullptr if access violation occurs
+        // 안전하게 Owner 가져오기 (댕글링 포인터 방지)
         AActor* Owner = SafeGetOwner(Comp);
         if (!Owner)
         {
-            // Component is invalid (dangling pointer or access violation)
             continue;
         }
 
-        // Safely check if actor has begun play - returns false if access violation occurs
+        // BeginPlay 호출되었는지 확인
         bool bHasBegunPlay = SafeHasBegunPlay(Owner);
         if (!bHasBegunPlay)
         {
@@ -422,8 +430,7 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
-        // Component and Owner are valid and have begun play
-        // Add back to active list (rebuilds the list with only verified valid components)
+        // 유효한 컴포넌트만 다시 추가
         ActiveComponents.push_back(Comp);
 
         const FString& ScriptName = Comp->GetScriptName();
@@ -432,22 +439,24 @@ void FLuaScriptManager::HotReloadLuaScript()
             continue;
         }
 
+        // 이 컴포넌트의 스크립트가 변경되었는지 확인
         if (Changed.count(Comp->GetScriptName()) > 0)
         {
             if (AActor* Owner = Comp->GetOwner())
             {
-                std::cout << "[HOT RELOAD] Reloading script: " << Comp->GetScriptName() << std::endl;
+                UE_LOG_SUCCESS("[HOT RELOAD] Reloading script: ");
 
+                // C++와 Lua 연결 다시 설정
                 bool bBindSuccess = Owner->BindSelfLuaProperties();
                 if (bBindSuccess)
                 {
                     sol::table& LuaTable = Comp->GetLuaSelfTable();
-                    std::cout << "[HOT RELOAD] Script reloaded successfully!" << std::endl;
+                    UE_LOG_SUCCESS("[HOT RELOAD] Script reloaded successfully!");
 
-                    // Call BeginPlay to reinitialize the script state
+                    // BeginPlay 다시 호출 (초기화)
                     if (LuaTable.valid() && LuaTable["BeginPlay"].valid())
                     {
-                        std::cout << "[HOT RELOAD] Calling BeginPlay for: " << Comp->GetScriptName() << std::endl;
+                        UE_LOG_SUCCESS("[HOT RELOAD] Calling BeginPlay for:");
                         Comp->ActivateFunction(FString("BeginPlay"));
                     }
                 }

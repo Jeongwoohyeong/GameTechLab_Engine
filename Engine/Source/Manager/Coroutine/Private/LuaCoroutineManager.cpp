@@ -87,6 +87,7 @@ void FLuaCoroutineManager::Tick(float deltaTime)
     }
 
     // Process all active coroutines
+    // 모든 코루틴 순회
     for (auto it = ActiveCoroutines.begin(); it != ActiveCoroutines.end();)
     {
         FCoroutineInfo& info = *it;
@@ -236,21 +237,27 @@ int FLuaCoroutineManager::StartCoroutine(sol::table scriptTable, const std::stri
     sol::function func = funcObj.as<sol::function>();
 
     // Get Lua state
+    // 2. 새로운 Thread 생성
     sol::state& lua = FLuaScriptManager::GetInstance().GetLuaState();
 
     // Create coroutine thread
+    // 3. 이 Thread만의 State view
     sol::thread coThread = sol::thread::create(lua.lua_state());
     sol::state_view coState = coThread.state();
+    // 4. 이 Thread에서 함수를 코루틴으로 감싸기
     sol::coroutine co = sol::coroutine(coState, func);
 
+    // 5. ID 생성
     int coroutineID = NextCoroutineID++;
 
     // Add to active coroutines (store thread to keep it alive!)
+    // 6. ActiveCoroutines에 추가
     ActiveCoroutines.emplace_back(coroutineID, std::move(coThread), std::move(co), scriptTable);
 
     // Register coroutine with component if provided
     if (ownerComponent)
     {
+        // 7. 컴포넌트에 등록
         ownerComponent->RegisterCoroutine(coroutineID);
     }
 
