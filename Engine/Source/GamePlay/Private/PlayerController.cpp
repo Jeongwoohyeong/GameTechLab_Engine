@@ -1,11 +1,14 @@
 #include "pch.h"
 #include "GamePlay/Public/PlayerController.h"
 #include "GamePlay/public/PlayerInput.h"
+#include "Pawn/Public/Pawn.h"
+#include "Player/Public/PlayerCharacter.h"
 
 IMPLEMENT_CLASS(APlayerController, AActor)
 
 APlayerController::APlayerController()
 {
+    bCanEverTick = true;
 }
 
 APlayerController::~APlayerController()
@@ -45,6 +48,8 @@ void APlayerController::Possess(AActor* TargetActor)
         return;
     }
     ControlledActor.Set(TargetActor);
+
+    UE_LOG("[PlayerController] Possessed: %s", TargetActor->GetName().ToString().c_str());
 }
 
 void APlayerController::UnPossess()
@@ -54,50 +59,56 @@ void APlayerController::UnPossess()
 
 void APlayerController::MoveForward(float Value)
 {
-    if (!ControlledActor.IsValid() || Value == 0.0f || MoveSpeed == 0.0f)
+    if (!ControlledActor.IsValid())
     {
         return;
     }
 
-    FVector Forward(1.0f, 0.0f, 0.0f);
-    FVector NewLocation = ControlledActor->GetActorLocation() + (Forward * Value * MoveSpeed);
-    ControlledActor->SetActorLocation(NewLocation);
+    // Cast to APawn and call its virtual function
+    if (APawn* PawnActor = Cast<APawn>(ControlledActor.Get()))
+    {
+        PawnActor->MoveForward(Value);
+    }
 }
 
 void APlayerController::MoveRight(float Value)
 {
-    if (!ControlledActor.IsValid() || Value == 0.0f || MoveSpeed == 0.0f)
+    if (!ControlledActor.IsValid())
     {
         return;
     }
 
-    FVector Forward(0.0f, 1.0f, 0.0f);
-    FVector NewLocation = ControlledActor->GetActorLocation() + (Forward * Value * MoveSpeed);
-    ControlledActor->SetActorLocation(NewLocation);
+    // Cast to APawn and call its virtual function
+    if (APawn* PawnActor = Cast<APawn>(ControlledActor.Get()))
+    {
+        PawnActor->MoveRight(Value);
+    }
 }
 
 void APlayerController::Turn(float Value)
 {
-    if (!ControlledActor.IsValid() || Value == 0.0f)
+    if (!ControlledActor.IsValid())
     {
         return;
     }
 
-    FVector Rotation = ControlledActor->GetActorRotation().ToEuler();
-    Rotation.Z += Value;
-
-    ControlledActor->SetActorRotation(FQuaternion::FromEuler(Rotation));
+    // Cast to APawn and call its virtual function
+    if (APawn* PawnActor = Cast<APawn>(ControlledActor.Get()))
+    {
+        PawnActor->Turn(Value);
+    }
 }
 
 void APlayerController::LookUp(float Value)
 {
-    if (!ControlledActor.IsValid() || Value == 0.0f)
+    if (!ControlledActor.IsValid())
     {
         return;
     }
 
-    FVector Rotation = ControlledActor->GetActorRotation().ToEuler();
-    Rotation.Y += Value;
-
-    ControlledActor->SetActorRotation(FQuaternion::FromEuler(Rotation));
+    // Cast to APawn and call its virtual function
+    if (APawn* PawnActor = Cast<APawn>(ControlledActor.Get()))
+    {
+        PawnActor->LookUp(Value);
+    }
 }

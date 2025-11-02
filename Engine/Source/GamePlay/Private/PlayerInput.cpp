@@ -24,21 +24,25 @@ void UPlayerInput::HandleKeyboardInput(float DeltaTime)
 
     if (InputManager.IsKeyDown(EKeyInput::W))
     {
+        UE_LOG("Move W");
         OnMoveForward.BroadCast(1.0f * DeltaTime);
     }
 
     if (InputManager.IsKeyDown(EKeyInput::S))
     {
+        UE_LOG("Move S");
         OnMoveForward.BroadCast(-1.0f * DeltaTime);
     }
 
     if (InputManager.IsKeyDown(EKeyInput::D))
     {
+        UE_LOG("Move D");
         OnMoveRight.BroadCast(1.0f * DeltaTime);
     }
 
     if (InputManager.IsKeyDown(EKeyInput::A))
     {
+        UE_LOG("Move A");
         OnMoveRight.BroadCast(-1.0f * DeltaTime);
     }
 }

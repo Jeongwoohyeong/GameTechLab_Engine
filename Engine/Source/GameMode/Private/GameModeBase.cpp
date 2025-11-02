@@ -5,6 +5,7 @@
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
 #include "Level/Public/World.h"
+#include "Level/Public/Level.h"
 #include "Core/Public/NewObject.h"
 
 IMPLEMENT_CLASS(AGameModeBase, AActor)
@@ -118,20 +119,64 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 		return nullptr;
 	}
 
+	UE_LOG("[GameMode] OwningWorld type: %d (0=Editor, 1=Game, 2=PIE)", static_cast<int>(OwningWorld->GetWorldType()));
+	UE_LOG("[GameMode] OwningWorld pointer: %p", OwningWorld);
+
 	if (!DefaultPawnClass)
 	{
 		UE_LOG_ERROR("[GameMode] Cannot spawn pawn: DefaultPawnClass is null");
 		return nullptr;
 	}
 
-	// Spawn the pawn at origin (you can customize spawn location)
+	// Spawn the pawn at a visible location (in front of camera)
 	APawn* NewPawn = Cast<APlayerCharacter>(
 		OwningWorld->SpawnActor(DefaultPawnClass)
 	);
 
 	if (NewPawn)
 	{
-		UE_LOG("[GameMode] Default pawn spawned: %s", NewPawn->GetName().ToString().c_str());
+		// Set to a visible location (0, 0, 0) - origin
+		FVector SpawnLocation(0.0f, 0.0f, 0.0f);
+		NewPawn->SetActorLocation(SpawnLocation);
+
+		UE_LOG("[GameMode] Default pawn spawned: %s at location (%.1f, %.1f, %.1f)",
+			NewPawn->GetName().ToString().c_str(),
+			SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z);
+
+		UWorld* PawnWorld = NewPawn->GetTypedOuter<UWorld>();
+		UE_LOG("[GameMode] Pawn's outer World: %p (type=%d)",
+			PawnWorld,
+			PawnWorld ? static_cast<int>(PawnWorld->GetWorldType()) : -1);
+
+		// PIE World의 전체 Actor 리스트 확인
+		UE_LOG("[GameMode] PIE World total actors: %d", OwningWorld->GetLevel()->GetLevelActors().size());
+		for (auto* Actor : OwningWorld->GetLevel()->GetLevelActors())
+		{
+			if (Actor)
+			{
+				UE_LOG("[GameMode]   - Actor: %s at (%.1f, %.1f, %.1f)",
+					Actor->GetClass()->GetName().ToString().c_str(),
+					Actor->GetActorLocation().X,
+					Actor->GetActorLocation().Y,
+					Actor->GetActorLocation().Z);
+			}
+		}
+
+		// Component 확인
+		int32 ComponentCount = NewPawn->GetOwnedComponents().size();
+		UE_LOG("[GameMode] Pawn has %d components", ComponentCount);
+
+		for (auto* Comp : NewPawn->GetOwnedComponents())
+		{
+			if (Comp)
+			{
+				UE_LOG("[GameMode]   - Component: %s at WorldLocation=(%.1f, %.1f, %.1f)",
+					Comp->GetClass()->GetName().ToString().c_str(),
+					Cast<USceneComponent>(Comp) ? Cast<USceneComponent>(Comp)->GetWorldLocation().X : 0.0f,
+					Cast<USceneComponent>(Comp) ? Cast<USceneComponent>(Comp)->GetWorldLocation().Y : 0.0f,
+					Cast<USceneComponent>(Comp) ? Cast<USceneComponent>(Comp)->GetWorldLocation().Z : 0.0f);
+			}
+		}
 	}
 
 	return NewPawn;

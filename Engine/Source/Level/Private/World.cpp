@@ -314,6 +314,13 @@ void UWorld::DuplicateSubObjects(UObject* DuplicatedObject)
 	Super::DuplicateSubObjects(DuplicatedObject);
 	UWorld* World = Cast<UWorld>(DuplicatedObject);
 	World->Level = Cast<ULevel>(Level->Duplicate());
+
+	// Set Level's Outer to the duplicated World (critical for PIE!)
+	if (World->Level)
+	{
+		World->Level->SetOuter(World);
+		UE_LOG("[World] DuplicateSubObjects: Level outer set to duplicated World (%p)", World);
+	}
 }
 
 void UWorld::CreateNewLevel(const FName& InLevelName)

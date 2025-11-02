@@ -21,9 +21,9 @@ public:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
 
-    // Movement (can be extended with input binding)
-    virtual void MoveForward(float Value);
-    virtual void MoveRight(float Value);
+    // Input handling (override from APawn)
+    virtual void MoveForward(float Value) override;
+    virtual void MoveRight(float Value) override;
 
 protected:
     // Default movement speed

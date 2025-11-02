@@ -29,6 +29,12 @@ public:
 	APlayerController* GetController() const;
 	bool IsControlled() const { return Controller.IsValid(); }
 
+	// Input handling (virtual functions for derived classes to override)
+	virtual void MoveForward(float Value) {}
+	virtual void MoveRight(float Value) {}
+	virtual void Turn(float Value) {}
+	virtual void LookUp(float Value) {}
+
 protected:
 	// The controller currently possessing this pawn
 	TWeakObjectPtr<APlayerController> Controller;

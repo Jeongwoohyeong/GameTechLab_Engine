@@ -57,27 +57,33 @@ void UEditor::Update()
 		Camera = ViewportManager.GetClients()[ActiveIndex]->GetCamera();
 	}
 
+	// PIE 모드에서는 에디터 카메라 입력 비활성화
+	bool bSkipEditorCameraInput = (GEditor->IsPIESessionActive() && ActiveIndex == ViewportManager.GetPIEActiveViewportIndex());
+
 	// KTLWeek07: 각 뷰포트에서 마우스 우클릭 시 해당 카메라만 입력 활성화
 	int32 HoveredViewportIndex = ViewportManager.GetMouseHoveredViewportIndex();
 	bool bIsRightMouseDown = Input.IsKeyDown(EKeyInput::MouseRight);
 
 	// 드래그 시작 시 뷰포트 고정, 드래그 종료 시 해제
-	if (bIsRightMouseDown && !bWasRightMouseDown)
+	if (!bSkipEditorCameraInput)
 	{
-		// 우클릭 시작: 현재 호버된 뷰포트를 잠금
-		LockedViewportIndexForDrag = HoveredViewportIndex;
-	}
-	else if (!bIsRightMouseDown && bWasRightMouseDown)
-	{
-		// 우클릭 종료: 잠금 해제
-		LockedViewportIndexForDrag = -1;
+		if (bIsRightMouseDown && !bWasRightMouseDown)
+		{
+			// 우클릭 시작: 현재 호버된 뷰포트를 잠금
+			LockedViewportIndexForDrag = HoveredViewportIndex;
+		}
+		else if (!bIsRightMouseDown && bWasRightMouseDown)
+		{
+			// 우클릭 종료: 잠금 해제
+			LockedViewportIndexForDrag = -1;
+		}
 	}
 	bWasRightMouseDown = bIsRightMouseDown;
 
 	// 드래그 중이면 잠긴 뷰포트 사용, 아니면 호버된 뷰포트 사용
 	int32 ActiveViewportIndexForInput = (LockedViewportIndexForDrag >= 0) ? LockedViewportIndexForDrag : HoveredViewportIndex;
 
-	if (ViewportManager.GetViewportLayout() == EViewportLayout::Quad)
+	if (!bSkipEditorCameraInput && ViewportManager.GetViewportLayout() == EViewportLayout::Quad)
 	{
 		// Quad 모드: 마우스 우클릭 중이고 해당 뷰포트 위에 있을 때만 그 카메라 입력 활성화
 		FViewportClient* ActiveOrthoClient = nullptr;
@@ -154,7 +160,7 @@ void UEditor::Update()
 			}
 		}
 	}
-	else
+	else if (!bSkipEditorCameraInput)
 	{
 		// 싱글 모드: 뷰포트 위에서 마우스 우클릭 시 카메라 입력 활성화
 		if (Camera)
