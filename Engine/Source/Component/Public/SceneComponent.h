@@ -42,9 +42,6 @@ public:
     void SetWorldLocation(const FVector& NewLocation);
     void SetWorldRotation(const FVector& NewRotation);
     void SetWorldRotation(const FQuaternion& NewRotation);
-    void SetWorldRotationPreservingChildren(const FVector& NewRotation);
-    void SetWorldRotationPreservingChildren(const FQuaternion& NewRotation);
-    void SetRelativeRotationPreservingChildren(const FQuaternion& NewRotation);
     void SetWorldScale3D(const FVector& NewScale);
 
 private:
@@ -57,7 +54,9 @@ private:
 	FQuaternion RelativeRotation = FQuaternion::Identity();
 	FVector RelativeScale3D = FVector{ 1.f,1.f,1.f };
 	bool bIsUniformScale = false;
-
+	bool bAbsoluteLocation = false;
+	bool bAbsoluteRotation = false;
+	bool bAbsoluteScale = false;
 	// SceneComponent Hierarchy Section
 public:
 	USceneComponent* GetAttachParent() const { return AttachParent; }
@@ -65,7 +64,14 @@ public:
 	void DetachFromComponent();
 	bool IsAttachedTo(const USceneComponent* Parent) const { return AttachParent == Parent; }
 	const TArray<USceneComponent*>& GetChildren() const { return AttachChildren; }
-	
+	bool IsUsingAbsoluteLocation() const { return bAbsoluteLocation; }
+	bool IsUsingAbsoluteRotation() const { return bAbsoluteRotation; }
+	bool IsUsingAbsoluteScale() const { return bAbsoluteScale; }
+
+	void SetAbsoluteLocation(bool bInAbsolute) { bAbsoluteLocation = bInAbsolute; MarkAsDirty(); }
+	void SetAbsoluteRotation(bool bInAbsolute) { bAbsoluteRotation = bInAbsolute; MarkAsDirty(); }
+	void SetAbsoluteScale(bool bInAbsolute) { bAbsoluteScale = bInAbsolute; MarkAsDirty(); }
+
 protected:
 	void DetachChild(USceneComponent* ChildToDetach);
 
