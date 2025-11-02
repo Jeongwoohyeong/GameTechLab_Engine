@@ -2,11 +2,13 @@
 #include <filesystem>
 #include "Core/Public/Object.h"
 #include "Global/Types.h"
+#include "Global/WeakObjectPtr.h"
 
 class UEditor;
 class ULevel;
 class AActor;
 class UClass;
+class AGameModeBase;
 
 namespace json { class JSON; }
 using JSON = json::JSON;
@@ -63,11 +65,20 @@ public:
 	EWorldType GetWorldType() const;
 	void SetWorldType(EWorldType InWorldType);
 
+	// GameMode Management
+	AGameModeBase* GetGameMode() const { return GameMode.Get(); }
+	void SetGameModeClass(UClass* InGameModeClass);
+	AGameModeBase* SpawnGameMode();
+
 private:
 	EWorldType WorldType;
 	ULevel* Level = nullptr; // Persistance Level. Sublevels are not considered in Engine.
 	bool bBegunPlay = false;
 	TArray<AActor*> PendingDestroyActors;
+
+	// GameMode for this world (only in Game/PIE mode)
+	TWeakObjectPtr<AGameModeBase> GameMode;
+	UClass* GameModeClass = nullptr;
 
 	void FlushPendingDestroy(); // Destroy marking 된 액터들을 실제 삭제
 

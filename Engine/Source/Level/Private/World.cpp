@@ -2,6 +2,7 @@
 #include "Level/Public/World.h"
 #include "Level/Public/Level.h"
 #include "Actor/Public/AmbientLight.h"
+#include "GameMode/Public/GameModeBase.h"
 #include "Utility/Public/JsonSerializer.h"
 #include "Manager/Config/Public/ConfigManager.h"
 #include "Manager/Path/Public/PathManager.h"
@@ -42,6 +43,17 @@ void UWorld::BeginPlay()
 	{
 		UE_LOG_ERROR("World: BeginPlay 호출 전에 로드된 Level이 없습니다.");
 		return;
+	}
+
+	// Spawn GameMode for Game/PIE worlds
+	if (WorldType == EWorldType::Game || WorldType == EWorldType::PIE)
+	{
+		AGameModeBase* NewGameMode = SpawnGameMode();
+		if (NewGameMode)
+		{
+			NewGameMode->InitGame();
+			UE_LOG_SUCCESS("[World] GameMode initialized");
+		}
 	}
 
 	Level->Init();
@@ -320,4 +332,46 @@ void UWorld::CreateNewLevel(const FName& InLevelName)
 	}
 
 	BeginPlay();
+}
+
+void UWorld::SetGameModeClass(UClass* InGameModeClass)
+{
+	if (InGameModeClass && InGameModeClass->IsChildOf(AGameModeBase::StaticClass()))
+	{
+		GameModeClass = InGameModeClass;
+		UE_LOG("[World] GameMode class set to: %s", InGameModeClass->GetName().ToString().c_str());
+	}
+	else
+	{
+		UE_LOG_ERROR("[World] Invalid GameMode class - must inherit from AGameModeBase");
+	}
+}
+
+AGameModeBase* UWorld::SpawnGameMode()
+{
+	// Only spawn GameMode in Game or PIE worlds
+	if (WorldType != EWorldType::Game && WorldType != EWorldType::PIE)
+	{
+		return nullptr;
+	}
+
+	// Use default GameModeBase if no custom class is set
+	if (!GameModeClass)
+	{
+		GameModeClass = AGameModeBase::StaticClass();
+	}
+
+	AGameModeBase* NewGameMode = Cast<AGameModeBase>(SpawnActor(GameModeClass));
+	if (NewGameMode)
+	{
+		NewGameMode->SetOwningWorld(this);
+		GameMode.Set(NewGameMode);
+		UE_LOG("[World] GameMode spawned: %s", NewGameMode->GetName().ToString().c_str());
+	}
+	else
+	{
+		UE_LOG_ERROR("[World] Failed to spawn GameMode");
+	}
+
+	return NewGameMode;
 }

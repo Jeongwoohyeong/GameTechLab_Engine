@@ -1,6 +1,9 @@
 ﻿#pragma once
 //#include "Render/UI/Window/Public/ConsoleWindow.h"
 
+// Forward declaration
+class UObject;
+
 template<typename T>
 class TWeakObjectPtr
 {
@@ -77,7 +80,14 @@ T* TWeakObjectPtr<T>::Get() const
         return nullptr;
     }
 
-    return static_cast<T*>(GetUObjectArray()[ObjectIndex]);
+    // Get UObject* from array first, then cast to T*
+    // Using reinterpret_cast because the template header doesn't have full type definition
+    // This is safe because:
+    // 1. Set() already stored the pointer as T* type
+    // 2. IsValid() verified the object still exists
+    // 3. All T types are guaranteed to inherit from UObject (enforced at usage site)
+    UObject* BaseObject = GetUObjectArray()[ObjectIndex];
+    return reinterpret_cast<T*>(BaseObject);
 }
 
 template <typename T>

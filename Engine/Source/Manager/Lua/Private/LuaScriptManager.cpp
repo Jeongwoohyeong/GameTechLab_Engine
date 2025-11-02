@@ -8,6 +8,10 @@
 #include "Component/Mesh/Public/MeshComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Actor/Public/Actor.h"
+#include "Pawn/Public/Pawn.h"
+#include "Player/Public/PlayerCharacter.h"
+#include "GamePlay/Public/PlayerController.h"
+#include "GameMode/Public/GameModeBase.h"
 #include "Global/Vector.h"
 #include "Global/Quaternion.h"
 #include "Manager/Path/Public/PathManager.h"
@@ -744,4 +748,53 @@ void FLuaScriptManager::BindTypes()
         "DisableNormalMap", &UStaticMeshComponent::DisableNormalMap,
         "IsNormalMapEnabled", &UStaticMeshComponent::IsNormalMapEnabled
     );
+
+    // --- APawn Binding (inherits from AActor) ---
+    LuaState->new_usertype<APawn>("APawn",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<AActor>(),
+        "GetName", &GetNameAsString<APawn>,
+        "GetController", &APawn::GetController,
+        "IsControlled", &APawn::IsControlled,
+        "PossessedBy", &APawn::PossessedBy,
+        "UnPossessed", &APawn::UnPossessed
+    );
+
+    // --- APlayerCharacter Binding (inherits from APawn) ---
+    LuaState->new_usertype<APlayerCharacter>("APlayerCharacter",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<APawn>(),
+        "GetName", &GetNameAsString<APlayerCharacter>,
+        "MoveForward", &APlayerCharacter::MoveForward,
+        "MoveRight", &APlayerCharacter::MoveRight
+    );
+
+    // --- APlayerController Binding (inherits from AActor) ---
+    LuaState->new_usertype<APlayerController>("APlayerController",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<AActor>(),
+        "GetName", &GetNameAsString<APlayerController>,
+        "Possess", &APlayerController::Possess,
+        "UnPossess", &APlayerController::UnPossess
+    );
+
+    // --- AGameModeBase Binding (inherits from AActor) ---
+    LuaState->new_usertype<AGameModeBase>("AGameModeBase",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<AActor>(),
+        "GetName", &GetNameAsString<AGameModeBase>,
+        "GetPlayerController", &AGameModeBase::GetPlayerController,
+        "GetDefaultPawnClass", &AGameModeBase::GetDefaultPawnClass,
+        "SetDefaultPawnClass", &AGameModeBase::SetDefaultPawnClass,
+        "InitGame", &AGameModeBase::InitGame,
+        "StartPlay", &AGameModeBase::StartPlay
+    );
+
+    // --- UWorld Binding Extension (add GameMode support) ---
+    LuaState->set_function("GetGameMode", []() {
+        if (GWorld) {
+            return GWorld->GetGameMode();
+        }
+        return (AGameModeBase*)nullptr;
+    });
 }

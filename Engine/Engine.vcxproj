@@ -366,6 +366,7 @@
     <ClInclude Include="Source\Core\Public\WindowsBinReader.h" />
     <ClInclude Include="Source\Core\Public\WindowsBinWriter.h" />
     <ClInclude Include="Source\Editor\Public\EditorEngine.h" />
+    <ClInclude Include="Source\GameMode\Public\GameModeBase.h" />
     <ClInclude Include="Source\GamePlay\Public\PlayerController.h" />
     <ClInclude Include="Source\GamePlay\Public\PlayerInput.h" />
     <ClInclude Include="Source\Global\BVH.h" />
@@ -438,6 +439,7 @@
     <ClInclude Include="Source\Manager\Time\Public\TimeManager.h" />
     <ClInclude Include="Source\Manager\UI\Public\UIManager.h" />
     <ClInclude Include="Source\Physics\Public\OBB.h" />
+    <ClInclude Include="Source\Player\Public\PlayerCharacter.h" />
     <ClInclude Include="Source\Render\Renderer\Public\DeviceResources.h" />
     <ClInclude Include="Source\Render\Renderer\Public\Pipeline.h" />
     <ClInclude Include="Source\Render\Renderer\Public\Renderer.h" />
@@ -679,6 +681,7 @@
     <ClCompile Include="Source\Editor\Private\GizmoGeometry.cpp" />
     <ClCompile Include="Source\Editor\Private\GizmoMath.cpp" />
     <ClCompile Include="Source\Editor\Private\GizmoRenderer.cpp" />
+    <ClCompile Include="Source\GameMode\Private\GameModeBase.cpp" />
     <ClCompile Include="Source\GamePlay\Private\PlayerController.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -858,6 +861,7 @@
     <ClCompile Include="Source\Manager\UI\Private\ViewportManager.cpp" />
     <ClCompile Include="Source\Optimization\Private\OcclusionCuller.cpp" />
     <ClCompile Include="Source\Optimization\Private\ViewVolumeCuller.cpp" />
+    <ClCompile Include="Source\Pawn\Private\Pawn.cpp" />
     <ClCompile Include="Source\Physics\Private\AABB.cpp" />
     <ClCompile Include="Source\Physics\Private\BoundingCapsule.cpp" />
     <ClCompile Include="Source\Physics\Private\BoundingSphere.cpp" />
@@ -891,6 +895,7 @@
     <ClCompile Include="Source\Manager\Time\Private\TimeManager.cpp" />
     <ClCompile Include="Source\Manager\UI\Private\UIManager.cpp" />
     <ClCompile Include="Source\Physics\Private\OBB.cpp" />
+    <ClCompile Include="Source\Player\Private\PlayerCharacter.cpp" />
     <ClCompile Include="Source\Render\Renderer\Private\DeviceResources.cpp" />
     <ClCompile Include="Source\Render\Renderer\Private\Pipeline.cpp" />
     <ClCompile Include="Source\Render\Renderer\Private\Renderer.cpp" />
@@ -1007,6 +1012,7 @@
     </Content>
     <Content Include="Source\Component\Public\LightComponentBase.h" />
     <Content Include="Source\Manager\Coroutine\Public\LuaCoroutineManager.h" />
+    <Content Include="Source\Pawn\Public\Pawn.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shader\SceneDepthShader.hlsl">
