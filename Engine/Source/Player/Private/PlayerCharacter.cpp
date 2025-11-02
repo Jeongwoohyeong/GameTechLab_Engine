@@ -21,7 +21,7 @@ APlayerCharacter::APlayerCharacter()
 
 	// Mesh 설정 (구체로 표시)
 	MeshComp->SetStaticMesh("Data/Shapes/Sphere.obj");
-	MeshComp->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));  // 크기 조정
+	MeshComp->SetRelativeScale3D(FVector(5.5f, 5.5f, 5.5f));  // 크기 조정
 
 	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
 }

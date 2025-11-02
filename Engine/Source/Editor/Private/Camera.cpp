@@ -6,6 +6,7 @@
 
 #include "Component/Public/PrimitiveComponent.h"
 #include "Level/Public/Level.h"
+#include "Actor/Public/Actor.h"
 
 UCamera::UCamera() :
 	CameraConstants(FCameraConstants()),
@@ -93,9 +94,19 @@ FVector UCamera::UpdateInput()
 
 void UCamera::Update(const D3D11_VIEWPORT& InViewport)
 {
-	// 입력이 활성화되어 있으면 입력 처리
+	// PIE Mode: Follow Target (불법증축!)
+	if (FollowTarget.IsValid())
+	{
+		// 타겟 위치 + 오프셋으로 카메라 위치 설정
+		FVector TargetLocation = FollowTarget->GetActorLocation();
+		RelativeLocation = TargetLocation + FollowOffset;
 
-	if (bInputEnabled)
+		// 플레이어가 보는 방향으로 카메라 방향 설정
+		FQuaternion TargetRotation = FollowTarget->GetActorRotation();
+		SetRotationQuat(TargetRotation);
+	}
+	// 에디터 모드: 입력이 활성화되어 있으면 입력 처리
+	else if (bInputEnabled)
 	{
 		UpdateInput();
 	}
@@ -397,4 +408,25 @@ FVector UCamera::CalculatePlaneNormal(const FVector4& Axis)
 FVector UCamera::CalculatePlaneNormal(const FVector& Axis)
 {
 	return FVector(Axis.X, Axis.Y, Axis.Z).Cross(Forward);
+}
+
+void UCamera::SetFollowTarget(AActor* InTarget, const FVector& InOffset)
+{
+	FollowTarget.Set(InTarget);
+	FollowOffset = InOffset;
+	UE_LOG("[Camera] Follow target set: %s with offset (%.1f, %.1f, %.1f)",
+		InTarget ? InTarget->GetName().ToString().c_str() : "null",
+		InOffset.X, InOffset.Y, InOffset.Z);
+}
+
+void UCamera::ClearFollowTarget()
+{
+	FollowTarget.Reset();
+	FollowOffset = FVector::Zero();
+	UE_LOG("[Camera] Follow target cleared");
+}
+
+bool UCamera::HasFollowTarget() const
+{
+	return FollowTarget.IsValid();
 }

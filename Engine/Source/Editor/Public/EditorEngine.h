@@ -67,7 +67,9 @@ private:
     FWorldContext* GetPIEWorldContext();
     // 현재 PIE 세션 중인지 확인하고, 그렇다면 현재 WorldContext를 반환
     FWorldContext* GetActiveWorldContext();
-    
+    // PIE 카메라의 FollowTarget 정리 (불법증축!)
+    void ClearPIECamera();
+
     EPIEState PIEState = EPIEState::Stopped;
     TArray<FWorldContext> WorldContexts;
     UEditor* EditorModule;

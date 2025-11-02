@@ -3,6 +3,7 @@
 #include "Optimization/Public/ViewVolumeCuller.h"
 
 class UConfigManager;
+class AActor;
 
 enum class ECameraType
 {
@@ -81,7 +82,7 @@ public:
 	// Input enable for main editor camera (disable when hovering other viewports)
 	void SetInputEnabled(bool b) { bInputEnabled = b; }
 	bool GetInputEnabled() const { return bInputEnabled; }
-	
+
 	// Camera Movement Speed Control
 	float GetMoveSpeed() const { return CurrentMoveSpeed; }
 	void SetMoveSpeed(float InSpeed)
@@ -89,6 +90,11 @@ public:
 		CurrentMoveSpeed = clamp(InSpeed, MIN_SPEED, MAX_SPEED);
 	}
 	void AdjustMoveSpeed(float InDelta) { SetMoveSpeed(CurrentMoveSpeed + InDelta); }
+
+	// PIE Mode: Follow Target (불법증축!)
+	void SetFollowTarget(AActor* InTarget, const FVector& InOffset);
+	void ClearFollowTarget();
+	bool HasFollowTarget() const;
 
 	/* *
 	 * @brief 행렬 형태로 저장된 좌표와 변환 행렬과의 연산한 결과를 반환합니다.
@@ -125,7 +131,11 @@ private:
 	// Whether this camera consumes input (movement/rotation). Only used by editor main camera.
 	bool bInputEnabled = true;
 	bool bIsMainDrraging = false;
-	
+
 	// Dynamic Movement Speed
 	float CurrentMoveSpeed = DEFAULT_SPEED;
+
+	// PIE Mode: Follow Target (불법증축!)
+	TWeakObjectPtr<AActor> FollowTarget;
+	FVector FollowOffset = FVector::Zero();
 };

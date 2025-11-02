@@ -6,6 +6,9 @@
 #include "Manager/Config/Public/ConfigManager.h"
 #include "Manager/Path/Public/PathManager.h"
 #include "Manager/UI/Public/ViewportManager.h"
+#include "Render/UI/Viewport/Public/Viewport.h"
+#include "Render/UI/Viewport/Public/ViewportClient.h"
+#include "Editor/Public/Camera.h"
 
 IMPLEMENT_CLASS(UEditorEngine, UObject)
 UEditorEngine* GEditor = nullptr;
@@ -144,6 +147,9 @@ void UEditorEngine::EndPIE()
         return;
     }
     PIEState = EPIEState::Stopped;
+
+    // 불법증축: PIE 카메라의 FollowTarget 정리
+    ClearPIECamera();
 
     // PIE 전용 뷰포트 인덱스 리셋
     UViewportManager::GetInstance().SetPIEActiveViewportIndex(-1);
@@ -319,8 +325,27 @@ FWorldContext* UEditorEngine::GetActiveWorldContext()
     {
         return PIEContext;
     }
-    
+
     if (!WorldContexts.empty()) { return &WorldContexts[0]; }
 
     return nullptr;
+}
+
+void UEditorEngine::ClearPIECamera()
+{
+    UViewportManager& ViewportManager = UViewportManager::GetInstance();
+
+    // 모든 뷰포트의 카메라에서 FollowTarget 제거
+    for (FViewport* Viewport : ViewportManager.GetViewports())
+    {
+        if (Viewport && Viewport->GetViewportClient())
+        {
+            UCamera* Camera = Viewport->GetViewportClient()->GetCamera();
+            if (Camera && Camera->HasFollowTarget())
+            {
+                Camera->ClearFollowTarget();
+                Camera->SetInputEnabled(true);  // 에디터 입력 다시 활성화
+            }
+        }
+    }
 }
