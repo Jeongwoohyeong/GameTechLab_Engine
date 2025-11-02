@@ -37,7 +37,7 @@ private:
 	// Transform display mode (true: World/Absolute, false: Local/Relative)
 	bool bShowWorldLocation = false;
 	bool bShowWorldRotation = false;
-
+	bool bShowWorldScale = false;
 	FString SelectedScriptFolder;
 	FString SelectedScriptFile;
 
