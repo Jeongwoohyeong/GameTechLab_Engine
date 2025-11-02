@@ -440,6 +440,7 @@
     <ClInclude Include="Source\Manager\UI\Public\UIManager.h" />
     <ClInclude Include="Source\Physics\Public\CollisionUtil.h" />
     <ClInclude Include="Source\Physics\Public\OBB.h" />
+    <ClInclude Include="Source\Pawn\Public\Pawn.h" />
     <ClInclude Include="Source\Player\Public\PlayerCharacter.h" />
     <ClInclude Include="Source\Render\Renderer\Public\DeviceResources.h" />
     <ClInclude Include="Source\Render\Renderer\Public\Pipeline.h" />
@@ -705,6 +706,7 @@
     <ClCompile Include="Source\Manager\UI\Private\ViewportManager.cpp" />
     <ClCompile Include="Source\Optimization\Private\OcclusionCuller.cpp" />
     <ClCompile Include="Source\Optimization\Private\ViewVolumeCuller.cpp" />
+    <ClCompile Include="Source\GameMode\Private\GameModeBase.cpp" />
     <ClCompile Include="Source\Pawn\Private\Pawn.cpp" />
     <ClCompile Include="Source\Physics\Private\AABB.cpp" />
     <ClCompile Include="Source\Physics\Private\BoundingCapsule.cpp" />
