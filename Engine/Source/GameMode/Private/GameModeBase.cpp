@@ -125,7 +125,7 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 	}
 
 	// Spawn the pawn at origin (you can customize spawn location)
-	APawn* NewPawn = Cast<APawn>(
+	APawn* NewPawn = Cast<APlayerCharacter>(
 		OwningWorld->SpawnActor(DefaultPawnClass)
 	);
 

@@ -1037,6 +1037,12 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 		}
 		else if (auto EditorIcon = Cast<UEditorIconComponent>(Prim))
 		{
+			// PIE 모드에서는 EditorIcon 렌더링 스킵
+			if (WorldToRender->GetWorldType() == EWorldType::PIE)
+			{
+				continue;
+			}
+
 			// Pilot Mode: 현재 조종 중인 Actor의 아이콘은 렌더링 스킵
 			UEditor* Editor = GEditor ? GEditor->GetEditorModule() : nullptr;
 			bool bShouldSkip = false;
