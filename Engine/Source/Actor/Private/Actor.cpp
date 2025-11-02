@@ -224,8 +224,14 @@ UClass* AActor::GetDefaultRootComponent()
 
 void AActor::InitializeComponents()
 {
-	USceneComponent* SceneComp = Cast<USceneComponent>(CreateDefaultSubobject(GetDefaultRootComponent()));
-	SetRootComponent(SceneComp);
+	// Only create RootComponent if it doesn't exist yet
+	// (Constructor may have already created it)
+	USceneComponent* SceneComp = GetRootComponent();
+	if (!SceneComp)
+	{
+		SceneComp = Cast<USceneComponent>(CreateDefaultSubobject(GetDefaultRootComponent()));
+		SetRootComponent(SceneComp);
+	}
 
 	if (SceneComp->IsA(ULightComponent::StaticClass()))
 	{
