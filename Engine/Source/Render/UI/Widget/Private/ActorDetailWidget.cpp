@@ -200,20 +200,15 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 	}
 
 	ImGui::Spacing();
-	bool bUseScript = InSelectedActor->IsUsingScript();
-	if (ImGui::Checkbox("Use Lua Script", &bUseScript))
-	{
-		InSelectedActor->SetUseScript(bUseScript);
-		if (bUseScript)
-		{
-			InSelectedActor->BindSelfLuaProperties();
-		}
-	}
 
 	FString ScriptPath = InSelectedActor->GetLuaScriptPathName();
 	bool bHasScript = !ScriptPath.empty();
 
-	ImGui::SameLine();
+	// 버튼 스타일 - 검은색 계열
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+
 	if (ImGui::Button("Create Script"))
 	{
 		//  현재 엔진 루트에서 template.lua를 찾아, 선택된 액터만의 스크립트 파일을 만들어 줌
@@ -222,10 +217,9 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 		{
 			ScriptPath = InSelectedActor->GetLuaScriptPathName();
 			bHasScript = !ScriptPath.empty();
-			bUseScript = InSelectedActor->IsUsingScript();
 		}
 	}
-	
+
 	ImGui::SameLine();
 	if (ImGui::Button("Edit Script"))
 	{
@@ -238,8 +232,9 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 		DetachLuaScript(InSelectedActor);
 		ScriptPath = InSelectedActor->GetLuaScriptPathName();
 		bHasScript = !ScriptPath.empty();
-		bUseScript = InSelectedActor->IsUsingScript();
 	}
+
+	ImGui::PopStyleColor(3);
 
 	ImGui::NewLine();
 
@@ -255,6 +250,11 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 			}
 		}
 		std::sort(SceneFolders.begin(), SceneFolders.end());
+
+		// 콤보박스 스타일 - 검은색 계열
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
 
 		const char* ScenePreview = SelectedScriptFolder.empty() ? "Select Scene" : SelectedScriptFolder.c_str();
 		if (ImGui::BeginCombo("Scene##LuaScript", ScenePreview))
@@ -303,7 +303,6 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 							{
 								ScriptPath = InSelectedActor->GetLuaScriptPathName();
 								bHasScript = !ScriptPath.empty();
-								bUseScript = InSelectedActor->IsUsingScript();
 							}
 						}
 						if (bScriptSelected)
@@ -324,6 +323,8 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 	{
 		ImGui::TextColored(ImVec4(0.8f, 0.4f, 0.4f, 1.0f), "Scripts folder not found: %s", ScriptsRoot.string().c_str());
 	}
+
+	ImGui::PopStyleColor(3);
 
 	if (bHasScript)
 	{
