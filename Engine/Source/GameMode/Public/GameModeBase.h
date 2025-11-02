@@ -3,6 +3,7 @@
 #include "Global/WeakObjectPtr.h"
 #include "Core/Public/Class.h"
 
+class APlayerCharacter;
 class APlayerController;
 class APawn;
 class UWorld;
@@ -40,9 +41,6 @@ public:
     // Setters
     void SetDefaultPawnClass(UClass* InPawnClass);
 
-    // Enemy
-    void SpawnEnemy();
-
 protected:
     // Default pawn class to spawn for players
     UClass* DefaultPawnClass = nullptr;
@@ -50,7 +48,7 @@ protected:
     // TODO 시스템 완성 후 다수의 적 배열로 관리
     //TArray<TWeakObjectPtr<UClass>> Enemies;
 
-    UClass* Enemy = nullptr;
+    TArray<TWeakObjectPtr<APawn>> Enemies = {};
 
     // Reference to the player controller
     TWeakObjectPtr<APlayerController> PlayerController;

@@ -5,6 +5,7 @@
 #include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
+#include "Component/Public/ULuaScriptComponent.h"
 
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
@@ -80,18 +81,33 @@ void APlayerCharacter::MoveRight(float Value)
 void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (ULuaScriptComponent* ScriptComponent = GetLuaScriptComponent())
+	{
+		ScriptComponent->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
+		                                  OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	}
 	UE_LOG("Player Character Begin Overlap");
 }
 
-void APlayerCharacter::OnEndOverlap(UPrimitiveComponent*, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex)
+void APlayerCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex)
 {
+	if (ULuaScriptComponent* ScriptComponent = GetLuaScriptComponent())
+	{
+		ScriptComponent->ActivateFunction("OnEndOverlap", OverlappedComp, OtherActor,
+		                                  OtherComp, OtherBodyIndex);
+	}
 	UE_LOG("Player Character End Overlap");
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& OutHit)
 {
+	if (ULuaScriptComponent* ScriptComponent = GetLuaScriptComponent())
+	{
+		ScriptComponent->ActivateFunction("OnHit", OverlappedComp, OtherActor,
+		                                  OtherComp, NormalImpulse, OutHit);
+	}
 	UE_LOG("Player Character Hit");
 }
 

@@ -25,6 +25,8 @@
 #include <vector>
 #include <system_error>
 
+#include "GameMode/Public/GameMode.h"
+
 // Helper functions for safe pointer access with SEH
 // These functions are separated to avoid C2712 error (can't use __try with objects that have destructors)
 namespace
@@ -717,6 +719,15 @@ void FLuaScriptManager::BindTypes()
         "bGenerateHitEvents", &UPrimitiveComponent::bGenerateHitEvents
     );
 
+    // --- FHitResult Binding ---
+    LuaState->new_usertype<FHitResult>("FHitResult",
+        "Component", &FHitResult::Component,
+        "Actor", &FHitResult::Actor,
+        "ImpactPoint", &FHitResult::ImpactPoint,
+        "ImpactNormal", &FHitResult::ImpactNormal,
+        "Distance", &FHitResult::Distance
+        );
+
     // --- UMeshComponent Binding (inherits from UPrimitiveComponent) ---
     LuaState->new_usertype<UMeshComponent>("UMeshComponent",
         sol::no_constructor,
@@ -766,7 +777,10 @@ void FLuaScriptManager::BindTypes()
         sol::base_classes, sol::bases<APawn>(),
         "GetName", &GetNameAsString<APlayerCharacter>,
         "MoveForward", &APlayerCharacter::MoveForward,
-        "MoveRight", &APlayerCharacter::MoveRight
+        "MoveRight", &APlayerCharacter::MoveRight,
+        "OnBeginOverlap", &APlayerCharacter::OnBeginOverlap,
+        "OnEndOverlap", &APlayerCharacter::OnEndOverlap,
+        "OnHit", &APlayerCharacter::OnHit
     );
 
     // --- APlayerController Binding (inherits from AActor) ---
@@ -790,11 +804,21 @@ void FLuaScriptManager::BindTypes()
         "StartPlay", &AGameModeBase::StartPlay
     );
 
+    // --- AGameMode Binding (inherits from AGameModeBase) ---
+    LuaState->new_usertype<AGameMode>("AGameMode",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<AGameModeBase>(),
+        "ChangeState", &AGameMode::ChangeState,
+        "SpawnPlayerCharacter", &AGameMode::SpawnPlayerCharacter,
+        "InitializeEnemyPool", &AGameMode::InitializeEnemyPool,
+        "SpawnEnemies", &AGameMode::SpawnEnemies
+        );
+
     // --- UWorld Binding Extension (add GameMode support) ---
     LuaState->set_function("GetGameMode", []() {
         if (GWorld) {
             return GWorld->GetGameMode();
         }
-        return (AGameModeBase*)nullptr;
+        return (AGameMode*)nullptr;
     });
 }

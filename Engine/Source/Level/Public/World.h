@@ -4,6 +4,7 @@
 #include "Global/Types.h"
 #include "Global/WeakObjectPtr.h"
 
+class AGameMode;
 class UEditor;
 class ULevel;
 class AActor;
@@ -66,9 +67,9 @@ public:
 	void SetWorldType(EWorldType InWorldType);
 
 	// GameMode Management
-	AGameModeBase* GetGameMode() const { return GameMode.Get(); }
+	AGameMode* GetGameMode() const { return GameMode.Get(); }
 	void SetGameModeClass(UClass* InGameModeClass);
-	AGameModeBase* SpawnGameMode();
+	AGameMode* SpawnGameMode();
 
 private:
 	EWorldType WorldType;
@@ -77,7 +78,7 @@ private:
 	TArray<AActor*> PendingDestroyActors;
 
 	// GameMode for this world (only in Game/PIE mode)
-	TWeakObjectPtr<AGameModeBase> GameMode;
+	TWeakObjectPtr<AGameMode> GameMode;
 	UClass* GameModeClass = nullptr;
 
 	void FlushPendingDestroy(); // Destroy marking 된 액터들을 실제 삭제

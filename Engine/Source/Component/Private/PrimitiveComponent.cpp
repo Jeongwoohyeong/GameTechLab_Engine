@@ -194,6 +194,14 @@ void UPrimitiveComponent::DuplicateSubObjects(UObject* DuplicatedObject)
 	Super::DuplicateSubObjects(DuplicatedObject);
 
 }
+
+void UPrimitiveComponent::SetCollisionEnabled(bool bIsEnable)
+{
+	bGenerateHitEvents = bIsEnable;
+	bGenerateHitEvents = bIsEnable;
+	bBlockComponent = bIsEnable;
+}
+
 void UPrimitiveComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);

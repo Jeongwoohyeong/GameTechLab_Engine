@@ -366,6 +366,7 @@
     <ClInclude Include="Source\Core\Public\WindowsBinReader.h" />
     <ClInclude Include="Source\Core\Public\WindowsBinWriter.h" />
     <ClInclude Include="Source\Editor\Public\EditorEngine.h" />
+    <ClInclude Include="Source\GameMode\Public\GameMode.h" />
     <ClInclude Include="Source\GameMode\Public\GameModeBase.h" />
     <ClInclude Include="Source\GamePlay\Public\PlayerController.h" />
     <ClInclude Include="Source\GamePlay\Public\PlayerInput.h" />
@@ -683,6 +684,7 @@
     <ClCompile Include="Source\Editor\Private\GizmoGeometry.cpp" />
     <ClCompile Include="Source\Editor\Private\GizmoMath.cpp" />
     <ClCompile Include="Source\Editor\Private\GizmoRenderer.cpp" />
+    <ClCompile Include="Source\GameMode\Private\GameMode.cpp" />
     <ClCompile Include="Source\GamePlay\Private\PlayerController.cpp" />
     <ClCompile Include="Source\GamePlay\Private\PlayerInput.cpp" />
     <ClCompile Include="Source\Global\BVH.cpp" />

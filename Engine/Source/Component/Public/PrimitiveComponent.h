@@ -72,7 +72,7 @@ public:
 
 	// 다른 곳에서 사용할 인덱스
 	mutable int32 CachedAABBIndex = -1;
-	mutable uint32 CachedFrame = 0;
+	mutable uint32 CachedFrame = 0;	
 
 protected:
 	const TArray<FNormalVertex>* Vertices = nullptr;
@@ -110,6 +110,8 @@ protected:
  *	Collision Section
    ========================= */
 public:
+	// 충돌 판정 모두 false처리
+	void SetCollisionEnabled(bool bIsEnable);
 	// 충돌/오버랩 설정
 	bool bGenerateOverlapEvents = true; // 오버랩 이벤트 생성 여부
     bool bGenerateHitEvents = false;  // Hit 이벤트 생성 여부

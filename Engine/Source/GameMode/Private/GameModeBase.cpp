@@ -18,7 +18,7 @@ AGameModeBase::AGameModeBase()
 	DefaultPawnClass = APlayerCharacter::StaticClass();
 
 	// Test Enemy
-	Enemy = APlayerCharacter::StaticClass();
+	//Enemy = APlayerCharacter::StaticClass();
 }
 
 AGameModeBase::~AGameModeBase()
@@ -38,8 +38,8 @@ void AGameModeBase::StartPlay()
 	UE_LOG("[GameMode] StartPlay called");
 
 	// Initialize player controller and spawn default pawn
-	InitializePlayerController();
-	SpawnEnemy();
+	// InitializePlayerController();
+	// SpawnEnemy();
 }
 
 void AGameModeBase::BeginPlay()
@@ -200,30 +200,24 @@ void AGameModeBase::SetDefaultPawnClass(UClass* InPawnClass)
 	}
 }
 
-void AGameModeBase::SpawnEnemy()
-{
-	if (!Enemy)
-	{
-		UE_LOG_ERROR("[GameMode] Enemy is Null");
-		return;
-	}
-
-	if (!OwningWorld)
-	{
-		UE_LOG_ERROR("[GameMode] Cannot spawn enemy pawn: No owning world");
-		return;
-	}
-	
-	// 적을 월드에 스폰
-	APawn* EnemyPawn = Cast<APlayerCharacter>(OwningWorld->SpawnActor(Enemy));
-
-	if (!EnemyPawn)
-	{
-		UE_LOG_ERROR("[GameMode] Enemy world spawn failed");
-		return;
-	}
-
-	FVector SpawnLocation(0.0f, 0.0f, 0.0f);
-	EnemyPawn->SetActorLocation(SpawnLocation);
-	EnemyPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f));
-}
+// void AGameModeBase::SpawnEnemy()
+// {
+// 	if (!Enemy)
+// 	{
+// 		UE_LOG_ERROR("[GameMode] Enemy is Null");
+// 		return;
+// 	}
+// 	
+// 	// 적을 월드에 스폰
+// 	APawn* EnemyPawn = Cast<APlayerCharacter>(OwningWorld->SpawnActor(Enemy));
+//
+// 	if (!EnemyPawn)
+// 	{
+// 		UE_LOG_ERROR("[GameMode] Enemy world spawn failed");
+// 		return;
+// 	}
+//
+// 	FVector SpawnLocation(0.0f, 0.0f, 0.0f);
+// 	EnemyPawn->SetActorLocation(SpawnLocation);
+// 	EnemyPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f));
+// }
