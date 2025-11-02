@@ -231,7 +231,15 @@ void UActorDetailWidget::RenderActorHeader(AActor* InSelectedActor)
 	{
 		EditLuaScript(ScriptPath);
 	}
-	
+
+	ImGui::SameLine();
+	if (ImGui::Button("Detach Script"))
+	{
+		DetachLuaScript(InSelectedActor);
+		ScriptPath = InSelectedActor->GetLuaScriptPathName();
+		bHasScript = !ScriptPath.empty();
+		bUseScript = InSelectedActor->IsUsingScript();
+	}
 
 	ImGui::NewLine();
 
@@ -544,6 +552,40 @@ void UActorDetailWidget::EditLuaScript(const FString& ScriptPath)
 #else
     UE_LOG_WARNING("ActorDetailWidget: Edit Script is not supported on this platform.");
 #endif
+}
+
+void UActorDetailWidget::DetachLuaScript(AActor* InSelectedActor)
+{
+    if (!InSelectedActor)
+    {
+        UE_LOG_WARNING("ActorDetailWidget: Cannot detach script - No actor selected");
+        return;
+    }
+
+    FString CurrentScriptPath = InSelectedActor->GetLuaScriptPathName();
+    if (CurrentScriptPath.empty())
+    {
+        UE_LOG_WARNING("ActorDetailWidget: Actor has no script attached");
+        return;
+    }
+
+    // Lua 스크립트 컴포넌트에서 스크립트 해제
+    if (ULuaScriptComponent* LuaComponent = InSelectedActor->GetLuaScriptComponent())
+    {
+        LuaComponent->SetScriptName("");
+    }
+
+    // Actor의 UseScript 플래그 끄기
+    InSelectedActor->SetUseScript(false);
+
+    // UI 상태 초기화
+    SelectedScriptFolder.clear();
+    SelectedScriptFile.clear();
+    SyncScriptSelection(InSelectedActor);
+
+    UE_LOG_SUCCESS("ActorDetailWidget: Detached Lua script '%s' from actor '%s'",
+                   CurrentScriptPath.c_str(),
+                   InSelectedActor->GetName().ToString().c_str());
 }
 
 
