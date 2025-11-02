@@ -4,6 +4,9 @@
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Component/Public/ActorComponent.h"
 #include "Component/Public/SceneComponent.h"
+#include "Component/Public/PrimitiveComponent.h"
+#include "Component/Mesh/Public/MeshComponent.h"
+#include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Actor/Public/Actor.h"
 #include "Global/Vector.h"
 #include "Global/Quaternion.h"
@@ -70,6 +73,37 @@ namespace
 #else
         return Owner->HasBegunPlay();
 #endif
+    }
+}
+
+// Lua Binding Helper Templates
+namespace LuaBindingHelpers
+{
+    // Enum을 문자열로 받는 메서드 바인딩 헬퍼
+    template<typename ClassType, typename EnumType, typename MethodType>
+    auto BindEnumMethod(MethodType method)
+    {
+        return [method](ClassType* obj, const std::string& enumName) -> bool {
+            auto enumValue = TEnumReflector<EnumType>::FromString(enumName.c_str());
+            if (enumValue.has_value()) {
+                return (obj->*method)(enumValue.value());
+            }
+            return false;
+        };
+    }
+
+    // FName을 문자열로 반환하는 GetName 헬퍼
+    template<typename T>
+    std::string GetNameAsString(const T& obj)
+    {
+        return obj.GetName().ToString();
+    }
+
+    // UUID를 int로 반환하는 헬퍼
+    template<typename T>
+    int GetUUIDAsInt(T& obj)
+    {
+        return obj.GetUUID();
     }
 }
 
@@ -483,6 +517,8 @@ void FLuaScriptManager::ReloadScript(const std::string& filePath)
 
 void FLuaScriptManager::BindTypes()
 {
+    using namespace LuaBindingHelpers;
+
     // Create EngineTypes table
     sol::table EngineTypes = LuaState->create_table("EngineTypes");
 
@@ -531,6 +567,25 @@ void FLuaScriptManager::BindTypes()
         sol::meta_function::multiplication, &FQuaternion::operator*
     );
 
+    // --- FVector4 Binding ---
+    EngineTypes.new_usertype<FVector4>("FVector4",
+        sol::call_constructor,
+        sol::constructors<FVector4(), FVector4(float, float, float, float)>(),
+        // Variables
+        "X", &FVector4::X,
+        "Y", &FVector4::Y,
+        "Z", &FVector4::Z,
+        "W", &FVector4::W,
+        // Operators
+        sol::meta_function::addition, sol::resolve<FVector4(const FVector4&) const>(&FVector4::operator+),
+        sol::meta_function::subtraction, sol::resolve<FVector4(const FVector4&) const>(&FVector4::operator-),
+        sol::meta_function::multiplication, sol::resolve<FVector4(float) const>(&FVector4::operator*),
+        sol::meta_function::division, &FVector4::operator/,
+        // Static functions
+        "Zero", &FVector4::ZeroVector,
+        "One", &FVector4::OneVector
+    );
+
     // --- AActor Binding ---
     LuaState->new_usertype<AActor>("AActor",
         sol::no_constructor,
@@ -551,9 +606,9 @@ void FLuaScriptManager::BindTypes()
         "GetOwnedComponents", &AActor::GetOwnedComponents,
         "GetRootComponent", &AActor::GetRootComponent,
         // Misc
-        "GetName", [](const AActor& actor) { return actor.GetName().ToString(); },
+        "GetName", &GetNameAsString<AActor>,
         "GetUUID", &AActor::GetUUID,
-        "UUID", sol::property([](AActor& actor) { return actor.GetUUID(); }),
+        "UUID", sol::property(&GetUUIDAsInt<AActor>),
         "PrintLocation", &AActor::PrintLocation,
         "SetIsPendingDestroy", &AActor::SetIsPendingDestroy,
         "IsPendingDestroy", &AActor::IsPendingDestroy
@@ -571,28 +626,10 @@ void FLuaScriptManager::BindTypes()
 
     LuaState->new_usertype<UInputManager>("UInputManager",
         sol::no_constructor,
-        // Keyboard input
-        "IsKeyDown", [](UInputManager* im, const std::string& keyName) {
-            auto keyEnum = TEnumReflector<EKeyInput>::FromString(keyName.c_str());
-            if (keyEnum.has_value()) {
-                return im->IsKeyDown(keyEnum.value());
-            }
-            return false;
-        },
-        "IsKeyPressed", [](UInputManager* im, const std::string& keyName) {
-            auto keyEnum = TEnumReflector<EKeyInput>::FromString(keyName.c_str());
-            if (keyEnum.has_value()) {
-                return im->IsKeyPressed(keyEnum.value());
-            }
-            return false;
-        },
-        "IsKeyReleased", [](UInputManager* im, const std::string& keyName) {
-            auto keyEnum = TEnumReflector<EKeyInput>::FromString(keyName.c_str());
-            if (keyEnum.has_value()) {
-                return im->IsKeyReleased(keyEnum.value());
-            }
-            return false;
-        },
+        // Keyboard input (템플릿 헬퍼 사용)
+        "IsKeyDown", BindEnumMethod<UInputManager, EKeyInput>(&UInputManager::IsKeyDown),
+        "IsKeyPressed", BindEnumMethod<UInputManager, EKeyInput>(&UInputManager::IsKeyPressed),
+        "IsKeyReleased", BindEnumMethod<UInputManager, EKeyInput>(&UInputManager::IsKeyReleased),
         // Mouse input
         "GetMousePosition", &UInputManager::GetMousePosition,
         "GetMouseDelta", &UInputManager::GetMouseDelta,
@@ -624,7 +661,7 @@ void FLuaScriptManager::BindTypes()
     // --- UActorComponent Binding ---
     LuaState->new_usertype<UActorComponent>("UActorComponent",
         sol::no_constructor,
-        "GetName", [](const UActorComponent& comp) { return comp.GetName().ToString(); },
+        "GetName", &GetNameAsString<UActorComponent>,
         "GetOwner", &UActorComponent::GetOwner,
         "CanEverTick", &UActorComponent::CanEverTick,
         "SetCanEverTick", &UActorComponent::SetCanEverTick,
@@ -637,7 +674,7 @@ void FLuaScriptManager::BindTypes()
     LuaState->new_usertype<USceneComponent>("USceneComponent",
         sol::no_constructor,
         sol::base_classes, sol::bases<UActorComponent>(),
-        "GetName", [](const USceneComponent& comp) { return comp.GetName().ToString(); },
+        "GetName", &GetNameAsString<USceneComponent>,
         "GetOwner", &USceneComponent::GetOwner,
         // Relative transforms (local to parent)
         "GetRelativeLocation", &USceneComponent::GetRelativeLocation,
@@ -651,5 +688,60 @@ void FLuaScriptManager::BindTypes()
         "GetWorldRotation", &USceneComponent::GetWorldRotation,  // Returns FVector (Euler angles)
         "GetWorldRotationAsQuaternion", &USceneComponent::GetWorldRotationAsQuaternion,
         "GetWorldScale3D", &USceneComponent::GetWorldScale3D
+    );
+
+    // --- UPrimitiveComponent Binding (inherits from USceneComponent) ---
+    LuaState->new_usertype<UPrimitiveComponent>("UPrimitiveComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<USceneComponent>(),
+        "GetName", &GetNameAsString<UPrimitiveComponent>,
+        "GetOwner", &UPrimitiveComponent::GetOwner,
+        // Visibility
+        "IsVisible", &UPrimitiveComponent::IsVisible,
+        "SetVisibility", &UPrimitiveComponent::SetVisibility,
+        // Picking
+        "CanPick", &UPrimitiveComponent::CanPick,
+        "SetCanPick", &UPrimitiveComponent::SetCanPick,
+        // Color
+        "GetColor", &UPrimitiveComponent::GetColor,
+        "SetColor", &UPrimitiveComponent::SetColor,
+        // Collision/Overlap
+        "IsOverlappingComponent", &UPrimitiveComponent::IsOverlappingComponent,
+        "IsOverlappingActor", &UPrimitiveComponent::IsOverlappingActor,
+        // Collision settings
+        "bGenerateOverlapEvents", &UPrimitiveComponent::bGenerateOverlapEvents,
+        "bGenerateHitEvents", &UPrimitiveComponent::bGenerateHitEvents
+    );
+
+    // --- UMeshComponent Binding (inherits from UPrimitiveComponent) ---
+    LuaState->new_usertype<UMeshComponent>("UMeshComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UPrimitiveComponent>(),
+        "GetName", &GetNameAsString<UMeshComponent>,
+        "GetOwner", &UMeshComponent::GetOwner
+    );
+
+    // --- UStaticMeshComponent Binding (inherits from UMeshComponent) ---
+    LuaState->new_usertype<UStaticMeshComponent>("UStaticMeshComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UMeshComponent>(),
+        "GetName", &GetNameAsString<UStaticMeshComponent>,
+        "GetOwner", &UStaticMeshComponent::GetOwner,
+        // Static Mesh
+        "GetStaticMesh", &UStaticMeshComponent::GetStaticMesh,
+        "SetStaticMesh", &UStaticMeshComponent::SetStaticMesh,
+        // Material
+        "GetMaterial", &UStaticMeshComponent::GetMaterial,
+        "SetMaterial", &UStaticMeshComponent::SetMaterial,
+        // Scroll
+        "EnableScroll", &UStaticMeshComponent::EnableScroll,
+        "DisableScroll", &UStaticMeshComponent::DisableScroll,
+        "IsScrollEnabled", &UStaticMeshComponent::IsScrollEnabled,
+        "GetElapsedTime", &UStaticMeshComponent::GetElapsedTime,
+        "SetElapsedTime", &UStaticMeshComponent::SetElapsedTime,
+        // Normal Map
+        "EnableNormalMap", &UStaticMeshComponent::EnableNormalMap,
+        "DisableNormalMap", &UStaticMeshComponent::DisableNormalMap,
+        "IsNormalMapEnabled", &UStaticMeshComponent::IsNormalMapEnabled
     );
 }
