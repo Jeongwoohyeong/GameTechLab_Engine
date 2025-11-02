@@ -152,12 +152,16 @@ void UAssetManager::LoadAllObjStaticMesh()
 	for (const FName& ObjPath : ObjList)
 	{
 		// FObjManager가 UStaticMesh 포인터를 반환한다고 가정합니다.
+		// 주의: LoadObjStaticMesh 내부에서 이미 AddStaticMeshToCache를 호출하여
+		// StaticMeshCache에 추가하므로 여기서 다시 추가하면 double delete 발생!
 		UStaticMesh* LoadedMesh = FObjManager::LoadObjStaticMesh(ObjPath, Config);
 
 		// 로드에 성공했는지 확인합니다.
 		if (LoadedMesh)
 		{
-			StaticMeshCache.emplace(ObjPath, LoadedMesh);
+			// TODO - 올바른 해결법이 아닐지도
+			// StaticMeshCache.emplace(ObjPath, LoadedMesh);
+			// 위 줄 삭제됨: LoadObjStaticMesh에서 이미 캐시에 추가하므로 중복 방지
 
 			StaticMeshVertexBuffers.emplace(ObjPath, this->CreateVertexBuffer(LoadedMesh->GetVertices()));
 			StaticMeshIndexBuffers.emplace(ObjPath, this->CreateIndexBuffer(LoadedMesh->GetIndices()));
