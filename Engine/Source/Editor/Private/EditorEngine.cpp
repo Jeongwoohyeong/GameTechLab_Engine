@@ -405,6 +405,7 @@ void UEditorEngine::ClearPIECamera()
             {
                 Camera->ClearFollowTarget();
                 Camera->SetInputEnabled(true);  // 에디터 입력 다시 활성화
+                Camera->SetFovY(90.0f);  // FOV를 에디터 기본값으로 복구
             }
         }
     }
