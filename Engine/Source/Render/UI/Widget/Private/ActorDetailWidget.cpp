@@ -1298,29 +1298,74 @@ void UActorDetailWidget::RenderTransformEdit()
 	// 드래그 상태 업데이트
 	bIsDraggingRotation = bIsAnyItemActive;
 
-	// Scale (항상 Relative Scale 표시)
-	FVector ComponentScale = SceneComponent->GetRelativeScale3D();
+	// Scale (캐싱 방식으로 드래그 중 실시간 업데이트)
+	static FVector CachedScale = FVector::OneVector();
+	static bool bIsDraggingScale = false;
+	static USceneComponent* LastDraggedScaleComponent = nullptr;
+	static bool LastShowWorldScale = false;
+
+	// 컴포넌트 전환 또는 World/Local 모드 전환 시 캐싱
+	if (LastDraggedScaleComponent != SceneComponent || LastShowWorldScale != bShowWorldScale)
+	{
+		CachedScale = bShowWorldScale ? SceneComponent->GetWorldScale3D() : SceneComponent->GetRelativeScale3D();
+		LastDraggedScaleComponent = SceneComponent;
+		LastShowWorldScale = bShowWorldScale;
+		bIsDraggingScale = false;
+	}
+
+	// 드래그 중이 아닐 때만 동기화
+	if (!bIsDraggingScale)
+	{
+		CachedScale = bShowWorldScale ? SceneComponent->GetWorldScale3D() : SceneComponent->GetRelativeScale3D();
+	}
+
 	bool bUniformScale = SceneComponent->IsUniformScale();
+
 	if (bUniformScale)
 	{
-		float UniformScale = ComponentScale.X;
+		// Uniform Scale 모드
+		float UniformScale = CachedScale.X;
 		bool ScaleChanged = false;
 
-		// Scale Label (드롭다운 메뉴, 선택지는 하나만)
+		// Scale Label (드롭다운 메뉴)
+		bool bIsAbsoluteScale = SceneComponent->IsUsingAbsoluteScale();
+		const char* ScaleLabel = bIsAbsoluteScale ? "Absolute Scale" : "Scale";
 		ImGui::SetNextItemWidth(120.0f);
-		if (ImGui::BeginCombo("##ScaleMode", "Scale", ImGuiComboFlags_NoArrowButton))
+		if (ImGui::BeginCombo("##ScaleMode", ScaleLabel, ImGuiComboFlags_NoArrowButton))
 		{
-			ImGui::Selectable("Scale", true);
+			if (ImGui::Selectable("Absolute Scale", bIsAbsoluteScale))
+			{
+				if (!bIsAbsoluteScale)
+				{
+					// 현재 월드 스케일을 유지하면서 Absolute로 전환
+					FVector CurrentWorldScale = SceneComponent->GetWorldScale3D();
+					SceneComponent->SetAbsoluteScale(true);
+					SceneComponent->SetRelativeScale3D(CurrentWorldScale);
+				}
+				bShowWorldScale = true;
+				CachedScale = SceneComponent->GetWorldScale3D();
+				LastShowWorldScale = bShowWorldScale;
+				bIsDraggingScale = false;
+			}
+			if (ImGui::Selectable("Scale", !bIsAbsoluteScale))
+			{
+				if (bIsAbsoluteScale)
+				{
+					// 현재 월드 스케일을 유지하면서 Relative로 전환
+					FVector CurrentWorldScale = SceneComponent->GetWorldScale3D();
+					SceneComponent->SetAbsoluteScale(false);
+					SceneComponent->SetWorldScale3D(CurrentWorldScale);
+				}
+				bShowWorldScale = false;
+				CachedScale = SceneComponent->GetRelativeScale3D();
+				LastShowWorldScale = bShowWorldScale;
+				bIsDraggingScale = false;
+			}
 			ImGui::EndCombo();
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Scale is always relative");
 		}
 		ImGui::SameLine();
 
 		ImVec2 PosScale = ImGui::GetCursorScreenPos();
-		// Uniform Scale 너비 = (75 * 3) + (간격 * 2)
 		const float ItemWidth = 75.0f;
 		const float ItemSpacing = ImGui::GetStyle().ItemSpacing.x;
 		const float UniformScaleWidth = (ItemWidth * 3.0f) + (ItemSpacing * 2.0f);
@@ -1328,8 +1373,12 @@ void UActorDetailWidget::RenderTransformEdit()
 
 		ScaleChanged = ImGui::DragFloat("##UniformScale", &UniformScale, 0.1f, 0.0f, 0.0f, "%.3f");
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Scale: %.3f", UniformScale); }
+
+		bool bIsAnyScaleItemActive = ImGui::IsItemActive();
+
 		ImVec2 SizeScale = ImGui::GetItemRectSize();
-		DrawList->AddLine(ImVec2(PosScale.x + 5, PosScale.y + 2), ImVec2(PosScale.x + 5, PosScale.y + SizeScale.y - 2), IM_COL32(255, 255, 255, 255), 2.0f);
+		DrawList->AddLine(ImVec2(PosScale.x + 5, PosScale.y + 2), ImVec2(PosScale.x + 5, PosScale.y + SizeScale.y - 2),
+			IM_COL32(255, 255, 255, 255), 2.0f);
 		ImGui::SameLine();
 
 		// Reset button
@@ -1342,24 +1391,61 @@ void UActorDetailWidget::RenderTransformEdit()
 
 		if (ScaleChanged)
 		{
-			SceneComponent->SetRelativeScale3D({UniformScale, UniformScale, UniformScale});
+			CachedScale = FVector(UniformScale, UniformScale, UniformScale);
+			if (bShowWorldScale)
+			{
+				SceneComponent->SetWorldScale3D(CachedScale);
+			}
+			else
+			{
+				SceneComponent->SetRelativeScale3D(CachedScale);
+			}
 		}
+
+		// 드래그 상태 업데이트
+		bIsDraggingScale = bIsAnyScaleItemActive;
 	}
 	else
 	{
-		float ScaleArray[3] = { ComponentScale.X, ComponentScale.Y, ComponentScale.Z };
+		// Non-Uniform Scale 모드
+		float ScaleArray[3] = { CachedScale.X, CachedScale.Y, CachedScale.Z };
 		bool ScaleChanged = false;
 
-		// Scale Label
+		// Scale Label (드롭다운 메뉴)
+		bool bIsAbsoluteScale = SceneComponent->IsUsingAbsoluteScale();
+		const char* ScaleLabel = bIsAbsoluteScale ? "Absolute Scale" : "Scale";
 		ImGui::SetNextItemWidth(120.0f);
-		if (ImGui::BeginCombo("##ScaleMode", "Scale", ImGuiComboFlags_NoArrowButton))
+		if (ImGui::BeginCombo("##ScaleMode", ScaleLabel, ImGuiComboFlags_NoArrowButton))
 		{
-			ImGui::Selectable("Scale", true);
+			if (ImGui::Selectable("Absolute Scale", bIsAbsoluteScale))
+			{
+				if (!bIsAbsoluteScale)
+				{
+					// 현재 월드 스케일을 유지하면서 Absolute로 전환
+					FVector CurrentWorldScale = SceneComponent->GetWorldScale3D();
+					SceneComponent->SetAbsoluteScale(true);
+					SceneComponent->SetRelativeScale3D(CurrentWorldScale);
+				}
+				bShowWorldScale = true;
+				CachedScale = SceneComponent->GetWorldScale3D();
+				LastShowWorldScale = bShowWorldScale;
+				bIsDraggingScale = false;
+			}
+			if (ImGui::Selectable("Scale", !bIsAbsoluteScale))
+			{
+				if (bIsAbsoluteScale)
+				{
+					// 현재 월드 스케일을 유지하면서 Relative로 전환
+					FVector CurrentWorldScale = SceneComponent->GetWorldScale3D();
+					SceneComponent->SetAbsoluteScale(false);
+					SceneComponent->SetWorldScale3D(CurrentWorldScale);
+				}
+				bShowWorldScale = false;
+				CachedScale = SceneComponent->GetRelativeScale3D();
+				LastShowWorldScale = bShowWorldScale;
+				bIsDraggingScale = false;
+			}
 			ImGui::EndCombo();
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Scale is always relative");
 		}
 		ImGui::SameLine();
 
@@ -1368,7 +1454,11 @@ void UActorDetailWidget::RenderTransformEdit()
 		ScaleChanged |= ImGui::DragFloat("##ScaleX", &ScaleArray[0], 0.1f, 0.0f, 0.0f, "%.3f");
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("X: %.3f", ScaleArray[0]); }
 		ImVec2 SizeScaleX = ImGui::GetItemRectSize();
-		DrawList->AddLine(ImVec2(ScaleX.x + 5, ScaleX.y + 2), ImVec2(ScaleX.x + 5, ScaleX.y + SizeScaleX.y - 2), IM_COL32(255, 0, 0, 255), 2.0f);
+		DrawList->AddLine(ImVec2(ScaleX.x + 5, ScaleX.y + 2), ImVec2(ScaleX.x + 5, ScaleX.y + SizeScaleX.y - 2), IM_COL32(255,
+			0, 0, 255), 2.0f);
+
+		// 드래그 상태 추적
+		bool bIsAnyScaleItemActive = ImGui::IsItemActive();
 		ImGui::SameLine();
 
 		ImVec2 ScaleY = ImGui::GetCursorScreenPos();
@@ -1376,7 +1466,10 @@ void UActorDetailWidget::RenderTransformEdit()
 		ScaleChanged |= ImGui::DragFloat("##ScaleY", &ScaleArray[1], 0.1f, 0.0f, 0.0f, "%.3f");
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Y: %.3f", ScaleArray[1]); }
 		ImVec2 SizeScaleY = ImGui::GetItemRectSize();
-		DrawList->AddLine(ImVec2(ScaleY.x + 5, ScaleY.y + 2), ImVec2(ScaleY.x + 5, ScaleY.y + SizeScaleY.y - 2), IM_COL32(0, 255, 0, 255), 2.0f);
+		DrawList->AddLine(ImVec2(ScaleY.x + 5, ScaleY.y + 2), ImVec2(ScaleY.x + 5, ScaleY.y + SizeScaleY.y - 2), IM_COL32(0,
+			255, 0, 255), 2.0f);
+
+		bIsAnyScaleItemActive |= ImGui::IsItemActive();
 		ImGui::SameLine();
 
 		ImVec2 ScaleZ = ImGui::GetCursorScreenPos();
@@ -1384,7 +1477,10 @@ void UActorDetailWidget::RenderTransformEdit()
 		ScaleChanged |= ImGui::DragFloat("##ScaleZ", &ScaleArray[2], 0.1f, 0.0f, 0.0f, "%.3f");
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Z: %.3f", ScaleArray[2]); }
 		ImVec2 SizeScaleZ = ImGui::GetItemRectSize();
-		DrawList->AddLine(ImVec2(ScaleZ.x + 5, ScaleZ.y + 2), ImVec2(ScaleZ.x + 5, ScaleZ.y + SizeScaleZ.y - 2), IM_COL32(0, 0, 255, 255), 2.0f);
+		DrawList->AddLine(ImVec2(ScaleZ.x + 5, ScaleZ.y + 2), ImVec2(ScaleZ.x + 5, ScaleZ.y + SizeScaleZ.y - 2), IM_COL32(0, 0,
+			255, 255), 2.0f);
+
+		bIsAnyScaleItemActive |= ImGui::IsItemActive();
 		ImGui::SameLine();
 
 		// Reset button
@@ -1397,11 +1493,21 @@ void UActorDetailWidget::RenderTransformEdit()
 
 		if (ScaleChanged)
 		{
-			ComponentScale.X = ScaleArray[0];
-			ComponentScale.Y = ScaleArray[1];
-			ComponentScale.Z = ScaleArray[2];
-			SceneComponent->SetRelativeScale3D(ComponentScale);
+			CachedScale.X = ScaleArray[0];
+			CachedScale.Y = ScaleArray[1];
+			CachedScale.Z = ScaleArray[2];
+			if (bShowWorldScale)
+			{
+				SceneComponent->SetWorldScale3D(CachedScale);
+			}
+			else
+			{
+				SceneComponent->SetRelativeScale3D(CachedScale);
+			}
 		}
+
+		// 드래그 상태 업데이트
+		bIsDraggingScale = bIsAnyScaleItemActive;
 	}
 	
 	ImGui::PopStyleColor(3);

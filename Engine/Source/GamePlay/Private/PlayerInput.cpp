@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GamePlay/Public/PlayerInput.h"
 #include "Manager/Input/Public/InputManager.h"
 
@@ -21,7 +21,7 @@ void UPlayerInput::Update(float DeltaTime)
 void UPlayerInput::HandleKeyboardInput(float DeltaTime)
 {
     auto& InputManager = UInputManager::GetInstance();
-    
+
     if (InputManager.IsKeyDown(EKeyInput::W))
     {
         OnMoveForward.BroadCast(1.0f * DeltaTime);
