@@ -2,10 +2,16 @@
 
 #include "Source/Manager/Lua/Public/LuaScriptManager.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Component/Public/ActorComponent.h"
+#include "Component/Public/SceneComponent.h"
 #include "Actor/Public/Actor.h"
 #include "Global/Vector.h"
+#include "Global/Quaternion.h"
 #include "Manager/Path/Public/PathManager.h"
 #include "Manager/Coroutine/Public/LuaCoroutineManager.h"
+#include "Manager/Input/Public/InputManager.h"
+#include "Level/Public/World.h"
+#include "Editor/Public/EditorEngine.h"
 
 #include <iostream>
 #include <filesystem>
@@ -235,7 +241,7 @@ sol::load_result FLuaScriptManager::LoadScript(const std::string& filePath)
     if (!script.valid())
     {
         sol::error err = script;
-        std::cerr << "Failed to load script: " << resolvedPath << "\nError: " << err.what() << std::endl;
+        UE_LOG_ERROR("Failed to load script: %s\nError: %s", resolvedPath.string().c_str(), err.what());
     }
 
     return script;
@@ -256,7 +262,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
 
     if (!fs::exists(resolvedPath, ec) || ec)
     {
-        std::cerr << "[ERROR] CreateLuaTable: Script file does not exist: " << resolvedPath << std::endl;
+        UE_LOG_ERROR("CreateLuaTable: Script file does not exist: %s", resolvedPath.string().c_str());
         ScriptCache.erase(ScriptName);
         return sol::table();
     }
@@ -264,7 +270,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
     auto nowWriteTime = fs::last_write_time(resolvedPath, ec);
     if (ec)
     {
-        std::cerr << "[ERROR] CreateLuaTable: Failed to get file timestamp for " << resolvedPath << " (" << ec.message() << ")" << std::endl;
+        UE_LOG_ERROR("CreateLuaTable: Failed to get file timestamp for %s (%s)", resolvedPath.string().c_str(), ec.message().c_str());
         return sol::table();
     }
 
@@ -277,7 +283,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         if (!result.valid())
         {
             sol::error err = result;
-            std::cerr << "[ERROR] Lua script execution failed (" << ScriptName << "): " << err.what() << std::endl;
+            UE_LOG_ERROR("Lua script execution failed (%s): %s", ScriptName.c_str(), err.what());
             return sol::table();
         }
 
@@ -286,7 +292,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         // Script can return either a table (old pattern) or a factory function (new pattern)
         if (!returnValue.is<sol::table>() && !returnValue.is<sol::function>())
         {
-            std::cerr << "[ERROR] CreateLuaTable: Script must return a table or factory function." << std::endl;
+            UE_LOG_ERROR("CreateLuaTable: Script must return a table or factory function.");
             return sol::table();
         }
 
@@ -321,13 +327,13 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         if (!callResult.valid())
         {
             sol::error err = callResult;
-            std::cerr << "[ERROR] Factory function failed for " << ScriptName << ": " << err.what() << std::endl;
+            UE_LOG_ERROR("Factory function failed for %s: %s", ScriptName.c_str(), err.what());
             return sol::table();
         }
 
         if (!callResult.get<sol::object>().is<sol::table>())
         {
-            std::cerr << "[ERROR] Factory function did not return a table for " << ScriptName << std::endl;
+            UE_LOG_ERROR("Factory function did not return a table for %s", ScriptName.c_str());
             return sol::table();
         }
 
@@ -348,7 +354,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
         return newEnv;
     }
 
-    std::cerr << "[ERROR] Script did not return a table or factory function: " << ScriptName << std::endl;
+    UE_LOG_ERROR("Script did not return a table or factory function: %s", ScriptName.c_str());
     return sol::table();
 }
 
@@ -462,7 +468,7 @@ void FLuaScriptManager::HotReloadLuaScript()
                 }
                 else
                 {
-                    std::cout << "[HOT RELOAD] Failed to reload script: " << Comp->GetScriptName() << std::endl;
+                    UE_LOG_ERROR("[HOT RELOAD] Failed to reload script: %s", Comp->GetScriptName().c_str());
                 }
             }
         }
@@ -471,7 +477,7 @@ void FLuaScriptManager::HotReloadLuaScript()
 
 void FLuaScriptManager::ReloadScript(const std::string& filePath)
 {
-    std::cout << "Hot-reloading script: " << filePath << std::endl;
+    UE_LOG_INFO("Hot-reloading script: %s", filePath.c_str());
     // Note: Now handled by HotReloadLuaScript
 }
 
@@ -501,21 +507,149 @@ void FLuaScriptManager::BindTypes()
         "One", &FVector::OneVector
     );
 
+    // --- FQuaternion Binding ---
+    EngineTypes.new_usertype<FQuaternion>("FQuaternion",
+        sol::call_constructor,
+        sol::constructors<FQuaternion(), FQuaternion(float, float, float, float)>(),
+        // Variables
+        "X", &FQuaternion::X,
+        "Y", &FQuaternion::Y,
+        "Z", &FQuaternion::Z,
+        "W", &FQuaternion::W,
+        // Static functions
+        "Identity", &FQuaternion::Identity,
+        "FromEuler", &FQuaternion::FromEuler,
+        "FromAxisAngle", &FQuaternion::FromAxisAngle,
+        "MakeFromDirection", &FQuaternion::MakeFromDirection,
+        // Methods
+        "ToEuler", &FQuaternion::ToEuler,
+        "Normalize", &FQuaternion::Normalize,
+        "Conjugate", &FQuaternion::Conjugate,
+        "Inverse", &FQuaternion::Inverse,
+        "RotateVector", sol::resolve<FVector(const FVector&) const>(&FQuaternion::RotateVector),
+        // Operators
+        sol::meta_function::multiplication, &FQuaternion::operator*
+    );
+
     // --- AActor Binding ---
     LuaState->new_usertype<AActor>("AActor",
         sol::no_constructor,
+        // Location
         "ActorLocation", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "SetActorLocation", &AActor::SetActorLocation,
         "GetActorLocation", &AActor::GetActorLocation,
+        // Rotation
+        "ActorRotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
+        "SetActorRotation", &AActor::SetActorRotation,
+        "GetActorRotation", &AActor::GetActorRotation,
+        // Scale
+        "ActorScale3D", sol::property(&AActor::GetActorScale3D, &AActor::SetActorScale3D),
+        "SetActorScale3D", &AActor::SetActorScale3D,
+        "GetActorScale3D", &AActor::GetActorScale3D,
+        // Components
+        "GetOwnedComponents", &AActor::GetOwnedComponents,
+        "GetRootComponent", &AActor::GetRootComponent,
+        // Misc
         "GetName", [](const AActor& actor) { return actor.GetName().ToString(); },
         "GetUUID", &AActor::GetUUID,
         "UUID", sol::property([](AActor& actor) { return actor.GetUUID(); }),
-        "PrintLocation", &AActor::PrintLocation
+        "PrintLocation", &AActor::PrintLocation,
+        "SetIsPendingDestroy", &AActor::SetIsPendingDestroy,
+        "IsPendingDestroy", &AActor::IsPendingDestroy
     );
 
     // --- Global Functions ---
     LuaState->set_function("Print", [](const std::string& message) {
-        std::cout << "[LUA] " << message << std::endl;
+        UE_LOG("[LUA] %s", message.c_str());
     });
+
+    // --- InputManager Binding ---
+    LuaState->set_function("GetInputManager", []() -> UInputManager* {
+        return &UInputManager::GetInstance();
+    });
+
+    LuaState->new_usertype<UInputManager>("UInputManager",
+        sol::no_constructor,
+        // Keyboard input
+        "IsKeyDown", [](UInputManager* im, const std::string& keyName) {
+            auto keyEnum = TEnumReflector<EKeyInput>::FromString(keyName.c_str());
+            if (keyEnum.has_value()) {
+                return im->IsKeyDown(keyEnum.value());
+            }
+            return false;
+        },
+        "IsKeyPressed", [](UInputManager* im, const std::string& keyName) {
+            auto keyEnum = TEnumReflector<EKeyInput>::FromString(keyName.c_str());
+            if (keyEnum.has_value()) {
+                return im->IsKeyPressed(keyEnum.value());
+            }
+            return false;
+        },
+        "IsKeyReleased", [](UInputManager* im, const std::string& keyName) {
+            auto keyEnum = TEnumReflector<EKeyInput>::FromString(keyName.c_str());
+            if (keyEnum.has_value()) {
+                return im->IsKeyReleased(keyEnum.value());
+            }
+            return false;
+        },
+        // Mouse input
+        "GetMousePosition", &UInputManager::GetMousePosition,
+        "GetMouseDelta", &UInputManager::GetMouseDelta,
+        "GetMouseWheelDelta", &UInputManager::GetMouseWheelDelta,
+        "GetMouseNDCPosition", &UInputManager::GetMouseNDCPosition,
+        "IsWindowFocused", &UInputManager::IsWindowFocused
+    );
+
+    // --- UWorld Binding ---
+    LuaState->set_function("GetWorld", []() {
+        return GWorld;
+    });
+
+    LuaState->new_usertype<UWorld>("UWorld",
+        sol::no_constructor,
+        // Actor spawning (by class name string)
+        "SpawnActor", [](UWorld* world, const std::string& className) {
+            UClass* ActorClass = UClass::FindClass(className);
+            if (!ActorClass) {
+                UE_LOG_ERROR("[Lua] Failed to find class: %s", className.c_str());
+                return (AActor*)nullptr;
+            }
+            return world->SpawnActor(ActorClass);
+        },
+        // Actor destruction (deferred via pending destroy)
+        "DestroyActor", &UWorld::DestroyActor
+    );
+
+    // --- UActorComponent Binding ---
+    LuaState->new_usertype<UActorComponent>("UActorComponent",
+        sol::no_constructor,
+        "GetName", [](const UActorComponent& comp) { return comp.GetName().ToString(); },
+        "GetOwner", &UActorComponent::GetOwner,
+        "CanEverTick", &UActorComponent::CanEverTick,
+        "SetCanEverTick", &UActorComponent::SetCanEverTick,
+        "IsEditorOnly", &UActorComponent::IsEditorOnly,
+        "SetIsEditorOnly", &UActorComponent::SetIsEditorOnly,
+        "IsVisualizationComponent", &UActorComponent::IsVisualizationComponent
+    );
+
+    // --- USceneComponent Binding (inherits from UActorComponent) ---
+    LuaState->new_usertype<USceneComponent>("USceneComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UActorComponent>(),
+        "GetName", [](const USceneComponent& comp) { return comp.GetName().ToString(); },
+        "GetOwner", &USceneComponent::GetOwner,
+        // Relative transforms (local to parent)
+        "GetRelativeLocation", &USceneComponent::GetRelativeLocation,
+        "GetRelativeRotation", &USceneComponent::GetRelativeRotation,
+        "GetRelativeScale3D", &USceneComponent::GetRelativeScale3D,
+        "SetRelativeLocation", &USceneComponent::SetRelativeLocation,
+        "SetRelativeRotation", &USceneComponent::SetRelativeRotation,
+        "SetRelativeScale3D", &USceneComponent::SetRelativeScale3D,
+        // World transforms (absolute)
+        "GetWorldLocation", &USceneComponent::GetWorldLocation,
+        "GetWorldRotation", &USceneComponent::GetWorldRotation,  // Returns FVector (Euler angles)
+        "GetWorldRotationAsQuaternion", &USceneComponent::GetWorldRotationAsQuaternion,
+        "GetWorldScale3D", &USceneComponent::GetWorldScale3D
+    );
 }
