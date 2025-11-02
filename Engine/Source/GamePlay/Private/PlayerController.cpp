@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "GamePlay/Public/PlayerController.h"
 #include "GamePlay/public/PlayerInput.h"
 
@@ -58,7 +58,7 @@ void APlayerController::MoveForward(float Value)
     {
         return;
     }
-    
+
     FVector Forward(1.0f, 0.0f, 0.0f);
     FVector NewLocation = ControlledActor->GetActorLocation() + (Forward * Value * MoveSpeed);
     ControlledActor->SetActorLocation(NewLocation);
@@ -70,7 +70,7 @@ void APlayerController::MoveRight(float Value)
     {
         return;
     }
-    
+
     FVector Forward(0.0f, 1.0f, 0.0f);
     FVector NewLocation = ControlledActor->GetActorLocation() + (Forward * Value * MoveSpeed);
     ControlledActor->SetActorLocation(NewLocation);
