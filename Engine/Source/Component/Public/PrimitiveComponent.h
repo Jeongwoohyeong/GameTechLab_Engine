@@ -4,6 +4,28 @@
 #include "Core/Public/Object.h" // GetUObjectArray 사용 예정
 #include "Global/DelegateMacros.h"
 
+// 간단 오버랩 정보
+struct FOverlapInfo
+{
+	UPrimitiveComponent* OtherComponent = nullptr;
+	AActor* OtherActor = nullptr;
+
+	bool operator==(const FOverlapInfo& Other) const
+	{
+		return OtherComponent == Other.OtherComponent;
+	}
+};
+
+// 간단 Hit 정보
+struct FHitResult
+{
+	UPrimitiveComponent* Component = nullptr;
+	AActor* Actor = nullptr;
+	FVector ImpactPoint = FVector::ZeroVector();
+	FVector ImpactNormal = FVector::ZeroVector();
+	float Distance = 0.0f;
+};
+
 UCLASS()
 class UPrimitiveComponent : public USceneComponent
 {
@@ -92,35 +114,7 @@ public:
 	bool bGenerateOverlapEvents = true; // 오버랩 이벤트 생성 여부
     bool bGenerateHitEvents = false;  // Hit 이벤트 생성 여부
 	// TODO (SDM) - 추후에 false 시, 오브젝트 통과 불가 설정 추가 필요
-	bool bBlockComponent = true; // 컴포넌트 간 충돌 차단 여부
-
-	// TODO(SDM) - 테스트용 델리게이트
-	int testvalue = 1;
-	void TestFunc(int value)
-	{
-		UE_LOG("delegate test %d", value);
-
-	}
-		
-	// 간단 오버랩 정보
-	struct FOverlapInfo
-	{
-		UPrimitiveComponent* OtherComponent = nullptr;
-		AActor* OtherActor = nullptr;
-		bool operator==(const FOverlapInfo& Other) const
-		{
-			return OtherComponent == Other.OtherComponent;
-		}
-	};
-	// 간단 Hit 정보
-	struct FHitResult
-	{
-		UPrimitiveComponent* Component = nullptr;
-		AActor* Actor = nullptr;
-		FVector ImpactPoint = FVector::ZeroVector();
-		FVector ImpactNormal = FVector::ZeroVector();
-		float Distance = 0.0f;
-	};
+	bool bBlockComponent = true; // 컴포넌트 간 충돌 차단 여부	
 
 	const TArray<FOverlapInfo>& GetOverlapInfos() const { return OverlapInfos; }
 
@@ -169,7 +163,6 @@ public:
 	DECLARE_DYNAMIC_DELEGATE(FOnComponentHit, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&)
 	FOnComponentHit OnComponentHit;
 	
-	TDelegate<int> TestDelegate;
 protected:
 	TArray<FOverlapInfo> OverlapInfos;
 	TArray<FOverlapInfo> PreviousOverlapInfos;  // 이전 프레임 정보

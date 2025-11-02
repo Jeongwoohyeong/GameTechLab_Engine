@@ -21,7 +21,6 @@ IMPLEMENT_ABSTRACT_CLASS(UPrimitiveComponent, USceneComponent)
 UPrimitiveComponent::UPrimitiveComponent()
 {
 	bCanEverTick = true;
-	TestDelegate.AddDynamic(this, &UPrimitiveComponent::TestFunc);
 
 }
 
@@ -400,10 +399,7 @@ void UPrimitiveComponent::UpdateOverlaps()
 				HitResult.Distance = FVector::Dist(GetWorldLocation(), Candidate->GetWorldLocation());
 
 				FVector NormalImpulse = FVector::ZeroVector();  // 물리 엔진 연동 시 계산
-				//OnComponentHit.BroadCast(this, Candidate->GetOwner(), Candidate, NormalImpulse, HitResult);
-				// TODO(SDM): 디버그용 로그
-				TestDelegate.BroadCast(testvalue);
-				testvalue++;
+				OnComponentHit.BroadCast(this, Candidate->GetOwner(), Candidate, NormalImpulse, HitResult);
 			}
 		}
 	}

@@ -40,9 +40,17 @@ public:
     // Setters
     void SetDefaultPawnClass(UClass* InPawnClass);
 
+    // Enemy
+    void SpawnEnemy();
+
 protected:
     // Default pawn class to spawn for players
     UClass* DefaultPawnClass = nullptr;
+
+    // TODO 시스템 완성 후 다수의 적 배열로 관리
+    //TArray<TWeakObjectPtr<UClass>> Enemies;
+
+    UClass* Enemy = nullptr;
 
     // Reference to the player controller
     TWeakObjectPtr<APlayerController> PlayerController;

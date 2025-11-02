@@ -2,6 +2,7 @@
 #include "Actor/Public/Actor.h"
 #include "Global/WeakObjectPtr.h"
 
+class UShapeComponent;
 class APlayerController;
 
 /**
@@ -38,4 +39,5 @@ public:
 protected:
 	// The controller currently possessing this pawn
 	TWeakObjectPtr<APlayerController> Controller;
+	UShapeComponent* CollisionComponent = nullptr;
 };

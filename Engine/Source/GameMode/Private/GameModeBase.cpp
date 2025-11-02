@@ -16,6 +16,9 @@ AGameModeBase::AGameModeBase()
 
 	// Set default pawn class to APlayerCharacter
 	DefaultPawnClass = APlayerCharacter::StaticClass();
+
+	// Test Enemy
+	Enemy = APlayerCharacter::StaticClass();
 }
 
 AGameModeBase::~AGameModeBase()
@@ -36,6 +39,7 @@ void AGameModeBase::StartPlay()
 
 	// Initialize player controller and spawn default pawn
 	InitializePlayerController();
+	SpawnEnemy();
 }
 
 void AGameModeBase::BeginPlay()
@@ -138,6 +142,7 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 		// Set to a visible location (0, 0, 0) - origin
 		FVector SpawnLocation(0.0f, 0.0f, 0.0f);
 		NewPawn->SetActorLocation(SpawnLocation);
+		NewPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f));
 
 		UE_LOG("[GameMode] Default pawn spawned: %s at location (%.1f, %.1f, %.1f)",
 			NewPawn->GetName().ToString().c_str(),
@@ -193,4 +198,32 @@ void AGameModeBase::SetDefaultPawnClass(UClass* InPawnClass)
 	{
 		UE_LOG_ERROR("[GameMode] Invalid pawn class - must inherit from APawn");
 	}
+}
+
+void AGameModeBase::SpawnEnemy()
+{
+	if (!Enemy)
+	{
+		UE_LOG_ERROR("[GameMode] Enemy is Null");
+		return;
+	}
+
+	if (!OwningWorld)
+	{
+		UE_LOG_ERROR("[GameMode] Cannot spawn enemy pawn: No owning world");
+		return;
+	}
+	
+	// 적을 월드에 스폰
+	APawn* EnemyPawn = Cast<APlayerCharacter>(OwningWorld->SpawnActor(Enemy));
+
+	if (!EnemyPawn)
+	{
+		UE_LOG_ERROR("[GameMode] Enemy world spawn failed");
+		return;
+	}
+
+	FVector SpawnLocation(0.0f, 0.0f, 0.0f);
+	EnemyPawn->SetActorLocation(SpawnLocation);
+	EnemyPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f));
 }

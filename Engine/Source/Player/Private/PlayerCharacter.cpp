@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
+
+#include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 
@@ -11,19 +13,24 @@ APlayerCharacter::APlayerCharacter()
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
 
+	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
 	// Create RootComponent first (required for Actor Transform)
-	USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
-	SetRootComponent(RootComp);
+	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
+	// SetRootComponent(RootComp);
 
 	// StaticMesh 추가
 	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	MeshComp->AttachToComponent(RootComp);
+	MeshComp->AttachToComponent(CollisionComponent);
 
 	// Mesh 설정 (구체로 표시)
 	MeshComp->SetStaticMesh("Data/Shapes/Sphere.obj");
 	MeshComp->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));  // 크기 조정
 
-	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+
+	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
 }
 
 APlayerCharacter::~APlayerCharacter()
@@ -68,5 +75,23 @@ void APlayerCharacter::MoveRight(float Value)
 	FVector Right(0.0f, 1.0f, 0.0f);
 	FVector NewLocation = GetActorLocation() + (Right * Value * MovementSpeed);
 	SetActorLocation(NewLocation);
+}
+
+void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG("Player Character Begin Overlap");
+}
+
+void APlayerCharacter::OnEndOverlap(UPrimitiveComponent*, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	UE_LOG("Player Character End Overlap");
+}
+
+void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& OutHit)
+{
+	UE_LOG("Player Character Hit");
 }
 
