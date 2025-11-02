@@ -14,8 +14,12 @@ class UPlayerInput : public UObject
 public:
     UPlayerInput();
     ~UPlayerInput();
-    
+
     void Update(float DeltaTime);
+
+    // Enable/Disable input (Shift + F1)
+    void SetInputEnabled(bool bEnabled) { bInputEnabled = bEnabled; }
+    bool IsInputEnabled() const { return bInputEnabled; }
 
 public:
     FOnMoveForward OnMoveForward;
@@ -26,5 +30,6 @@ public:
 private:
     void HandleKeyboardInput(float DeltaTime);
     void HandleMouseInput(float DeltaTime);
-    
+
+    bool bInputEnabled = true;  // Shift + F1 토글용
 };

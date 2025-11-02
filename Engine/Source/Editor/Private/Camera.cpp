@@ -97,12 +97,23 @@ void UCamera::Update(const D3D11_VIEWPORT& InViewport)
 	// PIE Mode: Follow Target (불법증축!)
 	if (FollowTarget.IsValid())
 	{
-		// 타겟 위치 + 오프셋으로 카메라 위치 설정
 		FVector TargetLocation = FollowTarget->GetActorLocation();
-		RelativeLocation = TargetLocation + FollowOffset;
-
-		// 플레이어가 보는 방향으로 카메라 방향 설정
 		FQuaternion TargetRotation = FollowTarget->GetActorRotation();
+
+		// 비행기의 로컬 좌표계 벡터 계산
+		FMatrix RotMatrix = TargetRotation.ToRotationMatrix();
+		FVector TargetForward(RotMatrix.Data[0][0], RotMatrix.Data[0][1], RotMatrix.Data[0][2]);
+		FVector TargetRight(RotMatrix.Data[1][0], RotMatrix.Data[1][1], RotMatrix.Data[1][2]);
+		FVector TargetUp(RotMatrix.Data[2][0], RotMatrix.Data[2][1], RotMatrix.Data[2][2]);
+
+		// 로컬 공간 오프셋을 월드 공간으로 변환 (비행기 기준!)
+		FVector LocalOffset = TargetForward * FollowOffset.X +
+		                      TargetRight * FollowOffset.Y +
+		                      TargetUp * FollowOffset.Z;
+
+		RelativeLocation = TargetLocation + LocalOffset;
+
+		// 카메라 방향도 비행기와 동일하게
 		SetRotationQuat(TargetRotation);
 	}
 	// 에디터 모드: 입력이 활성화되어 있으면 입력 처리
@@ -115,27 +126,17 @@ void UCamera::Update(const D3D11_VIEWPORT& InViewport)
 	// Orthographic 모드에서는 ViewportClient::SetViewType에서 설정한 값 유지
 	if (CameraType == ECameraType::ECT_Perspective)
 	{
-		// UE 표준: FRotator -> Quaternion -> Forward 벡터 계산
+		// 비행기 게임: Roll 회전 포함한 완전한 회전 행렬 사용
 		const FQuaternion RotationQuat = RelativeRotation.Quaternion();
 		const FMatrix RotationMatrix = RotationQuat.ToRotationMatrix();
-		const FVector4 Forward4 = FVector4::ForwardVector() * RotationMatrix;
 
-		Forward = FVector(Forward4.X, Forward4.Y, Forward4.Z);
+		// RotationMatrix에서 직접 Forward/Right/Up 추출 (Roll 포함!)
+		Forward = FVector(RotationMatrix.Data[0][0], RotationMatrix.Data[0][1], RotationMatrix.Data[0][2]);
+		Right = FVector(RotationMatrix.Data[1][0], RotationMatrix.Data[1][1], RotationMatrix.Data[1][2]);
+		Up = FVector(RotationMatrix.Data[2][0], RotationMatrix.Data[2][1], RotationMatrix.Data[2][2]);
+
 		Forward.Normalize();
-
-		// UE 표준: 월드 Z축으로 Right 계산 (Roll drift 자동 제거)
-		const FVector WorldUp = FVector(0, 0, 1);
-		Right = WorldUp.Cross(Forward);
-
-		// Forward가 거의 Z축과 평행한 경우 (Pitch ±90° 근처)
-		if (Right.LengthSquared() < MATH_EPSILON)
-		{
-			// Y축을 대체 Right로 사용
-			Right = FVector(0, 1, 0);
-		}
-
 		Right.Normalize();
-		Up = Forward.Cross(Right);
 		Up.Normalize();
 	}
 

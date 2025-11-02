@@ -186,6 +186,25 @@ void UInputManager::UpdateMousePosition(const FAppWindow* InWindow)
 	NDCMousePosition.Y = 1.0f - (CurrentMousePosition.Y / static_cast<float>(ViewportHeight)) * 2.0f;
 
 	MouseDelta = CurrentMousePosition - PreviousMousePosition;
+
+	// PIE 모드: 마우스를 화면 중앙에 고정
+	if (bMouseLocked)
+	{
+		// 화면 중앙 좌표 계산
+		int32 CenterX = ViewportWidth / 2;
+		int32 CenterY = ViewportHeight / 2;
+
+		// 클라이언트 좌표를 스크린 좌표로 변환
+		POINT CenterPoint = { CenterX, CenterY };
+		ClientToScreen(GetActiveWindow(), &CenterPoint);
+
+		// 마우스를 중앙으로 이동
+		SetCursorPos(CenterPoint.x, CenterPoint.y);
+
+		// 다음 프레임을 위해 현재 위치를 중앙으로 설정
+		CurrentMousePosition.X = static_cast<float>(CenterX);
+		CurrentMousePosition.Y = static_cast<float>(CenterY);
+	}
 }
 
 bool UInputManager::IsKeyDown(EKeyInput InKey) const
@@ -489,4 +508,21 @@ bool UInputManager::IsMouseDoubleClicked(EKeyInput InMouseButton) const
 		return true;
 	}
 	return false;
+}
+
+void UInputManager::LockMouseToCenter(bool bLock)
+{
+	bMouseLocked = bLock;
+
+	// 마우스 커서 숨기기/보이기
+	if (bLock)
+	{
+		ShowCursor(FALSE);  // 커서 숨기기
+		UE_LOG("[InputManager] Mouse locked to center and cursor hidden");
+	}
+	else
+	{
+		ShowCursor(TRUE);   // 커서 보이기
+		UE_LOG("[InputManager] Mouse unlocked and cursor shown");
+	}
 }

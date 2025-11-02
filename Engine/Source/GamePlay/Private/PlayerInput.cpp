@@ -14,6 +14,12 @@ UPlayerInput::~UPlayerInput()
 
 void UPlayerInput::Update(float DeltaTime)
 {
+    // Shift + F1로 입력 비활성화된 경우 무시
+    if (!bInputEnabled)
+    {
+        return;
+    }
+
     HandleMouseInput(DeltaTime);
     HandleKeyboardInput(DeltaTime);
 }

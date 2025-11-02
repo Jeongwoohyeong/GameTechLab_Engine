@@ -21,6 +21,9 @@ public:
     void Possess(AActor* TargetActor);
     void UnPossess();
 
+    // Getter for PlayerInput (Shift + F1)
+    UPlayerInput* GetPlayerInput() const { return PlayerInput; }
+
 private:
     // Value값의 부호를 바꾸면 반대방향 이동
     void MoveForward(float Value);

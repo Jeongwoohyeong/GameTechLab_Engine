@@ -24,8 +24,16 @@ public:
     // Input handling (override from APawn)
     virtual void MoveForward(float Value) override;
     virtual void MoveRight(float Value) override;
+    virtual void Turn(float Value) override;
+    virtual void LookUp(float Value) override;
 
 protected:
     // Default movement speed
     float MovementSpeed = 100.0f;
+
+    // Default rotation speed (degrees per second)
+    float RotationSpeed = 90.0f;
+
+    // Mouse sensitivity for pitch/yaw rotation
+    float MouseSensitivity = 120.0f;
 };

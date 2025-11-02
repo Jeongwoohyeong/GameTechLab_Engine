@@ -47,6 +47,7 @@ public:
     void EndPIE();
     void PausePIE();
     void ResumePIE();
+    void TogglePIEMouseLock();  // Shift + F1 toggle
 
     // Level Management
     bool LoadLevel(const FString& InFilePath);
@@ -71,6 +72,7 @@ private:
     void ClearPIECamera();
 
     EPIEState PIEState = EPIEState::Stopped;
+    bool bPIEMouseUnlocked = false;  // Shift + F1 상태
     TArray<FWorldContext> WorldContexts;
     UEditor* EditorModule;
 };

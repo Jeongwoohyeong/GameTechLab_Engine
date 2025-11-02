@@ -6,9 +6,13 @@
 #include "Manager/Config/Public/ConfigManager.h"
 #include "Manager/Path/Public/PathManager.h"
 #include "Manager/UI/Public/ViewportManager.h"
+#include "Manager/Input/Public/InputManager.h"
 #include "Render/UI/Viewport/Public/Viewport.h"
 #include "Render/UI/Viewport/Public/ViewportClient.h"
 #include "Editor/Public/Camera.h"
+#include "GameMode/Public/GameModeBase.h"
+#include "GamePlay/Public/PlayerController.h"
+#include "GamePlay/Public/PlayerInput.h"
 
 IMPLEMENT_CLASS(UEditorEngine, UObject)
 UEditorEngine* GEditor = nullptr;
@@ -123,6 +127,9 @@ void UEditorEngine::StartPIE()
     int32 LastClickedViewport = ViewportMgr.GetLastClickedViewportIndex();
     ViewportMgr.SetPIEActiveViewportIndex(LastClickedViewport);
 
+    // 마우스를 화면 중앙에 고정 (비행기 게임)
+    UInputManager::GetInstance().LockMouseToCenter(true);
+
     UWorld* PIEWorld = Cast<UWorld>(EditorWorld->Duplicate());
 
     if (PIEWorld)
@@ -150,6 +157,10 @@ void UEditorEngine::EndPIE()
 
     // 불법증축: PIE 카메라의 FollowTarget 정리
     ClearPIECamera();
+
+    // 마우스 잠금 해제 (비행기 게임)
+    UInputManager::GetInstance().LockMouseToCenter(false);
+    bPIEMouseUnlocked = false;  // 상태 리셋
 
     // PIE 전용 뷰포트 인덱스 리셋
     UViewportManager::GetInstance().SetPIEActiveViewportIndex(-1);
@@ -190,6 +201,55 @@ void UEditorEngine::ResumePIE()
         return;
     }
     PIEState = EPIEState::Playing;
+}
+
+/**
+ * @brief Shift + F1: PIE 중 마우스 잠금 토글 (언리얼 스타일)
+ */
+void UEditorEngine::TogglePIEMouseLock()
+{
+    // PIE 모드가 아니면 무시
+    if (PIEState != EPIEState::Playing)
+    {
+        return;
+    }
+
+    // 상태 토글
+    bPIEMouseUnlocked = !bPIEMouseUnlocked;
+
+    if (bPIEMouseUnlocked)
+    {
+        // 마우스 해제: 커서 보이기, 자유 이동
+        UInputManager::GetInstance().LockMouseToCenter(false);
+        UE_LOG("[EditorEngine] PIE mouse unlocked (Shift+F1)");
+    }
+    else
+    {
+        // 마우스 잠금: 커서 숨기기, 중앙 고정
+        UInputManager::GetInstance().LockMouseToCenter(true);
+        UE_LOG("[EditorEngine] PIE mouse locked");
+    }
+
+    // PlayerInput도 함께 토글
+    FWorldContext* PIEContext = GetPIEWorldContext();
+    if (PIEContext && PIEContext->World())
+    {
+        UWorld* PIEWorld = PIEContext->World();
+        AGameModeBase* GameMode = PIEWorld->GetGameMode();
+        if (GameMode)
+        {
+            APlayerController* PC = GameMode->GetPlayerController();
+            if (PC)
+            {
+                UPlayerInput* PlayerInput = PC->GetPlayerInput();
+                if (PlayerInput)
+                {
+                    // 마우스 잠금 해제 = 입력 비활성화
+                    PlayerInput->SetInputEnabled(!bPIEMouseUnlocked);
+                }
+            }
+        }
+    }
 }
 
 /**

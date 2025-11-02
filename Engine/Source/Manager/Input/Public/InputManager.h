@@ -32,6 +32,10 @@ public:
 	void SetWindowFocus(bool bInFocused);
 	bool IsWindowFocused() const { return bIsWindowFocused; }
 
+	// Mouse Lock (PIE mode)
+	void LockMouseToCenter(bool bLock);
+	bool IsMouseLocked() const { return bMouseLocked; }
+
 	// Helper Function
 	static FString KeyInputToString(EKeyInput InKey);
 
@@ -72,6 +76,9 @@ private:
 
 	// Window Focus
 	bool bIsWindowFocused;
+
+	// Mouse Lock (PIE mode)
+	bool bMouseLocked = false;
 
 	// Double Click Detection
 	float DoubleClickTime;
