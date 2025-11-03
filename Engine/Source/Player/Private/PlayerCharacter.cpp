@@ -18,9 +18,9 @@ APlayerCharacter::APlayerCharacter()
 	// StaticMesh 추가
 	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
 	MeshComp->AttachToComponent(RootComp);
-
+	
 	// Mesh 설정 (구체로 표시)
-	MeshComp->SetStaticMesh("Data/SU-37.obj");
+	MeshComp->SetStaticMesh("Data/MIG_29.obj");
 	MeshComp->SetRelativeScale3D(FVector(5.5f, 5.5f, 5.5f));  // 크기 조정
 
 	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);

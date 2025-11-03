@@ -242,7 +242,7 @@ void AGameModeBase::SetupPIECamera(APawn* InPawn)
 	}
 
 	// 카메라를 플레이어 뒤쪽 상단에 배치 (오프셋: 뒤 -50, 위 50)
-	FVector CameraOffset(-30.0f, 0.0f, 15.0f);
+	FVector CameraOffset(-70.0f, 0.0f, 55.0f);
 	PIECamera->SetFollowTarget(InPawn, CameraOffset);
 
 	// PIE 전용: FOV 120도로 설정 (비행기 전체 보이게)

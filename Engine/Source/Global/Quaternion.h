@@ -30,4 +30,8 @@ struct FQuaternion
 	static FQuaternion MakeFromDirection(const FVector& Direction);
 	static FVector RotateVector(const FQuaternion& q, const FVector& v);
 	FVector RotateVector(const FVector& V) const;
+
+	// Spherical Linear Interpolation
+	static FQuaternion Slerp(const FQuaternion& Q1, const FQuaternion& Q2, float Alpha);
+	float Dot(const FQuaternion& Q) const { return X * Q.X + Y * Q.Y + Z * Q.Z + W * Q.W; }
 };

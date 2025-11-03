@@ -29,7 +29,7 @@ public:
 	* Update, UpdateMatrix 함수들은 카메라의 변환 행렬의 갱신을 담당합니다.
 	*/
 	FVector UpdateInput();
-	void Update(const D3D11_VIEWPORT& InViewport);
+	void Update(const D3D11_VIEWPORT& InViewport, float DeltaTime = 0.0f);
 	void UpdateMatrixByPers();
 	void UpdateMatrixByOrth();
 

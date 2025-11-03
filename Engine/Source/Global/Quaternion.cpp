@@ -246,3 +246,50 @@ FVector FQuaternion::RotateVector(const FVector& V) const
 	const FVector Result = V + (W * T) + Q.Cross(T);
 	return Result;
 }
+
+FQuaternion FQuaternion::Slerp(const FQuaternion& Q1, const FQuaternion& Q2, float Alpha)
+{
+	// Clamp alpha to [0, 1]
+	Alpha = clamp(Alpha, 0.0f, 1.0f);
+
+	// Compute dot product
+	float CosHalfTheta = Q1.Dot(Q2);
+
+	// If Q1 and Q2 are on opposite hemispheres, negate Q2
+	FQuaternion Q2Adjusted = Q2;
+	if (CosHalfTheta < 0.0f)
+	{
+		Q2Adjusted = FQuaternion(-Q2.X, -Q2.Y, -Q2.Z, -Q2.W);
+		CosHalfTheta = -CosHalfTheta;
+	}
+
+	// If quaternions are very close, use linear interpolation
+	if (CosHalfTheta > 0.9995f)
+	{
+		return FQuaternion(
+			Q1.X + Alpha * (Q2Adjusted.X - Q1.X),
+			Q1.Y + Alpha * (Q2Adjusted.Y - Q1.Y),
+			Q1.Z + Alpha * (Q2Adjusted.Z - Q1.Z),
+			Q1.W + Alpha * (Q2Adjusted.W - Q1.W)
+		);
+	}
+
+	// Calculate angle between quaternions
+	float HalfTheta = acosf(CosHalfTheta);
+	float SinHalfTheta = sqrtf(1.0f - CosHalfTheta * CosHalfTheta);
+
+	// Calculate interpolation coefficients
+	float RatioA = sinf((1.0f - Alpha) * HalfTheta) / SinHalfTheta;
+	float RatioB = sinf(Alpha * HalfTheta) / SinHalfTheta;
+
+	// Interpolate
+	FQuaternion Result(
+		Q1.X * RatioA + Q2Adjusted.X * RatioB,
+		Q1.Y * RatioA + Q2Adjusted.Y * RatioB,
+		Q1.Z * RatioA + Q2Adjusted.Z * RatioB,
+		Q1.W * RatioA + Q2Adjusted.W * RatioB
+	);
+
+	Result.Normalize();
+	return Result;
+}

@@ -16,6 +16,7 @@
 #include "Global/Octree.h"
 #include "Global/Octree.h"
 #include "Level/Public/Level.h"
+#include "Manager/Time/Public/TimeManager.h"
 #include "Manager/UI/Public/UIManager.h"
 #include "Manager/UI/Public/ViewportManager.h"
 #include "Manager/UI/Public/ViewportManager.h"
@@ -868,7 +869,8 @@ void URenderer::Update()
 		Viewport->SetRenderRect(LocalViewport);
         UCamera* CurrentCamera = Viewport->GetViewportClient()->GetCamera();
 
-        CurrentCamera->Update(LocalViewport);
+        float DeltaTime = UTimeManager::GetInstance().GetDeltaTime();
+        CurrentCamera->Update(LocalViewport, DeltaTime);
 
         FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferViewProj, CurrentCamera->GetFViewProjConstants());
         Pipeline->SetConstantBuffer(1, EShaderType::VS, ConstantBufferViewProj);

@@ -3,6 +3,7 @@
 #include "Render/UI/Viewport/Public/Viewport.h"
 #include "Render/UI/Viewport/Public/ViewportClient.h"
 #include "Manager/UI/Public/ViewportManager.h"
+#include "Manager/Time/Public/TimeManager.h"
 
 FViewportClient::FViewportClient()
 {
@@ -153,7 +154,8 @@ void FViewportClient::Tick() const
     if (OwningViewport && ViewportCamera)
     {
         const D3D11_VIEWPORT ViewportRect = OwningViewport->GetRenderRect();
-        ViewportCamera->Update(ViewportRect);
+        float DeltaTime = UTimeManager::GetInstance().GetDeltaTime();
+        ViewportCamera->Update(ViewportRect, DeltaTime);
     }
 }
 

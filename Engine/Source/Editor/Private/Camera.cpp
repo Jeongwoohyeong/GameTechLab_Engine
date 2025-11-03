@@ -92,7 +92,7 @@ FVector UCamera::UpdateInput()
 	return MovementDelta;
 }
 
-void UCamera::Update(const D3D11_VIEWPORT& InViewport)
+void UCamera::Update(const D3D11_VIEWPORT& InViewport, float DeltaTime)
 {
 	// PIE Mode: Follow Target (불법증축!)
 	if (FollowTarget.IsValid())
@@ -113,8 +113,11 @@ void UCamera::Update(const D3D11_VIEWPORT& InViewport)
 
 		RelativeLocation = TargetLocation + LocalOffset;
 
-		// 카메라 방향도 비행기와 동일하게
-		SetRotationQuat(TargetRotation);
+		// Camera Lag: Slerp로 부드럽게 회전 보간
+		FQuaternion CurrentRotation = GetRotationQuat();
+		float LagSpeed = 5.0f; // 회전 따라가기 속도 (높을수록 빠름)
+		FQuaternion SmoothedRotation = FQuaternion::Slerp(CurrentRotation, TargetRotation, LagSpeed * DeltaTime);
+		SetRotationQuat(SmoothedRotation);
 	}
 	// 에디터 모드: 입력이 활성화되어 있으면 입력 처리
 	else if (bInputEnabled)
