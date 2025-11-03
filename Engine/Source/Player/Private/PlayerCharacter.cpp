@@ -30,6 +30,8 @@ APlayerCharacter::APlayerCharacter()
 		}
 	}
 
+	this->AddTag("Player");
+
 	UE_LOG("[PlayerCharacter] Constructor complete!");
 }
 
