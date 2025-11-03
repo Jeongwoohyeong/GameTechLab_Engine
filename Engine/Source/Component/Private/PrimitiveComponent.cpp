@@ -318,8 +318,17 @@ void UPrimitiveComponent::UpdateOverlaps()
 		UE_LOG("UpdateOverlaps: Owner is nullptr!");
 		return;  // Owner가 없으면 충돌 검사 불가
 	}
-	// ========== 디버깅 로그 추가 ==========
-	//UE_LOG("UpdateOverlaps: Owner = %s", ThisOwner->GetName().ToString().c_str());
+
+	// ========== 🔍 디버그: 미사일과 적 캐릭터 충돌 체크 ==========
+	FString ownerName = ThisOwner->GetName().ToString();
+	bool bIsMissile = ownerName.find("AMissileActor") != std::string::npos;
+	bool bIsEnemy = ownerName.find("AEnemyCharacter") != std::string::npos;
+
+	if (bIsMissile || bIsEnemy)
+	{
+		UE_LOG("[DEBUG UpdateOverlaps] Owner: %s, OverlapEvents: %d, HitEvents: %d",
+			ownerName.c_str(), bGenerateOverlapEvents, bGenerateHitEvents);
+	}
 	// ========== 1차 충돌 검사: 옥트리 (Broad Phase) ==========
 
 	// Actor의 Outer는 Level이다
@@ -352,13 +361,45 @@ void UPrimitiveComponent::UpdateOverlaps()
 		}
 	}
 
-	//UE_LOG("UpdateOverlaps: Total candidates = %d", Candidates.size());
+	// ========== 🔍 디버그: 후보군 출력 ==========
+	if (bIsMissile || bIsEnemy)
+	{
+		UE_LOG("[DEBUG UpdateOverlaps] %s: Total candidates = %d", ownerName.c_str(), Candidates.size());
+	}
+
 	// ========== 2차 충돌 검사: Narrow Phase ==========
 
 	// ShapeComponent인지 확인 (Shape가 아니면 정밀 검사 불가)
 	UShapeComponent* ThisShape = Cast<UShapeComponent>(this);
 	if (!ThisShape)
 	{
+		if (bIsMissile || bIsEnemy)
+		{
+			// 🔍 Cast 실패 원인 디버그
+			UClass* MyClass = this->GetClass();
+			UClass* ShapeClass = UShapeComponent::StaticClass();
+
+			UE_LOG("[DEBUG UpdateOverlaps] %s: NOT a ShapeComponent! Cannot do narrow phase!", ownerName.c_str());
+			UE_LOG("[DEBUG Cast Failure] this->GetClass() = %s", MyClass ? MyClass->GetName().ToString().c_str() : "nullptr");
+			UE_LOG("[DEBUG Cast Failure] UShapeComponent::StaticClass() = %s", ShapeClass ? ShapeClass->GetName().ToString().c_str() : "nullptr");
+
+			if (MyClass && ShapeClass)
+			{
+				bool bIsChildOf = MyClass->IsChildOf(ShapeClass);
+				UE_LOG("[DEBUG Cast Failure] IsChildOf check = %s", bIsChildOf ? "true" : "false");
+
+				// 부모 클래스 체인 출력
+				UClass* CurrentClass = MyClass;
+				int depth = 0;
+				UE_LOG("[DEBUG Class Hierarchy] Class hierarchy for %s:", MyClass->GetName().ToString().c_str());
+				while (CurrentClass && depth < 10)
+				{
+					UE_LOG("[DEBUG Class Hierarchy]   Level %d: %s", depth, CurrentClass->GetName().ToString().c_str());
+					CurrentClass = CurrentClass->GetSuperClass();
+					depth++;
+				}
+			}
+		}
 		return;  // Shape가 아니면 Narrow Phase 불가
 	}
 
@@ -389,9 +430,31 @@ void UPrimitiveComponent::UpdateOverlaps()
 			continue;
 		}
 
+		// ========== 🔍 디버그: 충돌 테스트 전 ==========
+		if (bIsMissile || bIsEnemy)
+		{
+			FString candidateName = Candidate->GetOwner()->GetName().ToString();
+			bool bCandidateIsMissile = candidateName.find("AMissileActor") != std::string::npos;
+			bool bCandidateIsEnemy = candidateName.find("AEnemyCharacter") != std::string::npos;
+
+			if ((bIsMissile && bCandidateIsEnemy) || (bIsEnemy && bCandidateIsMissile))
+			{
+				UE_LOG("[DEBUG UpdateOverlaps] Testing: %s <-> %s",
+					ownerName.c_str(), candidateName.c_str());
+			}
+		}
+
 		// Narrow Phase 충돌 검사
 		if (CollisionUtil::TestOverlap(ThisShape, OtherShape))
 		{
+			// ========== 🔍 디버그: 충돌 감지됨! ==========
+			if (bIsMissile || bIsEnemy)
+			{
+				FString candidateName = Candidate->GetOwner()->GetName().ToString();
+				UE_LOG("[DEBUG UpdateOverlaps] ✅ OVERLAP DETECTED: %s <-> %s",
+					ownerName.c_str(), candidateName.c_str());
+			}
+
 			FOverlapInfo Info;
 			Info.OtherComponent = Candidate;
 			Info.OtherActor = Candidate->GetOwner();

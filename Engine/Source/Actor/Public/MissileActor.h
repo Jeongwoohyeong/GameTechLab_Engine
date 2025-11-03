@@ -20,6 +20,9 @@ public:
 	AMissileActor();
 	virtual ~AMissileActor();
 
+	// Actor lifecycle
+	virtual void BeginPlay() override;
+
 	// 충돌 컴포넌트 접근자 (크기/위치 조절용)
 	UCapsuleComponent* GetMissileCollision() const { return MissileCollision; }
 

@@ -25,6 +25,9 @@ AEnemyCharacter::AEnemyCharacter()
 		SetRootComponent(StaticMeshComponent);
 		StaticMeshComponent->SetStaticMesh("Data/Enemy_F-14.obj");
 		StaticMeshComponent->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
+		// ✅ StaticMeshComponent는 충돌 처리하지 않으므로 Tick 비활성화
+		StaticMeshComponent->SetCanEverTick(false);
+		StaticMeshComponent->bGenerateOverlapEvents = false;
 		UE_LOG("[EnemyCharacter] StaticMeshComponent created and attached");
 	}
 
@@ -106,6 +109,19 @@ void AEnemyCharacter::BeginPlay()
 	}
 
 	Super::BeginPlay();
+
+	// 충돌 컴포넌트들을 Level에 등록
+	if (CollisionComponent)
+	{
+		RegisterComponent(CollisionComponent);
+		UE_LOG("[EnemyCharacter] CollisionComponent registered to Level");
+	}
+	if (WingCollision)
+	{
+		RegisterComponent(WingCollision);
+		UE_LOG("[EnemyCharacter] WingCollision registered to Level");
+	}
+
 	UE_LOG("[EnemyCharacter] BeginPlay - Enemy spawned");
 }
 

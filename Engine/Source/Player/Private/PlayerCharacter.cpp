@@ -17,6 +17,20 @@ APlayerCharacter::APlayerCharacter()
 
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
+	// StaticMesh 추가
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (!StaticMeshComponent)
+	{
+		UE_LOG_ERROR("ACharacter: Failed to create StaticMeshComponent");
+	}
+	else
+	{
+		SetRootComponent(StaticMeshComponent);
+		// Mesh 설정 (구체로 표시)
+		StaticMeshComponent->SetStaticMesh("Data/MIG_29.obj");
+		StaticMeshComponent->SetRelativeScale3D(FVector(10.0f, 10.0f, 10.0f));  // 크기 조정
+	}
+
 	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
 	if (!CollisionComponent)
 	{
@@ -24,10 +38,18 @@ APlayerCharacter::APlayerCharacter()
 	}
 	else
 	{
-		SetRootComponent(CollisionComponent);
+		CollisionComponent->AttachToComponent(StaticMeshComponent);
 		CollisionComponent->bGenerateHitEvents = true;
 		CollisionComponent->bGenerateOverlapEvents = true;
 		CollisionComponent->bBlockComponent = true;
+		CollisionComponent->SetRelativeLocation(FVector(0.4f, 0.0f, 2.2f));
+		CollisionComponent->SetRelativeRotation(FQuaternion::FromEuler(FVector(0.0f, 90.0f, 0.0f)));
+		CollisionComponent->SetCapsuleHalfHeight(6.3f);
+		CollisionComponent->SetCapsuleRadius(1.3f);
+		// 충돌 콜백 등록
+		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+		CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+		CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 		UE_LOG("ACharacter Create Collision Component");
 	}
 
@@ -35,19 +57,6 @@ APlayerCharacter::APlayerCharacter()
 	// Create RootComponent first (required for Actor Transform)
 	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
 	// SetRootComponent(RootComp);
-
-	// StaticMesh 추가
-	UStaticMeshComponent* StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
-	StaticMeshComponent->AttachToComponent(CollisionComponent);
-
-	// Mesh 설정 (구체로 표시)
-	StaticMeshComponent->SetStaticMesh("Data/MIG_29.obj");
-	StaticMeshComponent->SetRelativeScale3D(FVector(10.f,10.f,10.f));  // 크기 조정
-
-	// 충돌 콜백 등록
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
-	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 
 	// ✅ Lua 스크립트 활성화 (BeginPlay에서 PlayerWeapon 로드)
 	SetUseScript(true);
@@ -87,6 +96,13 @@ void APlayerCharacter::BeginPlay()
 
 	// 이제 Super::BeginPlay 호출 (이미 스크립트가 설정되어 있음)
 	Super::BeginPlay();
+
+	// 충돌 컴포넌트를 Level에 등록
+	if (CollisionComponent)
+	{
+		RegisterComponent(CollisionComponent);
+		UE_LOG("[PlayerCharacter] CollisionComponent registered to Level");
+	}
 
 	UE_LOG("[PlayerCharacter] BeginPlay: %s at (%.1f, %.1f, %.1f)",
 		GetName().ToString().c_str(),

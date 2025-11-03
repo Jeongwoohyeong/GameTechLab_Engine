@@ -252,6 +252,9 @@ void AActor::InitializeComponents()
 	UUUIDTextComponent* UUID = CreateDefaultSubobject<UUUIDTextComponent>();
 	UUID->AttachToComponent(GetRootComponent());
 	UUID->SetOffset(5.0f);
+	// ✅ UUIDTextComponent는 충돌 처리하지 않으므로 Tick 비활성화
+	UUID->SetCanEverTick(false);
+	UUID->bGenerateOverlapEvents = false;
 }
 
 bool AActor::IsUniformScale() const

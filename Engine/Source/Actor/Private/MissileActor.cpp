@@ -23,6 +23,9 @@ AMissileActor::AMissileActor()
 		StaicMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 		StaicMeshComponent->SetRelativeRotation(FQuaternion::FromEuler(FVector(0.0f, 0.0f, 0.0f)));
 		StaicMeshComponent->SetRelativeScale3D(FVector(50.f, 200.f, 200.f));
+		// ✅ StaticMeshComponent는 충돌 처리하지 않으므로 Tick 비활성화
+		StaicMeshComponent->SetCanEverTick(false);
+		StaicMeshComponent->bGenerateOverlapEvents = false;
 		UE_LOG("[MissileActor] StaicMeshComponent created and attached");
 	}
 	// 캡슐 충돌 컴포넌트 생성
@@ -55,6 +58,29 @@ AMissileActor::AMissileActor()
 
 AMissileActor::~AMissileActor()
 {
+}
+
+void AMissileActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UE_LOG("[MissileActor] ========== BeginPlay START ==========");
+
+	// CapsuleComponent를 Level에 등록하여 Tick과 충돌 감지 활성화
+	if (MissileCollision)
+	{
+		UE_LOG("[MissileActor] Registering CapsuleComponent...");
+		RegisterComponent(MissileCollision);
+		UE_LOG("[MissileActor] ✅ CapsuleComponent registered to Level!");
+		UE_LOG("[MissileActor] CapsuleComponent CanEverTick: %d", MissileCollision->CanEverTick());
+		UE_LOG("[MissileActor] CapsuleComponent bGenerateOverlapEvents: %d", MissileCollision->bGenerateOverlapEvents);
+	}
+	else
+	{
+		UE_LOG_ERROR("[MissileActor] ❌ MissileCollision is nullptr!");
+	}
+
+	UE_LOG("[MissileActor] ========== BeginPlay END ==========");
 }
 
 void AMissileActor::OnMissileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
