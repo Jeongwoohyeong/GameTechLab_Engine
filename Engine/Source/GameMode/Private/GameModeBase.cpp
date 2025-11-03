@@ -66,15 +66,21 @@ void AGameModeBase::InitializePlayerController()
 {
 	if (!OwningWorld)
 	{
-		UE_LOG_ERROR("[GameModeBase] Cannot initialize player controller: No owning world");
+		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] Cannot initialize player controller: No owning world");
 		return;
+	}
+
+	APlayerCharacter* ExistingPlayer = nullptr;
+	for (auto& Actor : OwningWorld->GetLevel()->GetLevelActors())
+	{
+		
 	}
 
 	// Spawn player controller
 	APlayerController* NewController = SpawnPlayerController();
 	if (!NewController)
 	{
-		UE_LOG_ERROR("[GameModeBase] Failed to spawn player controller");
+		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] Failed to spawn player controller");
 		return;
 	}
 
@@ -93,11 +99,11 @@ void AGameModeBase::InitializePlayerController()
 		// 불법증축: PIE 카메라를 플레이어에 붙이기
 		SetupPIECamera(NewPawn);
 
-		UE_LOG_SUCCESS("[GameModeBase] Player controller initialized and possessing pawn");
+		UE_LOG_SUCCESS("[GameModeBase/InitializePlayerController] Player controller initialized and possessing pawn");
 	}
 	else
 	{
-		UE_LOG_WARNING("[GameModeBase] Failed to spawn default pawn for player controller");
+		UE_LOG_WARNING("[GameModeBase/InitializePlayerController] Failed to spawn default pawn for player controller");
 	}
 }
 

@@ -125,7 +125,7 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
         		{
         			LightComponent->RefreshVisualizationIconBinding();
         		}
-        	}
+        	}        	
 
         	if (RootComponent)
         	{
@@ -669,6 +669,24 @@ void AActor::PrintLocation() const
 	//const FVector& Location = GetActorLocation();
 	//std::cout << "[Actor] " << GetName().ToString() << " Location: ("
 	//    << Location.X << ", " << Location.Y << ", " << Location.Z << ")" << std::endl;
+}
+
+void AActor::AddTag(const FName& Tag)
+{
+	if (std::find(Tags.begin(), Tags.end(), Tag) == Tags.end())
+	{
+		Tags.emplace_back(Tag);
+	}
+}
+
+void AActor::RemoveTag(const FName& Tag)
+{
+	Tags.erase(std::find(Tags.begin(), Tags.end(), Tag));
+}
+
+bool AActor::HasTag(const FName& Tag) const
+{
+	return std::find(Tags.begin(), Tags.end(), Tag) != Tags.end();
 }
 
 FString AActor::GetLuaScriptPathName()

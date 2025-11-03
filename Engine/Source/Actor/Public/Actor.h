@@ -139,10 +139,15 @@ protected:
 	bool bIsPendingDestroy = false;
 	bool bUseScript = false;
 
+	void AddTag(const FName& Tag);
+	void RemoveTag(const FName& Tag);
+	bool HasTag(const FName& Tag) const;
+
 private:
 	USceneComponent* RootComponent = nullptr;
 	TArray<UActorComponent*> OwnedComponents;
 	ULuaScriptComponent* LuaScriptComponent = nullptr;
+	TArray<FName> Tags = {};
 	
 public:
 	virtual UObject* Duplicate() override;
