@@ -117,18 +117,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	// {
-	// 	LuaComp->ActivateFunction("OnBeginOverlap");
-	// }
-	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	// {
-	// 	LuaComp->ActivateFunction("OnEndOverlap");
-	// }
-	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	// {
-	// 	LuaComp->ActivateFunction("OnHit");
-	// }
 }
 
 void APlayerCharacter::MoveForward(float Value)
