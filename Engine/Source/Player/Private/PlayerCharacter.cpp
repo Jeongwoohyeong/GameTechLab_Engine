@@ -29,7 +29,7 @@ APlayerCharacter::APlayerCharacter()
 
 	// Mesh 설정 (구체로 표시)
 	MeshComp->SetStaticMesh("Data/MIG_29.obj");
-	MeshComp->SetRelativeScale3D(FVector(5.5f, 5.5f, 5.5f));  // 크기 조정
+	MeshComp->SetRelativeScale3D(FVector(2.5f, 2.5f, 2.5f));  // 크기 조정
 
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
 	SetUseScript(true);
