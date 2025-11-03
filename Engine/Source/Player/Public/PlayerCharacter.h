@@ -44,13 +44,13 @@ public:
 
 protected:
     // Default movement speed
-    float MovementSpeed = 100.0f;
+    float MovementSpeed = 10.0f;
 
     // Default rotation speed (degrees per second)
-    float RotationSpeed = 90.0f;
+    float RotationSpeed = 9.0f;
 
     // Mouse sensitivity for pitch/yaw rotation
-    float MouseSensitivity = 120.0f;
+    float MouseSensitivity = 10.0f;
 
     UCapsuleComponent* CollisionComponent = nullptr;
     UBoxComponent* WingCollision = nullptr;

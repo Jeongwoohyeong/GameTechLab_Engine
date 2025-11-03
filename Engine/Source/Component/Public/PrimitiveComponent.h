@@ -127,6 +127,10 @@ public:
 	// 프레임 갱신 시 오버랩 목록 갱신 + 델리게이트 호출
 	void UpdateOverlaps();
 
+	// 충돌 검사 틱 카운터 (성능 최적화: 30틱마다 검사)
+	static uint32 CollisionCheckTickCounter;
+	static const uint32 CollisionCheckInterval = 10; // 30틱마다 충돌 검사
+
 	// ========== 델리게이트 선언 ==========
 
 	/**

@@ -79,7 +79,7 @@ return function()
     -- ==================================================
     function ReturnTable:EnableWeapon()
         self.WeaponEnabled = true
-        Print("[PlayerWeapon] ✅ WEAPON ENABLED! Press Left Mouse Button to fire!")
+        --Print("[PlayerWeapon] ✅ WEAPON ENABLED! Press Left Mouse Button to fire!")
     end
 
     -- ==================================================
@@ -87,7 +87,7 @@ return function()
     -- ==================================================
     function ReturnTable:DisableWeapon()
         self.WeaponEnabled = false
-        Print("[PlayerWeapon] ⛔ WEAPON DISABLED!")
+        --Print("[PlayerWeapon] ⛔ WEAPON DISABLED!")
     end
 
     -- ==================================================
@@ -121,7 +121,7 @@ return function()
     -- ==================================================
     function ReturnTable:FireMissile()
         if not MissilePool then
-            Print("[PlayerWeapon] ERROR: MissilePool is nil!")
+            --Print("[PlayerWeapon] ERROR: MissilePool is nil!")
             return
         end
 
@@ -132,7 +132,7 @@ return function()
         -- 현재 레벨에 맞는 오프셋 배열 가져오기
         local spawnOffsets = self.MissileSpawnOffsets[self.MissileLevel]
         if not spawnOffsets then
-            Print("[PlayerWeapon] ERROR: Invalid missile level!")
+            --Print("[PlayerWeapon] ERROR: Invalid missile level!")
             return
         end
 
@@ -145,11 +145,11 @@ return function()
             -- 풀에서 미사일 가져오기 (없으면 자동으로 생성)
             local MissileActor = MissilePool:GetMissile(spawnLocation, PlayerRotation, self.MissileScale)
             if not MissileActor then
-                Print("[PlayerWeapon] Failed to get missile from pool!")
+                --Print("[PlayerWeapon] Failed to get missile from pool!")
             end
         end
 
-        Print("[PlayerWeapon] Level " .. self.MissileLevel .. ": " .. #spawnOffsets .. " missiles fired!")
+        --Print("[PlayerWeapon] Level " .. self.MissileLevel .. ": " .. #spawnOffsets .. " missiles fired!")
     end
 
     -- ==================================================
@@ -159,9 +159,9 @@ return function()
         if self.MissileLevel < 3 then
             self.MissileLevel = self.MissileLevel + 1
             local newMissileCount = #self.MissileSpawnOffsets[self.MissileLevel]
-            Print("[PlayerWeapon] 🚀 Missile upgraded to Level " .. self.MissileLevel .. "! (" .. newMissileCount .. " missiles per shot)")
+            --Print("[PlayerWeapon] 🚀 Missile upgraded to Level " .. self.MissileLevel .. "! (" .. newMissileCount .. " missiles per shot)")
         else
-            Print("[PlayerWeapon] Missile is already at MAX level!")
+            --Print("[PlayerWeapon] Missile is already at MAX level!")
         end
     end
 
@@ -169,7 +169,7 @@ return function()
     -- EndPlay
     -- ==================================================
     function ReturnTable:EndPlay()
-        Print("[PlayerWeapon] EndPlay")
+        --Print("[PlayerWeapon] EndPlay")
     end
 
     return ReturnTable

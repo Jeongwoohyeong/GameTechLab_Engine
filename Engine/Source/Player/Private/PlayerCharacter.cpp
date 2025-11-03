@@ -186,7 +186,7 @@ void APlayerCharacter::MoveForward(float Value)
 	FVector Forward(RotMatrix.Data[0][0], RotMatrix.Data[0][1], RotMatrix.Data[0][2]);
 	Forward.Normalize();
 
-	FVector NewLocation = GetActorLocation() + (Forward * Value * MovementSpeed);
+	FVector NewLocation = GetActorLocation() + (Forward * Value * MovementSpeed * 10);
 	SetActorLocation(NewLocation);
 }
 
