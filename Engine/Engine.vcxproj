@@ -319,6 +319,7 @@
     <ClInclude Include="Source\Actor\Public\DirectionalLight.h" />
     <ClInclude Include="Source\Actor\Public\HeightFogActor.h" />
     <ClInclude Include="Source\Actor\Public\Light.h" />
+    <ClInclude Include="Source\Actor\Public\MissileActor.h" />
     <ClInclude Include="Source\Actor\Public\MovingCubeActor.h" />
     <ClInclude Include="Source\Actor\Public\PointLight.h" />
     <ClInclude Include="Source\Actor\Public\SphereActor.h" />
@@ -326,7 +327,6 @@
     <ClInclude Include="Source\Actor\Public\StaticMeshActor.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="Source\Actor\Public\MissileActor.h" />
     <ClInclude Include="Source\Actor\Public\TextActor.h" />
     <ClInclude Include="Source\Actor\Public\TriangleActor.h" />
     <ClInclude Include="Source\Component\Collision\Public\BoxComponent.h" />
@@ -637,6 +637,7 @@
     <ClCompile Include="Source\Actor\Private\DirectionalLight.cpp" />
     <ClCompile Include="Source\Actor\Private\HeightFogActor.cpp" />
     <ClCompile Include="Source\Actor\Private\Light.cpp" />
+    <ClCompile Include="Source\Actor\Private\MissileActor.cpp" />
     <ClCompile Include="Source\Actor\Private\MovingCubeActor.cpp">
     </ClCompile>
     <ClCompile Include="Source\Actor\Private\PointLight.cpp" />
@@ -645,7 +646,6 @@
     <ClCompile Include="Source\Actor\Private\StaticMeshActor.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="Source\Actor\Private\MissileActor.cpp" />
     <ClCompile Include="Source\Actor\Private\TextActor.cpp" />
     <ClCompile Include="Source\Actor\Private\TriangleActor.cpp" />
     <ClCompile Include="Source\Component\Collision\Private\BoxComponent.cpp" />

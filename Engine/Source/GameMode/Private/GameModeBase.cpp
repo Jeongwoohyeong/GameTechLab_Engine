@@ -66,7 +66,7 @@ void AGameModeBase::InitializePlayerController()
 {
 	if (!OwningWorld)
 	{
-		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] Cannot initialize player controller: No owning world");
+		UE_LOG_ERROR("[GameModeBase] Cannot initialize player controller: No owning world");
 		return;
 	}
 
@@ -74,41 +74,31 @@ void AGameModeBase::InitializePlayerController()
 	APlayerController* NewController = SpawnPlayerController();
 	if (!NewController)
 	{
-		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] Failed to spawn player controller");
+		UE_LOG_ERROR("[GameModeBase] Failed to spawn player controller");
 		return;
 	}
 
 	PlayerController.Set(NewController);
 
-	// 에디터에 배치된 폰 탐색
-	APawn* ExistingPawn = nullptr;
-	for (AActor* Actor : OwningWorld->GetLevel()->GetLevelActors())
+	// Spawn default pawn for the player
+	APawn* NewPawn = SpawnDefaultPawnFor(NewController);
+	if (NewPawn)
 	{
-		if (APlayerCharacter* Player = Cast<APlayerCharacter>(Actor))
-		{
-			if (Player->HasTag("Player"))
-			{
-				ExistingPawn = Player;
-				break;
-			}
-		}
-	}
+		// Make the controller possess the pawn
+		NewController->Possess(NewPawn);
 
-	// 에디터에 존재하지 않는다면 fallback으로 새엇ㅇ
-	if (!ExistingPawn)
-	{
-		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] No placed player found in scene! Falling back to spawn default pawn.");
-		ExistingPawn = SpawnDefaultPawnFor(NewController);
+		// Also notify the pawn that it has been possessed
+		NewPawn->PossessedBy(NewController);
+
+		// 불법증축: PIE 카메라를 플레이어에 붙이기
+		SetupPIECamera(NewPawn);
+
+		UE_LOG_SUCCESS("[GameModeBase] Player controller initialized and possessing pawn");
 	}
 	else
 	{
-		NewController->Possess(ExistingPawn);
-		ExistingPawn->PossessedBy(NewController);
-
-		SetupPIECamera(ExistingPawn);
-
-		UE_LOG_SUCCESS("[GameModeBase/InitializePlayerController] Player controller initialized and possessing pawn");
-	}	
+		UE_LOG_WARNING("[GameModeBase] Failed to spawn default pawn for player controller");
+	}
 }
 
 APlayerController* AGameModeBase::SpawnPlayerController()
@@ -160,7 +150,8 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 		// Set to a visible location (0, 0, 0) - origin
 		FVector SpawnLocation(0.0f, 0.0f, 0.0f);
 		NewPawn->SetActorLocation(SpawnLocation);
-		NewPawn->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f)); 
+		// 기존에 세팅한 것이 덮어씌워질 수 있음.
+		//NewPawn->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f)); 
 
 		UE_LOG("[GameModeBase] Default pawn spawned: %s at location (%.1f, %.1f, %.1f)",
 			NewPawn->GetName().ToString().c_str(),

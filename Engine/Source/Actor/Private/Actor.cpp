@@ -125,7 +125,7 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
         		{
         			LightComponent->RefreshVisualizationIconBinding();
         		}
-        	}        	
+        	}
 
         	if (RootComponent)
         	{
@@ -252,6 +252,9 @@ void AActor::InitializeComponents()
 	UUUIDTextComponent* UUID = CreateDefaultSubobject<UUUIDTextComponent>();
 	UUID->AttachToComponent(GetRootComponent());
 	UUID->SetOffset(5.0f);
+	// ✅ UUIDTextComponent는 충돌 처리하지 않으므로 Tick 비활성화
+	UUID->SetCanEverTick(false);
+	UUID->bGenerateOverlapEvents = false;
 }
 
 bool AActor::IsUniformScale() const
@@ -669,24 +672,6 @@ void AActor::PrintLocation() const
 	//const FVector& Location = GetActorLocation();
 	//std::cout << "[Actor] " << GetName().ToString() << " Location: ("
 	//    << Location.X << ", " << Location.Y << ", " << Location.Z << ")" << std::endl;
-}
-
-void AActor::AddTag(const FName& Tag)
-{
-	if (std::find(Tags.begin(), Tags.end(), Tag) == Tags.end())
-	{
-		Tags.emplace_back(Tag);
-	}
-}
-
-void AActor::RemoveTag(const FName& Tag)
-{
-	Tags.erase(std::find(Tags.begin(), Tags.end(), Tag));
-}
-
-bool AActor::HasTag(const FName& Tag) const
-{
-	return std::find(Tags.begin(), Tags.end(), Tag) != Tags.end();
 }
 
 FString AActor::GetLuaScriptPathName()

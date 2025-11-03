@@ -10,10 +10,7 @@ return function()
     -- Each instance gets its own variables (not shared!)
     local ReturnTable = {
         HasInitialized = false,
-        GameStarted = false,
-        CurrentWave = 1,
-        MaxPoolSize = 10,
-        WaveDelay = 5.0
+        GameStarted = false
         }
 
     function ReturnTable:BeginPlay()
@@ -55,8 +52,9 @@ return function()
             Print("[GameMode] Enemy pool initialized")
             self.GameStarted = true
         end
-    
-        StartCoroutine(self, "WaveSpawner")
+
+        -- 적 스폰
+        self.GameMode:SpawnEnemies(1, FVector(1.0, 1.0, 0.0))
 
         -- 플레이어 무기 활성화
         local PlayerController = self.GameMode:GetPlayerController()
@@ -72,37 +70,10 @@ return function()
         end
     end
 
-    function ReturnTable:WaveSpawner()
-        local TotalSpawned = 0
-        while TotalSpawned < self.MaxPoolSize do
-            local SpawnCount = math.min(self.CurrentWave * 2, self.MaxPoolSize - TotalSpawned)
-            if SpawnCount <= 0 then
-                Print("[GameMode] Enemy pool limit reached.")
-                break
-            end
-                                    
-            Print(string.format("[GameMode] Wave %d spawned %d enemies", self.CurrentWave, SpawnCount))
-            for i = 1, SpawnCount do
-                local RandomX = (math.random() - 0.5) * 400.0
-                local RandomY = (math.random() - 0.5) * 400.0
-                local BaseZ = 0.0
-                local SpawnPos = FVector(RandomX, RandomY, BaseZ)
-                self.GameMode:SpawnEnemies(1, SpawnPos)
-            end
-        
-            TotalSpawned = TotalSpawned + SpawnCount
-            Print(string.format("[GameMode] Total spawned enemies %d", TotalSpawned))
-            self.CurrentWave = self.CurrentWave + 1
-            
-            wait(self.WaveDelay)
-        end
-    end
-
     function ReturnTable:Tick(DeltaTime)
         if not self.GameMode then
             return
         end
---         Print("Lua Tick");
 
 --     TODO GameMode Tick에서 돌릴 로직 추가
 --       e.g.) 스코어 누적, 적 웨이브 증가 등등

@@ -93,23 +93,49 @@ return function()
     end
 
     -- ==================================================
-    -- OnOverlap: 충돌 처리
+    -- OnBeginOverlap: 충돌 처리 (C++ CapsuleComponent에서 호출)
     -- ==================================================
-    function ReturnTable:OnOverlap(OtherActor)
+    function ReturnTable:OnBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult)
         if not OtherActor or self.bHasHit then
             return
         end
 
+        -- 자기 자신과의 충돌 무시
+        if OtherActor == MissileActor then
+            return
+        end
+
         local OtherName = OtherActor:GetName()
-        Print("[Missile] Hit: " .. OtherName)
 
-        -- 충돌 시 미사일을 풀로 반환
-        Print("[Missile] Collision detected, returning to pool...")
-        self.bHasHit = true
+        -- ✅ 다른 미사일과의 충돌 무시 (AMissileActor로 시작하는 이름)
+        if string.find(OtherName, "AMissileActor") then
+            return
+        end
 
-        local Pool = MissilePoolModule.GetInstance()
-        if Pool then
-            Pool:ReturnMissile(MissileActor)
+        -- ✅ 플레이어와의 충돌 무시 (APlayerCharacter로 시작하는 이름)
+        if string.find(OtherName, "APlayerCharacter") then
+            return
+        end
+
+        Print("[Missile] OnBeginOverlap with: " .. OtherName)
+
+        -- 적 캐릭터인지 확인 (AEnemyCharacter만 처리)
+        if string.find(OtherName, "AEnemyCharacter") then
+            local OtherLuaComp = OtherActor:GetLuaScriptComponent()
+            if OtherLuaComp then
+                -- TakeDamage 함수 호출
+                Print("[Missile] Calling TakeDamage(" .. self.Damage .. ") on " .. OtherName)
+                OtherLuaComp:ActivateFunction("TakeDamage", self.Damage, MissileActor)
+            else
+                Print("[Missile] WARNING: Enemy has no Lua component!")
+            end
+
+            -- 충돌 시 미사일을 풀로 반환
+            self.bHasHit = true
+            local Pool = MissilePoolModule.GetInstance()
+            if Pool then
+                Pool:ReturnMissile(MissileActor)
+            end
         end
     end
 

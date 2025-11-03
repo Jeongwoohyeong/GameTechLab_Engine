@@ -2,6 +2,7 @@
 #include "Pawn/Public/Pawn.h"
 
 class UCapsuleComponent;
+class UBoxComponent;
 struct FHitResult;
 
 /**
@@ -52,6 +53,7 @@ protected:
     float MouseSensitivity = 120.0f;
 
     UCapsuleComponent* CollisionComponent = nullptr;
+    UBoxComponent* WingCollision = nullptr;
     UStaticMeshComponent* StaticMeshComponent = nullptr;
 
     // Camera shake variables

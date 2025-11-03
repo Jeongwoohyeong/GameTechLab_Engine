@@ -38,6 +38,4 @@ public:
     APlayerController* GetPlayerController() const override { return Super::GetPlayerController(); }
 private:
     EGameState CurrentState = EGameState::MainMenu;
-    int32 CurrentEnemyIndex = 0;
-    int32 MaxPoolSize = 0;
 };

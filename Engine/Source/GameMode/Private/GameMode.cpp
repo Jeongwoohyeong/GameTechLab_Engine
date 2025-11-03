@@ -72,9 +72,6 @@ void AGameMode::BeginPlay()
 void AGameMode::Tick(float DeltaTime)
 {
     AGameModeBase::Tick(DeltaTime);
-
-    // 현재 lua script tick에서 처리하는 게 없어서 주석처리
-    //GetLuaScriptComponent()->ActivateFunction("Tick");
 }
 
 void AGameMode::ChangeState(EGameState NewState)
@@ -163,46 +160,26 @@ void AGameMode::InitializeEnemyPool(int32 EnemyCount)
         }
         Enemy = TWeakObjectPtr<APawn>(EnemyPawn);
     }
-    MaxPoolSize = EnemyCount;
     UE_LOG("[GameMode/InitializeEnemyPool] Create object pool success (Created %d enemies)", EnemyCount);
 }
 
 void AGameMode::SpawnEnemies(int32 EnemyCount, FVector Location)
-{
-    if (EnemyCount <= 0)
+{    
+    for (int i = 0; i < EnemyCount; i++)
     {
-        return;
-    }
-
-    int32 Spawned = 0;
-    for (int i = CurrentEnemyIndex; i < Enemies.size(); i++)
-    {
-        if (Spawned >= EnemyCount)
-        {
-            break;
-        }
-
         if (auto Enemy = Enemies[i].Get())
         {
-            if (!Enemy->CanTick())
+            Enemy->SetCanTick(true);
+            Enemy->SetActorLocation(Location);
+            
+            for (auto& Component : Enemy->GetOwnedComponents())
             {
-                Enemy->SetActorLocation(Location);
-                Enemy->SetCanTick(true);
-
-                for (auto& Comp : Enemy->GetOwnedComponents())
+                if (UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(Component))
                 {
-                    if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(Comp))
-                    {
-                        Prim->SetCollisionEnabled(true);
-                        Prim->SetVisibility(true);
-                    }
+                    PrimitiveComp->SetVisibility(true);
+                    PrimitiveComp->SetCollisionEnabled(true);
                 }
-                Spawned++;
             }
         }
     }
-
-    CurrentEnemyIndex = std::min(CurrentEnemyIndex + EnemyCount, MaxPoolSize);
-
-    UE_LOG("[GameMode/SpawnEnemies] Spawned %d enemies current wave", Spawned);
 }

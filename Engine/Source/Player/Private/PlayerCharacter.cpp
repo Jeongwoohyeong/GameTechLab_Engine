@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
-
+#include "Component/Collision/Public/CapsuleComponent.h"
+#include "Component/Collision/Public/BoxComponent.h"
 #include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
@@ -17,22 +18,74 @@ APlayerCharacter::APlayerCharacter()
 
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
-
-	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
-	SetUseScript(true);
-	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
+	// StaticMesh 추가
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (!StaticMeshComponent)
 	{
-		LuaComponent->SetScriptName("Scripts/Player/PlayerCharacter.lua");
-
-		if (!LuaComponent->LoadScript())
-		{
-			UE_LOG_ERROR("[PlayerCharacter] Failed to load PlayerCharacter.lua");
-		}
+		UE_LOG_ERROR("ACharacter: Failed to create StaticMeshComponent");
+	}
+	else
+	{
+		SetRootComponent(StaticMeshComponent);
+		// Mesh 설정 (구체로 표시)
+		StaticMeshComponent->SetStaticMesh("Data/MIG_29.obj");
+		StaticMeshComponent->SetRelativeScale3D(FVector(10.0f, 10.0f, 10.0f));  // 크기 조정
 	}
 
-	this->AddTag("Player");
+	// 몸통 캡슐 충돌 컴포넌트
+	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
+	if (!CollisionComponent)
+	{
+		UE_LOG_ERROR("APlayerCharacter: Failed to create CollisionComponent");
+	}
+	else
+	{
+		CollisionComponent->AttachToComponent(StaticMeshComponent);
+		CollisionComponent->bGenerateHitEvents = true;
+		CollisionComponent->bGenerateOverlapEvents = true;
+		CollisionComponent->bBlockComponent = true;
+		CollisionComponent->SetRelativeLocation(FVector(0.4f, 0.0f, 2.2f));
+		CollisionComponent->SetRelativeRotation(FQuaternion::FromEuler(FVector(0.0f, 90.0f, 0.0f)));
+		CollisionComponent->SetCapsuleHalfHeight(6.3f);
+		CollisionComponent->SetCapsuleRadius(1.3f);
+		// 충돌 콜백 등록
+		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+		CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+		CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+		UE_LOG("[PlayerCharacter] Body CapsuleCollision created");
+	}
 
-	UE_LOG("[PlayerCharacter] Constructor complete!");
+	// 날개 박스 충돌 컴포넌트
+	WingCollision = CreateDefaultSubobject<UBoxComponent>();
+	if (!WingCollision)
+	{
+		UE_LOG_ERROR("APlayerCharacter: Failed to create WingCollision");
+	}
+	else
+	{
+		WingCollision->AttachToComponent(StaticMeshComponent);
+		// 날개 크기에 맞춰 박스 설정 (X=전후 두께, Y=좌우 날개 길이, Z=상하 두께)
+		WingCollision->SetBoxExtent(FVector(2.5f, 6.0f, 0.3f));  // 플레이어 전투기 날개 크기
+		WingCollision->SetRelativeLocation(FVector(-5.5f, 0.0f, 2.0f));
+		WingCollision->bGenerateHitEvents = true;
+		WingCollision->bGenerateOverlapEvents = true;
+		WingCollision->bBlockComponent = true;
+		// 충돌 콜백 등록 (동일한 콜백 사용)
+		WingCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+		WingCollision->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+		WingCollision->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+		UE_LOG("[PlayerCharacter] Wing BoxCollision created");
+	}
+
+	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
+	// Create RootComponent first (required for Actor Transform)
+	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
+	// SetRootComponent(RootComp);
+
+	// ✅ Lua 스크립트 활성화 (BeginPlay에서 PlayerWeapon 로드)
+	SetUseScript(true);
+
+	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, StaticMeshComponent);
 }
 
 APlayerCharacter::~APlayerCharacter()
@@ -67,6 +120,18 @@ void APlayerCharacter::BeginPlay()
 
 	// 이제 Super::BeginPlay 호출 (이미 스크립트가 설정되어 있음)
 	Super::BeginPlay();
+
+	// 충돌 컴포넌트들을 Level에 등록
+	if (CollisionComponent)
+	{
+		RegisterComponent(CollisionComponent);
+		UE_LOG("[PlayerCharacter] CollisionComponent registered to Level");
+	}
+	if (WingCollision)
+	{
+		RegisterComponent(WingCollision);
+		UE_LOG("[PlayerCharacter] WingCollision registered to Level");
+	}
 
 	UE_LOG("[PlayerCharacter] BeginPlay: %s at (%.1f, %.1f, %.1f)",
 		GetName().ToString().c_str(),

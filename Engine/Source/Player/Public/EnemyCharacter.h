@@ -39,12 +39,11 @@ public:
 		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& OutHit);
 
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
+	UBoxComponent* GetWingCollision() const { return WingCollision; }
 
 private:
-	// 컴포넌트들
+	UCapsuleComponent* CollisionComponent = nullptr;  // 몸통 충돌
+	UBoxComponent* WingCollision = nullptr;            // 날개 충돌
 	UStaticMeshComponent* StaticMeshComponent = nullptr;
-	UCapsuleComponent* CollisionComponent = nullptr;
-	
-
 	float MovementSpeed = 200.0f; // 적 기본 이동 속도
 };
