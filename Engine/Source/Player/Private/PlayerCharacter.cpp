@@ -52,6 +52,18 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnBeginOverlap");
+	}
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnEndOverlap");
+	}
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnHit");
+	}
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -131,18 +143,33 @@ void APlayerCharacter::LookUp(float Value)
 void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
+			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+	}
 	UE_LOG("Player Character Begin Overlap");
 }
 
 void APlayerCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex)
 {
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnEndOverlap", OverlappedComp, OtherActor,
+			OtherComp, OtherBodyIndex);
+	}
 	UE_LOG("Player Character End Overlap");
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& OutHit)
-{	
+{
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnHit", OverlappedComp, OtherActor,
+			OtherComp, OutHit);
+	}
 	UE_LOG("Player Character Hit");
 }
 

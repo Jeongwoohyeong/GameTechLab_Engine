@@ -125,9 +125,9 @@ void AGameMode::SpawnPlayerCharacter()
             if(LuaComp->LoadScript())
             {
                 UE_LOG("[GameMode/SpawnPlayerCharacter] Lua script : %s load", LuaComp->GetScriptName().c_str());
-                LuaComp->ActivateFunction("OnBeginOverlap");
-                LuaComp->ActivateFunction("OnEndOverlap");
-                LuaComp->ActivateFunction("OnHit");
+                // LuaComp->ActivateFunction("OnBeginOverlap");
+                // LuaComp->ActivateFunction("OnEndOverlap");
+                // LuaComp->ActivateFunction("OnHit");
             }
             else
             {
