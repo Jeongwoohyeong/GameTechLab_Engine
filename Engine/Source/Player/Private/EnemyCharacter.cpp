@@ -13,6 +13,7 @@ AEnemyCharacter::AEnemyCharacter()
 {
 	bCanEverTick = true;
 	UE_LOG("[EnemyCharacter] Constructor called");
+	this->AddTag("Enemy");
 }
 
 UClass* AEnemyCharacter::GetDefaultRootComponent()
