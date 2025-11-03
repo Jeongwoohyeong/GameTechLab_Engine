@@ -130,6 +130,10 @@ public:
 	ULuaScriptComponent* GetLuaScriptComponent() const { return LuaScriptComponent; }
 	void PrintLocation() const;
 	bool HasBegunPlay() const { return bBegunPlay; }
+	
+	void AddTag(const FName& Tag);
+	void RemoveTag(const FName& Tag);
+	bool HasTag(const FName& Tag) const;
 
 protected:
 	bool bCanEverTick = false;
@@ -137,11 +141,7 @@ protected:
 	bool bBegunPlay = false;
 	/** @brief True if the actor is marked for destruction. */  
 	bool bIsPendingDestroy = false;
-	bool bUseScript = false;
-
-	void AddTag(const FName& Tag);
-	void RemoveTag(const FName& Tag);
-	bool HasTag(const FName& Tag) const;
+	bool bUseScript = false;	
 
 private:
 	USceneComponent* RootComponent = nullptr;
