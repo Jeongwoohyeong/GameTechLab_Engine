@@ -60,6 +60,12 @@ void UEditor::Update()
 	// PIE 모드에서는 에디터 카메라 입력 비활성화
 	bool bSkipEditorCameraInput = (GEditor->IsPIESessionActive() && ActiveIndex == ViewportManager.GetPIEActiveViewportIndex());
 
+	// Shift + F1: PIE 마우스 잠금 토글 (언리얼 스타일)
+	if (Input.IsKeyPressed(EKeyInput::F1) && Input.IsKeyDown(EKeyInput::Shift))
+	{
+		GEditor->TogglePIEMouseLock();
+	}
+
 	// KTLWeek07: 각 뷰포트에서 마우스 우클릭 시 해당 카메라만 입력 활성화
 	int32 HoveredViewportIndex = ViewportManager.GetMouseHoveredViewportIndex();
 	bool bIsRightMouseDown = Input.IsKeyDown(EKeyInput::MouseRight);

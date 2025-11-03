@@ -388,6 +388,7 @@
     <ClInclude Include="Source\Manager\Asset\Public\TextureManager.h" />
     <ClInclude Include="Source\Manager\Lua\Public\LuaScriptManager.h" />
     <ClInclude Include="Source\Manager\Render\Public\CascadeManager.h" />
+    <ClInclude Include="Source\Manager\UI\Public\GameUIManager.h" />
     <ClInclude Include="Source\Manager\UI\Public\ViewportManager.h" />
     <ClInclude Include="Source\Optimization\Public\OcclusionCuller.h" />
     <ClInclude Include="Source\Optimization\Public\ViewVolumeCuller.h" />
@@ -471,6 +472,9 @@
     <ClInclude Include="Source\Render\UI\Widget\Collision\Public\BoxComponentWidget.h" />
     <ClInclude Include="Source\Render\UI\Widget\Collision\Public\CapsuleComponentWidget.h" />
     <ClInclude Include="Source\Render\UI\Widget\Collision\Public\SphereComponentWidget.h" />
+    <ClInclude Include="Source\Render\UI\Widget\Public\GameHUDWidget.h" />
+    <ClInclude Include="Source\Render\UI\Widget\Public\GameOverWidget.h" />
+    <ClInclude Include="Source\Render\UI\Widget\Public\GameStartMenuWidget.h" />
     <ClInclude Include="Source\Texture\Public\ShadowMapResources.h" />
     <ClInclude Include="Source\Render\UI\Factory\Public\UIWindowFactory.h" />
     <ClInclude Include="Source\Render\UI\ImGui\Public\ImGuiHelper.h" />
@@ -705,6 +709,7 @@
     <ClCompile Include="Source\Manager\Coroutine\Private\LuaCoroutineManager.cpp" />
     <ClCompile Include="Source\Manager\Lua\Private\LuaScriptManager.cpp" />
     <ClCompile Include="Source\Manager\Render\Private\CascadeManager.cpp" />
+    <ClCompile Include="Source\Manager\UI\Private\GameUIManager.cpp" />
     <ClCompile Include="Source\Manager\UI\Private\ViewportManager.cpp" />
     <ClCompile Include="Source\Optimization\Private\OcclusionCuller.cpp" />
     <ClCompile Include="Source\Optimization\Private\ViewVolumeCuller.cpp" />
@@ -772,6 +777,9 @@
     <ClCompile Include="Source\Render\UI\Widget\Collision\Private\BoxComponentWidget.cpp" />
     <ClCompile Include="Source\Render\UI\Widget\Collision\Private\CapsuleComponentWidget.cpp" />
     <ClCompile Include="Source\Render\UI\Widget\Collision\Private\SphereComponentWidget.cpp" />
+    <ClCompile Include="Source\Render\UI\Widget\Private\GameHUDWidget.cpp" />
+    <ClCompile Include="Source\Render\UI\Widget\Private\GameOverWidget.cpp" />
+    <ClCompile Include="Source\Render\UI\Widget\Private\GameStartMenuWidget.cpp" />
     <ClCompile Include="Source\Texture\Private\ShadowMapResources.cpp" />
     <ClCompile Include="Source\Render\UI\Factory\Private\UIWindowFactory.cpp" />
     <ClCompile Include="Source\Render\UI\ImGui\Private\ImGuiHelper.cpp" />

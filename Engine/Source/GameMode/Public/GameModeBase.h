@@ -43,6 +43,9 @@ public:
     void SetDefaultPawnClass(UClass* InPawnClass);
 
 protected:
+    // PIE Camera Setup (불법증축!)
+    void SetupPIECamera(APawn* InPawn);
+
     // Default pawn class to spawn for players
     UClass* DefaultPawnClass = nullptr;
 
