@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
-
+#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
@@ -17,7 +17,37 @@ APlayerCharacter::APlayerCharacter()
 
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
+	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
+	if (!CollisionComponent)
+	{
+		UE_LOG_ERROR("ACharacter: Failed to create CollisionComponent");
+	}
+	else
+	{
+		SetRootComponent(CollisionComponent);
+		CollisionComponent->bGenerateHitEvents = true;
+		CollisionComponent->bGenerateOverlapEvents = true;
+		CollisionComponent->bBlockComponent = true;
+		UE_LOG("ACharacter Create Collision Component");
+	}
 
+	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
+	// Create RootComponent first (required for Actor Transform)
+	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
+	// SetRootComponent(RootComp);
+
+	// StaticMesh 추가
+	UStaticMeshComponent* StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
+	StaticMeshComponent->AttachToComponent(CollisionComponent);
+
+	// Mesh 설정 (구체로 표시)
+	StaticMeshComponent->SetStaticMesh("Data/MIG_29.obj");
+	StaticMeshComponent->SetRelativeScale3D(FVector(10.f,10.f,10.f));  // 크기 조정
+	SetUseScript(true);
+	//UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
 	SetUseScript(true);
 	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
@@ -72,6 +102,12 @@ void APlayerCharacter::InitializeComponents()
 	}
 
 	UE_LOG("[PlayerCharacter] InitializeComponents complete! CollisionComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
+	// if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
+	// {
+	// 	GetOwnedComponents().push_back(LuaComp);		
+	// }
+	
+	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, StaticMeshComponent);
 }
 
 APlayerCharacter::~APlayerCharacter()

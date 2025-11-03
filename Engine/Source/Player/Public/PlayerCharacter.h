@@ -1,7 +1,7 @@
 #pragma once
 #include "Pawn/Public/Pawn.h"
 
-class USceneComponent;
+class UCapsuleComponent;
 struct FHitResult;
 
 /**
@@ -17,10 +17,6 @@ class APlayerCharacter : public APawn
 public:
     APlayerCharacter();
     virtual ~APlayerCharacter();
-
-    // Component initialization
-    virtual UClass* GetDefaultRootComponent() override;
-    virtual void InitializeComponents() override;
 
     // Lifecycle
     virtual void BeginPlay() override;
@@ -52,5 +48,6 @@ protected:
     // Mouse sensitivity for pitch/yaw rotation
     float MouseSensitivity = 120.0f;
 
-    UShapeComponent* CollisionComponent = nullptr;
+    UCapsuleComponent* CollisionComponent = nullptr;
+    UStaticMeshComponent* StaticMeshComponent = nullptr;
 };
