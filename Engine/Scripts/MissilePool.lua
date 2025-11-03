@@ -20,10 +20,9 @@ function MissilePool:Initialize()
         InactiveMissiles = {},  -- 비활성 미사일 풀
         ActiveMissiles = {},    -- 활성 미사일 추적
         PoolSize = 0,           -- 총 생성된 미사일 수
-        MaxPoolSize = 50,       -- 최대 풀 크기
-        MissileSpeed = 300.0,   -- 미사일 속도
-        MissileLifeTime = 5.0,  -- 미사일 생존 시간
-        MissileScale = 30.0,    -- 미사일 크기
+        MaxPoolSize = 1000,       -- 최대 풀 크기
+        MissileSpeed = 3600.0,  -- 미사일 속도 (6배 증가)
+        MissileLifeTime = 10.0,  -- 미사일 생존 시간
     }
 
     setmetatable(pool, { __index = MissilePool })
@@ -59,12 +58,15 @@ end
 -- ==================================================
 -- 미사일 가져오기 (없으면 새로 생성)
 -- ==================================================
-function MissilePool:GetMissile(Location, Rotation)
+function MissilePool:GetMissile(Location, Rotation, Scale)
     local World = GetWorld()
     if not World then
         Print("[MissilePool] ERROR: World is nil!")
         return nil
     end
+
+    -- 기본 스케일 설정
+    local MissileScale = Scale or FVector(50.0, 200.0, 200.0)
 
     local MissileActor = nil
 
@@ -95,9 +97,6 @@ function MissilePool:GetMissile(Location, Rotation)
             Print("[MissilePool] ERROR: Failed to get StaticMeshComponent!")
         end
 
-        -- 미사일 초기 설정 (한 번만)
-        MissileActor:SetActorScale3D(FVector(self.MissileScale, self.MissileScale, self.MissileScale))
-
         -- Lua 스크립트 연결
         MissileActor:SetUseScript(true)
         MissileActor:InitLuaScriptComponent()
@@ -110,9 +109,10 @@ function MissilePool:GetMissile(Location, Rotation)
         Print("[MissilePool] Created new missile (Total created: " .. self.PoolSize .. ")")
     end
 
-    -- 미사일 위치/회전 설정
+    -- 미사일 위치/회전/스케일 설정
     MissileActor.ActorLocation = Location
     MissileActor.ActorRotation = Rotation
+    MissileActor:SetActorScale3D(MissileScale)
 
     -- 활성 미사일 목록에 추가
     table.insert(self.ActiveMissiles, MissileActor)

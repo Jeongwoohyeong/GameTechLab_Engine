@@ -150,7 +150,8 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 		// Set to a visible location (0, 0, 0) - origin
 		FVector SpawnLocation(0.0f, 0.0f, 0.0f);
 		NewPawn->SetActorLocation(SpawnLocation);
-		NewPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f));
+		// TODO - 왜 크기 더늘린건진 모르겠지만(플레이어 캐릭터에서도 늘려줌), 일단 이걸로 확정 짓고 가야함.(추후에 수정 가능)
+		NewPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f)); 
 
 		UE_LOG("[GameModeBase] Default pawn spawned: %s at location (%.1f, %.1f, %.1f)",
 			NewPawn->GetName().ToString().c_str(),

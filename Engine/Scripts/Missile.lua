@@ -15,7 +15,7 @@ return function()
     -- ==================================================
     -- 미사일 설정
     -- ==================================================
-    ReturnTable.Speed = 300.0               -- 미사일 속도
+    ReturnTable.Speed = 3600.0              -- 미사일 속도 (6배 증가)
     ReturnTable.Damage = 10.0               -- 데미지
     ReturnTable.LifeTime = 5.0              -- 최대 생존 시간 (초)
     ReturnTable.CurrentLifeTime = 0.0       -- 현재 생존 시간
