@@ -872,6 +872,7 @@
     </Content>
     <Content Include="Scripts\123\123_AStaticMeshActor_999.lua" />
     <Content Include="Scripts\123\example_coroutine.lua" />
+    <Content Include="Scripts\Enemy\Enemy.lua" />
     <Content Include="Scripts\GameMode\GameOverGameMode.lua" />
     <Content Include="Scripts\GameMode\InPlayGameMode.lua" />
     <Content Include="Scripts\GameMode\MainMenuGameMode.lua" />

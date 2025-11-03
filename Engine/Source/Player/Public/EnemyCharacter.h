@@ -41,6 +41,7 @@ public:
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 	UBoxComponent* GetWingCollision() const { return WingCollision; }
 	void UpdatePlayerPosition(const FVector& Position);
+	void RotateToPlayer(float DeltaTime);
 
 private:
 	UCapsuleComponent* CollisionComponent = nullptr;  // 몸통 충돌
@@ -49,4 +50,7 @@ private:
 	
 
 	float MovementSpeed = 200.0f; // 적 기본 이동 속도
+
+	FVector PlayerPosition = {};
+	FQuaternion TargetQuat = {};
 };

@@ -14,7 +14,7 @@ return function()
         CurrentWave = 1,
         MaxPoolSize = 10,
         WaveDelay = 5.0,
-        BroadCastDelay = 2.0
+        BroadCastDelay = 3.0
         }
 
     function ReturnTable:BeginPlay()

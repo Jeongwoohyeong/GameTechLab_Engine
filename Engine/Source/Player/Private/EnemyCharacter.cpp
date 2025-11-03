@@ -141,6 +141,8 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	RotateToPlayer(DeltaTime);
+	MoveForward(1.0f * DeltaTime);
 	// AI나 Lua 스크립트에서 제어할 수 있도록 기본 Tick만 제공
 }
 
@@ -228,5 +230,57 @@ void AEnemyCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 
 void AEnemyCharacter::UpdatePlayerPosition(const FVector& Position)
 {
-	UE_LOG("player position updated %f %f %f", Position.X, Position.Y, Position.Z);
+	PlayerPosition = Position;
+
+	FVector ToPlayer = PlayerPosition - GetActorLocation();
+	FVector Forward = GetActorRotation().RotateVector(FVector::ForwardVector());
+	FVector Right = GetActorRotation().RotateVector(FVector::RightVector());
+	
+	ToPlayer.Normalize();
+	Forward.Normalize();
+	Right.Normalize();
+	
+	float CosTheta = Clamp(ToPlayer.Dot(Forward), -1.0f, 1.0f);
+	float Angle = ToDeg * std::acos(CosTheta);
+
+	if (Angle < 5.0f)
+	{
+		return;
+	}
+
+	float Sign = Right.Dot(ToPlayer);
+	if (Sign < 0.0f)
+	{
+		Angle = -Angle;
+	}	
+
+	FQuaternion CurrentQuat = GetActorRotation();
+	FQuaternion DeltaQuat = FQuaternion::FromEuler(FVector(0.0f, Angle, 0.0f));
+	TargetQuat = CurrentQuat * DeltaQuat;
+}
+
+void AEnemyCharacter::RotateToPlayer(float DeltaTime)
+{
+	const float StopAngleThreshold = 5.0f;
+
+	FQuaternion CurrentQuat = GetActorRotation();	
+
+	float RotationSpeedDegPerSec = 90.0f;
+	float Dot = CurrentQuat.Dot(TargetQuat);
+	Dot = abs(Dot);
+	Dot = Clamp(Dot, -1.0f, 1.0f);
+	float Radian = 2.0f * std::acos(Dot);
+	float AngleBetweenTarget = ToDeg * Radian;
+
+	float SlowDownFactor = Clamp(AngleBetweenTarget / StopAngleThreshold, 0.0f, 1.0f);
+	RotationSpeedDegPerSec *= SlowDownFactor;
+	
+	FQuaternion NewRotation = TargetQuat;
+	if (AngleBetweenTarget > MATH_EPSILON)
+	{
+		float Alpha = Clamp((RotationSpeedDegPerSec * DeltaTime) / AngleBetweenTarget, 0.0f, 1.0f);
+		NewRotation = FQuaternion::Slerp(CurrentQuat, TargetQuat, Alpha);
+	}	
+	
+	SetActorRotation(NewRotation);
 }
