@@ -9,6 +9,8 @@
 #include "Render/UI/Widget/Public/StatusBarWidget.h"
 #include "Manager/UI/Public/ViewportManager.h"
 #include "Render/UI/Viewport/Public/Window.h"
+#include "Manager/UI/Public/GameUIManager.h"
+#include "Editor/Public/EditorEngine.h"
 
 IMPLEMENT_SINGLETON_CLASS(UUIManager, UObject)
 
@@ -127,6 +129,12 @@ void UUIManager::Update()
     // 포커스 상태 업데이트
     UpdateFocusState();
 
+    // PIE 모드일 때 게임 UI 업데이트
+    if (GEditor && GEditor->IsPIESessionActive())
+    {
+        UGameUIManager::GetInstance().Update();
+    }
+
     // FutureEngine 철학: 오른쪽 패널 레이아웃 자동 정리
     ArrangeRightPanels();
 }
@@ -171,6 +179,12 @@ void UUIManager::Render()
     if (StatusBarWidget)
     {
         StatusBarWidget->RenderWidget();
+    }
+
+    // PIE 모드일 때 게임 UI 렌더링
+    if (GEditor && GEditor->IsPIESessionActive())
+    {
+        UGameUIManager::GetInstance().Render();
     }
 
     // FutureEngine 철학: 스플리터 오버레이 렌더링 (Quad 모드에서 호버링 효과)

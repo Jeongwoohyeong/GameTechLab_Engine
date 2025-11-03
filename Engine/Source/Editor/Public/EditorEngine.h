@@ -63,9 +63,10 @@ public:
     UEditor* GetEditorModule() const { return EditorModule; }
     bool IsPIESessionActive() const;
 
-private:
     // PIE 월드의 FWorldContext를 찾아서 반환
     FWorldContext* GetPIEWorldContext();
+private:
+
     // 현재 PIE 세션 중인지 확인하고, 그렇다면 현재 WorldContext를 반환
     FWorldContext* GetActiveWorldContext();
     // PIE 카메라의 FollowTarget 정리 (불법증축!)

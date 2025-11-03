@@ -13,6 +13,7 @@
 #include "GameMode/Public/GameModeBase.h"
 #include "GamePlay/Public/PlayerController.h"
 #include "GamePlay/Public/PlayerInput.h"
+#include "Manager/UI/Public/GameUIManager.h"
 
 IMPLEMENT_CLASS(UEditorEngine, UObject)
 UEditorEngine* GEditor = nullptr;
@@ -127,9 +128,6 @@ void UEditorEngine::StartPIE()
     int32 LastClickedViewport = ViewportMgr.GetLastClickedViewportIndex();
     ViewportMgr.SetPIEActiveViewportIndex(LastClickedViewport);
 
-    // 마우스를 화면 중앙에 고정 (비행기 게임)
-    UInputManager::GetInstance().LockMouseToCenter(true);
-
     UWorld* PIEWorld = Cast<UWorld>(EditorWorld->Duplicate());
 
     if (PIEWorld)
@@ -141,6 +139,9 @@ void UEditorEngine::StartPIE()
 
         GWorld = PIEWorld;
         PIEWorld->BeginPlay();
+
+        // 게임 UI 매니저 초기화 (PlayerController 생성 이후)
+        UGameUIManager::GetInstance().Initialize();
     }
 }
 
@@ -158,8 +159,9 @@ void UEditorEngine::EndPIE()
     // 불법증축: PIE 카메라의 FollowTarget 정리
     ClearPIECamera();
 
-    // 마우스 잠금 해제 (비행기 게임)
-    UInputManager::GetInstance().LockMouseToCenter(false);
+    // 게임 UI 매니저 정리 (마우스 잠금 해제 포함)
+    UGameUIManager::GetInstance().Shutdown();
+
     bPIEMouseUnlocked = false;  // 상태 리셋
 
     // PIE 전용 뷰포트 인덱스 리셋
@@ -205,6 +207,7 @@ void UEditorEngine::ResumePIE()
 
 /**
  * @brief Shift + F1: PIE 중 마우스 잠금 토글 (언리얼 스타일)
+ * Playing 상태에서만 작동: 마우스 + 입력 함께 토글
  */
 void UEditorEngine::TogglePIEMouseLock()
 {
@@ -219,15 +222,15 @@ void UEditorEngine::TogglePIEMouseLock()
 
     if (bPIEMouseUnlocked)
     {
-        // 마우스 해제: 커서 보이기, 자유 이동
+        // 마우스 해제: 커서 보이기, 자유 이동, 입력 비활성화
         UInputManager::GetInstance().LockMouseToCenter(false);
-        UE_LOG("[EditorEngine] PIE mouse unlocked (Shift+F1)");
+        UE_LOG("[EditorEngine] PIE mouse unlocked (Shift+F1) - Input disabled");
     }
     else
     {
-        // 마우스 잠금: 커서 숨기기, 중앙 고정
+        // 마우스 잠금: 커서 숨기기, 중앙 고정, 입력 활성화
         UInputManager::GetInstance().LockMouseToCenter(true);
-        UE_LOG("[EditorEngine] PIE mouse locked");
+        UE_LOG("[EditorEngine] PIE mouse locked - Input enabled");
     }
 
     // PlayerInput도 함께 토글
@@ -245,7 +248,9 @@ void UEditorEngine::TogglePIEMouseLock()
                 if (PlayerInput)
                 {
                     // 마우스 잠금 해제 = 입력 비활성화
+                    // 마우스 잠금 = 입력 활성화
                     PlayerInput->SetInputEnabled(!bPIEMouseUnlocked);
+                    UE_LOG("[EditorEngine] PlayerInput %s", bPIEMouseUnlocked ? "DISABLED" : "ENABLED");
                 }
             }
         }

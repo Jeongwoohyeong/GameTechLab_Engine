@@ -515,14 +515,25 @@ void UInputManager::LockMouseToCenter(bool bLock)
 	bMouseLocked = bLock;
 
 	// 마우스 커서 숨기기/보이기
+	// ShowCursor()는 reference count 방식이므로 여러 번 호출하여 확실히 숨김/보임
 	if (bLock)
 	{
-		ShowCursor(FALSE);  // 커서 숨기기
-		UE_LOG("[InputManager] Mouse locked to center and cursor hidden");
+		// 커서를 확실히 숨기기 위해 여러 번 호출
+		int count = 0;
+		while (ShowCursor(FALSE) >= 0 && count < 100)
+		{
+			count++;
+		}
+		UE_LOG("[InputManager] Mouse locked to center and cursor hidden (count: %d)", count);
 	}
 	else
 	{
-		ShowCursor(TRUE);   // 커서 보이기
-		UE_LOG("[InputManager] Mouse unlocked and cursor shown");
+		// 커서를 확실히 보이기 위해 여러 번 호출
+		int count = 0;
+		while (ShowCursor(TRUE) < 0 && count < 100)
+		{
+			count++;
+		}
+		UE_LOG("[InputManager] Mouse unlocked and cursor shown (count: %d)", count);
 	}
 }
