@@ -702,3 +702,21 @@ bool AActor::IsOverlappingActor(const AActor* Other) const
 	}
 	return false;
 }
+
+void AActor::AddTag(const FName& Tag)
+{
+	if (std::find(Tags.begin(), Tags.end(), Tag) == Tags.end())
+	{
+		Tags.emplace_back(Tag);
+	}
+}
+
+void AActor::RemoveTag(const FName& Tag)
+{
+	Tags.erase(std::find(Tags.begin(), Tags.end(), Tag));
+}
+
+bool AActor::HasTag(const FName& Tag) const
+{
+	return std::find(Tags.begin(), Tags.end(), Tag) != Tags.end();
+}
