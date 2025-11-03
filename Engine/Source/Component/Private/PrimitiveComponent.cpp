@@ -323,46 +323,38 @@ void UPrimitiveComponent::UpdateOverlaps()
 	FString ownerName = ThisOwner->GetName().ToString();
 	bool bIsMissile = ownerName.find("AMissileActor") != std::string::npos;
 	bool bIsEnemy = ownerName.find("AEnemyCharacter") != std::string::npos;
+	bool bIsPlayer = ownerName.find("APlayerCharacter") != std::string::npos;
 
-	if (bIsMissile || bIsEnemy)
+	if (bIsMissile || bIsEnemy || bIsPlayer)
 	{
 		UE_LOG("[DEBUG UpdateOverlaps] Owner: %s, OverlapEvents: %d, HitEvents: %d",
 			ownerName.c_str(), bGenerateOverlapEvents, bGenerateHitEvents);
 	}
-	// ========== 1차 충돌 검사: 옥트리 (Broad Phase) ==========
+
+	// ========== 충돌 검사: 옥트리 없이 모든 ShapeComponent 검사 ==========
 
 	// Actor의 Outer는 Level이다
 	ULevel* Level = Cast<ULevel>(ThisOwner->GetOuter());
-	if (!Level || !Level->GetStaticOctree())
+	if (!Level)
 	{
-		UE_LOG("UpdateOverlaps: Level or Octree is nullptr!");
-		return;  // 옥트리가 없으면 검사 불가
+		UE_LOG("UpdateOverlaps: Level is nullptr!");
+		return;
 	}
-	//UE_LOG("UpdateOverlaps: Level = %s, Octree exists", Level->GetName().ToString().c_str());
-	FOctree* Octree = Level->GetStaticOctree();
 
-	// 이 컴포넌트의 AABB
-	FVector ThisMin, ThisMax;
-	GetWorldAABB(ThisMin, ThisMax);
-	FAABB ThisAABB(ThisMin, ThisMax);
-
-	// 옥트리에서 AABB 겹치는 후보군 추출
+	// Level에 등록된 모든 ShapeComponent를 후보로 추가
 	TArray<UPrimitiveComponent*> Candidates;
-	Octree->QueryOverlap(ThisAABB, Candidates);
-	//UE_LOG("UpdateOverlaps: Octree candidates = %d", Candidates.size());
-	// 동적 오브젝트도 포함 (옥트리에 없는 움직이는 오브젝트들)
-	const TArray<UPrimitiveComponent*>& DynamicPrimitives = Level->GetDynamicPrimitives();
-	//UE_LOG("UpdateOverlaps: Dynamic primitives = %d", DynamicPrimitives.size());
-	for (UPrimitiveComponent* DynamicPrim : DynamicPrimitives)
+	const TArray<UShapeComponent*>& AllShapes = Level->GetShapeComponents();
+
+	for (UShapeComponent* Shape : AllShapes)
 	{
-		if (DynamicPrim && DynamicPrim != this)
+		if (Shape && Shape != this)
 		{
-			Candidates.push_back(DynamicPrim);
+			Candidates.push_back(Shape);
 		}
 	}
 
 	// ========== 🔍 디버그: 후보군 출력 ==========
-	if (bIsMissile || bIsEnemy)
+	if (bIsMissile || bIsEnemy || bIsPlayer)
 	{
 		UE_LOG("[DEBUG UpdateOverlaps] %s: Total candidates = %d", ownerName.c_str(), Candidates.size());
 	}
@@ -373,32 +365,9 @@ void UPrimitiveComponent::UpdateOverlaps()
 	UShapeComponent* ThisShape = Cast<UShapeComponent>(this);
 	if (!ThisShape)
 	{
-		if (bIsMissile || bIsEnemy)
+		if (bIsMissile || bIsEnemy || bIsPlayer)
 		{
-			// 🔍 Cast 실패 원인 디버그
-			UClass* MyClass = this->GetClass();
-			UClass* ShapeClass = UShapeComponent::StaticClass();
-
 			UE_LOG("[DEBUG UpdateOverlaps] %s: NOT a ShapeComponent! Cannot do narrow phase!", ownerName.c_str());
-			UE_LOG("[DEBUG Cast Failure] this->GetClass() = %s", MyClass ? MyClass->GetName().ToString().c_str() : "nullptr");
-			UE_LOG("[DEBUG Cast Failure] UShapeComponent::StaticClass() = %s", ShapeClass ? ShapeClass->GetName().ToString().c_str() : "nullptr");
-
-			if (MyClass && ShapeClass)
-			{
-				bool bIsChildOf = MyClass->IsChildOf(ShapeClass);
-				UE_LOG("[DEBUG Cast Failure] IsChildOf check = %s", bIsChildOf ? "true" : "false");
-
-				// 부모 클래스 체인 출력
-				UClass* CurrentClass = MyClass;
-				int depth = 0;
-				UE_LOG("[DEBUG Class Hierarchy] Class hierarchy for %s:", MyClass->GetName().ToString().c_str());
-				while (CurrentClass && depth < 10)
-				{
-					UE_LOG("[DEBUG Class Hierarchy]   Level %d: %s", depth, CurrentClass->GetName().ToString().c_str());
-					CurrentClass = CurrentClass->GetSuperClass();
-					depth++;
-				}
-			}
 		}
 		return;  // Shape가 아니면 Narrow Phase 불가
 	}
