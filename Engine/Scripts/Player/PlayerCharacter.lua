@@ -5,7 +5,7 @@ local FVector = EngineTypes.FVector
 return function()
     local ReturnTable = {}
     Print("ppppp")
-    
+
     function ReturnTable:OnBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult)
         Print("[Lua/Player] Begin overlap")
     end
