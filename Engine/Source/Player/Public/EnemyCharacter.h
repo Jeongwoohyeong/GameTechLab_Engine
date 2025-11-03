@@ -45,5 +45,7 @@ private:
 	UCapsuleComponent* CollisionComponent = nullptr;  // 몸통 충돌
 	UBoxComponent* WingCollision = nullptr;            // 날개 충돌
 	UStaticMeshComponent* StaticMeshComponent = nullptr;
+	
+
 	float MovementSpeed = 200.0f; // 적 기본 이동 속도
 };

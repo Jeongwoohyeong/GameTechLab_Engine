@@ -66,7 +66,7 @@ void AGameModeBase::InitializePlayerController()
 {
 	if (!OwningWorld)
 	{
-		UE_LOG_ERROR("[GameModeBase] Cannot initialize player controller: No owning world");
+		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] Cannot initialize player controller: No owning world");
 		return;
 	}
 
@@ -74,31 +74,41 @@ void AGameModeBase::InitializePlayerController()
 	APlayerController* NewController = SpawnPlayerController();
 	if (!NewController)
 	{
-		UE_LOG_ERROR("[GameModeBase] Failed to spawn player controller");
+		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] Failed to spawn player controller");
 		return;
 	}
 
 	PlayerController.Set(NewController);
 
-	// Spawn default pawn for the player
-	APawn* NewPawn = SpawnDefaultPawnFor(NewController);
-	if (NewPawn)
+	// 에디터에 배치된 폰 탐색
+	APawn* ExistingPawn = nullptr;
+	for (AActor* Actor : OwningWorld->GetLevel()->GetLevelActors())
 	{
-		// Make the controller possess the pawn
-		NewController->Possess(NewPawn);
+		if (APlayerCharacter* Player = Cast<APlayerCharacter>(Actor))
+		{
+			if (Player->HasTag("Player"))
+			{
+				ExistingPawn = Player;
+				break;
+			}
+		}
+	}
 
-		// Also notify the pawn that it has been possessed
-		NewPawn->PossessedBy(NewController);
-
-		// 불법증축: PIE 카메라를 플레이어에 붙이기
-		SetupPIECamera(NewPawn);
-
-		UE_LOG_SUCCESS("[GameModeBase] Player controller initialized and possessing pawn");
+	// 에디터에 존재하지 않는다면 fallback으로 새엇ㅇ
+	if (!ExistingPawn)
+	{
+		UE_LOG_ERROR("[GameModeBase/InitializePlayerController] No placed player found in scene! Falling back to spawn default pawn.");
+		ExistingPawn = SpawnDefaultPawnFor(NewController);
 	}
 	else
 	{
-		UE_LOG_WARNING("[GameModeBase] Failed to spawn default pawn for player controller");
-	}
+		NewController->Possess(ExistingPawn);
+		ExistingPawn->PossessedBy(NewController);
+
+		SetupPIECamera(ExistingPawn);
+
+		UE_LOG_SUCCESS("[GameModeBase/InitializePlayerController] Player controller initialized and possessing pawn");
+	}	
 }
 
 APlayerController* AGameModeBase::SpawnPlayerController()

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "Player/Public/EnemyCharacter.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
-#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Collision/Public/BoxComponent.h"
+#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Manager/Time/Public/TimeManager.h"
 #include "Level/Public/World.h"
@@ -13,7 +13,7 @@ AEnemyCharacter::AEnemyCharacter()
 {
 	bCanEverTick = true;
 	UE_LOG("[EnemyCharacter] Constructor called");
-
+	this->AddTag("Enemy");
 	// StaticMesh 컴포넌트 생성
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
 	if (!StaticMeshComponent)
