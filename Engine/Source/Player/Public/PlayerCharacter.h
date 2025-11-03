@@ -18,10 +18,6 @@ public:
     APlayerCharacter();
     virtual ~APlayerCharacter();
 
-    // Component initialization
-    virtual UClass* GetDefaultRootComponent() override;
-    virtual void InitializeComponents() override;
-
     // Lifecycle
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;

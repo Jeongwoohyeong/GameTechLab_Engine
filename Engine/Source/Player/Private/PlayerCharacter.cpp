@@ -43,7 +43,11 @@ APlayerCharacter::APlayerCharacter()
 	// Mesh 설정 (구체로 표시)
 	StaticMeshComponent->SetStaticMesh("Data/MIG_29.obj");
 	StaticMeshComponent->SetRelativeScale3D(FVector(10.f,10.f,10.f));  // 크기 조정
-
+	SetUseScript(true);
+	//UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
 	SetUseScript(true);
 	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
