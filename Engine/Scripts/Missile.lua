@@ -93,9 +93,9 @@ return function()
     end
 
     -- ==================================================
-    -- OnBeginOverlap: 충돌 처리 (C++ CapsuleComponent에서 호출)
+    -- OnHit: 충돌 처리 (C++ SphereComponent에서 호출)
     -- ==================================================
-    function ReturnTable:OnBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult)
+    function ReturnTable:OnHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit)
         if not OtherActor or self.bHasHit then
             return
         end
@@ -117,7 +117,7 @@ return function()
             return
         end
 
-        Print("[Missile] OnBeginOverlap with: " .. OtherName)
+        Print("[Missile] OnHit with: " .. OtherName)
 
         -- 적 캐릭터인지 확인 (AEnemyCharacter만 처리)
         if string.find(OtherName, "AEnemyCharacter") then

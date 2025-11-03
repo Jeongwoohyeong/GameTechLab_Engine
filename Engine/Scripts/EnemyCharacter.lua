@@ -72,14 +72,9 @@ return function()
         -- 충돌 비활성화 (죽은 적이 더 이상 충돌하지 않도록)
         local actor = self.this
         if actor then
-            local capsuleComp = actor:GetComponentByClass("UCapsuleComponent")
-            if capsuleComp then
-                capsuleComp:SetCollisionEnabled(false)
-            end
-
-            local boxComp = actor:GetComponentByClass("UBoxComponent")
-            if boxComp then
-                boxComp:SetCollisionEnabled(false)
+            local sphereComp = actor:GetComponentByClass("USphereComponent")
+            if sphereComp then
+                sphereComp:SetCollisionEnabled(false)
             end
         end
 

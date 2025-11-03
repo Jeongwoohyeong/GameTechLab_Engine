@@ -40,7 +40,7 @@ AEnemyCharacter::AEnemyCharacter()
 	{
 		CollisionComponent->SetRelativeLocation(FVector(-2.f, 0.0f, 0.0f));
 		CollisionComponent->AttachToComponent(StaticMeshComponent);
-		CollisionComponent->SetSphereRadius(0.8f);  // 적 기체를 커버하는 구체
+		CollisionComponent->SetSphereRadius(1.0f);  // 적 기체를 커버하는 구체
 		CollisionComponent->bGenerateHitEvents = true;
 		CollisionComponent->bGenerateOverlapEvents = true;
 		CollisionComponent->bBlockComponent = true;
@@ -53,18 +53,11 @@ AEnemyCharacter::AEnemyCharacter()
 	
 	// ✅ Lua 스크립트 활성화 (데미지 처리용)
 	SetUseScript(true);
+	InitLuaScriptComponent();
 	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
 	{
 		LuaComponent->SetScriptName("Scripts/Enemy/Enemy.lua");
-
-		if (!LuaComponent->LoadScript())
-		{
-			UE_LOG_ERROR("[EnemyCharacter] Failed to load Enemy.lua");
-		}
-		else
-		{
-			UE_LOG("[EnemyCharacter] Successfully loaded Enemy.lua");
-		}
+		UE_LOG("[EnemyCharacter] Script name set to Enemy.lua");
 	}
 }
 
@@ -74,27 +67,6 @@ AEnemyCharacter::~AEnemyCharacter()
 
 void AEnemyCharacter::BeginPlay()
 {
-	// ✅ Lua 스크립트 초기화 (Super::BeginPlay 전에)
-	if (IsUsingScript())
-	{
-		ULuaScriptComponent* LuaComp = GetLuaScriptComponent();
-		if (!LuaComp)
-		{
-			InitLuaScriptComponent();
-			LuaComp = GetLuaScriptComponent();
-		}
-
-		if (LuaComp)
-		{
-			LuaComp->SetScriptName(FString("EnemyCharacter"));
-			UE_LOG("[EnemyCharacter] Lua script 'EnemyCharacter' loaded");
-		}
-		else
-		{
-			UE_LOG_ERROR("[EnemyCharacter] Failed to initialize Lua script component");
-		}
-	}
-
 	Super::BeginPlay();
 
 	// 충돌 컴포넌트를 Level에 등록
@@ -105,7 +77,6 @@ void AEnemyCharacter::BeginPlay()
 	}
 
 	UE_LOG("[EnemyCharacter] BeginPlay - Enemy spawned");
-	//RegisterComponent(CollisionComponent);
 }
 
 void AEnemyCharacter::Tick(float DeltaTime)

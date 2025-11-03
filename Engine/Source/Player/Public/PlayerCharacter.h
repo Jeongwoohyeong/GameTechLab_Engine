@@ -46,7 +46,7 @@ protected:
     float MovementSpeed = 10.0f;
 
     // Default rotation speed (degrees per second)
-    float RotationSpeed = 9.0f;
+    float RotationSpeed = 50.0f;
 
     // Mouse sensitivity for pitch/yaw rotation
     float MouseSensitivity = 10.0f;

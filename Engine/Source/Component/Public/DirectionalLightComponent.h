@@ -75,7 +75,7 @@ private:
     FMatrix CachedShadowViewProjection = FMatrix::Identity();
 
     // PSM Settings
-    uint8 ShadowProjectionMode = 0;  // 0=Uniform, 1=PSM, 2=LSPSM, 3=TSM
+    uint8 ShadowProjectionMode = 4;  // 0=Uniform, 1=PSM, 2=LSPSM, 3=TSM
     float PSMMinInfinityZ = 1.5f;
     bool bPSMUnitCubeClip = true;
     bool bPSMSlideBackEnabled = true;

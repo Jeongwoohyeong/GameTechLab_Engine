@@ -29,10 +29,10 @@ AMissileActor::AMissileActor()
 		MissileCollision->AttachToComponent(StaicMeshComponent);
 		MissileCollision->SetSphereRadius(0.03f);
 		MissileCollision->SetRelativeLocation(FVector(0.45f, 0.0f, 0.0f));
-		MissileCollision->bGenerateOverlapEvents = true;
-		MissileCollision->bBlockComponent = false;
+		MissileCollision->bGenerateHitEvents = true;
+		MissileCollision->bBlockComponent = true;  // ✅ Hit 이벤트를 위해 Blocking 활성화
 		MissileCollision->SetCanEverTick(true);
-		MissileCollision->OnComponentBeginOverlap.AddDynamic(this, &AMissileActor::OnMissileBeginOverlap);
+		MissileCollision->OnComponentHit.AddDynamic(this, &AMissileActor::OnMissileHit);
 	}
 }
 
@@ -50,8 +50,8 @@ void AMissileActor::BeginPlay()
 	}
 }
 
-void AMissileActor::OnMissileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AMissileActor::OnMissileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// 자기 자신과의 충돌 무시
 	if (!OtherActor || OtherActor == this)
@@ -72,10 +72,10 @@ void AMissileActor::OnMissileBeginOverlap(UPrimitiveComponent* OverlappedComp, A
 		return;
 	}
 
-	// Lua 스크립트에 충돌 이벤트 전달
+	// Lua 스크립트에 충돌 이벤트 전달 (OnHit으로 변경)
 	if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
 	{
-		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
-			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		LuaComp->ActivateFunction("OnHit", HitComponent, OtherActor,
+			OtherComp, NormalImpulse, Hit);
 	}
 }

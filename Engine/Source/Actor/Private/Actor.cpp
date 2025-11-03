@@ -580,16 +580,32 @@ void AActor::BeginPlay()
 {
 	if (bBegunPlay) return;
 	bBegunPlay = true;
-	
+
 	// Initialize Lua script component if using script
 	if (bUseScript)
 	{
 		std::cout << "[DEBUG] Actor BeginPlay: bUseScript is true, initializing Lua" << std::endl;
 		InitLuaScriptComponent();
-		bool bBindSuccess = BindSelfLuaProperties();
-		std::cout << "[DEBUG] Actor BeginPlay: BindSelfLuaProperties result = " << bBindSuccess << std::endl;
+
+		// ✅ Only load script if it hasn't been loaded yet (prevent overwriting constructor-loaded scripts)
+		if (LuaScriptComponent && !LuaScriptComponent->IsScriptLoaded())
+		{
+			bool bBindSuccess = BindSelfLuaProperties();
+			std::cout << "[DEBUG] Actor BeginPlay: BindSelfLuaProperties result = " << bBindSuccess << std::endl;
+		}
+		else if (LuaScriptComponent && LuaScriptComponent->IsScriptLoaded())
+		{
+			// Script already loaded (e.g. in constructor), just bind properties
+			sol::table& LuaTable = LuaScriptComponent->GetLuaSelfTable();
+			if (LuaTable.valid())
+			{
+				LuaTable["this"] = this;
+				LuaTable["Name"] = GetName().ToString();
+			}
+			std::cout << "[DEBUG] Actor BeginPlay: Script already loaded, skipped reload" << std::endl;
+		}
 	}
-	
+
 	for (auto& Component : OwnedComponents)
 	{
 		if (Component)

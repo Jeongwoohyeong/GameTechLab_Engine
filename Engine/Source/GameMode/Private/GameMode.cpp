@@ -186,6 +186,12 @@ void AGameMode::SpawnEnemies(int32 EnemyCount, FVector Location)
                 Enemy->SetActorLocation(Location);
                 Enemy->SetCanTick(true);
 
+                // ✅ Lua 스크립트 상태 리셋 (HP, bIsDead 등)
+                if (ULuaScriptComponent* LuaComp = Enemy->GetLuaScriptComponent())
+                {
+                    LuaComp->ActivateFunction("ResetEnemy");
+                }
+
                 for (auto& Comp : Enemy->GetOwnedComponents())
                 {
                     if (UPrimitiveComponent* Prim = Cast<UPrimitiveComponent>(Comp))

@@ -16,7 +16,7 @@ return function()
     -- ==================================================
     -- 무기 설정
     -- ==================================================
-    ReturnTable.FireCooldown = 0.3          -- 발사 쿨다운 (초)
+    ReturnTable.FireCooldown = 0.5          -- 발사 쿨다운 (초)
     ReturnTable.CurrentCooldown = 0.0       -- 현재 쿨다운
     ReturnTable.MissileMeshPath = "Data/Missile.obj"  -- 미사일 메쉬
     ReturnTable.MissileScale = FVector(50.0, 200.0, 200.0)  -- 미사일 크기
@@ -24,14 +24,14 @@ return function()
 
     -- 미사일 레벨 시스템 (나중에 아이템으로 업그레이드)
     ReturnTable.MissileLevel = 1            -- 현재 미사일 레벨 (1~3)
-    ReturnTable.MissilesPerShot = 2         -- 레벨 1부터 2발 발사
+    ReturnTable.MissilesPerShot = 3         -- 레벨 1부터 2발 발사
 
     -- 레벨별 미사일 발사 위치 (루트 컴포넌트로부터의 상대 오프셋)
     ReturnTable.MissileSpawnOffsets = {
         -- 레벨 1: 좌우 2발
         [1] = {
-            FVector(-40.0, -25.0, 15.0),  -- 왼쪽
-            FVector(-40.0, 25.0, 15.0)    -- 오른쪽
+            FVector(-40.0, -20.0, 12.0),  -- 왼쪽
+            FVector(-40.0, 20.0, 12.0)    -- 오른쪽
         },
         -- 레벨 2: 좌우 + 중앙 3발 (나중에 확장 가능)
         [2] = {

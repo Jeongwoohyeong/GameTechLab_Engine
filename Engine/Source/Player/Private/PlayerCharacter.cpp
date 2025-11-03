@@ -219,36 +219,67 @@ void APlayerCharacter::LookUp(float Value)
 void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// 미사일과의 충돌 무시
+	FString OtherName = OtherActor->GetName().ToString();
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		return;
+	}
+
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
 		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
 			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-		//LuaComp->ActivateFunction("OnBeginOverlap");
 	}
-	UE_LOG("Player Character Begin Overlap");
 }
 
 void APlayerCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex)
 {
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// 미사일과의 충돌 무시
+	FString OtherName = OtherActor->GetName().ToString();
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		return;
+	}
+
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
 		LuaComp->ActivateFunction("OnEndOverlap", OverlappedComp, OtherActor,
 			OtherComp, OtherBodyIndex);
 	}
-	UE_LOG("Player Character End Overlap");
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& OutHit)
 {
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// 미사일과의 충돌 무시
+	FString OtherName = OtherActor->GetName().ToString();
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		return;
+	}
+
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
-		UE_LOG("Character Hit Lua active");
 		LuaComp->ActivateFunction("OnHit", OverlappedComp, OtherActor,
 			OtherComp, NormalImpulse, OutHit);
 	}
-	UE_LOG("Player Character Hit");
 }
 
 void APlayerCharacter::StartCameraShake(float Intensity, float Duration)
