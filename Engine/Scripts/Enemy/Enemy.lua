@@ -5,7 +5,9 @@ local FVector = EngineTypes.FVector
 return function()
     local ReturnTable = {
         lastDamageTime = 0,    -- 마지막 데미지 시간
-        damageCooldown = 1.0   -- 쿨다운 시간 (초)
+        damageCooldown = 1.0,  -- 쿨다운 시간 (초)
+        maxHP = 100,           -- 최대 HP
+        currentHP = 100        -- 현재 HP
     }
     Print("EnemyEnemyEnemyEnemyEnemyEnemy")
 
@@ -113,6 +115,31 @@ return function()
                 end
             end
         end
+    end
+
+    -- 데미지를 받는 함수
+    function ReturnTable:TakeDamage(damage, attacker)
+        if self.currentHP <= 0 then
+            return  -- 이미 죽은 상태
+        end
+
+        self.currentHP = self.currentHP - damage
+        Print("[Lua/Enemy] TakeDamage: -" .. damage .. " HP, Remaining: " .. self.currentHP .. "/" .. self.maxHP)
+
+        if self.currentHP <= 0 then
+            self.currentHP = 0
+            Print("[Lua/Enemy] Enemy destroyed!")
+            self:OnDeath()
+        end
+    end
+
+    -- 죽었을 때 처리
+    function ReturnTable:OnDeath()
+        Print("[Lua/Enemy] OnDeath called")
+
+        -- 임시: 화면 밖으로 이동
+        local pos = self.this.ActorLocation
+        self.this.ActorLocation = FVector(pos.X, pos.Y, -10000)
     end
 
     return ReturnTable

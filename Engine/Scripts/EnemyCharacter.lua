@@ -38,17 +38,17 @@ return function()
 
         -- TODO: 폭발 이펙트, 점수 추가, 아이템 드롭 등
 
-        -- 액터 삭제 (World에서 제거)
-        -- 주의: Lua에서 직접 액터 삭제는 크래쉬 위험이 있을 수 있음
-        -- C++에서 처리하거나, 이벤트 방식으로 처리 권장
-
-        -- 임시: 화면 밖으로 이동
+         -- 임시: 화면 밖으로 이동
         local pos = self.this.ActorLocation
         self.this.ActorLocation = FVector(pos.X, pos.Y, -10000)
     end
 
     function ReturnTable:OnBeginOverlap(otherActor)
         -- 다른 오버랩 처리가 필요하면 여기에 추가
+    end
+
+    function ReturnTable:OnEndOverlap(otherActor)
+        -- 오버랩 종료 처리가 필요하면 여기에 추가
     end
 
     return ReturnTable

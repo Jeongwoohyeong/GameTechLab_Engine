@@ -20,9 +20,9 @@ function MissilePool:Initialize()
         InactiveMissiles = {},  -- 비활성 미사일 풀
         ActiveMissiles = {},    -- 활성 미사일 추적
         PoolSize = 0,           -- 총 생성된 미사일 수
-        MaxPoolSize = 1000,       -- 최대 풀 크기
+        MaxPoolSize = 30,       -- 최대 풀 크기
         MissileSpeed = 3600.0,  -- 미사일 속도 (6배 증가)
-        MissileLifeTime = 10.0,  -- 미사일 생존 시간
+        MissileLifeTime = 5.0,  -- 미사일 생존 시간
     }
 
     setmetatable(pool, { __index = MissilePool })
