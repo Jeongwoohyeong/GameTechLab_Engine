@@ -18,15 +18,11 @@ public:
 	AMissileActor();
 	virtual ~AMissileActor();
 
-	// Component initialization
-	virtual UClass* GetDefaultRootComponent() override;
-	virtual void InitializeComponents() override;
-
 	// 충돌 컴포넌트 접근자 (크기/위치 조절용)
 	UCapsuleComponent* GetMissileCollision() const { return MissileCollision; }
 
 private:
 	// 컴포넌트들
-	UStaticMeshComponent* MeshComponent = nullptr;
+	UStaticMeshComponent* StaicMeshComponent = nullptr;
 	UCapsuleComponent* MissileCollision = nullptr;  // 미사일 충돌
 };
