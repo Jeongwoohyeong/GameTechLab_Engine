@@ -3,8 +3,7 @@
 
 class UStaticMeshComponent;
 class UPrimitiveComponent;
-class UCapsuleComponent;
-class UBoxComponent;
+class USphereComponent;
 struct FHitResult;
 
 /**
@@ -39,13 +38,10 @@ public:
 		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& OutHit);
 
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
-	UBoxComponent* GetWingCollision() const { return WingCollision; }
 
 private:
-	UCapsuleComponent* CollisionComponent = nullptr;  // 몸통 충돌
-	UBoxComponent* WingCollision = nullptr;            // 날개 충돌
+	USphereComponent* CollisionComponent = nullptr;  // 구체 충돌
 	UStaticMeshComponent* StaticMeshComponent = nullptr;
-	
 
 	float MovementSpeed = 200.0f; // 적 기본 이동 속도
 };
