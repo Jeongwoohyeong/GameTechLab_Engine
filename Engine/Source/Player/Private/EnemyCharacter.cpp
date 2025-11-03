@@ -50,6 +50,22 @@ AEnemyCharacter::AEnemyCharacter()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnBeginOverlap);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnEndOverlap);
 	CollisionComponent->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
+
+	// Lua 스크립트 활성화
+	SetUseScript(true);
+	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
+	{
+		LuaComponent->SetScriptName("Scripts/Enemy/Enemy.lua");
+
+		if (!LuaComponent->LoadScript())
+		{
+			UE_LOG_ERROR("[EnemyCharacter] Failed to load Enemy.lua");
+		}
+		else
+		{
+			UE_LOG("[EnemyCharacter] Successfully loaded Enemy.lua");
+		}
+	}
 }
 
 AEnemyCharacter::~AEnemyCharacter()
@@ -60,6 +76,7 @@ void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	UE_LOG("[EnemyCharacter] BeginPlay - Enemy spawned");
+	//RegisterComponent(CollisionComponent);
 }
 
 void AEnemyCharacter::Tick(float DeltaTime)
@@ -114,7 +131,7 @@ void AEnemyCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, A
 	// Lua 스크립트가 있으면 이벤트 전달
 	if (ULuaScriptComponent* LuaScript = GetLuaScriptComponent())
 	{
-		LuaScript->ActivateFunction("OnBeginOverlap", OtherActor);
+		LuaScript->ActivateFunction("OnBeginOverlap", OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 	}
 }
 
@@ -130,7 +147,7 @@ void AEnemyCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	// Lua 스크립트가 있으면 이벤트 전달
 	if (ULuaScriptComponent* LuaScript = GetLuaScriptComponent())
 	{
-		LuaScript->ActivateFunction("OnEndOverlap", OtherActor);
+		LuaScript->ActivateFunction("OnEndOverlap", OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
 	}
 }
 
@@ -146,6 +163,6 @@ void AEnemyCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 	// Lua 스크립트가 있으면 이벤트 전달
 	if (ULuaScriptComponent* LuaScript = GetLuaScriptComponent())
 	{
-		LuaScript->ActivateFunction("OnHit", OtherActor);
+		LuaScript->ActivateFunction("OnHit", HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
 	}
 }

@@ -107,6 +107,7 @@ void APlayerCharacter::BeginPlay()
 	UE_LOG("===========================================");
 	UE_LOG("[PlayerCharacter] BeginPlay COMPLETE!");
 	UE_LOG("===========================================");
+	//RegisterComponent(CollisionComponent);
 }
 
 void APlayerCharacter::Tick(float DeltaTime)

@@ -18,8 +18,12 @@
 #include "Manager/Path/Public/PathManager.h"
 #include "Manager/Coroutine/Public/LuaCoroutineManager.h"
 #include "Manager/Input/Public/InputManager.h"
+#include "Manager/Time/Public/TimeManager.h"
 #include "Level/Public/World.h"
 #include "Editor/Public/EditorEngine.h"
+#include "Manager/UI/Public/GameUIManager.h"
+#include "Render/UI/Widget/Public/Widget.h"
+#include "Render/UI/Widget/Public/GameHUDWidget.h"
 
 #include <iostream>
 #include <filesystem>
@@ -858,6 +862,46 @@ void FLuaScriptManager::BindTypes()
         }
         return (AGameMode*)nullptr;
     });
+
+    // --- Cast Functions (safe type casting) ---
+    LuaState->set_function("Cast_APlayerCharacter", [](AActor* Actor) -> APlayerCharacter* {
+        if (!Actor) return nullptr;
+        return dynamic_cast<APlayerCharacter*>(Actor);
+    });
+
+    LuaState->set_function("Cast_AEnemyCharacter", [](AActor* Actor) -> AEnemyCharacter* {
+        if (!Actor) return nullptr;
+        return dynamic_cast<AEnemyCharacter*>(Actor);
+    });
+
+    // --- UWidget Binding (base class for all widgets) ---
+    LuaState->new_usertype<UWidget>("UWidget",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UObject>()
+    );
+
+    // --- GameUIManager Binding ---
+    LuaState->new_usertype<UGameUIManager>("UGameUIManager",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UObject>(),
+        "GetHUDWidget", &UGameUIManager::GetHUDWidget
+    );
+
+    LuaState->set_function("GetGameUIManager", []() {
+        return &UGameUIManager::GetInstance();
+    });
+
+    // --- UGameHUDWidget Binding ---
+    LuaState->new_usertype<UGameHUDWidget>("UGameHUDWidget",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UWidget, UObject>(),
+        "TakeDamage", &UGameHUDWidget::TakeDamage,
+        "SetHealth", &UGameHUDWidget::SetHealth,
+        "GetHealth", &UGameHUDWidget::GetHealth,
+        "IsPlayerDead", &UGameHUDWidget::IsPlayerDead,
+        "AddScore", &UGameHUDWidget::AddScore,
+        "GetScore", &UGameHUDWidget::GetScore
+    );
 
     // --- ULuaScriptComponent Binding (inherits from UActorComponent) ---
     LuaState->new_usertype<ULuaScriptComponent>("ULuaScriptComponent",

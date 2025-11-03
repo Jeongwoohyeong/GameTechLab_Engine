@@ -6,6 +6,7 @@ local FVector = EngineTypes.FVector
 -- ✅ FACTORY PATTERN - Safe for multiple actors sharing the same script!
 -- Return a function that creates a new instance for each Actor
 return function()
+    Print("qqqqqqqqqqqppppp")
     -- Each instance gets its own variables (not shared!)
     local ReturnTable = {
         HasInitialized = false,
