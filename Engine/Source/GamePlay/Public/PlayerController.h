@@ -24,7 +24,7 @@ public:
     void UnPossess();
 
     AActor* GetControlledActor() const { return ControlledActor.Get(); }
-    APawn* GetControlledPawn() const { return Cast<APawn>(GetControlledActor()); }
+    APawn* GetControlledPawn() const;
 
     // Getter for PlayerInput (Shift + F1)
     UPlayerInput* GetPlayerInput() const { return PlayerInput; }

@@ -57,6 +57,11 @@ void APlayerController::UnPossess()
     ControlledActor.Reset();
 }
 
+APawn* APlayerController::GetControlledPawn() const
+{
+    return Cast<APawn>(GetControlledActor());
+}
+
 void APlayerController::MoveForward(float Value)
 {
     if (!ControlledActor.IsValid())

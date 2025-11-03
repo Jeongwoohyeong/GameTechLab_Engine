@@ -11,6 +11,7 @@
 #include "GamePlay/Public/PlayerInput.h"
 #include "Level/Public/World.h"
 #include "Manager/Input/Public/InputManager.h"
+#include "GameMode/Public/GameMode.h"
 
 IMPLEMENT_SINGLETON_CLASS(UGameUIManager, UObject)
 
@@ -333,7 +334,7 @@ UPlayerInput* UGameUIManager::GetPlayerInput()
 		return nullptr;
 	}
 
-	AGameModeBase* GameMode = PIEContext->World()->GetGameMode();
+	AGameModeBase* GameMode = Cast<AGameMode>(PIEContext->World()->GetGameMode());
 	if (!GameMode)
 	{
 		return nullptr;
