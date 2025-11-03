@@ -150,7 +150,8 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 		// Set to a visible location (0, 0, 0) - origin
 		FVector SpawnLocation(0.0f, 0.0f, 0.0f);
 		NewPawn->SetActorLocation(SpawnLocation);
-		NewPawn->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f)); 
+		// 기존에 세팅한 것이 덮어씌워질 수 있음.
+		//NewPawn->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f)); 
 
 		UE_LOG("[GameModeBase] Default pawn spawned: %s at location (%.1f, %.1f, %.1f)",
 			NewPawn->GetName().ToString().c_str(),

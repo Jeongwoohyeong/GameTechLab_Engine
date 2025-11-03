@@ -86,19 +86,49 @@ void AMissileActor::BeginPlay()
 void AMissileActor::OnMissileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG("[MissileActor] ========== OnMissileBeginOverlap CALLED! ==========");
+	UE_LOG("[MissileActor] This missile: %s", GetName().ToString().c_str());
+
 	// 자기 자신과의 충돌 무시
 	if (!OtherActor || OtherActor == this)
 	{
+		UE_LOG("[MissileActor] ❌ Collision ignored: OtherActor is nullptr or self");
 		return;
 	}
 
-	UE_LOG("[MissileActor] OnBeginOverlap with: %s", OtherActor->GetName().ToString().c_str());
+	// ✅ 플레이어와의 충돌 무시 (미사일이 발사된 직후 플레이어와 충돌하는 것 방지)
+	FString OtherName = OtherActor->GetName().ToString();
+	UE_LOG("[MissileActor] Collision detected with: %s", OtherName.c_str());
+
+	if (OtherName.find("APlayerCharacter") != std::string::npos)
+	{
+		// 플레이어와의 충돌은 무시
+		UE_LOG("[MissileActor] ❌ Collision ignored: OtherActor is PlayerCharacter");
+		return;
+	}
+
+	// ✅ 다른 미사일과의 충돌 무시
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		// 미사일끼리의 충돌은 무시
+		UE_LOG("[MissileActor] ❌ Collision ignored: OtherActor is another Missile");
+		return;
+	}
+
+	UE_LOG("[MissileActor] ✅ Valid collision! Passing to Lua: %s", OtherName.c_str());
 
 	// Lua 스크립트에 충돌 이벤트 전달
 	if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
 	{
+		UE_LOG("[MissileActor] ✅ Lua script found, calling OnBeginOverlap");
 		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
 			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 	}
+	else
+	{
+		UE_LOG("[MissileActor] ❌ WARNING: No Lua script component! Cannot call OnBeginOverlap");
+	}
+
+	UE_LOG("[MissileActor] ========== OnMissileBeginOverlap END ==========");
 }
 
