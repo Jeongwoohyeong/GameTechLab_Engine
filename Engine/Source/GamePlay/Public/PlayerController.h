@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Global/WeakObjectPtr.h"
 
+class APlayerCharacter;
+class APawn;
 class UPlayerInput;
 class AActor;
 
@@ -20,6 +22,9 @@ public:
 
     void Possess(AActor* TargetActor);
     void UnPossess();
+
+    AActor* GetControlledActor() const { return ControlledActor.Get(); }
+    APawn* GetControlledPawn() const { return Cast<APawn>(GetControlledActor()); }
 
 private:
     // Value값의 부호를 바꾸면 반대방향 이동

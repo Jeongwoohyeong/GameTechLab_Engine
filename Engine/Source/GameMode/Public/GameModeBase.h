@@ -28,6 +28,7 @@ public:
     virtual void StartPlay();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+    virtual void InitializeLuaScript();
 
     // Player Management
     virtual void InitializePlayerController();
@@ -35,7 +36,7 @@ public:
     virtual APawn* SpawnDefaultPawnFor(APlayerController* NewPlayer);
 
     // Getters
-    APlayerController* GetPlayerController() const { return PlayerController.Get(); }
+    virtual APlayerController* GetPlayerController() const { return PlayerController.Get(); }
     UClass* GetDefaultPawnClass() const { return DefaultPawnClass; }
 
     // Setters
@@ -55,6 +56,8 @@ protected:
 
     // World reference (set by World when GameMode is created)
     UWorld* OwningWorld = nullptr;
+
+    TArray<FString> ScriptFilePath = {};
 
 public:
     void SetOwningWorld(UWorld* InWorld) { OwningWorld = InWorld; }

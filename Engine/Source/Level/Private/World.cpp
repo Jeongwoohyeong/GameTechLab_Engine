@@ -2,6 +2,7 @@
 #include "Level/Public/World.h"
 #include "Level/Public/Level.h"
 #include "Actor/Public/AmbientLight.h"
+#include "Component/Public/ULuaScriptComponent.h"
 #include "GameMode/Public/GameMode.h"
 #include "GameMode/Public/GameModeBase.h"
 #include "Utility/Public/JsonSerializer.h"
@@ -375,11 +376,14 @@ AGameMode* UWorld::SpawnGameMode()
 		NewGameMode->SetOwningWorld(this);
 		GameMode.Set(NewGameMode);
 		UE_LOG("[World] GameMode spawned: %s", NewGameMode->GetName().ToString().c_str());
+
+		// Lua에 바인딩
+		NewGameMode->InitializeLuaScript();
 	}
 	else
 	{
 		UE_LOG_ERROR("[World] Failed to spawn GameMode");
-	}
+	}	
 
 	return NewGameMode;
 }

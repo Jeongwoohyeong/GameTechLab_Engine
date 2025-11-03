@@ -24,7 +24,7 @@ public:
 
     // Input handling (override from APawn)
     virtual void MoveForward(float Value) override;
-    virtual void MoveRight(float Value) override;
+    virtual void MoveRight(float Value) override;    
 
     void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -39,4 +39,5 @@ public:
 protected:
     // Default movement speed
     float MovementSpeed = 100.0f;
+    
 };

@@ -166,6 +166,18 @@ bool ULuaScriptComponent::LoadScript()
     return true;
 }
 
+void ULuaScriptComponent::ActivateFunctionLua(const FString& FunctionName, sol::variadic_args va)
+{
+    sol::function func = SelfTable[FunctionName.c_str()];
+    if (!func.valid())
+    {
+        UE_LOG_WARNING("[Lua] Function %s not found", FunctionName.c_str());
+        return;
+    }
+
+    func(sol::as_args(va));
+}
+
 void ULuaScriptComponent::RegisterCoroutine(int coroutineID)
 {
     ActiveCoroutineIDs.push_back(coroutineID);

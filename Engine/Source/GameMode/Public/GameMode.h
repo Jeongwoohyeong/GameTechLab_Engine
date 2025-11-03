@@ -12,12 +12,14 @@ public:
     enum class EGameState : uint8
     {
         MainMenu,
-        Play,
-        End
+        InPlay,
+        GameOver
     };
 public:
     AGameMode();
     ~AGameMode() override;
+
+    void InitializeLuaScript() override;
 
     void InitGame() override;
     void StartPlay() override;
@@ -32,4 +34,8 @@ public:
 
     // InPlay에서 코루틴으로 생성되는 양 조절
     void SpawnEnemies(int32 EnemyCount, FVector Location);
+
+    APlayerController* GetPlayerController() const override { return Super::GetPlayerController(); }
+private:
+    EGameState CurrentState = EGameState::MainMenu;
 };

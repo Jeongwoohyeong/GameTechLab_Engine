@@ -31,6 +31,8 @@ APlayerCharacter::APlayerCharacter()
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
 	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
 
+	SetUseScript(true);
+	
 	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
 }
 
@@ -40,8 +42,8 @@ APlayerCharacter::~APlayerCharacter()
 
 void APlayerCharacter::BeginPlay()
 {
-	Super::BeginPlay();
-
+	Super::BeginPlay();	
+	
 	UE_LOG("[PlayerCharacter] BeginPlay: %s at (%.1f, %.1f, %.1f)",
 		GetName().ToString().c_str(),
 		GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
@@ -79,35 +81,20 @@ void APlayerCharacter::MoveRight(float Value)
 }
 
 void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ULuaScriptComponent* ScriptComponent = GetLuaScriptComponent())
-	{
-		ScriptComponent->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
-		                                  OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-	}
 	UE_LOG("Player Character Begin Overlap");
 }
 
 void APlayerCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex)
 {
-	if (ULuaScriptComponent* ScriptComponent = GetLuaScriptComponent())
-	{
-		ScriptComponent->ActivateFunction("OnEndOverlap", OverlappedComp, OtherActor,
-		                                  OtherComp, OtherBodyIndex);
-	}
 	UE_LOG("Player Character End Overlap");
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& OutHit)
-{
-	if (ULuaScriptComponent* ScriptComponent = GetLuaScriptComponent())
-	{
-		ScriptComponent->ActivateFunction("OnHit", OverlappedComp, OtherActor,
-		                                  OtherComp, NormalImpulse, OutHit);
-	}
+{	
 	UE_LOG("Player Character Hit");
 }
 

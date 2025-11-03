@@ -860,6 +860,10 @@
     </Content>
     <Content Include="Scripts\123\123_AStaticMeshActor_999.lua" />
     <Content Include="Scripts\123\example_coroutine.lua" />
+    <Content Include="Scripts\GameMode\GameOverGameMode.lua" />
+    <Content Include="Scripts\GameMode\InPlayGameMode.lua" />
+    <Content Include="Scripts\GameMode\MainMenuGameMode.lua" />
+    <Content Include="Scripts\Player\PlayerCharacter.lua" />
     <Content Include="Scripts\template.lua" />
     <Content Include="Scripts\template_factory.lua" />
     <Content Include="Scripts\template_safe.lua" />

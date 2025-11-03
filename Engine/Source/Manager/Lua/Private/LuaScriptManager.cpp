@@ -617,7 +617,9 @@ void FLuaScriptManager::BindTypes()
         "UUID", sol::property(&GetUUIDAsInt<AActor>),
         "PrintLocation", &AActor::PrintLocation,
         "SetIsPendingDestroy", &AActor::SetIsPendingDestroy,
-        "IsPendingDestroy", &AActor::IsPendingDestroy
+        "IsPendingDestroy", &AActor::IsPendingDestroy,
+        "GetLuaScriptComponent", &AActor::GetLuaScriptComponent,
+        "SetUseScript", &AActor::SetUseScript
     );
 
     // --- Global Functions ---
@@ -789,7 +791,9 @@ void FLuaScriptManager::BindTypes()
         sol::base_classes, sol::bases<AActor>(),
         "GetName", &GetNameAsString<APlayerController>,
         "Possess", &APlayerController::Possess,
-        "UnPossess", &APlayerController::UnPossess
+        "UnPossess", &APlayerController::UnPossess,
+        "GetControlledActor", &APlayerController::GetControlledActor,
+        "GetControlledPawn", &APlayerController::GetControlledPawn
     );
 
     // --- AGameModeBase Binding (inherits from AActor) ---
@@ -811,7 +815,8 @@ void FLuaScriptManager::BindTypes()
         "ChangeState", &AGameMode::ChangeState,
         "SpawnPlayerCharacter", &AGameMode::SpawnPlayerCharacter,
         "InitializeEnemyPool", &AGameMode::InitializeEnemyPool,
-        "SpawnEnemies", &AGameMode::SpawnEnemies
+        "SpawnEnemies", &AGameMode::SpawnEnemies,
+        "GetPlayerController", &AGameMode::GetPlayerController
         );
 
     // --- UWorld Binding Extension (add GameMode support) ---
@@ -821,4 +826,22 @@ void FLuaScriptManager::BindTypes()
         }
         return (AGameMode*)nullptr;
     });
+
+    // --- ULuaScriptComponent Binding (inherits from UActorComponent) ---
+    LuaState->new_usertype<ULuaScriptComponent>("ULuaScriptComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UActorComponent>(),
+        "GetOwner", &ULuaScriptComponent::GetOwner,
+        "LoadScript", &ULuaScriptComponent::LoadScript,
+        "SetScriptName", &ULuaScriptComponent::SetScriptName,
+        "ActivateFunction", &ULuaScriptComponent::ActivateFunctionLua,
+        "GetLuaSelfTable", [](ULuaScriptComponent* Comp) -> sol::table
+        {
+            if (!Comp)
+            {
+                return sol::table();
+            }
+            return Comp->GetLuaSelfTable();
+        }
+        );
 }
