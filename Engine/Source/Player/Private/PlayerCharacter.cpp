@@ -35,45 +35,6 @@ APlayerCharacter::APlayerCharacter()
 	UE_LOG("[PlayerCharacter] Constructor complete!");
 }
 
-UClass* APlayerCharacter::GetDefaultRootComponent()
-{
-	return USceneComponent::StaticClass();
-}
-
-void APlayerCharacter::InitializeComponents()
-{
-	Super::InitializeComponents();
-
-	UE_LOG("[PlayerCharacter] InitializeComponents called - RootComponent=%p", GetRootComponent());
-
-	// 충돌 컴포넌트 생성 및 연결
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>();
-	if (CollisionComponent)
-	{
-		CollisionComponent->AttachToComponent(GetRootComponent());
-		CollisionComponent->bGenerateHitEvents = true;
-		CollisionComponent->bGenerateOverlapEvents = true;
-		CollisionComponent->bBlockComponent = true;
-		Cast<USphereComponent>(CollisionComponent)->SetSphereRadius(15.0f);
-		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
-		CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
-		CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-		UE_LOG("[PlayerCharacter] CollisionComponent created and attached");
-	}
-
-	// 메쉬 컴포넌트 생성 및 연결
-	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	if (MeshComp)
-	{
-		MeshComp->AttachToComponent(GetRootComponent());
-		MeshComp->SetStaticMesh("Data/MIG_29.obj");
-		MeshComp->SetRelativeScale3D(FVector(10.f, 10.f, 10.f));
-		UE_LOG("[PlayerCharacter] MeshComponent created and attached");
-	}
-
-	UE_LOG("[PlayerCharacter] InitializeComponents complete! CollisionComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
-}
-
 APlayerCharacter::~APlayerCharacter()
 {
 }
