@@ -1,7 +1,7 @@
 #pragma once
 #include "Pawn/Public/Pawn.h"
 
-class USceneComponent;
+class UCapsuleComponent;
 struct FHitResult;
 
 /**
@@ -47,4 +47,7 @@ protected:
 
     // Mouse sensitivity for pitch/yaw rotation
     float MouseSensitivity = 120.0f;
+
+    UCapsuleComponent* CollisionComponent = nullptr;
+    UStaticMeshComponent* StaticMeshComponent = nullptr;
 };

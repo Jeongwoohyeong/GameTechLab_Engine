@@ -3,6 +3,7 @@
 
 class UStaticMeshComponent;
 class UPrimitiveComponent;
+class UCapsuleComponent;
 struct FHitResult;
 
 /**
@@ -36,9 +37,10 @@ public:
 	void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& OutHit);
 
-	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
+	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 
 private:
-	UStaticMeshComponent* MeshComponent;
+	UCapsuleComponent* CollisionComponent = nullptr;
+	UStaticMeshComponent* StaticMeshComponent = nullptr;
 	float MovementSpeed = 200.0f; // 적 기본 이동 속도
 };

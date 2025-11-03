@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Player/Public/EnemyCharacter.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
+#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Collision/Public/BoxComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Manager/Time/Public/TimeManager.h"
@@ -12,13 +13,26 @@ AEnemyCharacter::AEnemyCharacter()
 {
 	bCanEverTick = true;
 
+	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
+	if (!CollisionComponent)
+	{
+		UE_LOG_ERROR("ACharacter: Failed to create CollisionComponent");
+	}
+	else
+	{
+		SetRootComponent(CollisionComponent);
+		CollisionComponent->bGenerateHitEvents = true;
+		CollisionComponent->bGenerateOverlapEvents = true;
+		CollisionComponent->bBlockComponent = true;
+		UE_LOG("ACharacter Create Collision Component");
+	}
 	// StaticMesh 추가 (APawn의 CollisionComponent 사용)
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("MeshComponent");
-	MeshComponent->AttachToComponent(CollisionComponent);
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
+	StaticMeshComponent->AttachToComponent(CollisionComponent);
 
 	// 적 전용 메시 설정
-	MeshComponent->SetStaticMesh("Data/Enemy_F-14.obj");
-	MeshComponent->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
+	StaticMeshComponent->SetStaticMesh("Data/Enemy_F-14.obj");
+	StaticMeshComponent->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
 
 	// 충돌 콜백 등록 (CollisionComponent 사용)
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnBeginOverlap);

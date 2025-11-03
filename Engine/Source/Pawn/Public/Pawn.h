@@ -39,5 +39,4 @@ public:
 protected:
 	// The controller currently possessing this pawn
 	TWeakObjectPtr<APlayerController> Controller;
-	UShapeComponent* CollisionComponent = nullptr;
 };

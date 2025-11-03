@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
-
+#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
@@ -17,6 +17,19 @@ APlayerCharacter::APlayerCharacter()
 
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
+	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
+	if (!CollisionComponent)
+	{
+		UE_LOG_ERROR("ACharacter: Failed to create CollisionComponent");
+	}
+	else
+	{
+		SetRootComponent(CollisionComponent);
+		CollisionComponent->bGenerateHitEvents = true;
+		CollisionComponent->bGenerateOverlapEvents = true;
+		CollisionComponent->bBlockComponent = true;
+		UE_LOG("ACharacter Create Collision Component");
+	}
 
 	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
 	// Create RootComponent first (required for Actor Transform)
@@ -24,12 +37,12 @@ APlayerCharacter::APlayerCharacter()
 	// SetRootComponent(RootComp);
 
 	// StaticMesh 추가
-	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	MeshComp->AttachToComponent(CollisionComponent);
+	UStaticMeshComponent* StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
+	StaticMeshComponent->AttachToComponent(CollisionComponent);
 
 	// Mesh 설정 (구체로 표시)
-	MeshComp->SetStaticMesh("Data/MIG_29.obj");
-	MeshComp->SetRelativeScale3D(FVector(2.5f, 2.5f, 2.5f));  // 크기 조정
+	StaticMeshComponent->SetStaticMesh("Data/MIG_29.obj");
+	StaticMeshComponent->SetRelativeScale3D(FVector(10.f,10.f,10.f));  // 크기 조정
 
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
 	SetUseScript(true);
@@ -54,7 +67,7 @@ APlayerCharacter::APlayerCharacter()
 	// 	GetOwnedComponents().push_back(LuaComp);		
 	// }
 	
-	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
+	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, StaticMeshComponent);
 }
 
 APlayerCharacter::~APlayerCharacter()
