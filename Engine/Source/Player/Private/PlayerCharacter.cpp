@@ -18,14 +18,19 @@ APlayerCharacter::APlayerCharacter()
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
 
-	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
-	// Create RootComponent first (required for Actor Transform)
-	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
-	// SetRootComponent(RootComp);
+	// Create SceneComponent as Root
+	USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
+	SetRootComponent(RootComp);
+
+	// Attach CollisionComponent (created by APawn) to SceneComponent
+	if (CollisionComponent)
+	{
+		CollisionComponent->AttachToComponent(RootComp);
+	}
 
 	// StaticMesh 추가
 	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	MeshComp->AttachToComponent(CollisionComponent);
+	MeshComp->AttachToComponent(RootComp);
 
 	// Mesh 설정 (구체로 표시)
 	MeshComp->SetStaticMesh("Data/MIG_29.obj");
@@ -54,7 +59,7 @@ APlayerCharacter::APlayerCharacter()
 	// 	GetOwnedComponents().push_back(LuaComp);		
 	// }
 	
-	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
+	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, CollisionComponent=%p, MeshComponent=%p", RootComp, CollisionComponent, MeshComp);
 }
 
 APlayerCharacter::~APlayerCharacter()

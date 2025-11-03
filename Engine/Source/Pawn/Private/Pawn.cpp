@@ -10,7 +10,7 @@ APawn::APawn()
 {
 	bCanEverTick = true;
 
-	CollisionComponent = CreateDefaultSubobject<USphereComponent>(FName("CollisionComponent"));
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>();
 	if (!CollisionComponent)
 	{
 		UE_LOG_ERROR("APawn: Failed to create CollisionComponent");
