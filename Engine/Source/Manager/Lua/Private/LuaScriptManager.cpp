@@ -131,6 +131,10 @@ namespace
             base = fs::current_path();
         }
 
+        // DEBUG: 경로 로깅
+        UE_LOG("[ResolveLuaScriptPath] Looking for: '%s'", ScriptName.c_str());
+        UE_LOG("[ResolveLuaScriptPath] Base path: '%s'", base.string().c_str());
+
         auto addCandidate = [&](const fs::path& root, std::vector<fs::path>& out)
         {
             if (root.empty())
@@ -153,12 +157,18 @@ namespace
 
         for (const fs::path& candidate : candidates)
         {
+            UE_LOG("[ResolveLuaScriptPath] Trying: '%s' - %s",
+                   candidate.string().c_str(),
+                   fs::exists(candidate, ec) ? "EXISTS" : "NOT FOUND");
+
             if (!candidate.empty() && fs::exists(candidate, ec) && !ec)
             {
+                UE_LOG("[ResolveLuaScriptPath] Found at: '%s'", candidate.string().c_str());
                 return candidate;
             }
         }
 
+        UE_LOG_ERROR("[ResolveLuaScriptPath] NOT FOUND, returning default: '%s'", (base / "Engine" / inputPath).string().c_str());
         return base / "Engine" / inputPath;
     }
 
@@ -358,6 +368,8 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
     // Check if the script returned a function (factory pattern)
     if (scriptResult.is<sol::function>())
     {
+        UE_LOG("[CreateLuaTable] Calling factory function for '%s'", ScriptName.c_str());
+
         // Call the factory function to create a new instance
         sol::function factory = scriptResult.as<sol::function>();
         sol::protected_function_result callResult = factory();
@@ -375,6 +387,7 @@ sol::table FLuaScriptManager::CreateLuaTable(const FString& ScriptName)
             return sol::table();
         }
 
+        UE_LOG("[CreateLuaTable] Factory function returned table successfully for '%s'", ScriptName.c_str());
         return callResult.get<sol::table>();
     }
     // Otherwise, it's a table (old pattern) - do shallow copy
@@ -590,6 +603,14 @@ void FLuaScriptManager::BindTypes()
         "One", &FVector4::OneVector
     );
 
+    // --- ULuaScriptComponent Binding ---
+    LuaState->new_usertype<ULuaScriptComponent>("ULuaScriptComponent",
+        sol::no_constructor,
+        "SetScriptName", &ULuaScriptComponent::SetScriptName,
+        "GetScriptName", &ULuaScriptComponent::GetScriptName,
+        "LoadScript", &ULuaScriptComponent::LoadScript
+    );
+
     // --- AActor Binding ---
     LuaState->new_usertype<AActor>("AActor",
         sol::no_constructor,
@@ -609,6 +630,11 @@ void FLuaScriptManager::BindTypes()
         // Components
         "GetOwnedComponents", &AActor::GetOwnedComponents,
         "GetRootComponent", &AActor::GetRootComponent,
+        "GetStaticMeshComponent", &AActor::GetStaticMeshComponent,
+        // Lua Script
+        "SetUseScript", &AActor::SetUseScript,
+        "InitLuaScriptComponent", &AActor::InitLuaScriptComponent,
+        "GetLuaScriptComponent", &AActor::GetLuaScriptComponent,
         // Misc
         "GetName", &GetNameAsString<AActor>,
         "GetUUID", &AActor::GetUUID,
@@ -733,7 +759,8 @@ void FLuaScriptManager::BindTypes()
         "GetOwner", &UStaticMeshComponent::GetOwner,
         // Static Mesh
         "GetStaticMesh", &UStaticMeshComponent::GetStaticMesh,
-        "SetStaticMesh", &UStaticMeshComponent::SetStaticMesh,
+        "SetStaticMesh", &UStaticMeshComponent::SetStaticMeshFromString, // Lua uses string version
+        "SetStaticMeshFromFName", &UStaticMeshComponent::SetStaticMesh,  // Keep FName version accessible
         // Material
         "GetMaterial", &UStaticMeshComponent::GetMaterial,
         "SetMaterial", &UStaticMeshComponent::SetMaterial,

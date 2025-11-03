@@ -53,11 +53,20 @@ inline void ULuaScriptComponent::ActivateFunction(const FString& FunctionName, A
 {
     if (SelfTable.valid() && SelfTable[FunctionName].valid())
     {
+        //UE_LOG("[ULuaScriptComponent] ActivateFunction: Calling '%s'", FunctionName.c_str());
         auto Result = SelfTable[FunctionName](SelfTable, std::forward<Args>(args)...);
         if (!Result.valid())
         {
             sol::error err = Result;
-            std::cerr << "[ERROR] Lua function '" << FunctionName << "' failed: " << err.what() << std::endl;
+            UE_LOG_ERROR("[ULuaScriptComponent] Lua function '%s' failed: %s", FunctionName.c_str(), err.what());
         }
+        else
+        {
+            //UE_LOG("[ULuaScriptComponent] ActivateFunction: '%s' executed successfully", FunctionName.c_str());
+        }
+    }
+    else
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent] ActivateFunction: Function '%s' not valid in table", FunctionName.c_str());
     }
 }

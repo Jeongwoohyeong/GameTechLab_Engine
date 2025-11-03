@@ -119,6 +119,12 @@ void UStaticMeshComponent::SetStaticMesh(const FName& InObjPath)
 	}
 }
 
+void UStaticMeshComponent::SetStaticMeshFromString(const std::string& InObjPath)
+{
+	// String wrapper for Lua - convert to FName and call the main function
+	SetStaticMesh(FName(InObjPath.c_str()));
+}
+
 UMaterial* UStaticMeshComponent::GetMaterial(int32 Index) const
 {
 	if (Index >= 0 && Index < OverrideMaterials.size() && OverrideMaterials[Index])

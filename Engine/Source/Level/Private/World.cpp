@@ -89,32 +89,56 @@ void UWorld::Tick(float DeltaTimes)
 
 	if (WorldType == EWorldType::Editor )
 	{
-		for (AActor* Actor : Level->GetLevelActors())
+		// Make a copy of the actor list to avoid iterator invalidation
+		TArray<AActor*> ActorsCopy = Level->GetLevelActors();
+
+		// First pass: Tick all actors
+		for (AActor* Actor : ActorsCopy)
 		{
 			if(Actor->CanTickInEditor() && Actor->CanTick())
 			{
 				Actor->Tick(DeltaTimes);
 			}
-			
+		}
+
+		// Second pass: Collect pending destroy actors (don't modify array during iteration!)
+		for (AActor* Actor : ActorsCopy)
+		{
 			if (Actor->IsPendingDestroy())
 			{
-				DestroyActor(Actor);
+				// Add to pending list instead of destroying immediately
+				if (std::find(PendingDestroyActors.begin(), PendingDestroyActors.end(), Actor) == PendingDestroyActors.end())
+				{
+					PendingDestroyActors.push_back(Actor);
+				}
 			}
 		}
 	}
 
 	if (WorldType == EWorldType::Game || WorldType == EWorldType::PIE)
 	{
-		for (AActor* Actor : Level->GetLevelActors())
+		// Make a copy of the actor list to avoid iterator invalidation
+		TArray<AActor*> ActorsCopy = Level->GetLevelActors();
+
+		// First pass: Tick all actors
+		for (AActor* Actor : ActorsCopy)
 		{
 			if(Actor->CanTick())
 			{
 				Actor->Tick(DeltaTimes);
 			}
-			
+		}
+
+		// Second pass: Collect pending destroy actors (don't modify array during iteration!)
+		for (AActor* Actor : ActorsCopy)
+		{
 			if (Actor->IsPendingDestroy())
 			{
-				DestroyActor(Actor);
+				// Add to pending list instead of destroying immediately
+				if (std::find(PendingDestroyActors.begin(), PendingDestroyActors.end(), Actor) == PendingDestroyActors.end())
+				{
+					PendingDestroyActors.push_back(Actor);
+				}
 			}
 		}
 	}

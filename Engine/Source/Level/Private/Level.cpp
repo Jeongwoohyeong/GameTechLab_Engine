@@ -291,8 +291,11 @@ bool ULevel::DestroyActor(AActor* InActor)
 
 void ULevel::UpdatePrimitiveInOctree(UPrimitiveComponent* InComponent)
 {
-	if (!StaticOctree->Remove(InComponent))
-		return;
+	// Octree에서 제거 시도 (이미 제거된 경우도 있음)
+	StaticOctree->Remove(InComponent);
+
+	// 제거 성공 여부와 관계없이 업데이트 큐에 추가
+	// (Octree 밖으로 나갔다가 다시 들어온 경우를 처리하기 위해)
 	OnPrimitiveUpdated(InComponent);
 }
 
@@ -408,12 +411,20 @@ void ULevel::OnPrimitiveUpdated(UPrimitiveComponent* InComponent)
 	if (auto It = DynamicPrimitiveMap.find(InComponent); It != DynamicPrimitiveMap.end())
 	{
 		It->second = GameTime;
+
+		// 재시도 카운트 초기화 - 컴포넌트가 다시 유효한 위치로 이동했을 수 있음
+		OctreeInsertRetryCount.erase(InComponent);
 	}
 	else
 	{
+		// 이전에 추적 중단된 컴포넌트가 다시 업데이트 요청된 경우
+		// (예: Octree 밖으로 나갔다가 다시 안으로 들어온 경우)
 		DynamicPrimitiveMap[InComponent] = UTimeManager::GetInstance().GetGameTime();
 
 		DynamicPrimitiveQueue.push({InComponent, GameTime});
+
+		// 재시도 카운트도 초기화
+		OctreeInsertRetryCount.erase(InComponent);
 	}
 }
 

@@ -7,6 +7,7 @@
 #include "Component/Public/SceneComponent.h"
 #include "Component/Public/UUIDTextComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Editor/Public/Editor.h"
 #include "Level/Public/Level.h"
 #include "Manager/Asset/Public/AssetManager.h"
@@ -262,6 +263,28 @@ bool AActor::IsUniformScale() const
 	return false;
 }
 
+UStaticMeshComponent* AActor::GetStaticMeshComponent() const
+{
+	// RootComponent가 UStaticMeshComponent인지 확인
+	UStaticMeshComponent* StaticMesh = Cast<UStaticMeshComponent>(RootComponent);
+	if (StaticMesh)
+	{
+		return StaticMesh;
+	}
+
+	// RootComponent가 아니면 OwnedComponents에서 찾기
+	for (UActorComponent* Component : OwnedComponents)
+	{
+		StaticMesh = Cast<UStaticMeshComponent>(Component);
+		if (StaticMesh)
+		{
+			return StaticMesh;
+		}
+	}
+
+	return nullptr;
+}
+
 const FVector& AActor::GetActorLocation() const
 {
 	assert(RootComponent);
@@ -284,13 +307,25 @@ UActorComponent* AActor::AddComponent(UClass* InClass)
 {
 	if (!InClass->IsChildOf(UActorComponent::StaticClass())) { return nullptr; }
 	UActorComponent* NewComponent = Cast<UActorComponent>(NewObject(InClass, this));
-	
+
 	if (NewComponent)
 	{
 		RegisterComponent(NewComponent);
 	}
 
-	NewComponent->BeginPlay();
+	// Only call BeginPlay if the owning actor has already begun play
+	// This prevents calling BeginPlay on components added to actors that haven't started yet
+	UE_LOG("[AddComponent] Actor=%s, HasBegunPlay=%d, Component=%s",
+		GetName().ToString().c_str(), HasBegunPlay(), NewComponent->GetClass()->GetName().ToString().c_str());
+	if (HasBegunPlay())
+	{
+		UE_LOG("[AddComponent] Calling Component->BeginPlay() for %s", NewComponent->GetClass()->GetName().ToString().c_str());
+		NewComponent->BeginPlay();
+	}
+	else
+	{
+		UE_LOG("[AddComponent] Skipping BeginPlay (actor hasn't begun play yet)");
+	}
 
 	// LightComponent인 경우 에디터 아이콘 생성
 	if (ULightComponent* LightComp = Cast<ULightComponent>(NewComponent))
@@ -298,7 +333,7 @@ UActorComponent* AActor::AddComponent(UClass* InClass)
 		LightComp->EnsureVisualizationIcon();
 	}
 
-	
+
 	return NewComponent;
 }
 

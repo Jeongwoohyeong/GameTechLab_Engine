@@ -3,11 +3,16 @@
 #include "Player/Public/PlayerCharacter.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
+#include "Component/Public/ULuaScriptComponent.h"
 
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
 {
+	UE_LOG("===========================================");
+	UE_LOG("[PlayerCharacter] CONSTRUCTOR CALLED!");
+	UE_LOG("===========================================");
+
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
 
@@ -23,6 +28,9 @@ APlayerCharacter::APlayerCharacter()
 	MeshComp->SetStaticMesh("Data/SU-37.obj");
 	MeshComp->SetRelativeScale3D(FVector(5.5f, 5.5f, 5.5f));  // 크기 조정
 
+	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
+	SetUseScript(true);
+
 	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
 }
 
@@ -32,11 +40,40 @@ APlayerCharacter::~APlayerCharacter()
 
 void APlayerCharacter::BeginPlay()
 {
+	UE_LOG("===========================================");
+	UE_LOG("[PlayerCharacter] BEGINPLAY CALLED!");
+	UE_LOG("===========================================");
+
+	// Lua 스크립트 초기화 (Super::BeginPlay 전에!)
+	ULuaScriptComponent* LuaComp = GetLuaScriptComponent();
+	if (!LuaComp)
+	{
+		UE_LOG("[PlayerCharacter] Initializing LuaScriptComponent...");
+		InitLuaScriptComponent();
+		LuaComp = GetLuaScriptComponent();
+	}
+
+	if (LuaComp)
+	{
+		UE_LOG("[PlayerCharacter] Setting script name to PlayerWeapon...");
+		LuaComp->SetScriptName(FString("PlayerWeapon"));
+		UE_LOG("[PlayerCharacter] PlayerWeapon script name set!");
+	}
+	else
+	{
+		UE_LOG_ERROR("[PlayerCharacter] Failed to get LuaScriptComponent!");
+	}
+
+	// 이제 Super::BeginPlay 호출 (이미 스크립트가 설정되어 있음)
 	Super::BeginPlay();
 
 	UE_LOG("[PlayerCharacter] BeginPlay: %s at (%.1f, %.1f, %.1f)",
 		GetName().ToString().c_str(),
 		GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
+
+	UE_LOG("===========================================");
+	UE_LOG("[PlayerCharacter] BeginPlay COMPLETE!");
+	UE_LOG("===========================================");
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
