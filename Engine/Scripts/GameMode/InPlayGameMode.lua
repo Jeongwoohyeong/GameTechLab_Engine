@@ -13,7 +13,8 @@ return function()
         GameStarted = false,
         CurrentWave = 1,
         MaxPoolSize = 10,
-        WaveDelay = 5.0
+        WaveDelay = 5.0,
+        BroadCastDelay = 2.0
         }
 
     function ReturnTable:BeginPlay()
@@ -57,6 +58,7 @@ return function()
         end
     
         StartCoroutine(self, "WaveSpawner")
+        StartCoroutine(self, "BroadCastPlayerPosition")
 
         -- 플레이어 무기 활성화
         local PlayerController = self.GameMode:GetPlayerController()
@@ -85,8 +87,7 @@ return function()
             for i = 1, SpawnCount do
                 local RandomX = (math.random() - 0.5) * 400.0
                 local RandomY = (math.random() - 0.5) * 400.0
-                local BaseZ = 0.0
-                local SpawnPos = FVector(RandomX, RandomY, BaseZ)
+                local SpawnPos = FVector(RandomX, RandomY, 0.0)
                 self.GameMode:SpawnEnemies(1, SpawnPos)
             end
         
@@ -98,6 +99,18 @@ return function()
         end
     end
 
+    function ReturnTable:BroadCastPlayerPosition()
+        while true do            
+            local PlayerController = self.GameMode:GetPlayerController()
+            if not PlayerController then
+                Print("[GameMode] PlayerController not found") 
+                break           
+            end
+            self.GameMode:BroadCastPlayerLocation()
+            wait(self.BroadCastDelay)
+        end
+    end
+            
     function ReturnTable:Tick(DeltaTime)
         if not self.GameMode then
             return

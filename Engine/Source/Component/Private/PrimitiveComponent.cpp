@@ -327,8 +327,8 @@ void UPrimitiveComponent::UpdateOverlaps()
 
 	if (bIsMissile || bIsEnemy || bIsPlayer)
 	{
-		UE_LOG("[DEBUG UpdateOverlaps] Owner: %s, OverlapEvents: %d, HitEvents: %d",
-			ownerName.c_str(), bGenerateOverlapEvents, bGenerateHitEvents);
+		// UE_LOG("[DEBUG UpdateOverlaps] Owner: %s, OverlapEvents: %d, HitEvents: %d",
+		// 	ownerName.c_str(), bGenerateOverlapEvents, bGenerateHitEvents);
 	}
 
 	// ========== 충돌 검사: 옥트리 없이 모든 ShapeComponent 검사 ==========
@@ -356,7 +356,7 @@ void UPrimitiveComponent::UpdateOverlaps()
 	// ========== 🔍 디버그: 후보군 출력 ==========
 	if (bIsMissile || bIsEnemy || bIsPlayer)
 	{
-		UE_LOG("[DEBUG UpdateOverlaps] %s: Total candidates = %d", ownerName.c_str(), Candidates.size());
+		// UE_LOG("[DEBUG UpdateOverlaps] %s: Total candidates = %d", ownerName.c_str(), Candidates.size());
 	}
 
 	// ========== 2차 충돌 검사: Narrow Phase ==========
@@ -367,7 +367,7 @@ void UPrimitiveComponent::UpdateOverlaps()
 	{
 		if (bIsMissile || bIsEnemy || bIsPlayer)
 		{
-			UE_LOG("[DEBUG UpdateOverlaps] %s: NOT a ShapeComponent! Cannot do narrow phase!", ownerName.c_str());
+			// UE_LOG("[DEBUG UpdateOverlaps] %s: NOT a ShapeComponent! Cannot do narrow phase!", ownerName.c_str());
 		}
 		return;  // Shape가 아니면 Narrow Phase 불가
 	}
@@ -408,8 +408,8 @@ void UPrimitiveComponent::UpdateOverlaps()
 
 			if ((bIsMissile && bCandidateIsEnemy) || (bIsEnemy && bCandidateIsMissile))
 			{
-				UE_LOG("[DEBUG UpdateOverlaps] Testing: %s <-> %s",
-					ownerName.c_str(), candidateName.c_str());
+				// UE_LOG("[DEBUG UpdateOverlaps] Testing: %s <-> %s",
+					// ownerName.c_str(), candidateName.c_str());
 			}
 		}
 
@@ -420,8 +420,8 @@ void UPrimitiveComponent::UpdateOverlaps()
 			if (bIsMissile || bIsEnemy)
 			{
 				FString candidateName = Candidate->GetOwner()->GetName().ToString();
-				UE_LOG("[DEBUG UpdateOverlaps] ✅ OVERLAP DETECTED: %s <-> %s",
-					ownerName.c_str(), candidateName.c_str());
+				// UE_LOG("[DEBUG UpdateOverlaps] ✅ OVERLAP DETECTED: %s <-> %s",
+				// 	ownerName.c_str(), candidateName.c_str());
 			}
 
 			FOverlapInfo Info;

@@ -40,6 +40,7 @@ public:
 
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 	UBoxComponent* GetWingCollision() const { return WingCollision; }
+	void UpdatePlayerPosition(const FVector& Position);
 
 private:
 	UCapsuleComponent* CollisionComponent = nullptr;  // 몸통 충돌

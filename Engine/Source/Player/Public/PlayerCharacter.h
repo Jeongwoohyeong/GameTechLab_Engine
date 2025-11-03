@@ -5,6 +5,7 @@ class UCapsuleComponent;
 class UBoxComponent;
 struct FHitResult;
 
+
 /**
  * @brief APlayerCharacter is the default pawn class for player-controlled characters.
  * Inherits from APawn and adds player-specific functionality.

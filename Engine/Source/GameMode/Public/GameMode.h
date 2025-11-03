@@ -1,7 +1,11 @@
 ﻿#pragma once
 #include "GameMode/Public/GameModeBase.h"
+#include "Global/DelegateMacros.h"
+
 
 class APlayerCharacter;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBroadCastPlayerLocation, const FVector&);
 
 UCLASS()
 class AGameMode : public AGameModeBase
@@ -36,8 +40,11 @@ public:
     void SpawnEnemies(int32 EnemyCount, FVector Location);
 
     APlayerController* GetPlayerController() const override { return Super::GetPlayerController(); }
+
+    void BroadCastPlayerLocation();
 private:
     EGameState CurrentState = EGameState::MainMenu;
     int32 CurrentEnemyIndex = 0;
     int32 MaxPoolSize = 0;
+    FOnBroadCastPlayerLocation OnBroadCastPlayerLocation;
 };

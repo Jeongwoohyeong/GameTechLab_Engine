@@ -225,3 +225,8 @@ void AEnemyCharacter::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActo
 		LuaScript->ActivateFunction("OnHit", HitComponent, OtherActor, OtherComp, NormalImpulse, Hit);
 	}
 }
+
+void AEnemyCharacter::UpdatePlayerPosition(const FVector& Position)
+{
+	UE_LOG("player position updated %f %f %f", Position.X, Position.Y, Position.Z);
+}

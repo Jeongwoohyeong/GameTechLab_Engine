@@ -853,7 +853,8 @@ void FLuaScriptManager::BindTypes()
         "SpawnPlayerCharacter", &AGameMode::SpawnPlayerCharacter,
         "InitializeEnemyPool", &AGameMode::InitializeEnemyPool,
         "SpawnEnemies", &AGameMode::SpawnEnemies,
-        "GetPlayerController", &AGameMode::GetPlayerController
+        "GetPlayerController", &AGameMode::GetPlayerController,
+        "BroadCastPlayerLocation", &AGameMode::BroadCastPlayerLocation
         );
 
     // --- UWorld Binding Extension (add GameMode support) ---

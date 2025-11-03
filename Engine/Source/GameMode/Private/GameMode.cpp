@@ -194,6 +194,7 @@ void AGameMode::SpawnEnemies(int32 EnemyCount, FVector Location)
                         Prim->SetVisibility(true);
                     }
                 }
+                OnBroadCastPlayerLocation.AddDynamic(Cast<AEnemyCharacter>(Enemy), &AEnemyCharacter::UpdatePlayerPosition);
                 Spawned++;
             }
         }
@@ -202,4 +203,15 @@ void AGameMode::SpawnEnemies(int32 EnemyCount, FVector Location)
     CurrentEnemyIndex = std::min(CurrentEnemyIndex + EnemyCount, MaxPoolSize);
 
     UE_LOG("[GameMode/SpawnEnemies] Spawned %d enemies current wave", Spawned);
+}
+
+void AGameMode::BroadCastPlayerLocation()
+{
+    if (APlayerController* Controller = GetPlayerController())
+    {
+        if(APlayerCharacter* Player = Cast<APlayerCharacter>(Controller->GetControlledPawn()))
+        {
+            OnBroadCastPlayerLocation.BroadCast(Player->GetActorLocation());
+        }
+    }
 }
