@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "Player/Public/EnemyCharacter.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
-#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Collision/Public/BoxComponent.h"
+#include "Component/Collision/Public/CapsuleComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Manager/Time/Public/TimeManager.h"
 #include "Level/Public/World.h"
@@ -16,26 +16,14 @@ AEnemyCharacter::AEnemyCharacter()
 	this->AddTag("Enemy");
 }
 
-	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
-	if (!CollisionComponent)
-	{
-		UE_LOG_ERROR("ACharacter: Failed to create CollisionComponent");
-	}
-	else
-	{
-		SetRootComponent(CollisionComponent);
-		CollisionComponent->bGenerateHitEvents = true;
-		CollisionComponent->bGenerateOverlapEvents = true;
-		CollisionComponent->bBlockComponent = true;
-		UE_LOG("ACharacter Create Collision Component");
-	}
-	// StaticMesh 추가 (APawn의 CollisionComponent 사용)
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
-	StaticMeshComponent->AttachToComponent(CollisionComponent);
+UClass* AEnemyCharacter::GetDefaultRootComponent()
+{
+	return USceneComponent::StaticClass();
+}
 
-	// 적 전용 메시 설정
-	StaticMeshComponent->SetStaticMesh("Data/Enemy_F-14.obj");
-	StaticMeshComponent->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
+void AEnemyCharacter::InitializeComponents()
+{
+	Super::InitializeComponents();
 
 	UE_LOG("[EnemyCharacter] InitializeComponents called - RootComponent=%p", GetRootComponent());
 
@@ -48,10 +36,55 @@ AEnemyCharacter::AEnemyCharacter()
 		StaticMeshComponent->SetRelativeScale3D(FVector(30.0f, 30.0f, 30.0f));
 		UE_LOG("[EnemyCharacter] StaticMeshComponent created and attached");
 	}
-	// 충돌 콜백 등록 (CollisionComponent 사용)
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnBeginOverlap);
-	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnEndOverlap);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
+
+	// ========================================
+	// 충돌 컴포넌트들 생성
+	// ========================================
+
+	// 1. 비행기 몸체 충돌 (캡슐)
+	BodyCollision = CreateDefaultSubobject<UCapsuleComponent>();
+	if (BodyCollision)
+	{
+		BodyCollision->AttachToComponent(GetRootComponent());
+		BodyCollision->SetCapsuleRadius(50.0f);  // 임시 값 (나중에 조절)
+		BodyCollision->SetCapsuleHalfHeight(100.0f);  // 임시 값 (나중에 조절)
+		BodyCollision->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));  // 임시 위치
+		BodyCollision->bGenerateOverlapEvents = true;
+		BodyCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnBeginOverlap);
+		BodyCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnEndOverlap);
+		BodyCollision->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
+		UE_LOG("[EnemyCharacter] BodyCollision (Capsule) created and attached");
+	}
+
+	// 2. 왼쪽 날개 충돌 (박스)
+	LeftWingCollision = CreateDefaultSubobject<UBoxComponent>();
+	if (LeftWingCollision)
+	{
+		LeftWingCollision->AttachToComponent(GetRootComponent());
+		LeftWingCollision->SetBoxExtent(FVector(50.0f, 100.0f, 10.0f));  // 임시 크기
+		LeftWingCollision->SetRelativeLocation(FVector(0.0f, -100.0f, 0.0f));  // 임시 위치 (왼쪽)
+		LeftWingCollision->bGenerateOverlapEvents = true;
+		LeftWingCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnBeginOverlap);
+		LeftWingCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnEndOverlap);
+		LeftWingCollision->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
+		UE_LOG("[EnemyCharacter] LeftWingCollision (Box) created and attached");
+	}
+
+	// 3. 오른쪽 날개 충돌 (박스)
+	RightWingCollision = CreateDefaultSubobject<UBoxComponent>();
+	if (RightWingCollision)
+	{
+		RightWingCollision->AttachToComponent(GetRootComponent());
+		RightWingCollision->SetBoxExtent(FVector(50.0f, 100.0f, 10.0f));  // 임시 크기
+		RightWingCollision->SetRelativeLocation(FVector(0.0f, 100.0f, 0.0f));  // 임시 위치 (오른쪽)
+		RightWingCollision->bGenerateOverlapEvents = true;
+		RightWingCollision->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnBeginOverlap);
+		RightWingCollision->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnEndOverlap);
+		RightWingCollision->OnComponentHit.AddDynamic(this, &AEnemyCharacter::OnHit);
+		UE_LOG("[EnemyCharacter] RightWingCollision (Box) created and attached");
+	}
+
+	UE_LOG("[EnemyCharacter] InitializeComponents complete - All collision components created");
 }
 
 AEnemyCharacter::~AEnemyCharacter()
@@ -70,7 +103,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	// AI나 Lua 스크립트에서 제어할 수 있도록 기본 Tick만 제공
 }
 
-void AEnemyCharacter::MoveForward(float Value)// 충돌 콜백 등록 (CollisionComponent 사용)
+void AEnemyCharacter::MoveForward(float Value)
 {
 	if (Value == 0.0f)
 	{
