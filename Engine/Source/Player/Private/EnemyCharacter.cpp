@@ -13,7 +13,7 @@ AEnemyCharacter::AEnemyCharacter()
 {
 	bCanEverTick = true;
 	UE_LOG("[EnemyCharacter] Constructor called");
-
+	this->AddTag("Enemy");
 	// StaticMesh 컴포넌트 생성
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
 	if (!StaticMeshComponent)

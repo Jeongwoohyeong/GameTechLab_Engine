@@ -18,6 +18,7 @@ APlayerCharacter::APlayerCharacter()
 
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
+	this->AddTag("Player");
 	// StaticMesh 추가
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
 	if (!StaticMeshComponent)
