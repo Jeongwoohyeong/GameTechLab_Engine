@@ -11,6 +11,7 @@
 #include "Render/UI/Viewport/Public/ViewportClient.h"
 #include "Editor/Public/Camera.h"
 #include "GameMode/Public/GameModeBase.h"
+#include "GameMode/Public/GameMode.h"
 #include "GamePlay/Public/PlayerController.h"
 #include "GamePlay/Public/PlayerInput.h"
 #include "Manager/UI/Public/GameUIManager.h"
@@ -238,7 +239,7 @@ void UEditorEngine::TogglePIEMouseLock()
     if (PIEContext && PIEContext->World())
     {
         UWorld* PIEWorld = PIEContext->World();
-        AGameModeBase* GameMode = PIEWorld->GetGameMode();
+        AGameModeBase* GameMode = Cast<AGameMode>(PIEWorld->GetGameMode());
         if (GameMode)
         {
             APlayerController* PC = GameMode->GetPlayerController();

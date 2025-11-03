@@ -366,6 +366,7 @@
     <ClInclude Include="Source\Core\Public\WindowsBinReader.h" />
     <ClInclude Include="Source\Core\Public\WindowsBinWriter.h" />
     <ClInclude Include="Source\Editor\Public\EditorEngine.h" />
+    <ClInclude Include="Source\GameMode\Public\GameMode.h" />
     <ClInclude Include="Source\GameMode\Public\GameModeBase.h" />
     <ClInclude Include="Source\GamePlay\Public\PlayerController.h" />
     <ClInclude Include="Source\GamePlay\Public\PlayerInput.h" />
@@ -442,6 +443,7 @@
     <ClInclude Include="Source\Physics\Public\CollisionUtil.h" />
     <ClInclude Include="Source\Physics\Public\OBB.h" />
     <ClInclude Include="Source\Pawn\Public\Pawn.h" />
+    <ClInclude Include="Source\Player\Public\EnemyCharacter.h" />
     <ClInclude Include="Source\Player\Public\PlayerCharacter.h" />
     <ClInclude Include="Source\Render\Renderer\Public\DeviceResources.h" />
     <ClInclude Include="Source\Render\Renderer\Public\Pipeline.h" />
@@ -687,6 +689,7 @@
     <ClCompile Include="Source\Editor\Private\GizmoGeometry.cpp" />
     <ClCompile Include="Source\Editor\Private\GizmoMath.cpp" />
     <ClCompile Include="Source\Editor\Private\GizmoRenderer.cpp" />
+    <ClCompile Include="Source\GameMode\Private\GameMode.cpp" />
     <ClCompile Include="Source\GamePlay\Private\PlayerController.cpp" />
     <ClCompile Include="Source\GamePlay\Private\PlayerInput.cpp" />
     <ClCompile Include="Source\Global\BVH.cpp" />
@@ -746,6 +749,7 @@
     <ClCompile Include="Source\Manager\Time\Private\TimeManager.cpp" />
     <ClCompile Include="Source\Manager\UI\Private\UIManager.cpp" />
     <ClCompile Include="Source\Physics\Private\OBB.cpp" />
+    <ClCompile Include="Source\Player\Private\EnemyCharacter.cpp" />
     <ClCompile Include="Source\Player\Private\PlayerCharacter.cpp" />
     <ClCompile Include="Source\Render\Renderer\Private\DeviceResources.cpp" />
     <ClCompile Include="Source\Render\Renderer\Private\Pipeline.cpp" />
@@ -864,6 +868,16 @@
     <Content Include="Asset\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\123\123_AStaticMeshActor_999.lua" />
+    <Content Include="Scripts\123\example_coroutine.lua" />
+    <Content Include="Scripts\GameMode\GameOverGameMode.lua" />
+    <Content Include="Scripts\GameMode\InPlayGameMode.lua" />
+    <Content Include="Scripts\GameMode\MainMenuGameMode.lua" />
+    <Content Include="Scripts\Player\PlayerCharacter.lua" />
+    <Content Include="Scripts\template.lua" />
+    <Content Include="Scripts\template_factory.lua" />
+    <Content Include="Scripts\template_safe.lua" />
+    <Content Include="Scripts\Untitled\Untitled_AStaticMeshActor_0.lua" />
     <Content Include="Source\Component\Public\LightComponentBase.h" />
     <Content Include="Source\Manager\Coroutine\Public\LuaCoroutineManager.h" />
     <Content Include="Source\Pawn\Public\Pawn.h" />
@@ -939,6 +953,26 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="Asset\Shader\LightStructures.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Develop|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Develop|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Scripts\Missile.lua">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Develop|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Develop|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Scripts\PlayerWeapon.lua">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Develop|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|Win32'">true</ExcludedFromBuild>

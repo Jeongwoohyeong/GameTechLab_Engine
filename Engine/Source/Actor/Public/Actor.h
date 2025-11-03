@@ -40,6 +40,7 @@ public:
 	// Getter & Setter
 	USceneComponent* GetRootComponent() const { return RootComponent; }
 	TArray<UActorComponent*>& GetOwnedComponents()  { return OwnedComponents; }
+	class UStaticMeshComponent* GetStaticMeshComponent() const;
 
 	void SetRootComponent(USceneComponent* InOwnedComponents) { RootComponent = InOwnedComponents; }
 
@@ -95,6 +96,12 @@ public:
 		if (NewComponent)
 		{
 			RegisterComponent(NewComponent);
+
+			// Only call BeginPlay if the owning actor has already begun play
+			if (HasBegunPlay())
+			{
+				NewComponent->BeginPlay();
+			}
 		}
 
 		return NewComponent;

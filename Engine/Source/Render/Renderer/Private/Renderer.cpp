@@ -979,15 +979,16 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 	UWorld* WorldToRender = GEditor->GetWorldForViewport(ViewportIndex);
 	if (!WorldToRender) { return; }
 
-	static int logCounter = 0;
-	if (++logCounter % 60 == 0) // Log every 60 frames
-	{
-		UE_LOG("[Renderer] Viewport %d rendering World type=%d, ptr=%p, ActorCount=%d",
-			ViewportIndex,
-			static_cast<int>(WorldToRender->GetWorldType()),
-			WorldToRender,
-			WorldToRender->GetLevel() ? WorldToRender->GetLevel()->GetLevelActors().size() : 0);
-	}
+	// 로그 비활성화 - 너무 많이 출력됨
+	//static int logCounter = 0;
+	//if (++logCounter % 60 == 0) // Log every 60 frames
+	//{
+	//	UE_LOG("[Renderer] Viewport %d rendering World type=%d, ptr=%p, ActorCount=%d",
+	//		ViewportIndex,
+	//		static_cast<int>(WorldToRender->GetWorldType()),
+	//		WorldToRender,
+	//		WorldToRender->GetLevel() ? WorldToRender->GetLevel()->GetLevelActors().size() : 0);
+	//}
 
 	const ULevel* CurrentLevel = WorldToRender->GetLevel();
 	if (!CurrentLevel) { return; }

@@ -2,6 +2,8 @@
 #include "Level/Public/World.h"
 #include "Level/Public/Level.h"
 #include "Actor/Public/AmbientLight.h"
+#include "Component/Public/ULuaScriptComponent.h"
+#include "GameMode/Public/GameMode.h"
 #include "GameMode/Public/GameModeBase.h"
 #include "Utility/Public/JsonSerializer.h"
 #include "Manager/Config/Public/ConfigManager.h"
@@ -48,7 +50,7 @@ void UWorld::BeginPlay()
 	// Spawn GameMode for Game/PIE worlds
 	if (WorldType == EWorldType::Game || WorldType == EWorldType::PIE)
 	{
-		AGameModeBase* NewGameMode = SpawnGameMode();
+		AGameMode* NewGameMode = SpawnGameMode();
 		if (NewGameMode)
 		{
 			NewGameMode->InitGame();
@@ -89,32 +91,56 @@ void UWorld::Tick(float DeltaTimes)
 
 	if (WorldType == EWorldType::Editor )
 	{
-		for (AActor* Actor : Level->GetLevelActors())
+		// Make a copy of the actor list to avoid iterator invalidation
+		TArray<AActor*> ActorsCopy = Level->GetLevelActors();
+
+		// First pass: Tick all actors
+		for (AActor* Actor : ActorsCopy)
 		{
 			if(Actor->CanTickInEditor() && Actor->CanTick())
 			{
 				Actor->Tick(DeltaTimes);
 			}
-			
+		}
+
+		// Second pass: Collect pending destroy actors (don't modify array during iteration!)
+		for (AActor* Actor : ActorsCopy)
+		{
 			if (Actor->IsPendingDestroy())
 			{
-				DestroyActor(Actor);
+				// Add to pending list instead of destroying immediately
+				if (std::find(PendingDestroyActors.begin(), PendingDestroyActors.end(), Actor) == PendingDestroyActors.end())
+				{
+					PendingDestroyActors.push_back(Actor);
+				}
 			}
 		}
 	}
 
 	if (WorldType == EWorldType::Game || WorldType == EWorldType::PIE)
 	{
-		for (AActor* Actor : Level->GetLevelActors())
+		// Make a copy of the actor list to avoid iterator invalidation
+		TArray<AActor*> ActorsCopy = Level->GetLevelActors();
+
+		// First pass: Tick all actors
+		for (AActor* Actor : ActorsCopy)
 		{
 			if(Actor->CanTick())
 			{
 				Actor->Tick(DeltaTimes);
 			}
-			
+		}
+
+		// Second pass: Collect pending destroy actors (don't modify array during iteration!)
+		for (AActor* Actor : ActorsCopy)
+		{
 			if (Actor->IsPendingDestroy())
 			{
-				DestroyActor(Actor);
+				// Add to pending list instead of destroying immediately
+				if (std::find(PendingDestroyActors.begin(), PendingDestroyActors.end(), Actor) == PendingDestroyActors.end())
+				{
+					PendingDestroyActors.push_back(Actor);
+				}
 			}
 		}
 	}
@@ -343,18 +369,18 @@ void UWorld::CreateNewLevel(const FName& InLevelName)
 
 void UWorld::SetGameModeClass(UClass* InGameModeClass)
 {
-	if (InGameModeClass && InGameModeClass->IsChildOf(AGameModeBase::StaticClass()))
+	if (InGameModeClass && InGameModeClass->IsChildOf(AGameMode::StaticClass()))
 	{
 		GameModeClass = InGameModeClass;
 		UE_LOG("[World] GameMode class set to: %s", InGameModeClass->GetName().ToString().c_str());
 	}
 	else
 	{
-		UE_LOG_ERROR("[World] Invalid GameMode class - must inherit from AGameModeBase");
+		UE_LOG_ERROR("[World] Invalid GameMode class - must inherit from AGameMode");
 	}
 }
 
-AGameModeBase* UWorld::SpawnGameMode()
+AGameMode* UWorld::SpawnGameMode()
 {
 	// Only spawn GameMode in Game or PIE worlds
 	if (WorldType != EWorldType::Game && WorldType != EWorldType::PIE)
@@ -365,20 +391,23 @@ AGameModeBase* UWorld::SpawnGameMode()
 	// Use default GameModeBase if no custom class is set
 	if (!GameModeClass)
 	{
-		GameModeClass = AGameModeBase::StaticClass();
+		GameModeClass = AGameMode::StaticClass();
 	}
 
-	AGameModeBase* NewGameMode = Cast<AGameModeBase>(SpawnActor(GameModeClass));
+	AGameMode* NewGameMode = Cast<AGameMode>(SpawnActor(GameModeClass));
 	if (NewGameMode)
 	{
 		NewGameMode->SetOwningWorld(this);
 		GameMode.Set(NewGameMode);
 		UE_LOG("[World] GameMode spawned: %s", NewGameMode->GetName().ToString().c_str());
+
+		// Lua에 바인딩
+		NewGameMode->InitializeLuaScript();
 	}
 	else
 	{
 		UE_LOG_ERROR("[World] Failed to spawn GameMode");
-	}
+	}	
 
 	return NewGameMode;
 }

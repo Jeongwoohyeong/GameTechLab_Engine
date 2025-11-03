@@ -105,13 +105,53 @@ void ULevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	}
 }
 
+namespace
+{
+	// SEH를 사용하여 안전하게 액터의 BeginPlay를 호출하는 헬퍼 함수
+	bool SafeCallActorBeginPlay(AActor* Actor)
+	{
+		if (!Actor)
+			return false;
+
+		__try
+		{
+			// VTable 접근 테스트
+			UClass* ActorClass = Actor->GetClass();
+			if (!ActorClass)
+				return false;
+
+			// BeginPlay 호출
+			Actor->BeginPlay();
+			return true;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			// 접근 위반 발생
+			return false;
+		}
+	}
+}
+
 void ULevel::Init()
 {
-	for (AActor* Actor: LevelActors)
+	// 역방향 순회로 변경하여 삭제된 액터 안전하게 처리
+	for (int32 i = static_cast<int32>(LevelActors.size()) - 1; i >= 0; --i)
 	{
-		if (Actor)
+		AActor* Actor = LevelActors[i];
+
+		// nullptr 체크
+		if (!Actor)
 		{
-			Actor->BeginPlay();
+			UE_LOG_WARNING("Level::Init: nullptr actor found at index %d, removing from list", i);
+			LevelActors.erase(LevelActors.begin() + i);
+			continue;
+		}
+
+		// 안전하게 BeginPlay 호출 (댕글링 포인터 감지)
+		if (!SafeCallActorBeginPlay(Actor))
+		{
+			UE_LOG_WARNING("Level::Init: Access violation on actor at index %d (dangling pointer), removing from list", i);
+			LevelActors.erase(LevelActors.begin() + i);
 		}
 	}
 }
@@ -291,8 +331,11 @@ bool ULevel::DestroyActor(AActor* InActor)
 
 void ULevel::UpdatePrimitiveInOctree(UPrimitiveComponent* InComponent)
 {
-	if (!StaticOctree->Remove(InComponent))
-		return;
+	// Octree에서 제거 시도 (이미 제거된 경우도 있음)
+	StaticOctree->Remove(InComponent);
+
+	// 제거 성공 여부와 관계없이 업데이트 큐에 추가
+	// (Octree 밖으로 나갔다가 다시 들어온 경우를 처리하기 위해)
 	OnPrimitiveUpdated(InComponent);
 }
 
@@ -408,12 +451,20 @@ void ULevel::OnPrimitiveUpdated(UPrimitiveComponent* InComponent)
 	if (auto It = DynamicPrimitiveMap.find(InComponent); It != DynamicPrimitiveMap.end())
 	{
 		It->second = GameTime;
+
+		// 재시도 카운트 초기화 - 컴포넌트가 다시 유효한 위치로 이동했을 수 있음
+		OctreeInsertRetryCount.erase(InComponent);
 	}
 	else
 	{
+		// 이전에 추적 중단된 컴포넌트가 다시 업데이트 요청된 경우
+		// (예: Octree 밖으로 나갔다가 다시 안으로 들어온 경우)
 		DynamicPrimitiveMap[InComponent] = UTimeManager::GetInstance().GetGameTime();
 
 		DynamicPrimitiveQueue.push({InComponent, GameTime});
+
+		// 재시도 카운트도 초기화
+		OctreeInsertRetryCount.erase(InComponent);
 	}
 }
 

@@ -65,6 +65,9 @@
     <ClCompile Include="Source\Pawn\Private\Pawn.cpp">
       <Filter>Source\Pawn\Private</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Player\Private\EnemyCharacter.cpp">
+      <Filter>Source\Player\Private</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Player\Private\PlayerCharacter.cpp">
       <Filter>Source\Player\Private</Filter>
     </ClCompile>
@@ -616,6 +619,9 @@
     </ClInclude>
     <ClInclude Include="Source\Pawn\Public\Pawn.h">
       <Filter>Source\Pawn\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Player\Public\EnemyCharacter.h">
+      <Filter>Source\Player\Public</Filter>
     </ClInclude>
     <ClInclude Include="Source\Player\Public\PlayerCharacter.h">
       <Filter>Source\Player\Public</Filter>

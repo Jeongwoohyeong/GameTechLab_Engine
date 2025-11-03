@@ -21,6 +21,7 @@ public:
 public:
 	UStaticMesh* GetStaticMesh() { return StaticMesh; }
 	void SetStaticMesh(const FName& InObjPath);
+	void SetStaticMeshFromString(const std::string& InObjPath); // Lua-friendly wrapper
 
 	UClass* GetSpecificWidgetClass() const override;
 

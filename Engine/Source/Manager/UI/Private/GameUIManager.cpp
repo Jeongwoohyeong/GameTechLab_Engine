@@ -11,6 +11,8 @@
 #include "GamePlay/Public/PlayerInput.h"
 #include "Level/Public/World.h"
 #include "Manager/Input/Public/InputManager.h"
+#include "GameMode/Public/GameMode.h"
+#include "Component/Public/ULuaScriptComponent.h"
 
 IMPLEMENT_SINGLETON_CLASS(UGameUIManager, UObject)
 
@@ -167,6 +169,21 @@ void UGameUIManager::StartGame()
 	// 게임 플레이 상태: 마우스 잠금 (커서 숨김), 플레이어 입력 활성화
 	SetMouseLocked(true);
 	SetPlayerInputEnabled(true);
+
+	// GameMode의 Lua 스크립트에서 StartGame 함수 호출
+	if (GWorld)
+	{
+		AGameMode* GameMode = Cast<AGameMode>(GWorld->GetGameMode());
+		if (GameMode)
+		{
+			ULuaScriptComponent* LuaComp = GameMode->GetLuaScriptComponent();
+			if (LuaComp)
+			{
+				LuaComp->ActivateFunction("StartGame");
+				UE_LOG("[GameUIManager] Called GameMode Lua StartGame()");
+			}
+		}
+	}
 
 	UE_LOG("[GameUIManager] Game Playing - Mouse locked, Input enabled");
 }
@@ -333,7 +350,7 @@ UPlayerInput* UGameUIManager::GetPlayerInput()
 		return nullptr;
 	}
 
-	AGameModeBase* GameMode = PIEContext->World()->GetGameMode();
+	AGameModeBase* GameMode = Cast<AGameMode>(PIEContext->World()->GetGameMode());
 	if (!GameMode)
 	{
 		return nullptr;

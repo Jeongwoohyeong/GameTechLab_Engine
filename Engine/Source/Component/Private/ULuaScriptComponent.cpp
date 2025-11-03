@@ -50,7 +50,7 @@ void ULuaScriptComponent::DuplicateSubObjects(UObject* DuplicatedObject)
 void ULuaScriptComponent::BeginPlay()
 {
     Super::BeginPlay();
-
+    
     // Safety check: Ensure we have a valid owner
     AActor* Owner = GetOwner();
     if (!Owner)
@@ -59,25 +59,47 @@ void ULuaScriptComponent::BeginPlay()
         return;
     }
 
-    if (ScriptName.empty())
+    // 스크립트가 아직 로드되지 않았으면 로드 (SetScriptName에서 이미 로드했을 수 있음)
+    if (!SelfTable.valid())
     {
-        FString ClassName = Owner->GetClass()->GetName().ToString();
-        ScriptName = "Scripts/DefaultLevel/" + ClassName + ".lua";
-    }
+        // If ScriptName is empty, skip loading - it will be set later via SetScriptName
+        if (ScriptName.empty())
+        {
+            UE_LOG("[ULuaScriptComponent] BeginPlay: ScriptName is empty, skipping load (will be set later)");
+            return;
+        }
 
-    // Load script first
-    if (!LoadScript())
+        // Load script first
+        if (!LoadScript())
+        {
+            std::cerr << "[ERROR] ULuaScriptComponent::BeginPlay: Failed to load script: " << ScriptName << std::endl;
+            return;
+        }
+    }
+    else
     {
-        std::cerr << "[ERROR] ULuaScriptComponent::BeginPlay: Failed to load script: " << ScriptName << std::endl;
-        return;
+        UE_LOG("[ULuaScriptComponent] BeginPlay: Script already loaded: '%s'", ScriptName.c_str());
     }
 
     // Register with LuaScriptManager for hot-reload tracking
     FLuaScriptManager::GetInstance().RegisterComponent(this);
 
-    if (SelfTable.valid() && SelfTable["BeginPlay"].valid())
+    if (SelfTable.valid())
     {
-        ActivateFunction("BeginPlay");
+        UE_LOG("[ULuaScriptComponent] BeginPlay: SelfTable is valid");
+        if (SelfTable["BeginPlay"].valid())
+        {
+            UE_LOG("[ULuaScriptComponent] BeginPlay: Calling Lua BeginPlay()");
+            ActivateFunction("BeginPlay");
+        }
+        else
+        {
+            UE_LOG_ERROR("[ULuaScriptComponent] BeginPlay: Lua BeginPlay() function not found in table!");
+        }
+    }
+    else
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent] BeginPlay: SelfTable is invalid!");
     }
 }
 
@@ -134,8 +156,42 @@ void ULuaScriptComponent::EndPlay()
 
 void ULuaScriptComponent::SetScriptName(const FString& InScriptName)
 {
-    ScriptName = InScriptName;
-    SelfTable = sol::table();
+    // Scripts/ 경로 추가 (필요한 경우)
+    if (!InScriptName.empty() && InScriptName.find("Scripts/") == std::string::npos)
+    {
+        ScriptName = "Scripts/" + InScriptName + ".lua";
+    }
+    else
+    {
+        ScriptName = InScriptName;
+    }
+
+    UE_LOG("[ULuaScriptComponent] SetScriptName: '%s'", ScriptName.c_str());
+
+    // 스크립트 즉시 로드
+    if (!LoadScript())
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent] SetScriptName: Failed to load script");
+        return;
+    }
+
+    // Register with LuaScriptManager for hot-reload tracking
+    FLuaScriptManager::GetInstance().RegisterComponent(this);
+
+    // If the owner has already begun play, call Lua BeginPlay now
+    AActor* Owner = GetOwner();
+    if (Owner && Owner->HasBegunPlay() && SelfTable.valid())
+    {
+        if (SelfTable["BeginPlay"].valid())
+        {
+            UE_LOG("[ULuaScriptComponent] SetScriptName: Calling Lua BeginPlay()");
+            ActivateFunction("BeginPlay");
+        }
+        else
+        {
+            UE_LOG_ERROR("[ULuaScriptComponent] SetScriptName: Lua BeginPlay() function not found in table!");
+        }
+    }
 }
 
 bool ULuaScriptComponent::LoadScript()
@@ -143,17 +199,21 @@ bool ULuaScriptComponent::LoadScript()
     if (ScriptName.empty())
     {
         FString ClassName = GetOwner() ? GetOwner()->GetClass()->GetName().ToString() : FString("Actor");
-        ScriptName = "Scripts/DefaultLevel/" + ClassName + ".lua";
+        ScriptName = "Scripts/" + ClassName + ".lua";
     }
+
+    UE_LOG("[ULuaScriptComponent] LoadScript: Attempting to load '%s'", ScriptName.c_str());
 
     // Load from LuaScriptManager
     SelfTable = FLuaScriptManager::GetInstance().CreateLuaTable(ScriptName);
 
     if (!SelfTable.valid())
     {
-        std::cerr << "[ERROR] LoadScript: Failed to load script: " << ScriptName << std::endl;
+        UE_LOG_ERROR("[ULuaScriptComponent] LoadScript: Failed to load script '%s'", ScriptName.c_str());
         return false;
     }
+
+    UE_LOG("[ULuaScriptComponent] LoadScript: Successfully loaded '%s'", ScriptName.c_str());
 
     // Bind self.this to the owning Actor
     AActor* Owner = GetOwner();
@@ -164,6 +224,23 @@ bool ULuaScriptComponent::LoadScript()
     }
 
     return true;
+}
+
+void ULuaScriptComponent::ActivateFunctionLua(const FString& FunctionName, sol::variadic_args va)
+{
+    if (!SelfTable.valid())
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent/ActivateFunctionLua] SelfTable invalid");
+        return;
+    }
+
+    sol::function LuaFunction = SelfTable[FunctionName.c_str()];
+    if (!LuaFunction.valid())
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent/ActivateFunctionLua] LuaFunction %s invalid", FunctionName.c_str());
+        return;
+    }
+    LuaFunction(SelfTable, sol::as_args(va));
 }
 
 void ULuaScriptComponent::RegisterCoroutine(int coroutineID)
