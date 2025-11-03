@@ -19,6 +19,10 @@ public:
 	AEnemyCharacter();
 	virtual ~AEnemyCharacter() override;
 
+	// Component initialization
+	virtual UClass* GetDefaultRootComponent() override;
+	virtual void InitializeComponents() override;
+
 	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 

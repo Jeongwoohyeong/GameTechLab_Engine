@@ -6,7 +6,7 @@
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
-
+#include "Component/Collision/Public/SphereComponent.h"
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
@@ -45,13 +45,6 @@ APlayerCharacter::APlayerCharacter()
 	StaticMeshComponent->SetRelativeScale3D(FVector(10.f,10.f,10.f));  // 크기 조정
 
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
-	SetUseScript(true);
-
-	//UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
-	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);	
-
 	SetUseScript(true);
 	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
 	{
@@ -115,18 +108,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	// {
-	// 	LuaComp->ActivateFunction("OnBeginOverlap");
-	// }
-	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	// {
-	// 	LuaComp->ActivateFunction("OnEndOverlap");
-	// }
-	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	// {
-	// 	LuaComp->ActivateFunction("OnHit");
-	// }
 }
 
 void APlayerCharacter::MoveForward(float Value)

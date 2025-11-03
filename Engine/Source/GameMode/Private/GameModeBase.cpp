@@ -250,7 +250,7 @@ void AGameModeBase::SetupPIECamera(APawn* InPawn)
 	FVector CameraOffset(-350.0f, 0.0f, 250.0f);
 	PIECamera->SetFollowTarget(InPawn, CameraOffset);
 
-	// PIE 전용: FOV 120도로 설정 (비행기 전체 보이게)
+	// PIE 전용: FOV 90도로 설정 (비행기 전체 보이게)
 	PIECamera->SetFovY(90.0f);
 
 	UE_LOG_SUCCESS("[GameMode] PIE camera attached to player with offset (%.1f, %.1f, %.1f), FOV=120",

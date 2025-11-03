@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
-
-#include "Component/Collision/Public/SphereComponent.h"
 #include "GamePlay/Public/PlayerController.h"
 
 IMPLEMENT_CLASS(APawn, AActor)

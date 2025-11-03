@@ -326,6 +326,7 @@
     <ClInclude Include="Source\Actor\Public\StaticMeshActor.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="Source\Actor\Public\MissileActor.h" />
     <ClInclude Include="Source\Actor\Public\TextActor.h" />
     <ClInclude Include="Source\Actor\Public\TriangleActor.h" />
     <ClInclude Include="Source\Component\Collision\Public\BoxComponent.h" />
@@ -644,6 +645,7 @@
     <ClCompile Include="Source\Actor\Private\StaticMeshActor.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="Source\Actor\Private\MissileActor.cpp" />
     <ClCompile Include="Source\Actor\Private\TextActor.cpp" />
     <ClCompile Include="Source\Actor\Private\TriangleActor.cpp" />
     <ClCompile Include="Source\Component\Collision\Private\BoxComponent.cpp" />
