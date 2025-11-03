@@ -50,7 +50,7 @@ void ULuaScriptComponent::DuplicateSubObjects(UObject* DuplicatedObject)
 void ULuaScriptComponent::BeginPlay()
 {
     Super::BeginPlay();
-
+    
     // Safety check: Ensure we have a valid owner
     AActor* Owner = GetOwner();
     if (!Owner)
@@ -224,6 +224,23 @@ bool ULuaScriptComponent::LoadScript()
     }
 
     return true;
+}
+
+void ULuaScriptComponent::ActivateFunctionLua(const FString& FunctionName, sol::variadic_args va)
+{
+    if (!SelfTable.valid())
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent/ActivateFunctionLua] SelfTable invalid");
+        return;
+    }
+
+    sol::function LuaFunction = SelfTable[FunctionName.c_str()];
+    if (!LuaFunction.valid())
+    {
+        UE_LOG_ERROR("[ULuaScriptComponent/ActivateFunctionLua] LuaFunction %s invalid", FunctionName.c_str());
+        return;
+    }
+    LuaFunction(SelfTable, sol::as_args(va));
 }
 
 void ULuaScriptComponent::RegisterCoroutine(int coroutineID)

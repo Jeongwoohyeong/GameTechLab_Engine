@@ -3,6 +3,7 @@
 #include "Global/WeakObjectPtr.h"
 #include "Core/Public/Class.h"
 
+class APlayerCharacter;
 class APlayerController;
 class APawn;
 class UWorld;
@@ -27,6 +28,7 @@ public:
     virtual void StartPlay();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+    virtual void InitializeLuaScript();
 
     // Player Management
     virtual void InitializePlayerController();
@@ -34,7 +36,7 @@ public:
     virtual APawn* SpawnDefaultPawnFor(APlayerController* NewPlayer);
 
     // Getters
-    APlayerController* GetPlayerController() const { return PlayerController.Get(); }
+    virtual APlayerController* GetPlayerController() const { return PlayerController.Get(); }
     UClass* GetDefaultPawnClass() const { return DefaultPawnClass; }
 
     // Setters
@@ -47,11 +49,18 @@ protected:
     // Default pawn class to spawn for players
     UClass* DefaultPawnClass = nullptr;
 
+    // TODO 시스템 완성 후 다수의 적 배열로 관리
+    //TArray<TWeakObjectPtr<UClass>> Enemies;
+
+    TArray<TWeakObjectPtr<APawn>> Enemies = {};
+
     // Reference to the player controller
     TWeakObjectPtr<APlayerController> PlayerController;
 
     // World reference (set by World when GameMode is created)
     UWorld* OwningWorld = nullptr;
+
+    TArray<FString> ScriptFilePath = {};
 
 public:
     void SetOwningWorld(UWorld* InWorld) { OwningWorld = InWorld; }

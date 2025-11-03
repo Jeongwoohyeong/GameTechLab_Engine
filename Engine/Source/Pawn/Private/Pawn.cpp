@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
+
+#include "Component/Collision/Public/SphereComponent.h"
 #include "GamePlay/Public/PlayerController.h"
 
 IMPLEMENT_CLASS(APawn, AActor)
@@ -7,6 +9,21 @@ IMPLEMENT_CLASS(APawn, AActor)
 APawn::APawn()
 {
 	bCanEverTick = true;
+
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(FName("CollisionComponent"));
+	if (!CollisionComponent)
+	{
+		UE_LOG_ERROR("APawn: Failed to create CollisionComponent");
+	}
+	else
+	{
+		SetRootComponent(CollisionComponent);
+		CollisionComponent->bGenerateHitEvents = true;
+		CollisionComponent->bGenerateOverlapEvents = true;
+		CollisionComponent->bBlockComponent = true;
+		Cast<USphereComponent>(CollisionComponent)->SetSphereRadius(15.0f);
+		UE_LOG("APawn Create Collision Component");
+	}	
 }
 
 APawn::~APawn()

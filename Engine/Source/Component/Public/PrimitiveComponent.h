@@ -2,6 +2,29 @@
 #include "Component/Public/SceneComponent.h"
 #include "Physics/Public/BoundingVolume.h"
 #include "Core/Public/Object.h" // GetUObjectArray 사용 예정
+#include "Global/DelegateMacros.h"
+
+// 간단 오버랩 정보
+struct FOverlapInfo
+{
+	UPrimitiveComponent* OtherComponent = nullptr;
+	AActor* OtherActor = nullptr;
+
+	bool operator==(const FOverlapInfo& Other) const
+	{
+		return OtherComponent == Other.OtherComponent;
+	}
+};
+
+// 간단 Hit 정보
+struct FHitResult
+{
+	UPrimitiveComponent* Component = nullptr;
+	AActor* Actor = nullptr;
+	FVector ImpactPoint = FVector::ZeroVector();
+	FVector ImpactNormal = FVector::ZeroVector();
+	float Distance = 0.0f;
+};
 
 UCLASS()
 class UPrimitiveComponent : public USceneComponent
@@ -49,7 +72,7 @@ public:
 
 	// 다른 곳에서 사용할 인덱스
 	mutable int32 CachedAABBIndex = -1;
-	mutable uint32 CachedFrame = 0;
+	mutable uint32 CachedFrame = 0;	
 
 protected:
 	const TArray<FNormalVertex>* Vertices = nullptr;
@@ -87,39 +110,13 @@ protected:
  *	Collision Section
    ========================= */
 public:
+	// 충돌 판정 모두 false처리
+	void SetCollisionEnabled(bool bIsEnable);
 	// 충돌/오버랩 설정
 	bool bGenerateOverlapEvents = true; // 오버랩 이벤트 생성 여부
     bool bGenerateHitEvents = false;  // Hit 이벤트 생성 여부
 	// TODO (SDM) - 추후에 false 시, 오브젝트 통과 불가 설정 추가 필요
-	bool bBlockComponent = true; // 컴포넌트 간 충돌 차단 여부
-
-	// TODO(SDM) - 테스트용 델리게이트
-	int testvalue = 1;
-	void TestFunc(int value)
-	{
-		UE_LOG("delegate test %d", value);
-
-	}
-		
-	// 간단 오버랩 정보
-	struct FOverlapInfo
-	{
-		UPrimitiveComponent* OtherComponent = nullptr;
-		AActor* OtherActor = nullptr;
-		bool operator==(const FOverlapInfo& Other) const
-		{
-			return OtherComponent == Other.OtherComponent;
-		}
-	};
-	// 간단 Hit 정보
-	struct FHitResult
-	{
-		UPrimitiveComponent* Component = nullptr;
-		AActor* Actor = nullptr;
-		FVector ImpactPoint = FVector::ZeroVector();
-		FVector ImpactNormal = FVector::ZeroVector();
-		float Distance = 0.0f;
-	};
+	bool bBlockComponent = true; // 컴포넌트 간 충돌 차단 여부	
 
 	const TArray<FOverlapInfo>& GetOverlapInfos() const { return OverlapInfos; }
 
@@ -141,8 +138,10 @@ public:
 		* @param bFromSweep Sweep으로부터 발생했는지 여부 (현재 미사용)
 		* @param SweepResult Sweep 결과 (현재 미사용)
 		*/
-	TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32, bool, const FHitResult&> OnComponentBeginOverlap;
-
+	//TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32, bool, const FHitResult&> OnComponentBeginOverlap;
+	DECLARE_DYNAMIC_DELEGATE(FOnComponentBeginOverlap, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32, bool, const FHitResult&)
+	FOnComponentBeginOverlap OnComponentBeginOverlap;
+	
 	/**
 	 * @brief 오버랩 종료 이벤트
 	 * @param OverlappedComponent 오버랩된 컴포넌트 (이 컴포넌트)
@@ -150,7 +149,9 @@ public:
 	 * @param OtherComp 상대 컴포넌트
 	 * @param OtherBodyIndex 상대 바디 인덱스 (현재 미사용, 확장용)
 	 */
-	TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32> OnComponentEndOverlap;
+	//TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32> OnComponentEndOverlap;
+	DECLARE_DYNAMIC_DELEGATE(FOnComponentEndOverlap, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32)
+	FOnComponentEndOverlap OnComponentEndOverlap;
 
 	/**
 	 * @brief Hit(충돌) 이벤트
@@ -160,8 +161,10 @@ public:
 	 * @param NormalImpulse 충격량 벡터 (현재 미사용, 물리 엔진 연동 시 사용)
 	 * @param Hit Hit 결과 정보
 	 */
-	TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&> OnComponentHit;
-	TDelegate<int> TestDelegate;
+	//TDelegate<UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&> OnComponentHit;
+	DECLARE_DYNAMIC_DELEGATE(FOnComponentHit, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&)
+	FOnComponentHit OnComponentHit;
+	
 protected:
 	TArray<FOverlapInfo> OverlapInfos;
 	TArray<FOverlapInfo> PreviousOverlapInfos;  // 이전 프레임 정보

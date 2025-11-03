@@ -30,8 +30,7 @@ enum class EPIEState
  * ClientApp 이외의 곳에서 별도로 생성하거나, GEditor 교체 절대 금지
  */
 UCLASS()
-class UEditorEngine final :
-    public UObject
+class UEditorEngine final : public UObject
 {
     GENERATED_BODY()
     DECLARE_CLASS(UEditorEngine, UObject)

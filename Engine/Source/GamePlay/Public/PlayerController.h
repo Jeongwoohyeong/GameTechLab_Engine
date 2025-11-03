@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Global/WeakObjectPtr.h"
 
+class APlayerCharacter;
+class APawn;
 class UPlayerInput;
 class AActor;
 
@@ -20,6 +22,9 @@ public:
 
     void Possess(AActor* TargetActor);
     void UnPossess();
+
+    AActor* GetControlledActor() const { return ControlledActor.Get(); }
+    APawn* GetControlledPawn() const;
 
     // Getter for PlayerInput (Shift + F1)
     UPlayerInput* GetPlayerInput() const { return PlayerInput; }

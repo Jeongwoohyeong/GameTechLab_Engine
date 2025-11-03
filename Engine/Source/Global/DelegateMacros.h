@@ -39,7 +39,7 @@
  * @see DECLARE_DYNAMIC_DELEGATE
  */
 #define DECLARE_DELEGATE(DelegateName, ...) \
-    using DelegateName = TDelegate<__VA_ARGS__>
+    using DelegateName = TDelegate<__VA_ARGS__>;
 
 /**
  * @def DECLARE_MULTICAST_DELEGATE
@@ -57,7 +57,7 @@
  * @see DECLARE_DYNAMIC_MULTICAST_DELEGATE
  */
 #define DECLARE_MULTICAST_DELEGATE(DelegateName, ...) \
-    using DelegateName = TDelegate<__VA_ARGS__>
+    using DelegateName = TDelegate<__VA_ARGS__>;
 
 /**
  * @def DECLARE_DYNAMIC_DELEGATE
@@ -77,7 +77,7 @@
  * @see DECLARE_DYNAMIC_MULTICAST_DELEGATE
  */
 #define DECLARE_DYNAMIC_DELEGATE(DelegateName, ...) \
-    using DelegateName = TDelegate<__VA_ARGS__>
+    using DelegateName = TDelegate<__VA_ARGS__>;
 
 /**
  * @def DECLARE_DYNAMIC_MULTICAST_DELEGATE
@@ -96,4 +96,4 @@
  * @see DECLARE_DYNAMIC_DELEGATE
  */
 #define DECLARE_DYNAMIC_MULTICAST_DELEGATE(DelegateName, ...) \
-    using DelegateName = TDelegate<__VA_ARGS__>
+    using DelegateName = TDelegate<__VA_ARGS__>;

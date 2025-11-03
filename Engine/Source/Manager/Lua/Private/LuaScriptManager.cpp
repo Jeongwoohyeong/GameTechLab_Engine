@@ -10,6 +10,7 @@
 #include "Actor/Public/Actor.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
+#include "Player/Public/EnemyCharacter.h"
 #include "GamePlay/Public/PlayerController.h"
 #include "GameMode/Public/GameModeBase.h"
 #include "Global/Vector.h"
@@ -24,6 +25,8 @@
 #include <filesystem>
 #include <vector>
 #include <system_error>
+
+#include "GameMode/Public/GameMode.h"
 
 // Helper functions for safe pointer access with SEH
 // These functions are separated to avoid C2712 error (can't use __try with objects that have destructors)
@@ -603,14 +606,6 @@ void FLuaScriptManager::BindTypes()
         "One", &FVector4::OneVector
     );
 
-    // --- ULuaScriptComponent Binding ---
-    LuaState->new_usertype<ULuaScriptComponent>("ULuaScriptComponent",
-        sol::no_constructor,
-        "SetScriptName", &ULuaScriptComponent::SetScriptName,
-        "GetScriptName", &ULuaScriptComponent::GetScriptName,
-        "LoadScript", &ULuaScriptComponent::LoadScript
-    );
-
     // --- AActor Binding ---
     LuaState->new_usertype<AActor>("AActor",
         sol::no_constructor,
@@ -641,7 +636,9 @@ void FLuaScriptManager::BindTypes()
         "UUID", sol::property(&GetUUIDAsInt<AActor>),
         "PrintLocation", &AActor::PrintLocation,
         "SetIsPendingDestroy", &AActor::SetIsPendingDestroy,
-        "IsPendingDestroy", &AActor::IsPendingDestroy
+        "IsPendingDestroy", &AActor::IsPendingDestroy,
+        "GetLuaScriptComponent", &AActor::GetLuaScriptComponent,
+        "SetUseScript", &AActor::SetUseScript
     );
 
     // --- Global Functions ---
@@ -743,6 +740,15 @@ void FLuaScriptManager::BindTypes()
         "bGenerateHitEvents", &UPrimitiveComponent::bGenerateHitEvents
     );
 
+    // --- FHitResult Binding ---
+    LuaState->new_usertype<FHitResult>("FHitResult",
+        "Component", &FHitResult::Component,
+        "Actor", &FHitResult::Actor,
+        "ImpactPoint", &FHitResult::ImpactPoint,
+        "ImpactNormal", &FHitResult::ImpactNormal,
+        "Distance", &FHitResult::Distance
+        );
+
     // --- UMeshComponent Binding (inherits from UPrimitiveComponent) ---
     LuaState->new_usertype<UMeshComponent>("UMeshComponent",
         sol::no_constructor,
@@ -793,7 +799,22 @@ void FLuaScriptManager::BindTypes()
         sol::base_classes, sol::bases<APawn>(),
         "GetName", &GetNameAsString<APlayerCharacter>,
         "MoveForward", &APlayerCharacter::MoveForward,
-        "MoveRight", &APlayerCharacter::MoveRight
+        "MoveRight", &APlayerCharacter::MoveRight,
+        "OnBeginOverlap", &APlayerCharacter::OnBeginOverlap,
+        "OnEndOverlap", &APlayerCharacter::OnEndOverlap,
+        "OnHit", &APlayerCharacter::OnHit
+    );
+
+    // --- AEnemyCharacter Binding (inherits from APawn) ---
+    LuaState->new_usertype<AEnemyCharacter>("AEnemyCharacter",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<APawn>(),
+        "GetName", &GetNameAsString<AEnemyCharacter>,
+        "MoveForward", &AEnemyCharacter::MoveForward,
+        "MoveRight", &AEnemyCharacter::MoveRight,
+        "OnBeginOverlap", &AEnemyCharacter::OnBeginOverlap,
+        "OnEndOverlap", &AEnemyCharacter::OnEndOverlap,
+        "OnHit", &AEnemyCharacter::OnHit
     );
 
     // --- APlayerController Binding (inherits from AActor) ---
@@ -802,7 +823,9 @@ void FLuaScriptManager::BindTypes()
         sol::base_classes, sol::bases<AActor>(),
         "GetName", &GetNameAsString<APlayerController>,
         "Possess", &APlayerController::Possess,
-        "UnPossess", &APlayerController::UnPossess
+        "UnPossess", &APlayerController::UnPossess,
+        "GetControlledActor", &APlayerController::GetControlledActor,
+        "GetControlledPawn", &APlayerController::GetControlledPawn
     );
 
     // --- AGameModeBase Binding (inherits from AActor) ---
@@ -817,11 +840,44 @@ void FLuaScriptManager::BindTypes()
         "StartPlay", &AGameModeBase::StartPlay
     );
 
+    // --- AGameMode Binding (inherits from AGameModeBase) ---
+    LuaState->new_usertype<AGameMode>("AGameMode",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<AGameModeBase>(),
+        "ChangeState", &AGameMode::ChangeState,
+        "SpawnPlayerCharacter", &AGameMode::SpawnPlayerCharacter,
+        "InitializeEnemyPool", &AGameMode::InitializeEnemyPool,
+        "SpawnEnemies", &AGameMode::SpawnEnemies,
+        "GetPlayerController", &AGameMode::GetPlayerController
+        );
+
     // --- UWorld Binding Extension (add GameMode support) ---
     LuaState->set_function("GetGameMode", []() {
         if (GWorld) {
             return GWorld->GetGameMode();
         }
-        return (AGameModeBase*)nullptr;
+        return (AGameMode*)nullptr;
     });
+
+    // --- ULuaScriptComponent Binding (inherits from UActorComponent) ---
+    LuaState->new_usertype<ULuaScriptComponent>("ULuaScriptComponent",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UActorComponent>(),
+        "GetOwner", &ULuaScriptComponent::GetOwner,
+        "LoadScript", &ULuaScriptComponent::LoadScript,
+        "SetScriptName", [](ULuaScriptComponent* Comp, const std::string& ScriptName) {
+            if (Comp) {
+                Comp->SetScriptName(FString(ScriptName.c_str()));
+            }
+        },
+        "ActivateFunction", &ULuaScriptComponent::ActivateFunctionLua,
+        "GetLuaSelfTable", [](ULuaScriptComponent* Comp) -> sol::table
+        {
+            if (!Comp)
+            {
+                return sol::table();
+            }
+            return Comp->GetLuaSelfTable();
+        }
+        );
 }

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
+
+#include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
@@ -16,13 +18,14 @@ APlayerCharacter::APlayerCharacter()
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
 
+	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
 	// Create RootComponent first (required for Actor Transform)
-	USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
-	SetRootComponent(RootComp);
+	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
+	// SetRootComponent(RootComp);
 
 	// StaticMesh 추가
 	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	MeshComp->AttachToComponent(RootComp);
+	MeshComp->AttachToComponent(CollisionComponent);
 
 	// Mesh 설정 (구체로 표시)
 	MeshComp->SetStaticMesh("Data/SU-37.obj");
@@ -31,7 +34,27 @@ APlayerCharacter::APlayerCharacter()
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
 	SetUseScript(true);
 
-	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
+	//UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);	
+
+	SetUseScript(true);
+	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
+	{
+		LuaComponent->SetScriptName("Scripts/Player/PlayerCharacter.lua");
+
+		if (!LuaComponent->LoadScript())
+		{
+			UE_LOG_ERROR("[PlayerCharacter] Failed to load PlayerCharacter.lua");
+		}
+	}
+	// if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
+	// {
+	// 	GetOwnedComponents().push_back(LuaComp);		
+	// }
+	
+	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
 }
 
 APlayerCharacter::~APlayerCharacter()
@@ -79,6 +102,18 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	// {
+	// 	LuaComp->ActivateFunction("OnBeginOverlap");
+	// }
+	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	// {
+	// 	LuaComp->ActivateFunction("OnEndOverlap");
+	// }
+	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	// {
+	// 	LuaComp->ActivateFunction("OnHit");
+	// }
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -153,5 +188,40 @@ void APlayerCharacter::LookUp(float Value)
 
 	FQuaternion NewRotation = FQuaternion::FromEuler(CurrentEuler);
 	SetActorRotation(NewRotation);
+}
+
+void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
+			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		//LuaComp->ActivateFunction("OnBeginOverlap");
+	}
+	UE_LOG("Player Character Begin Overlap");
+}
+
+void APlayerCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex)
+{
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		LuaComp->ActivateFunction("OnEndOverlap", OverlappedComp, OtherActor,
+			OtherComp, OtherBodyIndex);
+	}
+	UE_LOG("Player Character End Overlap");
+}
+
+void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& OutHit)
+{
+	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	{
+		UE_LOG("Character Hit Lua active");
+		LuaComp->ActivateFunction("OnHit", OverlappedComp, OtherActor,
+			OtherComp, NormalImpulse, OutHit);
+	}
+	UE_LOG("Player Character Hit");
 }
 

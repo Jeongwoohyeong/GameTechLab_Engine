@@ -35,9 +35,12 @@ public:
     
     template<typename... Args>
     void ActivateFunction(const FString& FunctionName, Args&&... args);
+
+    // 가변인자 헬퍼 함수
+    void ActivateFunctionLua(const FString& FunctionName, sol::variadic_args va);
     
     sol::table& GetLuaSelfTable() { return SelfTable; }
-    void SetScriptName(const FString& InScriptName);
+    void SetScriptName(const FString& InScriptName);    
 
 private:
     FString ScriptName;

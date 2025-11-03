@@ -105,13 +105,53 @@ void ULevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	}
 }
 
+namespace
+{
+	// SEH를 사용하여 안전하게 액터의 BeginPlay를 호출하는 헬퍼 함수
+	bool SafeCallActorBeginPlay(AActor* Actor)
+	{
+		if (!Actor)
+			return false;
+
+		__try
+		{
+			// VTable 접근 테스트
+			UClass* ActorClass = Actor->GetClass();
+			if (!ActorClass)
+				return false;
+
+			// BeginPlay 호출
+			Actor->BeginPlay();
+			return true;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			// 접근 위반 발생
+			return false;
+		}
+	}
+}
+
 void ULevel::Init()
 {
-	for (AActor* Actor: LevelActors)
+	// 역방향 순회로 변경하여 삭제된 액터 안전하게 처리
+	for (int32 i = static_cast<int32>(LevelActors.size()) - 1; i >= 0; --i)
 	{
-		if (Actor)
+		AActor* Actor = LevelActors[i];
+
+		// nullptr 체크
+		if (!Actor)
 		{
-			Actor->BeginPlay();
+			UE_LOG_WARNING("Level::Init: nullptr actor found at index %d, removing from list", i);
+			LevelActors.erase(LevelActors.begin() + i);
+			continue;
+		}
+
+		// 안전하게 BeginPlay 호출 (댕글링 포인터 감지)
+		if (!SafeCallActorBeginPlay(Actor))
+		{
+			UE_LOG_WARNING("Level::Init: Access violation on actor at index %d (dangling pointer), removing from list", i);
+			LevelActors.erase(LevelActors.begin() + i);
 		}
 	}
 }
