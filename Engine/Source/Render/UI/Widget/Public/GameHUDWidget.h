@@ -29,7 +29,12 @@ public:
     // HUD 데이터 증가/감소
     void AddScore(int32 Amount) { Score += Amount; }
     void ConsumeAmmo(int32 Amount) { Ammo -= Amount; if (Ammo < 0) Ammo = 0; }
-    void TakeDamage(float Amount) { Health -= Amount; if (Health < 0.0f) Health = 0.0f; }
+    void TakeDamage(float Amount) {
+        Health -= Amount;
+        if (Health < 0.0f) Health = 0.0f;
+        // 데미지 효과 시작
+        DamageEffectTimer = DamageEffectDuration;
+    }
 
     // Getter
     int32 GetScore() const { return Score; }
@@ -57,4 +62,8 @@ private:
     float ViewportTop = 0.0f;
     float ViewportWidth = 1920.0f;
     float ViewportHeight = 1080.0f;
+
+    // 데미지 효과
+    float DamageEffectTimer = 0.0f;
+    const float DamageEffectDuration = 0.5f;  // 0.5초간 효과 지속
 };

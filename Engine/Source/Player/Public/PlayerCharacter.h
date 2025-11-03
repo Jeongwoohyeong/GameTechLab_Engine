@@ -38,6 +38,9 @@ public:
     void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& OutHit);
 
+    // Camera shake
+    void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
+
 protected:
     // Default movement speed
     float MovementSpeed = 100.0f;
@@ -50,4 +53,11 @@ protected:
 
     UCapsuleComponent* CollisionComponent = nullptr;
     UStaticMeshComponent* StaticMeshComponent = nullptr;
+
+    // Camera shake variables
+    bool bIsCameraShaking = false;
+    float CameraShakeTimer = 0.0f;
+    float CameraShakeDuration = 0.5f;
+    float CameraShakeIntensity = 1.0f;
+    FVector OriginalCameraOffset = FVector(0.0f, 0.0f, 0.0f);
 };

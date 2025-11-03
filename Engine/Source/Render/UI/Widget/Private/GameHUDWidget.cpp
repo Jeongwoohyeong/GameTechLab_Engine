@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Render/UI/Widget/Public/GameHUDWidget.h"
 #include "ImGui/imgui.h"
+#include "Manager/Time/Public/TimeManager.h"
 
 IMPLEMENT_CLASS(UGameHUDWidget, UWidget)
 
@@ -10,10 +11,20 @@ void UGameHUDWidget::Initialize()
 	Ammo = 100;
 	Health = 100.0f;
 	MaxHealth = 100.0f;
+	DamageEffectTimer = 0.0f;
 }
 
 void UGameHUDWidget::Update()
 {
+	// 데미지 효과 타이머 감소
+	if (DamageEffectTimer > 0.0f)
+	{
+		DamageEffectTimer -= UTimeManager::GetInstance().GetDeltaTime();
+		if (DamageEffectTimer < 0.0f)
+		{
+			DamageEffectTimer = 0.0f;
+		}
+	}
 }
 
 void UGameHUDWidget::RenderWidget()
@@ -74,6 +85,48 @@ void UGameHUDWidget::RenderWidget()
 	ImGui::PushStyleColor(ImGuiCol_Text, HealthColor);
 	ImGui::Text("%.0f / %.0f", Health, MaxHealth);
 	ImGui::PopStyleColor();
+
+	// 데미지 효과: 화면 가장자리 빨간 오버레이
+	if (DamageEffectTimer > 0.0f)
+	{
+		// 타이머에 따라 알파 값 계산 (페이드 아웃)
+		float alpha = (DamageEffectTimer / DamageEffectDuration) * 0.6f; // 최대 60% 투명도
+
+		// 화면 전체에 빨간 테두리 그리기
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		const float borderThickness = 120.0f; // 테두리 두께 (크게 증가)
+		ImVec4 redColor = ImVec4(1.0f, 0.0f, 0.0f, alpha);
+		ImU32 redU32 = ImGui::ColorConvertFloat4ToU32(redColor);
+
+		// 상단 테두리
+		drawList->AddRectFilled(
+			ImVec2(ViewportLeft, ViewportTop),
+			ImVec2(ViewportLeft + ViewportWidth, ViewportTop + borderThickness),
+			redU32
+		);
+
+		// 하단 테두리
+		drawList->AddRectFilled(
+			ImVec2(ViewportLeft, ViewportTop + ViewportHeight - borderThickness),
+			ImVec2(ViewportLeft + ViewportWidth, ViewportTop + ViewportHeight),
+			redU32
+		);
+
+		// 좌측 테두리
+		drawList->AddRectFilled(
+			ImVec2(ViewportLeft, ViewportTop),
+			ImVec2(ViewportLeft + borderThickness, ViewportTop + ViewportHeight),
+			redU32
+		);
+
+		// 우측 테두리
+		drawList->AddRectFilled(
+			ImVec2(ViewportLeft + ViewportWidth - borderThickness, ViewportTop),
+			ImVec2(ViewportLeft + ViewportWidth, ViewportTop + ViewportHeight),
+			redU32
+		);
+	}
 
 	ImGui::End();
 }

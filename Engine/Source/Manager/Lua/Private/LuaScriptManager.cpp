@@ -806,7 +806,8 @@ void FLuaScriptManager::BindTypes()
         "MoveRight", &APlayerCharacter::MoveRight,
         "OnBeginOverlap", &APlayerCharacter::OnBeginOverlap,
         "OnEndOverlap", &APlayerCharacter::OnEndOverlap,
-        "OnHit", &APlayerCharacter::OnHit
+        "OnHit", &APlayerCharacter::OnHit,
+        "StartCameraShake", &APlayerCharacter::StartCameraShake
     );
 
     // --- AEnemyCharacter Binding (inherits from APawn) ---
@@ -889,6 +890,19 @@ void FLuaScriptManager::BindTypes()
 
     LuaState->set_function("GetGameUIManager", []() {
         return &UGameUIManager::GetInstance();
+    });
+
+    // --- UTimeManager Binding ---
+    LuaState->new_usertype<UTimeManager>("UTimeManager",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<UObject>(),
+        "GetGameTime", &UTimeManager::GetGameTime,
+        "GetDeltaTime", &UTimeManager::GetDeltaTime,
+        "GetFPS", &UTimeManager::GetFPS
+    );
+
+    LuaState->set_function("GetTimeManager", []() {
+        return &UTimeManager::GetInstance();
     });
 
     // --- UGameHUDWidget Binding ---
