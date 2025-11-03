@@ -128,7 +128,7 @@ public:
 	float GetSharedOrthoZoom() const { return SharedOrthoZoom; }
 	void SetSharedOrthoZoom(float InZoom) { SharedOrthoZoom = InZoom; }
 	static constexpr float MIN_CAMERA_SPEED = 1.0f;
-	static constexpr float MAX_CAMERA_SPEED = 100.0f;
+	static constexpr float MAX_CAMERA_SPEED = 10000.0f;
 	static constexpr float DEFAULT_CAMERA_SPEED = 50.0f;
 
 	// PIE Active Viewport
@@ -139,6 +139,7 @@ public:
 	int32 GetLastClickedViewportIndex() const { return LastClickedViewportIndex; }
 	void SetLastClickedViewportIndex(int32 InIndex) { LastClickedViewportIndex = InIndex; }
 
+	
 	// Splitter dragging check
 	bool IsAnySplitterDragging() const;
 

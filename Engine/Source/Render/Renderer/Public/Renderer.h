@@ -147,7 +147,7 @@ private:
 	ID3D11Buffer* ConstantBufferModels = nullptr;
 	ID3D11Buffer* ConstantBufferViewProj = nullptr;
 	ID3D11Buffer* ConstantBufferColor = nullptr;
-	FLOAT ClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	FLOAT ClearColor[4] = {0.53f, 0.81f, 0.92f, 1.0f}; // 하늘색 배경
 
 	// Default Shaders
 	ID3D11VertexShader* DefaultVertexShader = nullptr;
