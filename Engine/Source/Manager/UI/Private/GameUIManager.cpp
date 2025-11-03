@@ -272,6 +272,13 @@ void UGameUIManager::UpdateCurrentWidget()
 				ShowGameOver(HUDWidget->GetScore());
 				UE_LOG("[GameUIManager] Player died, showing game over screen");
 			}
+
+			// 점수 1000점 초과 시 게임 클리어 (게임 오버 처리)
+			if (HUDWidget->GetScore() >= 1000)
+			{
+				ShowGameOver(HUDWidget->GetScore());
+				UE_LOG("[GameUIManager] Score reached 1000, game cleared!");
+			}
 		}
 		break;
 
