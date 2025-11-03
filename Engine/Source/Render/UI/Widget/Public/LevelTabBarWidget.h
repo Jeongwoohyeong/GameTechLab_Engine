@@ -25,6 +25,8 @@ public:
     void Update() override;
     void RenderWidget() override;
 
+    // PIE UI 상태 리셋 (EditorEngine에서 호출)
+    void ResetPIEUIState() { PIEUIState = EPIEUIState::Stopped; }
 
     float GetLevelBarHeight()const ;
 

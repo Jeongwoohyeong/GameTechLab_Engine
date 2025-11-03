@@ -7,8 +7,11 @@
 #include "Manager/Path/Public/PathManager.h"
 #include "Manager/UI/Public/ViewportManager.h"
 #include "Manager/Input/Public/InputManager.h"
+#include "Manager/UI/Public/UIManager.h"
 #include "Render/UI/Viewport/Public/Viewport.h"
 #include "Render/UI/Viewport/Public/ViewportClient.h"
+#include "Render/UI/Window/Public/LevelTabBarWindow.h"
+#include "Render/UI/Widget/Public/LevelTabBarWidget.h"
 #include "Editor/Public/Camera.h"
 #include "GameMode/Public/GameModeBase.h"
 #include "GameMode/Public/GameMode.h"
@@ -164,6 +167,16 @@ void UEditorEngine::EndPIE()
     UGameUIManager::GetInstance().Shutdown();
 
     bPIEMouseUnlocked = false;  // 상태 리셋
+
+    // LevelTabBarWidget의 PIE UI 상태 리셋
+    UUIManager& UIManager = UUIManager::GetInstance();
+    if (ULevelTabBarWindow* LevelTabBarWindow = UIManager.GetLevelTabBarWindow())
+    {
+        if (ULevelTabBarWidget* LevelTabBarWidget = LevelTabBarWindow->GetMainBarWidget())
+        {
+            LevelTabBarWidget->ResetPIEUIState();
+        }
+    }
 
     // PIE 전용 뷰포트 인덱스 리셋
     UViewportManager::GetInstance().SetPIEActiveViewportIndex(-1);

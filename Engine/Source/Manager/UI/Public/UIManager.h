@@ -61,6 +61,7 @@ public:
 
 	// 레벨 바 관련 메서드
 	void RegisterLevelTabBarWindow(ULevelTabBarWindow* InLevelBarWindow);
+	ULevelTabBarWindow* GetLevelTabBarWindow() const { return LevelTabBarWindow; }
 
 	// 상태바 관련 메서드
 	void RegisterStatusBarWidget(UStatusBarWidget* InStatusBarWidget);
