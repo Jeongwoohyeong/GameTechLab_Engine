@@ -29,9 +29,22 @@ APlayerCharacter::APlayerCharacter()
 
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);	
 
 	SetUseScript(true);
+	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
+	{
+		LuaComponent->SetScriptName("Scripts/Player/PlayerCharacter.lua");
+
+		if (!LuaComponent->LoadScript())
+		{
+			UE_LOG_ERROR("[PlayerCharacter] Failed to load PlayerCharacter.lua");
+		}
+	}
+	// if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
+	// {
+	// 	GetOwnedComponents().push_back(LuaComp);		
+	// }
 	
 	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
 }
@@ -52,18 +65,18 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	{
-		LuaComp->ActivateFunction("OnBeginOverlap");
-	}
-	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	{
-		LuaComp->ActivateFunction("OnEndOverlap");
-	}
-	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
-	{
-		LuaComp->ActivateFunction("OnHit");
-	}
+	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	// {
+	// 	LuaComp->ActivateFunction("OnBeginOverlap");
+	// }
+	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	// {
+	// 	LuaComp->ActivateFunction("OnEndOverlap");
+	// }
+	// if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
+	// {
+	// 	LuaComp->ActivateFunction("OnHit");
+	// }
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -147,6 +160,7 @@ void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActo
 	{
 		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
 			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		//LuaComp->ActivateFunction("OnBeginOverlap");
 	}
 	UE_LOG("Player Character Begin Overlap");
 }
@@ -167,8 +181,9 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 {
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
+		UE_LOG("Character Hit Lua active");
 		LuaComp->ActivateFunction("OnHit", OverlappedComp, OtherActor,
-			OtherComp, OutHit);
+			OtherComp, NormalImpulse, OutHit);
 	}
 	UE_LOG("Player Character Hit");
 }

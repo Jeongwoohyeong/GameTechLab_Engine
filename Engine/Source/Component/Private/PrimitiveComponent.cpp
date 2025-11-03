@@ -12,9 +12,11 @@
 #include "Component/Collision/Public/BoxComponent.h"
 #include "Component/Collision/Public/SphereComponent.h"
 #include "Component/Collision/Public/CapsuleComponent.h"
+#include "Component/Public/ULuaScriptComponent.h"
 #include "Physics/Public/BoundingSphere.h"
 #include "Physics/Public/BoundingCapsule.h"
 #include "Physics/Public/CollisionUtil.h"
+#include "Player/Public/PlayerCharacter.h"
 
 IMPLEMENT_ABSTRACT_CLASS(UPrimitiveComponent, USceneComponent)
 
@@ -198,7 +200,7 @@ void UPrimitiveComponent::DuplicateSubObjects(UObject* DuplicatedObject)
 void UPrimitiveComponent::SetCollisionEnabled(bool bIsEnable)
 {
 	bGenerateHitEvents = bIsEnable;
-	bGenerateHitEvents = bIsEnable;
+	bGenerateOverlapEvents = bIsEnable;
 	bBlockComponent = bIsEnable;
 }
 
@@ -407,7 +409,7 @@ void UPrimitiveComponent::UpdateOverlaps()
 				HitResult.Distance = FVector::Dist(GetWorldLocation(), Candidate->GetWorldLocation());
 
 				FVector NormalImpulse = FVector::ZeroVector();  // 물리 엔진 연동 시 계산
-				OnComponentHit.BroadCast(this, Candidate->GetOwner(), Candidate, NormalImpulse, HitResult);
+				OnComponentHit.BroadCast(this, Candidate->GetOwner(), Candidate, NormalImpulse, HitResult);				
 			}
 		}
 	}

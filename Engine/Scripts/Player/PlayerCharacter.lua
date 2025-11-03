@@ -1,5 +1,7 @@
 setmetatable(_ENV, { __index = EngineTypes })
 
+local FVector = EngineTypes.FVector
+
 return function()
     local ReturnTable = {}
     Print("ppppp")

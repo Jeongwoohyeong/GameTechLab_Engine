@@ -21,7 +21,7 @@ APawn::APawn()
 		CollisionComponent->bGenerateHitEvents = true;
 		CollisionComponent->bGenerateOverlapEvents = true;
 		CollisionComponent->bBlockComponent = true;
-		Cast<USphereComponent>(CollisionComponent)->SetSphereRadius(4.0f);
+		Cast<USphereComponent>(CollisionComponent)->SetSphereRadius(15.0f);
 		UE_LOG("APawn Create Collision Component");
 	}	
 }

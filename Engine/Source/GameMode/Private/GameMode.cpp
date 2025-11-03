@@ -116,33 +116,7 @@ void AGameMode::ChangeState(EGameState NewState)
 
 void AGameMode::SpawnPlayerCharacter()
 {
-    InitializePlayerController();
-    if (AActor* ControlledActor = GetPlayerController()->GetControlledActor())
-    {
-        if(ULuaScriptComponent* LuaComp = ControlledActor->GetLuaScriptComponent())
-        {
-            LuaComp->SetScriptName("Scripts/Player/PlayerCharacter.lua");
-            if(LuaComp->LoadScript())
-            {
-                UE_LOG("[GameMode/SpawnPlayerCharacter] Lua script : %s load", LuaComp->GetScriptName().c_str());
-                // LuaComp->ActivateFunction("OnBeginOverlap");
-                // LuaComp->ActivateFunction("OnEndOverlap");
-                // LuaComp->ActivateFunction("OnHit");
-            }
-            else
-            {
-                UE_LOG("[GameMode/SpawnPlayerCharacter] Load Fail %s", LuaComp->GetScriptName().c_str());
-            }
-        }
-        else
-        {
-            UE_LOG_ERROR("[GameMode/SpawnPlayerCharacter] Lua script componenetn is null");
-        }
-    }
-    else
-    {
-        UE_LOG_ERROR("[GameMode/SpawnPlayerCharacter] controlled actor is null");
-    }
+    InitializePlayerController();    
 }
 
 void AGameMode::InitializeEnemyPool(int32 EnemyCount)
