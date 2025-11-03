@@ -81,21 +81,14 @@ function MissilePool:GetMissile(Location, Rotation, Scale)
             return nil
         end
 
-        MissileActor = World:SpawnActor("AStaticMeshActor")
+        -- AMissileActor 생성 (캡슐 충돌 컴포넌트 포함)
+        MissileActor = World:SpawnActor("AMissileActor")
         if not MissileActor then
-            Print("[MissilePool] ERROR: Failed to spawn missile!")
+            Print("[MissilePool] ERROR: Failed to spawn AMissileActor!")
             return nil
         end
 
-        -- 미사일 메쉬 로드 (GetStaticMeshComponent 헬퍼 사용)
-        local MeshComp = MissileActor:GetStaticMeshComponent()
-
-        if MeshComp then
-            MeshComp:SetStaticMesh("Data/Missile.obj")
-            Print("[MissilePool] Missile mesh loaded: Data/Missile.obj")
-        else
-            Print("[MissilePool] ERROR: Failed to get StaticMeshComponent!")
-        end
+        Print("[MissilePool] AMissileActor created with collision component")
 
         -- Lua 스크립트 연결
         MissileActor:SetUseScript(true)

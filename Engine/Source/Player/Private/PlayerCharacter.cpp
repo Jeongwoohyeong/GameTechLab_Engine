@@ -6,7 +6,7 @@
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
-
+#include "Component/Collision/Public/SphereComponent.h"
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
@@ -18,32 +18,7 @@ APlayerCharacter::APlayerCharacter()
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
 
-	// Create SceneComponent as Root
-	USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
-	SetRootComponent(RootComp);
-
-	// Attach CollisionComponent (created by APawn) to SceneComponent
-	if (CollisionComponent)
-	{
-		CollisionComponent->AttachToComponent(RootComp);
-	}
-
-	// StaticMesh 추가
-	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
-	MeshComp->AttachToComponent(RootComp);
-
-	// Mesh 설정 (구체로 표시)
-	MeshComp->SetStaticMesh("Data/MIG_29.obj");
-	MeshComp->SetRelativeScale3D(FVector(2.5f, 2.5f, 2.5f));  // 크기 조정
-
 	// Lua 스크립트 활성화 (무기 시스템 - 미사일 발사)
-	SetUseScript(true);
-
-	//UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, MeshComponent=%p", RootComp, MeshComp);
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
-	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
-	CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);	
-
 	SetUseScript(true);
 	if (ULuaScriptComponent* LuaComponent = GetLuaScriptComponent())
 	{
@@ -54,12 +29,47 @@ APlayerCharacter::APlayerCharacter()
 			UE_LOG_ERROR("[PlayerCharacter] Failed to load PlayerCharacter.lua");
 		}
 	}
-	// if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
-	// {
-	// 	GetOwnedComponents().push_back(LuaComp);		
-	// }
-	
-	UE_LOG("[PlayerCharacter] Constructor: RootComponent=%p, CollisionComponent=%p, MeshComponent=%p", RootComp, CollisionComponent, MeshComp);
+
+	UE_LOG("[PlayerCharacter] Constructor complete!");
+}
+
+UClass* APlayerCharacter::GetDefaultRootComponent()
+{
+	return USceneComponent::StaticClass();
+}
+
+void APlayerCharacter::InitializeComponents()
+{
+	Super::InitializeComponents();
+
+	UE_LOG("[PlayerCharacter] InitializeComponents called - RootComponent=%p", GetRootComponent());
+
+	// 충돌 컴포넌트 생성 및 연결
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>();
+	if (CollisionComponent)
+	{
+		CollisionComponent->AttachToComponent(GetRootComponent());
+		CollisionComponent->bGenerateHitEvents = true;
+		CollisionComponent->bGenerateOverlapEvents = true;
+		CollisionComponent->bBlockComponent = true;
+		Cast<USphereComponent>(CollisionComponent)->SetSphereRadius(15.0f);
+		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
+		CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
+		CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
+		UE_LOG("[PlayerCharacter] CollisionComponent created and attached");
+	}
+
+	// 메쉬 컴포넌트 생성 및 연결
+	UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>();
+	if (MeshComp)
+	{
+		MeshComp->AttachToComponent(GetRootComponent());
+		MeshComp->SetStaticMesh("Data/MIG_29.obj");
+		MeshComp->SetRelativeScale3D(FVector(10.f, 10.f, 10.f));
+		UE_LOG("[PlayerCharacter] MeshComponent created and attached");
+	}
+
+	UE_LOG("[PlayerCharacter] InitializeComponents complete! CollisionComponent=%p, MeshComponent=%p", CollisionComponent, MeshComp);
 }
 
 APlayerCharacter::~APlayerCharacter()

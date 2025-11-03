@@ -150,8 +150,7 @@ APawn* AGameModeBase::SpawnDefaultPawnFor(APlayerController* NewPlayer)
 		// Set to a visible location (0, 0, 0) - origin
 		FVector SpawnLocation(0.0f, 0.0f, 0.0f);
 		NewPawn->SetActorLocation(SpawnLocation);
-		// TODO - 왜 크기 더늘린건진 모르겠지만(플레이어 캐릭터에서도 늘려줌), 일단 이걸로 확정 짓고 가야함.(추후에 수정 가능)
-		NewPawn->SetActorScale3D(FVector(5.0f, 5.0f, 5.0f)); 
+		NewPawn->SetActorScale3D(FVector(1.0f, 1.0f, 1.0f)); 
 
 		UE_LOG("[GameModeBase] Default pawn spawned: %s at location (%.1f, %.1f, %.1f)",
 			NewPawn->GetName().ToString().c_str(),
@@ -248,11 +247,11 @@ void AGameModeBase::SetupPIECamera(APawn* InPawn)
 	}
 
 	// 카메라를 플레이어 뒤쪽 상단에 배치 (오프셋: 뒤 -50, 위 50)
-	FVector CameraOffset(-200.0f, 0.0f, 200.0f);
+	FVector CameraOffset(-350.0f, 0.0f, 250.0f);
 	PIECamera->SetFollowTarget(InPawn, CameraOffset);
 
-	// PIE 전용: FOV 120도로 설정 (비행기 전체 보이게)
-	PIECamera->SetFovY(120.0f);
+	// PIE 전용: FOV 90도로 설정 (비행기 전체 보이게)
+	PIECamera->SetFovY(90.0f);
 
 	UE_LOG_SUCCESS("[GameMode] PIE camera attached to player with offset (%.1f, %.1f, %.1f), FOV=120",
 		CameraOffset.X, CameraOffset.Y, CameraOffset.Z);

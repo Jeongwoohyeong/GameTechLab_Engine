@@ -18,6 +18,10 @@ public:
     APlayerCharacter();
     virtual ~APlayerCharacter();
 
+    // Component initialization
+    virtual UClass* GetDefaultRootComponent() override;
+    virtual void InitializeComponents() override;
+
     // Lifecycle
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
@@ -47,4 +51,6 @@ protected:
 
     // Mouse sensitivity for pitch/yaw rotation
     float MouseSensitivity = 120.0f;
+
+    UShapeComponent* CollisionComponent = nullptr;
 };
