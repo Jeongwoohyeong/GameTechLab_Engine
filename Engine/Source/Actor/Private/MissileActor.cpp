@@ -4,6 +4,8 @@
 #include "Component/Collision/Public/SphereComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Player/Public/EnemyCharacter.h"
+#include "Player/Public/PlayerCharacter.h"
 
 IMPLEMENT_CLASS(AMissileActor, AActor)
 
@@ -44,6 +46,9 @@ void AMissileActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 플래그 초기화
+	bHasHitEnemy = false;
+
 	if (MissileCollision)
 	{
 		RegisterComponent(MissileCollision);
@@ -53,30 +58,42 @@ void AMissileActor::BeginPlay()
 void AMissileActor::OnMissileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// 자기 자신과의 충돌 무시
-	if (!OtherActor || OtherActor == this)
+	// Null 체크
+	if (!OtherActor)
 	{
 		return;
 	}
 
-	// 플레이어와의 충돌 무시
-	FString OtherName = OtherActor->GetName().ToString();
-	if (OtherName.find("APlayerCharacter") != std::string::npos)
+	// 자기 자신과의 충돌 무시
+	if (OtherActor == this)
 	{
 		return;
 	}
 
 	// 다른 미사일과의 충돌 무시
-	if (OtherName.find("AMissileActor") != std::string::npos)
+	if (Cast<AMissileActor>(OtherActor))
 	{
 		return;
 	}
 
-	// Lua 스크립트에 충돌 이벤트 전달 (OnHit으로 변경)
-	ULuaScriptComponent* LuaComp = GetLuaScriptComponent();
-	if (LuaComp != nullptr)
+	// 플레이어와의 충돌 무시
+	if (Cast<APlayerCharacter>(OtherActor))
 	{
-		LuaComp->ActivateFunction("OnHit", HitComponent, OtherActor,
-			OtherComp, NormalImpulse, Hit);
+		return;
+	}
+
+	// 적 캐릭터인 경우 데미지 처리
+	AEnemyCharacter* EnemyChar = Cast<AEnemyCharacter>(OtherActor);
+	if (EnemyChar != nullptr && !bHasHitEnemy)
+	{
+		// 중복 히트 방지
+		bHasHitEnemy = true;
+
+		// C++에서 직접 TakeDamage 호출
+		float MissileDamage = 100.0f;
+		EnemyChar->TakeDamage(MissileDamage);
+
+		// 미사일을 화면 밖으로 이동 (Lua에서 비활성화 처리)
+		SetActorLocation(FVector(0, 0, -10000));
 	}
 }

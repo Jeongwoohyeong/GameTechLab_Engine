@@ -31,6 +31,8 @@ public:
 		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
+	// C++ 전용 플래그 (Lua 접근 불가)
+	bool bHasHitEnemy = false;
 	// 컴포넌트들
 	UStaticMeshComponent* StaicMeshComponent = nullptr;
 	USphereComponent* MissileCollision = nullptr;  // 미사일 충돌

@@ -3,6 +3,8 @@
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Collision/Public/SphereComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Manager/UI/Public/GameUIManager.h"
+#include "Render/UI/Widget/Public/GameHUDWidget.h"
 #include "Manager/Time/Public/TimeManager.h"
 #include "Level/Public/World.h"
 
@@ -219,7 +221,7 @@ void AEnemyCharacter::RotateToPlayer(float DeltaTime)
 {
 	const float StopAngleThreshold = 5.0f;
 
-	FQuaternion CurrentQuat = GetActorRotation();	
+	FQuaternion CurrentQuat = GetActorRotation();
 
 	float RotationSpeedDegPerSec = 150.0f;
 	float Dot = CurrentQuat.Dot(TargetQuat);
@@ -230,13 +232,40 @@ void AEnemyCharacter::RotateToPlayer(float DeltaTime)
 
 	float SlowDownFactor = Clamp(AngleBetweenTarget / StopAngleThreshold, 0.0f, 1.0f);
 	RotationSpeedDegPerSec *= SlowDownFactor;
-	
+
 	FQuaternion NewRotation = TargetQuat;
 	if (AngleBetweenTarget > MATH_EPSILON)
 	{
 		float Alpha = Clamp((RotationSpeedDegPerSec * DeltaTime) / AngleBetweenTarget, 0.0f, 1.0f);
 		NewRotation = FQuaternion::Slerp(CurrentQuat, TargetQuat, Alpha);
-	}	
-	
+	}
+
 	SetActorRotation(NewRotation);
+}
+
+void AEnemyCharacter::TakeDamage(float DamageAmount)
+{
+	// Release 빌드에서 ActivateFunction이 완전히 불안정함
+	// C++에서 직접 처리 (Enemy.lua의 OnDeath 로직 재현)
+
+	UE_LOG("[EnemyCharacter] TakeDamage called, enemy will be killed");
+
+	// 스코어 추가 (100점)
+	UGameUIManager& UIManager = UGameUIManager::GetInstance();
+	UGameHUDWidget* HUDWidget = UIManager.GetHUDWidget();
+	if (HUDWidget != nullptr)
+	{
+		HUDWidget->AddScore(100);
+		UE_LOG("[EnemyCharacter] Score added: +100 (Current: %d)", HUDWidget->GetScore());
+	}
+	else
+	{
+		UE_LOG_ERROR("[EnemyCharacter] HUDWidget is null, cannot add score");
+	}
+
+	// 화면 밖으로 이동
+	SetActorLocation(FVector(0, 0, -10000));
+
+	// Tick 비활성화 (풀로 반환)
+	SetCanTick(false);
 }

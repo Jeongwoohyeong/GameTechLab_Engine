@@ -55,22 +55,35 @@ public:
 template<typename ...Args>
 inline void ULuaScriptComponent::ActivateFunction(const FString& FunctionName, Args && ...args)
 {
-    if (SelfTable.valid() && SelfTable[FunctionName].valid())
+    // FString을 std::string으로 명시적 변환 (Release 빌드 안정성)
+    std::string funcName = FunctionName.c_str();
+
+    if (SelfTable.valid())
     {
-        //UE_LOG("[ULuaScriptComponent] ActivateFunction: Calling '%s'", FunctionName.c_str());
-        auto Result = SelfTable[FunctionName](SelfTable, std::forward<Args>(args)...);
-        if (!Result.valid())
+        // sol::table 인덱스 접근을 std::string으로
+        sol::object funcObj = SelfTable[funcName];
+        if (funcObj.valid() && funcObj.is<sol::function>())
         {
-            sol::error err = Result;
-            UE_LOG_ERROR("[ULuaScriptComponent] Lua function '%s' failed: %s", FunctionName.c_str(), err.what());
+            //UE_LOG("[ULuaScriptComponent] ActivateFunction: Calling '%s'", funcName.c_str());
+            sol::function func = funcObj;
+            auto Result = func(SelfTable, std::forward<Args>(args)...);
+            if (!Result.valid())
+            {
+                sol::error err = Result;
+                UE_LOG_ERROR("[ULuaScriptComponent] Lua function '%s' failed: %s", funcName.c_str(), err.what());
+            }
+            else
+            {
+                //UE_LOG("[ULuaScriptComponent] ActivateFunction: '%s' executed successfully", funcName.c_str());
+            }
         }
         else
         {
-            //UE_LOG("[ULuaScriptComponent] ActivateFunction: '%s' executed successfully", FunctionName.c_str());
+            UE_LOG_ERROR("[ULuaScriptComponent] ActivateFunction: Function '%s' not valid in table", funcName.c_str());
         }
     }
     else
     {
-        UE_LOG_ERROR("[ULuaScriptComponent] ActivateFunction: Function '%s' not valid in table", FunctionName.c_str());
+        UE_LOG_ERROR("[ULuaScriptComponent] ActivateFunction: SelfTable is not valid");
     }
 }

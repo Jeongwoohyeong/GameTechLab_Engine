@@ -8,6 +8,7 @@
 #include "Component/Mesh/Public/MeshComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Actor/Public/Actor.h"
+#include "Actor/Public/MissileActor.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
 #include "Player/Public/EnemyCharacter.h"
@@ -634,6 +635,8 @@ void FLuaScriptManager::BindTypes()
         "SetUseScript", &AActor::SetUseScript,
         "InitLuaScriptComponent", &AActor::InitLuaScriptComponent,
         "GetLuaScriptComponent", &AActor::GetLuaScriptComponent,
+        // Damage system - C++ 전용으로 변경, Lua에서 호출 불가
+        // "TakeDamage"는 C++에서만 사용 (Release 빌드 안정성)
         // Misc
         "GetName", &GetNameAsString<AActor>,
         "GetUUID", &AActor::GetUUID,
@@ -819,7 +822,8 @@ void FLuaScriptManager::BindTypes()
         "MoveRight", &AEnemyCharacter::MoveRight,
         "OnBeginOverlap", &AEnemyCharacter::OnBeginOverlap,
         "OnEndOverlap", &AEnemyCharacter::OnEndOverlap,
-        "OnHit", &AEnemyCharacter::OnHit
+        "OnHit", &AEnemyCharacter::OnHit,
+        "bShouldProcessDeath", &AEnemyCharacter::bShouldProcessDeath
     );
 
     // --- APlayerController Binding (inherits from AActor) ---
