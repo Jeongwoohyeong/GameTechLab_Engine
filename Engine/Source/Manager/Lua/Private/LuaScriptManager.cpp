@@ -822,8 +822,7 @@ void FLuaScriptManager::BindTypes()
         "MoveRight", &AEnemyCharacter::MoveRight,
         "OnBeginOverlap", &AEnemyCharacter::OnBeginOverlap,
         "OnEndOverlap", &AEnemyCharacter::OnEndOverlap,
-        "OnHit", &AEnemyCharacter::OnHit,
-        "bShouldProcessDeath", &AEnemyCharacter::bShouldProcessDeath
+        "OnHit", &AEnemyCharacter::OnHit
     );
 
     // --- APlayerController Binding (inherits from AActor) ---
