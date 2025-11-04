@@ -4,6 +4,7 @@
 
 class UCameraModifier;
 class UCamera;
+class UCameraComponent;
 class APawn;
 
 /**
@@ -41,10 +42,16 @@ public:
     static APlayerCameraManager& GetInstance();
 
     /**
-	 * @brief Initialize the camera manager
+	 * @brief Initialize the camera manager (Editor mode)
 	 * @param InCamera The camera to manage
 	 */
 	void Initialize(UCamera* InCamera);
+
+	/**
+	 * @brief Initialize the camera manager (PIE mode)
+	 * @param InCameraComponent The camera component to manage
+	 */
+	void Initialize(UCameraComponent* InCameraComponent);
 
 	/**
 	 * @brief Update camera state
@@ -266,6 +273,7 @@ private:
 private:
 	// ========== Core Camera ==========
 	UCamera* Camera = nullptr;
+	UCameraComponent* CameraComponent = nullptr;  // PIE mode camera
 
 	// ========== View Target ==========
 	FViewTarget ViewTarget;

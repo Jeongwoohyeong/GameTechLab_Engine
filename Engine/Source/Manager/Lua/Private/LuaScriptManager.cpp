@@ -22,6 +22,7 @@
 #include "Level/Public/World.h"
 #include "Editor/Public/EditorEngine.h"
 #include "Manager/UI/Public/GameUIManager.h"
+#include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Render/UI/Widget/Public/Widget.h"
 #include "Render/UI/Widget/Public/GameHUDWidget.h"
 
@@ -806,8 +807,7 @@ void FLuaScriptManager::BindTypes()
         "MoveRight", &APlayerCharacter::MoveRight,
         "OnBeginOverlap", &APlayerCharacter::OnBeginOverlap,
         "OnEndOverlap", &APlayerCharacter::OnEndOverlap,
-        "OnHit", &APlayerCharacter::OnHit,
-        "StartCameraShake", &APlayerCharacter::StartCameraShake
+        "OnHit", &APlayerCharacter::OnHit
     );
 
     // --- AEnemyCharacter Binding (inherits from APawn) ---
@@ -904,6 +904,19 @@ void FLuaScriptManager::BindTypes()
 
     LuaState->set_function("GetTimeManager", []() {
         return &UTimeManager::GetInstance();
+    });
+
+    // --- APlayerCameraManager Binding ---
+    LuaState->new_usertype<APlayerCameraManager>("APlayerCameraManager",
+        sol::no_constructor,
+        sol::base_classes, sol::bases<AActor>(),
+        "StartCameraShake", &APlayerCameraManager::StartCameraShake,
+        "GetFadeAmount", &APlayerCameraManager::GetFadeAmount,
+        "GetLetterBoxAlpha", &APlayerCameraManager::GetLetterBoxAlpha
+    );
+
+    LuaState->set_function("GetPlayerCameraManager", []() {
+        return &APlayerCameraManager::GetInstance();
     });
 
     // --- UGameHUDWidget Binding ---

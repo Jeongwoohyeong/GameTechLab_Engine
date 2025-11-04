@@ -35,6 +35,26 @@ void UCameraComponent::TickComponent(float DeltaTime)
 	// (SceneComponent will handle transform updates)
 }
 
+UObject* UCameraComponent::Duplicate()
+{
+	UCameraComponent* Duplicated = Cast<UCameraComponent>(Super::Duplicate());
+
+	// Copy camera properties
+	Duplicated->FieldOfView = FieldOfView;
+	Duplicated->AspectRatio = AspectRatio;
+	Duplicated->NearClipPlane = NearClipPlane;
+	Duplicated->FarClipPlane = FarClipPlane;
+	Duplicated->ProjectionMode = ProjectionMode;
+	Duplicated->OrthoWidth = OrthoWidth;
+	Duplicated->OrthoNearClipPlane = OrthoNearClipPlane;
+	Duplicated->OrthoFarClipPlane = OrthoFarClipPlane;
+
+	// Mark matrices as needing recalculation
+	Duplicated->MarkMatricesDirty();
+
+	return Duplicated;
+}
+
 void UCameraComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	USceneComponent::Serialize(bInIsLoading, InOutHandle);
@@ -156,8 +176,8 @@ FCameraConstants UCameraComponent::GetCameraConstants() const
 	Constants.View = GetViewMatrix();
 	Constants.Projection = GetProjectionMatrix();
 
-	// Camera world position
-	Constants.ViewWorldLocation = GetWorldLocation();
+	// Camera world position (apply camera shake offset from PlayerCameraManager)
+	Constants.ViewWorldLocation = GetWorldLocation() + CameraShakeOffset;
 
 	// Near/Far clip planes
 	Constants.NearClip = NearClipPlane;
@@ -174,33 +194,12 @@ void UCameraComponent::UpdateViewMatrix() const
 	FVector Up = GetUpVector();
 	FVector Right = GetRightVector();
 
-	// Build view matrix (world to camera space)
-	// This is the inverse of the camera's world transform
-	ViewMatrix = FMatrix::Identity();
-
-	// Right vector
-	ViewMatrix.Data[0][0] = Right.X;
-	ViewMatrix.Data[0][1] = Right.Y;
-	ViewMatrix.Data[0][2] = Right.Z;
-	ViewMatrix.Data[0][3] = -CameraPos.Dot(Right);
-
-	// Up vector
-	ViewMatrix.Data[1][0] = Up.X;
-	ViewMatrix.Data[1][1] = Up.Y;
-	ViewMatrix.Data[1][2] = Up.Z;
-	ViewMatrix.Data[1][3] = -CameraPos.Dot(Up);
-
-	// Forward vector
-	ViewMatrix.Data[2][0] = Forward.X;
-	ViewMatrix.Data[2][1] = Forward.Y;
-	ViewMatrix.Data[2][2] = Forward.Z;
-	ViewMatrix.Data[2][3] = -CameraPos.Dot(Forward);
-
-	// Last row
-	ViewMatrix.Data[3][0] = 0.0f;
-	ViewMatrix.Data[3][1] = 0.0f;
-	ViewMatrix.Data[3][2] = 0.0f;
-	ViewMatrix.Data[3][3] = 1.0f;
+	// Build view matrix using same method as UCamera
+	// View = Translation * Rotation^T
+	FMatrix TInv = FMatrix::TranslationMatrixInverse(CameraPos);
+	FMatrix R = FMatrix(Right, Up, Forward);
+	FMatrix RInv = R.Transpose();
+	ViewMatrix = TInv * RInv;
 
 	bViewMatrixDirty = false;
 }
@@ -297,4 +296,12 @@ void UCameraComponent::MarkMatricesDirty()
 {
 	bViewMatrixDirty = true;
 	bProjectionMatrixDirty = true;
+}
+
+void UCameraComponent::MarkAsDirty()
+{
+	USceneComponent::MarkAsDirty();
+
+	// Transform이 변경되면 ViewMatrix도 다시 계산해야 함
+	bViewMatrixDirty = true;
 }

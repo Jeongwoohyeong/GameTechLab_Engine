@@ -2,6 +2,7 @@
 #include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Manager/Camera/Public/CameraModifier.h"
 #include "Editor/Public/Camera.h"
+#include "Component/Camera/Public/CameraComponent.h"
 #include "Pawn/Public/Pawn.h"
 
 // Singleton instance
@@ -54,11 +55,18 @@ APlayerCameraManager::~APlayerCameraManager()
 void APlayerCameraManager::Initialize(UCamera* InCamera)
 {
 	Camera = InCamera;
+	CameraComponent = nullptr;
+}
+
+void APlayerCameraManager::Initialize(UCameraComponent* InCameraComponent)
+{
+	CameraComponent = InCameraComponent;
+	Camera = nullptr;
 }
 
 void APlayerCameraManager::Tick(float DeltaTime)
 {
-	if (!Camera)
+	if (!Camera && !CameraComponent)
 	{
 		return;
 	}
@@ -70,16 +78,26 @@ void APlayerCameraManager::Tick(float DeltaTime)
 	UpdateCameraShake(DeltaTime);
 	UpdateSpringArm(DeltaTime);
 
-	// Get camera location and rotation
-	FVector CameraLocation = Camera->GetLocation();
-	FRotator CameraRotation = Camera->GetRotationRotator();
+	// PIE mode: Apply shake offset directly to CameraComponent
+	if (CameraComponent)
+	{
+		// Apply camera shake offset
+		CameraComponent->SetCameraShakeOffset(ShakeOffset);
+	}
+	// Editor mode: Apply to UCamera
+	else if (Camera)
+	{
+		// Get camera location and rotation
+		FVector CameraLocation = Camera->GetLocation();
+		FRotator CameraRotation = Camera->GetRotationRotator();
 
-	// Apply camera modifiers (shake, etc.)
-	ApplyCameraModifiers(DeltaTime, CameraLocation, CameraRotation);
+		// Apply camera modifiers (shake, etc.)
+		ApplyCameraModifiers(DeltaTime, CameraLocation, CameraRotation);
 
-	// Update camera transform
-	Camera->SetLocation(CameraLocation);
-	Camera->SetRotation(CameraRotation);
+		// Update camera transform
+		Camera->SetLocation(CameraLocation);
+		Camera->SetRotation(CameraRotation);
+	}
 }
 
 void APlayerCameraManager::SetViewTarget(AActor* NewTarget)

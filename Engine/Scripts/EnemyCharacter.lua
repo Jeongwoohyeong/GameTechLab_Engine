@@ -110,7 +110,10 @@ return function()
                         --Print("[EnemyCharacter] Dealt 10 damage to player. Current health: " .. hudWidget:GetHealth())
 
                         -- 카메라 쉐이크 효과 (강도: 2.0, 지속시간: 0.5초)
-                        playerChar:StartCameraShake(2.0, 0.5)
+                        local camMgr = GetPlayerCameraManager()
+                        if camMgr then
+                            camMgr:StartCameraShake(2.0, 0.5)
+                        end
 
                         -- 데미지 시간 갱신
                         self:UpdateDamageTime()
@@ -154,7 +157,10 @@ return function()
                         --Print("[EnemyCharacter] Dealt 10 damage to player. Current health: " .. hudWidget:GetHealth())
 
                         -- 카메라 쉐이크 효과 (강도: 2.0, 지속시간: 0.5초)
-                        playerChar:StartCameraShake(2.0, 0.5)
+                        local camMgr = GetPlayerCameraManager()
+                        if camMgr then
+                            camMgr:StartCameraShake(2.0, 0.5)
+                        end
 
                         -- 데미지 시간 갱신
                         self:UpdateDamageTime()

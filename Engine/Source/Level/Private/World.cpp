@@ -8,6 +8,7 @@
 #include "Utility/Public/JsonSerializer.h"
 #include "Manager/Config/Public/ConfigManager.h"
 #include "Manager/Path/Public/PathManager.h"
+#include "Manager/Camera/Public/PlayerCameraManager.h"
 
 IMPLEMENT_CLASS(UWorld, UObject)
 
@@ -119,6 +120,12 @@ void UWorld::Tick(float DeltaTimes)
 
 	if (WorldType == EWorldType::Game || WorldType == EWorldType::PIE)
 	{
+		// PIE 모드일 때 PlayerCameraManager 업데이트
+		if (WorldType == EWorldType::PIE)
+		{
+			APlayerCameraManager::GetInstance().Tick(DeltaTimes);
+		}
+
 		// Make a copy of the actor list to avoid iterator invalidation
 		TArray<AActor*> ActorsCopy = Level->GetLevelActors();
 

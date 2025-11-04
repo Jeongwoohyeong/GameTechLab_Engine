@@ -28,6 +28,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime) override;
 	virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+	virtual UObject* Duplicate() override;
+	virtual void MarkAsDirty() override;
 
 	// ========== Camera Properties ==========
 
@@ -173,6 +175,19 @@ public:
 	 */
 	void MarkMatricesDirty();
 
+	// ========== Camera Modifiers ==========
+
+	/**
+	 * @brief Set camera shake offset (applied by PlayerCameraManager)
+	 * @param InOffset Shake offset vector
+	 */
+	void SetCameraShakeOffset(const FVector& InOffset) { CameraShakeOffset = InOffset; }
+
+	/**
+	 * @brief Get current camera shake offset
+	 */
+	FVector GetCameraShakeOffset() const { return CameraShakeOffset; }
+
 protected:
 	/**
 	 * @brief Update projection matrix
@@ -227,4 +242,9 @@ private:
 
 	/** Whether projection matrix needs update */
 	mutable bool bProjectionMatrixDirty = true;
+
+	// ========== Camera Modifier Offsets ==========
+
+	/** Camera shake offset applied by PlayerCameraManager */
+	FVector CameraShakeOffset = FVector::Zero();
 };

@@ -389,6 +389,7 @@
     </ClInclude>
     <ClInclude Include="Source\Manager\Asset\Public\TextureManager.h" />
     <ClInclude Include="Source\Manager\Camera\Public\CameraModifier.h" />
+    <ClInclude Include="Source\Manager\Camera\Public\CameraModifier_CameraShake.h" />
     <ClInclude Include="Source\Manager\Camera\Public\PlayerCameraManager.h" />
     <ClInclude Include="Source\Manager\Lua\Public\LuaScriptManager.h" />
     <ClInclude Include="Source\Manager\Render\Public\CascadeManager.h" />
@@ -714,6 +715,7 @@
     </ClCompile>
     <ClCompile Include="Source\Manager\Asset\Private\TextureManager.cpp" />
     <ClCompile Include="Source\Manager\Camera\Private\CameraModifier.cpp" />
+    <ClCompile Include="Source\Manager\Camera\Private\CameraModifier_CameraShake.cpp" />
     <ClCompile Include="Source\Manager\Camera\Private\PlayerCameraManager.cpp" />
     <ClCompile Include="Source\Manager\Coroutine\Private\LuaCoroutineManager.cpp" />
     <ClCompile Include="Source\Manager\Lua\Private\LuaScriptManager.cpp" />

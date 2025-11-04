@@ -70,7 +70,7 @@ APlayerCharacter::APlayerCharacter()
 		CameraComponent->AttachToComponent(StaticMeshComponent);
 
 		// Set camera behind and above the player (third-person view)
-		CameraComponent->SetRelativeLocation(FVector(-300.0f, 0.0f, 100.0f));
+		CameraComponent->SetRelativeLocation(FVector(-30.0f, 0.0f, 10.0f));
 
 		// Configure camera properties
 		CameraComponent->SetFieldOfView(90.0f);
@@ -140,30 +140,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// 카메라 쉐이크 업데이트
-	if (bIsCameraShaking)
-	{
-		CameraShakeTimer += DeltaTime;
-
-		if (CameraShakeTimer >= CameraShakeDuration)
-		{
-			// 쉐이크 종료 - 원래 위치로 복원
-			bIsCameraShaking = false;
-			CameraShakeTimer = 0.0f;
-			SetActorLocation(OriginalCameraOffset);
-		}
-		else
-		{
-			// 랜덤 오프셋 적용 (흔들림 효과)
-			float shakeAmount = CameraShakeIntensity * (1.0f - (CameraShakeTimer / CameraShakeDuration)); // 점점 약해짐
-			float randomX = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * shakeAmount;
-			float randomY = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * shakeAmount;
-			float randomZ = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * shakeAmount;
-
-			SetActorLocation(OriginalCameraOffset + FVector(randomX, randomY, randomZ));
-		}
-	}
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -306,17 +282,4 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	}
 }
 
-void APlayerCharacter::StartCameraShake(float Intensity, float Duration)
-{
-	// 현재 위치 저장
-	OriginalCameraOffset = GetActorLocation();
-
-	// 쉐이크 파라미터 설정
-	CameraShakeIntensity = Intensity;
-	CameraShakeDuration = Duration;
-	CameraShakeTimer = 0.0f;
-	bIsCameraShaking = true;
-
-	UE_LOG("[PlayerCharacter] Camera shake started: Intensity=%.1f, Duration=%.1f", Intensity, Duration);
-}
 
