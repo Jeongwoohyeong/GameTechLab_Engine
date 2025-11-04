@@ -2,6 +2,7 @@
 #include "Pawn/Public/Pawn.h"
 
 class USphereComponent;
+class UCameraComponent;
 struct FHitResult;
 
 
@@ -42,6 +43,9 @@ public:
     // Camera shake
     void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
 
+    // Get camera component
+    UCameraComponent* GetCameraComponent() const { return CameraComponent; }
+
 protected:
     // Default movement speed
     float MovementSpeed = 10.0f;
@@ -54,6 +58,7 @@ protected:
 
     USphereComponent* CollisionComponent = nullptr;
     UStaticMeshComponent* StaticMeshComponent = nullptr;
+    UCameraComponent* CameraComponent = nullptr;
 
     // Camera shake variables
     bool bIsCameraShaking = false;

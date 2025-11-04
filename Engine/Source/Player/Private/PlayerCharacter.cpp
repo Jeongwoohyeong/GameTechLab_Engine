@@ -6,6 +6,7 @@
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Component/Camera/Public/CameraComponent.h"
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
@@ -56,6 +57,29 @@ APlayerCharacter::APlayerCharacter()
 	// Create RootComponent first (required for Actor Transform)
 	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
 	// SetRootComponent(RootComp);
+
+	// ✅ Create Camera Component
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>();
+	if (!CameraComponent)
+	{
+		UE_LOG_ERROR("APlayerCharacter: Failed to create CameraComponent");
+	}
+	else
+	{
+		// Attach camera to static mesh
+		CameraComponent->AttachToComponent(StaticMeshComponent);
+
+		// Set camera behind and above the player (third-person view)
+		CameraComponent->SetRelativeLocation(FVector(-300.0f, 0.0f, 100.0f));
+
+		// Configure camera properties
+		CameraComponent->SetFieldOfView(90.0f);
+		CameraComponent->SetAspectRatio(16.0f / 9.0f);
+		CameraComponent->SetNearClipPlane(1.0f);
+		CameraComponent->SetFarClipPlane(10000.0f);
+
+		UE_LOG("[PlayerCharacter] CameraComponent created and configured");
+	}
 
 	// ✅ Lua 스크립트 활성화 (BeginPlay에서 PlayerWeapon 로드)
 	SetUseScript(true);

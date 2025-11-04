@@ -18,6 +18,8 @@
 #include "GamePlay/Public/PlayerController.h"
 #include "GamePlay/Public/PlayerInput.h"
 #include "Manager/UI/Public/GameUIManager.h"
+#include "Player/Public/PlayerCharacter.h"
+#include "Component/Camera/Public/CameraComponent.h"
 
 IMPLEMENT_CLASS(UEditorEngine, UObject)
 UEditorEngine* GEditor = nullptr;
@@ -146,6 +148,45 @@ void UEditorEngine::StartPIE()
 
         // 게임 UI 매니저 초기화 (PlayerController 생성 이후)
         UGameUIManager::GetInstance().Initialize();
+
+        // ========== Setup PIE Camera ==========
+        // Find PlayerCharacter in PIE world
+        ULevel* PIELevel = PIEWorld->GetLevel();
+        if (PIELevel)
+        {
+            TArray<AActor*> Actors = PIELevel->GetLevelActors();
+            for (AActor* Actor : Actors)
+            {
+                APlayerCharacter* PlayerChar = dynamic_cast<APlayerCharacter*>(Actor);
+                if (PlayerChar)
+                {
+                    UCameraComponent* CameraComp = PlayerChar->GetCameraComponent();
+                    if (CameraComp)
+                    {
+                        // Get camera offset from component
+                        FVector CameraOffset = CameraComp->GetRelativeLocation();
+
+                        // Set PIE viewport camera to follow player with camera offset
+                        int32 PIEViewportIdx = ViewportMgr.GetPIEActiveViewportIndex();
+                        if (PIEViewportIdx >= 0 && PIEViewportIdx < ViewportMgr.GetViewports().size())
+                        {
+                            FViewport* PIEViewport = ViewportMgr.GetViewports()[PIEViewportIdx];
+                            if (PIEViewport && PIEViewport->GetViewportClient())
+                            {
+                                UCamera* Camera = PIEViewport->GetViewportClient()->GetCamera();
+                                if (Camera)
+                                {
+                                    Camera->SetFollowTarget(PlayerChar, CameraOffset);
+                                    UE_LOG("[EditorEngine] PIE Camera set to follow PlayerCharacter with offset (%.1f, %.1f, %.1f)",
+                                        CameraOffset.X, CameraOffset.Y, CameraOffset.Z);
+                                }
+                            }
+                        }
+                    }
+                    break;  // Found player, exit loop
+                }
+            }
+        }
     }
 }
 
