@@ -16,7 +16,7 @@ return function()
     -- 미사일 설정
     -- ==================================================
     ReturnTable.Speed = 3600.0              -- 미사일 속도 (6배 증가)
-    ReturnTable.Damage = 10.0               -- 데미지
+    ReturnTable.Damage = 100.0               -- 데미지
     ReturnTable.LifeTime = 5.0              -- 최대 생존 시간 (초)
     ReturnTable.CurrentLifeTime = 0.0       -- 현재 생존 시간
     ReturnTable.bHasHit = false             -- 충돌 플래그
@@ -51,7 +51,7 @@ return function()
         local CurrentLocation = MissileActor.ActorLocation
 
         -- 비활성 상태에서 위치가 정상 범위로 돌아왔는지 체크 (풀에서 재활성화)
-        if not self.bIsActive and CurrentLocation.Z > -1000 then
+        if not self.bIsActive and CurrentLocation.Z > -10000 then
             -- 재활성화!
             self.bIsActive = true
             self.CurrentLifeTime = 0.0
@@ -93,9 +93,9 @@ return function()
     end
 
     -- ==================================================
-    -- OnBeginOverlap: 충돌 처리 (C++ CapsuleComponent에서 호출)
+    -- OnHit: 충돌 처리 (C++ SphereComponent에서 호출)
     -- ==================================================
-    function ReturnTable:OnBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult)
+    function ReturnTable:OnHit(HitComponent, OtherActor, OtherComp, NormalImpulse, Hit)
         if not OtherActor or self.bHasHit then
             return
         end
@@ -117,7 +117,7 @@ return function()
             return
         end
 
-        Print("[Missile] OnBeginOverlap with: " .. OtherName)
+        Print("[Missile] OnHit with: " .. OtherName)
 
         -- 적 캐릭터인지 확인 (AEnemyCharacter만 처리)
         if string.find(OtherName, "AEnemyCharacter") then

@@ -1,13 +1,11 @@
 #include "pch.h"
 #include "Pawn/Public/Pawn.h"
 #include "Player/Public/PlayerCharacter.h"
-#include "Component/Collision/Public/CapsuleComponent.h"
-#include "Component/Collision/Public/BoxComponent.h"
+#include "Component/Collision/Public/SphereComponent.h"
 #include "Component/Collision/Public/ShapeComponent.h"
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
-#include "Component/Collision/Public/SphereComponent.h"
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
@@ -33,8 +31,8 @@ APlayerCharacter::APlayerCharacter()
 		StaticMeshComponent->SetRelativeScale3D(FVector(10.0f, 10.0f, 10.0f));  // 크기 조정
 	}
 
-	// 몸통 캡슐 충돌 컴포넌트
-	CollisionComponent = CreateDefaultSubobject<UCapsuleComponent>();
+	// 구체 충돌 컴포넌트
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>();
 	if (!CollisionComponent)
 	{
 		UE_LOG_ERROR("APlayerCharacter: Failed to create CollisionComponent");
@@ -45,37 +43,13 @@ APlayerCharacter::APlayerCharacter()
 		CollisionComponent->bGenerateHitEvents = true;
 		CollisionComponent->bGenerateOverlapEvents = true;
 		CollisionComponent->bBlockComponent = true;
-		CollisionComponent->SetRelativeLocation(FVector(0.4f, 0.0f, 2.2f));
-		CollisionComponent->SetRelativeRotation(FQuaternion::FromEuler(FVector(0.0f, 90.0f, 0.0f)));
-		CollisionComponent->SetCapsuleHalfHeight(6.3f);
-		CollisionComponent->SetCapsuleRadius(1.3f);
+		CollisionComponent->SetRelativeLocation(FVector(-2.0f, 0.0f, 2.2f));
+		CollisionComponent->SetSphereRadius(3.0f);  // 전투기 전체를 커버하는 구체
 		// 충돌 콜백 등록
 		CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
 		CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
 		CollisionComponent->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-		UE_LOG("[PlayerCharacter] Body CapsuleCollision created");
-	}
-
-	// 날개 박스 충돌 컴포넌트
-	WingCollision = CreateDefaultSubobject<UBoxComponent>();
-	if (!WingCollision)
-	{
-		UE_LOG_ERROR("APlayerCharacter: Failed to create WingCollision");
-	}
-	else
-	{
-		WingCollision->AttachToComponent(StaticMeshComponent);
-		// 날개 크기에 맞춰 박스 설정 (X=전후 두께, Y=좌우 날개 길이, Z=상하 두께)
-		WingCollision->SetBoxExtent(FVector(2.5f, 6.0f, 0.3f));  // 플레이어 전투기 날개 크기
-		WingCollision->SetRelativeLocation(FVector(-5.5f, 0.0f, 2.0f));
-		WingCollision->bGenerateHitEvents = true;
-		WingCollision->bGenerateOverlapEvents = true;
-		WingCollision->bBlockComponent = true;
-		// 충돌 콜백 등록 (동일한 콜백 사용)
-		WingCollision->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnBeginOverlap);
-		WingCollision->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnEndOverlap);
-		WingCollision->OnComponentHit.AddDynamic(this, &APlayerCharacter::OnHit);
-		UE_LOG("[PlayerCharacter] Wing BoxCollision created");
+		UE_LOG("[PlayerCharacter] SphereCollision created");
 	}
 
 	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
@@ -122,16 +96,11 @@ void APlayerCharacter::BeginPlay()
 	// 이제 Super::BeginPlay 호출 (이미 스크립트가 설정되어 있음)
 	Super::BeginPlay();
 
-	// 충돌 컴포넌트들을 Level에 등록
+	// 충돌 컴포넌트를 Level에 등록
 	if (CollisionComponent)
 	{
 		RegisterComponent(CollisionComponent);
 		UE_LOG("[PlayerCharacter] CollisionComponent registered to Level");
-	}
-	if (WingCollision)
-	{
-		RegisterComponent(WingCollision);
-		UE_LOG("[PlayerCharacter] WingCollision registered to Level");
 	}
 
 	UE_LOG("[PlayerCharacter] BeginPlay: %s at (%.1f, %.1f, %.1f)",
@@ -186,7 +155,7 @@ void APlayerCharacter::MoveForward(float Value)
 	FVector Forward(RotMatrix.Data[0][0], RotMatrix.Data[0][1], RotMatrix.Data[0][2]);
 	Forward.Normalize();
 
-	FVector NewLocation = GetActorLocation() + (Forward * Value * MovementSpeed);
+	FVector NewLocation = GetActorLocation() + (Forward * Value * MovementSpeed * 10);
 	SetActorLocation(NewLocation);
 }
 
@@ -250,36 +219,67 @@ void APlayerCharacter::LookUp(float Value)
 void APlayerCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// 미사일과의 충돌 무시
+	FString OtherName = OtherActor->GetName().ToString();
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		return;
+	}
+
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
 		LuaComp->ActivateFunction("OnBeginOverlap", OverlappedComp, OtherActor,
 			OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-		//LuaComp->ActivateFunction("OnBeginOverlap");
 	}
-	UE_LOG("Player Character Begin Overlap");
 }
 
 void APlayerCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex)
 {
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// 미사일과의 충돌 무시
+	FString OtherName = OtherActor->GetName().ToString();
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		return;
+	}
+
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
 		LuaComp->ActivateFunction("OnEndOverlap", OverlappedComp, OtherActor,
 			OtherComp, OtherBodyIndex);
 	}
-	UE_LOG("Player Character End Overlap");
 }
 
 void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	FVector NormalImpulse, const FHitResult& OutHit)
 {
+	if (!OtherActor)
+	{
+		return;
+	}
+
+	// 미사일과의 충돌 무시
+	FString OtherName = OtherActor->GetName().ToString();
+	if (OtherName.find("AMissileActor") != std::string::npos)
+	{
+		return;
+	}
+
 	if (ULuaScriptComponent* LuaComp = this->GetLuaScriptComponent())
 	{
-		UE_LOG("Character Hit Lua active");
 		LuaComp->ActivateFunction("OnHit", OverlappedComp, OtherActor,
 			OtherComp, NormalImpulse, OutHit);
 	}
-	UE_LOG("Player Character Hit");
 }
 
 void APlayerCharacter::StartCameraShake(float Intensity, float Duration)

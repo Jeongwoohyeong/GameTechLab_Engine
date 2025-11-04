@@ -2,13 +2,13 @@
 #include "Actor/Public/Actor.h"
 
 class UStaticMeshComponent;
-class UCapsuleComponent;
+class USphereComponent;
 class UPrimitiveComponent;
 struct FHitResult;
 
 /**
  * @brief 미사일 액터 클래스
- * 캡슐 충돌 컴포넌트를 가진 미사일
+ * 구체 충돌 컴포넌트를 가진 미사일
  */
 UCLASS()
 class AMissileActor : public AActor
@@ -24,15 +24,14 @@ public:
 	virtual void BeginPlay() override;
 
 	// 충돌 컴포넌트 접근자 (크기/위치 조절용)
-	UCapsuleComponent* GetMissileCollision() const { return MissileCollision; }
+	USphereComponent* GetMissileCollision() const { return MissileCollision; }
 
 	// 충돌 콜백
-	void OnMissileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
+	void OnMissileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	// 컴포넌트들
 	UStaticMeshComponent* StaicMeshComponent = nullptr;
-	UCapsuleComponent* MissileCollision = nullptr;  // 미사일 충돌
+	USphereComponent* MissileCollision = nullptr;  // 미사일 충돌
 };

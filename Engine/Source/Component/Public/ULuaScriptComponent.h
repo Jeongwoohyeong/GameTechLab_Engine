@@ -32,13 +32,14 @@ public:
     // Script management
     FString GetScriptName() const { return ScriptName; }
     bool LoadScript();
-    
+    bool IsScriptLoaded() const { return SelfTable.valid(); }
+
     template<typename... Args>
     void ActivateFunction(const FString& FunctionName, Args&&... args);
 
     // 가변인자 헬퍼 함수
     void ActivateFunctionLua(const FString& FunctionName, sol::variadic_args va);
-    
+
     sol::table& GetLuaSelfTable() { return SelfTable; }
     void SetScriptName(const FString& InScriptName);    
 
