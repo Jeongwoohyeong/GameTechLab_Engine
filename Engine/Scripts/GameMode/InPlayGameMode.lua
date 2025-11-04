@@ -12,7 +12,7 @@ return function()
         HasInitialized = false,
         GameStarted = false,
         CurrentWave = 1,
-        MaxPoolSize = 10,
+        MaxPoolSize = 30,
         WaveDelay = 5.0,
         BroadCastDelay = 3.0
         }
@@ -58,7 +58,7 @@ return function()
         end
     
         StartCoroutine(self, "WaveSpawner")
-        StartCoroutine(self, "BroadCastPlayerPosition")
+--         StartCoroutine(self, "BroadCastPlayerPosition")
 
         -- 플레이어 무기 활성화
         local PlayerController = self.GameMode:GetPlayerController()
@@ -85,9 +85,10 @@ return function()
                                     
             Print(string.format("[GameMode] Wave %d spawned %d enemies", self.CurrentWave, SpawnCount))
             for i = 1, SpawnCount do
-                local RandomX = (math.random() - 0.5) * 400.0
-                local RandomY = (math.random() - 0.5) * 400.0
-                local SpawnPos = FVector(RandomX, RandomY, 0.0)
+                local RandomX = (math.random() - 0.5) * 1000.0
+                local RandomY = (math.random() - 0.5) * 1000.0
+                local RandomZ = (math.random() - 0.5) * 1000.0
+                local SpawnPos = FVector(RandomX, RandomY, RandomZ)
                 self.GameMode:SpawnEnemies(1, SpawnPos)
             end
         
@@ -99,17 +100,17 @@ return function()
         end
     end
 
-    function ReturnTable:BroadCastPlayerPosition()
-        while true do            
-            local PlayerController = self.GameMode:GetPlayerController()
-            if not PlayerController then
-                Print("[GameMode] PlayerController not found") 
-                break           
-            end
-            self.GameMode:BroadCastPlayerLocation()
-            wait(self.BroadCastDelay)
-        end
-    end
+--     function ReturnTable:BroadCastPlayerPosition()
+--         while true do            
+--             local PlayerController = self.GameMode:GetPlayerController()
+--             if not PlayerController then
+--                 Print("[GameMode] PlayerController not found") 
+--                 break           
+--             end
+--             self.GameMode:BroadCastPlayerLocation()
+--             wait(self.BroadCastDelay)
+--         end
+--     end
             
     function ReturnTable:Tick(DeltaTime)
         if not self.GameMode then

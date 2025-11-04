@@ -47,4 +47,7 @@ private:
     int32 CurrentEnemyIndex = 0;
     int32 MaxPoolSize = 0;
     FOnBroadCastPlayerLocation OnBroadCastPlayerLocation;
+    float ElpasedTime = 0.0f;
+    float Interval = 3.5f;
+    bool bIsPlaying = false;
 };

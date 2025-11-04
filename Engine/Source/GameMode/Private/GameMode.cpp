@@ -66,12 +66,21 @@ void AGameMode::BeginPlay()
     if (GetLuaScriptComponent())
     {
         GetLuaScriptComponent()->ActivateFunction("BeginPlay");
+        bIsPlaying = true;
     }
 }
 
 void AGameMode::Tick(float DeltaTime)
 {
     AGameModeBase::Tick(DeltaTime);
+
+    ElpasedTime += DeltaTime;
+
+    if (ElpasedTime >= Interval)
+    {
+        BroadCastPlayerLocation();
+        ElpasedTime -= Interval;
+    }
     // 현재 lua script tick에서 처리하는 게 없어서 주석처리
 //GetLuaScriptComponent()->ActivateFunction("Tick");
 }

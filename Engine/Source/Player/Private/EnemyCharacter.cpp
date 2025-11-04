@@ -265,7 +265,7 @@ void AEnemyCharacter::RotateToPlayer(float DeltaTime)
 
 	FQuaternion CurrentQuat = GetActorRotation();	
 
-	float RotationSpeedDegPerSec = 90.0f;
+	float RotationSpeedDegPerSec = 150.0f;
 	float Dot = CurrentQuat.Dot(TargetQuat);
 	Dot = abs(Dot);
 	Dot = Clamp(Dot, -1.0f, 1.0f);
