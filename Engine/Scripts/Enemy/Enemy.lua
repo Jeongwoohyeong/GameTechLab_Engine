@@ -67,25 +67,14 @@ return function()
         self:OnDeath()
     end
 
-    -- 죽었을 때 처리
+    -- 죽었을 때 처리 (C++에서 TakeDamage 호출 시 직접 처리되므로 사용 안 함)
     function ReturnTable:OnDeath()
-        -- 스코어 추가
-        local uiManager = GetGameUIManager()
-        if uiManager then
-            local hudWidget = uiManager:GetHUDWidget()
-            if hudWidget then
-                hudWidget:AddScore(100)  -- 적 처치 시 100점 추가
-            end
-        end
+        -- C++에서 직접 처리:
+        -- 1. 스코어 추가 (+100)
+        -- 2. 화면 밖으로 이동 (Z = -10000)
+        -- 3. Tick 비활성화
 
-        -- TODO: 폭발 이펙트, 아이템 드롭 등
-
-        -- ✅ 순서 중요: 먼저 위치 이동, 그 다음 Tick 비활성화
-        local pos = self.this.ActorLocation
-        self.this.ActorLocation = FVector(pos.X, pos.Y, -10000)
-
-        -- Tick 비활성화 (풀로 반환)
-        self.this:SetCanTick(false)
+        -- TODO: 폭발 이펙트, 아이템 드롭 등 추가 효과는 여기서 처리 가능
     end
 
     -- 플레이어와 충돌 시작 (적이 플레이어에게 데미지를 줌)

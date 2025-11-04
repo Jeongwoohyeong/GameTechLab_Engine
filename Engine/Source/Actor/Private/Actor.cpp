@@ -576,6 +576,16 @@ void AActor::Tick(float DeltaTimes)
 	}
 }
 
+void AActor::TakeDamage(float DamageAmount)
+{
+	// Default implementation: forward to Lua script if available
+	ULuaScriptComponent* LuaComponent = GetLuaScriptComponent();
+	if (LuaComponent != nullptr)
+	{
+		LuaComponent->ActivateFunction("TakeDamage", DamageAmount);
+	}
+}
+
 void AActor::BeginPlay()
 {
 	if (bBegunPlay) return;

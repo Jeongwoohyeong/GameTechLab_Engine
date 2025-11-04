@@ -72,5 +72,7 @@ inline void ULuaScriptComponent::ActivateFunction(const FString& FunctionName, A
     else
     {
         UE_LOG_ERROR("[ULuaScriptComponent] ActivateFunction: Function '%s' not valid in table", FunctionName.c_str());
+
     }
+
 }

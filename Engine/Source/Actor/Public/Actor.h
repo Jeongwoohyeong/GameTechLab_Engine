@@ -37,6 +37,9 @@ public:
 	virtual void EndPlay();
 	virtual void Tick(float DeltaTimes);
 
+	// Damage system (virtual function - can be overridden by child classes)
+	virtual void TakeDamage(float DamageAmount);
+
 	// Getter & Setter
 	USceneComponent* GetRootComponent() const { return RootComponent; }
 	TArray<UActorComponent*>& GetOwnedComponents()  { return OwnedComponents; }

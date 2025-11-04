@@ -41,6 +41,9 @@ public:
 	void UpdatePlayerPosition(const FVector& Position);
 	void RotateToPlayer(float DeltaTime);
 
+	// Damage system (override from AActor)
+	void TakeDamage(float DamageAmount) override;
+
 private:
 	USphereComponent* CollisionComponent = nullptr;  // 구체 충돌
 	UStaticMeshComponent* StaticMeshComponent = nullptr;
