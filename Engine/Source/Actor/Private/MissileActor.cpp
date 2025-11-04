@@ -73,7 +73,8 @@ void AMissileActor::OnMissileHit(UPrimitiveComponent* HitComponent, AActor* Othe
 	}
 
 	// Lua 스크립트에 충돌 이벤트 전달 (OnHit으로 변경)
-	if (ULuaScriptComponent* LuaComp = GetLuaScriptComponent())
+	ULuaScriptComponent* LuaComp = GetLuaScriptComponent();
+	if (LuaComp != nullptr)
 	{
 		LuaComp->ActivateFunction("OnHit", HitComponent, OtherActor,
 			OtherComp, NormalImpulse, Hit);

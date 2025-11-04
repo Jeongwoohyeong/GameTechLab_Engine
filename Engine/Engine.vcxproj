@@ -161,12 +161,20 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|Win32'">
     <ClCompile>
@@ -175,12 +183,20 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -190,12 +206,20 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Develop|Win32'">
     <ClCompile>
@@ -205,12 +229,20 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -219,7 +251,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_DEVELOP=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -228,11 +260,15 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>;$(SolutionDir)External\Library</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y</Command>
-      <Command>xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y</Command>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|x64'">
@@ -242,7 +278,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;IS_OBJ_VIEWER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -251,11 +287,15 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>;$(SolutionDir)External\Library</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y</Command>
-      <Command>xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y</Command>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -267,7 +307,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(SolutionDir)External\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -276,11 +316,15 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>;$(SolutionDir)External\Library</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y</Command>
-      <Command>xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y</Command>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Develop|x64'">
@@ -292,7 +336,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions); _DEVELOP=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(SolutionDir)External\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Source;$(ProjectDir)ThirdParty\DirectXTK\include;$(ProjectDir)ThirdParty\Lua\include;$(ProjectDir)ThirdParty\sol2\include;$(ProjectDir)ThirdParty\nlohmann\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -301,11 +345,15 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>;$(SolutionDir)External\Library</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)ThirdParty\DirectXTK\lib;$(ProjectDir)ThirdParty\Lua\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y</Command>
-      <Command>xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y</Command>
+      <Command>xcopy "$(ProjectDir)Asset" "$(OutDir)Asset" /E /I /Y
+xcopy "$(ProjectDir)Data" "$(OutDir)Data" /E /I /Y
+xcopy "$(ProjectDir)Scripts" "$(OutDir)Scripts" /E /I /Y
+xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
