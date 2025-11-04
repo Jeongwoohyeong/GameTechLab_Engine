@@ -150,6 +150,11 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			FString bUseScriptString;
 			FJsonSerializer::ReadString(InOutHandle, "bUseScript", bUseScriptString, "false");
 			bUseScript = bUseScriptString == "true" ? true : false;
+
+			// Load CustomTimeDilation
+			float CustomTimeDilationValue;
+			FJsonSerializer::ReadFloat(InOutHandle, "CustomTimeDilation", CustomTimeDilationValue, 1.0f);
+			CustomTimeDilation = CustomTimeDilationValue;
         }
     }
     // 저장 (Save)
@@ -162,6 +167,9 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		InOutHandle["bCanEverTick"] = bCanEverTick ? "true" : "false";
 		InOutHandle["bTickInEditor"] = bTickInEditor ? "true" : "false";
 		InOutHandle["bUseScript"] = bUseScript ? "true" : "false";
+
+		// Save CustomTimeDilation
+		InOutHandle["CustomTimeDilation"] = CustomTimeDilation;
 
         JSON ComponentsJson = json::Array(); 
 
@@ -432,6 +440,7 @@ UObject* AActor::Duplicate()
 	AActor* Actor = Cast<AActor>(Super::Duplicate());
 	Actor->bCanEverTick = bCanEverTick;
 	Actor->bUseScript = bUseScript;
+	Actor->CustomTimeDilation = CustomTimeDilation;
 	return Actor;
 }
 
@@ -500,6 +509,7 @@ UObject* AActor::DuplicateForEditor()
 {
 	AActor* Actor = Cast<AActor>(NewObject(GetClass()));
 	Actor->bCanEverTick = bCanEverTick;
+	Actor->CustomTimeDilation = CustomTimeDilation;
 	DuplicateSubObjectsForEditor(Actor);
 	return Actor;
 }
@@ -567,11 +577,14 @@ void AActor::DuplicateSubObjectsForEditor(UObject* DuplicatedObject)
 
 void AActor::Tick(float DeltaTimes)
 {
+	// Apply actor-specific time dilation
+	float EffectiveDeltaTime = GetActorDeltaTime(DeltaTimes);
+
 	for (auto& Component : OwnedComponents)
 	{
 		if (Component && Component->CanEverTick())
 		{
-			Component->TickComponent(DeltaTimes);
+			Component->TickComponent(EffectiveDeltaTime);
 		}
 	}
 }
@@ -584,6 +597,18 @@ void AActor::TakeDamage(float DamageAmount)
 	{
 		LuaComponent->ActivateFunction("TakeDamage", DamageAmount);
 	}
+}
+
+void AActor::SetCustomTimeDilation(float InTimeDilation)
+{
+	// Clamp the time dilation value between 0.0 and 10.0
+	CustomTimeDilation = Clamp(InTimeDilation, 0.0f, 10.0f);
+}
+
+float AActor::GetActorDeltaTime(float BaseDeltaTime) const
+{
+	// Apply custom time dilation to the base delta time
+	return BaseDeltaTime * CustomTimeDilation;
 }
 
 void AActor::BeginPlay()

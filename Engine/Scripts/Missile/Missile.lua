@@ -6,7 +6,7 @@ setmetatable(_ENV, { __index = EngineTypes })
 local FVector = EngineTypes.FVector
 
 -- MissilePool 로드
-local MissilePoolModule = require("Scripts/MissilePool")
+local MissilePoolModule = require("Scripts/Missile/MissilePool")
 
 return function()
     local MissileActor = nil
@@ -90,6 +90,31 @@ return function()
         local NewLocation = CurrentLocation + Movement
         MissileActor.ActorLocation = NewLocation
         self.LastLocation = NewLocation
+    end
+
+    -- ==================================================
+    -- OnOverlap: 충돌 발생 시 호출
+    -- ==================================================
+    function ReturnTable:OnOverlap(OtherActor)
+        if not self.bIsActive then return end
+        if not OtherActor then return end
+        if self.bHasHit then return end  -- 이미 충돌했으면 무시
+
+        -- Hit Stop 효과 트리거 (0.15초 프리즈로 타격감 강화)
+        local TimeManager = GetTimeManager()
+        TimeManager:StartHitStop(0.15)
+
+        -- 충돌 플래그 설정
+        self.bHasHit = true
+
+        Print(string.format("[Missile] Hit %s! Hit Stop triggered!", OtherActor:GetName()))
+
+        -- 미사일을 풀로 반환
+        local Pool = MissilePoolModule.GetInstance()
+        if Pool then
+            Pool:ReturnMissile(MissileActor)
+        end
+        self.bIsActive = false
     end
 
     -- ==================================================
