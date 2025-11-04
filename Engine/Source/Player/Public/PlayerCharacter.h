@@ -2,6 +2,7 @@
 #include "Pawn/Public/Pawn.h"
 
 class USphereComponent;
+class UCameraComponent;
 struct FHitResult;
 
 
@@ -39,8 +40,8 @@ public:
     void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& OutHit);
 
-    // Camera shake
-    void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
+    // Get camera component
+    UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 
 protected:
     // Default movement speed
@@ -54,11 +55,5 @@ protected:
 
     USphereComponent* CollisionComponent = nullptr;
     UStaticMeshComponent* StaticMeshComponent = nullptr;
-
-    // Camera shake variables
-    bool bIsCameraShaking = false;
-    float CameraShakeTimer = 0.0f;
-    float CameraShakeDuration = 0.5f;
-    float CameraShakeIntensity = 1.0f;
-    FVector OriginalCameraOffset = FVector(0.0f, 0.0f, 0.0f);
+    UCameraComponent* CameraComponent = nullptr;
 };

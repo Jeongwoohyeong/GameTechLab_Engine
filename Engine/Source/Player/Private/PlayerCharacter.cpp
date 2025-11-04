@@ -6,6 +6,7 @@
 #include "Component/Public/SceneComponent.h"
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
+#include "Component/Camera/Public/CameraComponent.h"
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
@@ -56,6 +57,29 @@ APlayerCharacter::APlayerCharacter()
 	// Create RootComponent first (required for Actor Transform)
 	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
 	// SetRootComponent(RootComp);
+
+	// ✅ Create Camera Component
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>();
+	if (!CameraComponent)
+	{
+		UE_LOG_ERROR("APlayerCharacter: Failed to create CameraComponent");
+	}
+	else
+	{
+		// Attach camera to static mesh
+		CameraComponent->AttachToComponent(StaticMeshComponent);
+
+		// Set camera behind and above the player (third-person view)
+		CameraComponent->SetRelativeLocation(FVector(-30.0f, 0.0f, 10.0f));
+
+		// Configure camera properties
+		CameraComponent->SetFieldOfView(90.0f);
+		CameraComponent->SetAspectRatio(16.0f / 9.0f);
+		CameraComponent->SetNearClipPlane(1.0f);
+		CameraComponent->SetFarClipPlane(10000.0f);
+
+		UE_LOG("[PlayerCharacter] CameraComponent created and configured");
+	}
 
 	// ✅ Lua 스크립트 활성화 (BeginPlay에서 PlayerWeapon 로드)
 	SetUseScript(true);
@@ -116,30 +140,6 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// 카메라 쉐이크 업데이트
-	if (bIsCameraShaking)
-	{
-		CameraShakeTimer += DeltaTime;
-
-		if (CameraShakeTimer >= CameraShakeDuration)
-		{
-			// 쉐이크 종료 - 원래 위치로 복원
-			bIsCameraShaking = false;
-			CameraShakeTimer = 0.0f;
-			SetActorLocation(OriginalCameraOffset);
-		}
-		else
-		{
-			// 랜덤 오프셋 적용 (흔들림 효과)
-			float shakeAmount = CameraShakeIntensity * (1.0f - (CameraShakeTimer / CameraShakeDuration)); // 점점 약해짐
-			float randomX = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * shakeAmount;
-			float randomY = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * shakeAmount;
-			float randomZ = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * shakeAmount;
-
-			SetActorLocation(OriginalCameraOffset + FVector(randomX, randomY, randomZ));
-		}
-	}
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -282,17 +282,4 @@ void APlayerCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	}
 }
 
-void APlayerCharacter::StartCameraShake(float Intensity, float Duration)
-{
-	// 현재 위치 저장
-	OriginalCameraOffset = GetActorLocation();
-
-	// 쉐이크 파라미터 설정
-	CameraShakeIntensity = Intensity;
-	CameraShakeDuration = Duration;
-	CameraShakeTimer = 0.0f;
-	bIsCameraShaking = true;
-
-	UE_LOG("[PlayerCharacter] Camera shake started: Intensity=%.1f, Duration=%.1f", Intensity, Duration);
-}
 

@@ -377,6 +377,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </ClInclude>
     <ClInclude Include="Source\Actor\Public\TextActor.h" />
     <ClInclude Include="Source\Actor\Public\TriangleActor.h" />
+    <ClInclude Include="Source\Component\Camera\Public\CameraComponent.h" />
     <ClInclude Include="Source\Component\Collision\Public\BoxComponent.h" />
     <ClInclude Include="Source\Component\Collision\Public\CapsuleComponent.h" />
     <ClInclude Include="Source\Component\Collision\Public\SphereComponent.h" />
@@ -435,6 +436,9 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="Source\Manager\Asset\Public\TextureManager.h" />
+    <ClInclude Include="Source\Manager\Camera\Public\CameraModifier.h" />
+    <ClInclude Include="Source\Manager\Camera\Public\CameraModifier_CameraShake.h" />
+    <ClInclude Include="Source\Manager\Camera\Public\PlayerCameraManager.h" />
     <ClInclude Include="Source\Manager\Lua\Public\LuaScriptManager.h" />
     <ClInclude Include="Source\Manager\Render\Public\CascadeManager.h" />
     <ClInclude Include="Source\Manager\UI\Public\GameUIManager.h" />
@@ -696,6 +700,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </ClCompile>
     <ClCompile Include="Source\Actor\Private\TextActor.cpp" />
     <ClCompile Include="Source\Actor\Private\TriangleActor.cpp" />
+    <ClCompile Include="Source\Component\Camera\Private\CameraComponent.cpp" />
     <ClCompile Include="Source\Component\Collision\Private\BoxComponent.cpp" />
     <ClCompile Include="Source\Component\Collision\Private\ShapeComponent.cpp" />
     <ClCompile Include="Source\Component\Collision\Private\SphereComponent.cpp" />
@@ -757,6 +762,9 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="Source\Manager\Asset\Private\TextureManager.cpp" />
+    <ClCompile Include="Source\Manager\Camera\Private\CameraModifier.cpp" />
+    <ClCompile Include="Source\Manager\Camera\Private\CameraModifier_CameraShake.cpp" />
+    <ClCompile Include="Source\Manager\Camera\Private\PlayerCameraManager.cpp" />
     <ClCompile Include="Source\Manager\Coroutine\Private\LuaCoroutineManager.cpp" />
     <ClCompile Include="Source\Manager\Lua\Private\LuaScriptManager.cpp" />
     <ClCompile Include="Source\Manager\Render\Private\CascadeManager.cpp" />

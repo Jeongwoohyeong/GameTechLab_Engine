@@ -1,0 +1,321 @@
+#pragma once
+
+#include "Actor/Public/Actor.h"
+
+class UCameraModifier;
+class UCamera;
+class UCameraComponent;
+class APawn;
+
+/**
+ * @brief Camera view types for different gameplay scenarios
+ */
+enum class ECameraViewType : uint8
+{
+	ThirdPerson,     // Default third-person follow camera
+	FirstPerson,     // First-person view (cockpit)
+	Cinematic,       // Cinematic camera for cutscenes
+	DeathCam,        // Camera view when player dies
+	FreeCam          // Free camera (spectator)
+};
+
+/**
+ * @brief View target struct for camera interpolation
+ */
+struct FViewTarget
+{
+	AActor* Target = nullptr;
+	FVector Location = FVector::Zero();
+	FRotator Rotation = FRotator(0.0f, 0.0f, 0.0f);
+	float FOV = 90.0f;
+};
+
+/**
+ * @brief APlayerCameraManager - Manages the player's camera
+ * Handles camera positioning, modifiers, fade effects, letter box, etc.
+ */
+class APlayerCameraManager : public AActor
+{
+
+public:
+    // Singleton access
+    static APlayerCameraManager& GetInstance();
+
+    /**
+	 * @brief Initialize the camera manager (Editor mode)
+	 * @param InCamera The camera to manage
+	 */
+	void Initialize(UCamera* InCamera);
+
+	/**
+	 * @brief Initialize the camera manager (PIE mode)
+	 * @param InCameraComponent The camera component to manage
+	 */
+	void Initialize(UCameraComponent* InCameraComponent);
+
+	/**
+	 * @brief Update camera state
+	 * @param DeltaTime Time since last frame
+	 */
+	void Tick(float DeltaTime);
+
+	/**
+	 * @brief Set the view target (what the camera looks at)
+	 * @param NewTarget The actor to follow
+	 */
+	void SetViewTarget(AActor* NewTarget);
+
+	/**
+	 * @brief Get the current view target
+	 */
+	AActor* GetViewTarget() const { return ViewTarget.Target; }
+
+	/**
+	 * @brief Get the managed camera
+	 */
+	UCamera* GetCamera() const { return Camera; }
+
+	// ========== Fade System ==========
+
+	/**
+	 * @brief Start a fade effect
+	 * @param Duration Fade duration in seconds
+	 * @param ToColor Color to fade to
+	 * @param bFadeOut true = fade to color, false = fade from color
+	 * @param bHoldWhenFinished Hold the fade color when finished
+	 */
+	void StartCameraFade(float Duration, FVector4 ToColor = FVector4(0, 0, 0, 1), bool bFadeOut = true, bool bHoldWhenFinished = false);
+
+	/**
+	 * @brief Stop the current fade
+	 */
+	void StopCameraFade();
+
+	/**
+	 * @brief Get the current fade amount (0 = no fade, 1 = full fade)
+	 */
+	float GetFadeAmount() const { return FadeAmount; }
+
+	/**
+	 * @brief Get the current fade color
+	 */
+	FVector4 GetFadeColor() const { return FadeColorLinear; }
+
+	// ========== Letter Box System ==========
+
+	/**
+	 * @brief Start letter box effect (cinematic black bars)
+	 * @param Height Height of bars as fraction of screen (0.1 = 10%)
+	 * @param BlendTime Time to blend in/out
+	 */
+	void StartLetterBox(float Height = 0.1f, float BlendTime = 0.5f);
+
+	/**
+	 * @brief Stop letter box effect
+	 * @param BlendTime Time to blend out
+	 */
+	void StopLetterBox(float BlendTime = 0.5f);
+
+	/**
+	 * @brief Get current letter box alpha (0 = no bars, 1 = full bars)
+	 */
+	float GetLetterBoxAlpha() const { return LetterBoxCurrentAlpha; }
+
+	/**
+	 * @brief Get letter box height as fraction of screen
+	 */
+	float GetLetterBoxHeight() const { return LetterBoxHeight; }
+
+	// ========== Spring Arm System ==========
+
+	/**
+	 * @brief Set spring arm parameters
+	 * @param Offset Camera offset from target
+	 * @param ArmLength Distance from target
+	 * @param InterpSpeed How fast camera follows (higher = faster)
+	 */
+	void SetSpringArmParams(FVector Offset, float ArmLength, float InterpSpeed = 10.0f);
+
+	/**
+	 * @brief Enable/disable spring arm
+	 */
+	void SetSpringArmEnabled(bool bEnabled) { bSpringArmEnabled = bEnabled; }
+
+	/**
+	 * @brief Get spring arm enabled state
+	 */
+	bool IsSpringArmEnabled() const { return bSpringArmEnabled; }
+
+	// ========== Camera View Type ==========
+
+	/**
+	 * @brief Transition to a different camera view
+	 * @param NewView The view type to transition to
+	 * @param Duration Transition duration in seconds
+	 */
+	void TransitionToView(ECameraViewType NewView, float Duration = 1.0f);
+
+	/**
+	 * @brief Get current camera view type
+	 */
+	ECameraViewType GetCurrentViewType() const { return CurrentViewType; }
+
+	// ========== Camera Modifier System ==========
+
+	/**
+	 * @brief Add a camera modifier
+	 * @param Modifier The modifier to add
+	 */
+	void AddCameraModifier(UCameraModifier* Modifier);
+
+	/**
+	 * @brief Remove a camera modifier
+	 * @param Modifier The modifier to remove
+	 */
+	void RemoveCameraModifier(UCameraModifier* Modifier);
+
+	/**
+	 * @brief Remove all camera modifiers
+	 */
+	void ClearAllModifiers();
+
+	/**
+	 * @brief Find a modifier by type
+	 * @tparam T The modifier type to find
+	 * @return The modifier if found, nullptr otherwise
+	 */
+	template<typename T>
+	T* FindModifier()
+	{
+		for (UCameraModifier* Modifier : ModifierList)
+		{
+			if (T* TypedModifier = dynamic_cast<T*>(Modifier))
+			{
+				return TypedModifier;
+			}
+		}
+		return nullptr;
+	}
+
+	// ========== Camera Shake ==========
+
+	/**
+	 * @brief Start a camera shake effect
+	 * @param Intensity Shake intensity
+	 * @param Duration Shake duration in seconds
+	 */
+	void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
+
+private:
+    // Private constructor for Singleton
+    APlayerCameraManager();
+    ~APlayerCameraManager();
+
+    // Delete copy/move constructors and assignments
+    APlayerCameraManager(const APlayerCameraManager&) = delete;
+    APlayerCameraManager& operator=(const APlayerCameraManager&) = delete;
+    APlayerCameraManager(APlayerCameraManager&&) = delete;
+    APlayerCameraManager& operator=(APlayerCameraManager&&) = delete;
+
+private:
+	/**
+	 * @brief Update camera fade
+	 * @param DeltaTime Time since last frame
+	 */
+	void UpdateFade(float DeltaTime);
+
+	/**
+	 * @brief Update letter box
+	 * @param DeltaTime Time since last frame
+	 */
+	void UpdateLetterBox(float DeltaTime);
+
+	/**
+	 * @brief Update spring arm camera position
+	 * @param DeltaTime Time since last frame
+	 */
+	void UpdateSpringArm(float DeltaTime);
+
+	/**
+	 * @brief Update camera view transition
+	 * @param DeltaTime Time since last frame
+	 */
+	void UpdateViewTransition(float DeltaTime);
+
+	/**
+	 * @brief Update camera shake
+	 * @param DeltaTime Time since last frame
+	 */
+	void UpdateCameraShake(float DeltaTime);
+
+	/**
+	 * @brief Apply all camera modifiers
+	 * @param DeltaTime Time since last frame
+	 * @param CameraLocation Camera location to modify
+	 * @param CameraRotation Camera rotation to modify
+	 */
+	void ApplyCameraModifiers(float DeltaTime, FVector& CameraLocation, FRotator& CameraRotation);
+
+	/**
+	 * @brief Calculate camera location for current view type
+	 * @param ViewType The view type
+	 * @return Calculated camera location
+	 */
+	FVector CalculateCameraLocationForView(ECameraViewType ViewType);
+
+	/**
+	 * @brief Calculate camera rotation for current view type
+	 * @param ViewType The view type
+	 * @return Calculated camera rotation
+	 */
+	FRotator CalculateCameraRotationForView(ECameraViewType ViewType);
+
+private:
+	// ========== Core Camera ==========
+	UCamera* Camera = nullptr;
+	UCameraComponent* CameraComponent = nullptr;  // PIE mode camera
+
+	// ========== View Target ==========
+	FViewTarget ViewTarget;
+	FName CameraStyle;
+
+	// ========== Fade System ==========
+	FVector4 FadeColorLinear = FVector4(0, 0, 0, 1);
+	float FadeAmount = 0.0f;
+	FVector2 FadeAlpha = FVector2(0, 0);
+	float FadeTime = 0.0f;
+	float FadeTimeRemaining = 0.0f;
+	bool bFadeOut = true;
+	bool bHoldFade = false;
+
+	// ========== Letter Box ==========
+	bool bIsLetterBoxActive = false;
+	float LetterBoxHeight = 0.1f;
+	float LetterBoxTargetAlpha = 0.0f;
+	float LetterBoxCurrentAlpha = 0.0f;
+	float LetterBoxBlendSpeed = 2.0f;
+
+	// ========== Spring Arm ==========
+	bool bSpringArmEnabled = true;
+	FVector SpringArmOffset = FVector(-300.0f, 0.0f, 100.0f);
+	float SpringArmLength = 300.0f;
+	float SpringArmInterpSpeed = 10.0f;
+	bool bEnableCollisionTest = false;  // TODO: Implement collision test
+
+	// ========== Camera View Type ==========
+	ECameraViewType CurrentViewType = ECameraViewType::ThirdPerson;
+	ECameraViewType PreviousViewType = ECameraViewType::ThirdPerson;
+	float ViewTransitionDuration = 1.0f;
+	float ViewTransitionTimeRemaining = 0.0f;
+	bool bIsTransitioning = false;
+
+	// ========== Camera Modifiers ==========
+	TArray<UCameraModifier*> ModifierList;
+
+	// ========== Camera Shake ==========
+	bool bIsCameraShaking = false;
+	float CameraShakeTimer = 0.0f;
+	float CameraShakeDuration = 0.5f;
+	float CameraShakeIntensity = 1.0f;
+	FVector ShakeOffset = FVector::Zero();
+};

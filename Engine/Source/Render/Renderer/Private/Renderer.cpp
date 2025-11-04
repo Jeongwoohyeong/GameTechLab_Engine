@@ -11,8 +11,10 @@
 #include "Component/Public/PrimitiveComponent.h"
 #include "Component/Public/SpotLightComponent.h"
 #include "Component/Public/UUIDTextComponent.h"
+#include "Component/Camera/Public/CameraComponent.h"
 #include "Editor/Public/Camera.h"
 #include "Editor/Public/Editor.h"
+#include "Player/Public/PlayerCharacter.h"
 #include "Global/Octree.h"
 #include "Global/Octree.h"
 #include "Level/Public/Level.h"
@@ -872,7 +874,57 @@ void URenderer::Update()
         float DeltaTime = UTimeManager::GetInstance().GetDeltaTime();
         CurrentCamera->Update(LocalViewport, DeltaTime);
 
-        FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferViewProj, CurrentCamera->GetFViewProjConstants());
+		// PIE 모드일 때는 PlayerCharacter의 CameraComponent 사용
+		bool bIsPIEViewport = GEditor->IsPIESessionActive() &&
+			ViewportIndex == UViewportManager::GetInstance().GetPIEActiveViewportIndex();
+
+		FCameraConstants CameraConstants;
+		if (bIsPIEViewport)
+		{
+			// PIE 모드: PlayerCharacter의 CameraComponent에서 매트릭스 가져오기
+			FWorldContext* PIEContext = GEditor->GetPIEWorldContext();
+			if (PIEContext && PIEContext->World())
+			{
+				ULevel* PIELevel = PIEContext->World()->GetLevel();
+				if (PIELevel)
+				{
+					bool bFoundPlayerCamera = false;
+					TArray<AActor*> Actors = PIELevel->GetLevelActors();
+					for (AActor* Actor : Actors)
+					{
+						APlayerCharacter* PlayerChar = dynamic_cast<APlayerCharacter*>(Actor);
+						if (PlayerChar)
+						{
+							UCameraComponent* CameraComp = PlayerChar->GetCameraComponent();
+							if (CameraComp)
+							{
+								// Viewport 크기에 맞춰 AspectRatio 업데이트
+								float ViewportAspect = LocalViewport.Width / LocalViewport.Height;
+								CameraComp->SetAspectRatio(ViewportAspect);
+
+								// GetCameraConstants() already includes shake offset from PlayerCameraManager
+								CameraConstants = CameraComp->GetCameraConstants();
+
+								bFoundPlayerCamera = true;
+								break;
+							}
+						}
+					}
+					// PlayerCharacter의 카메라를 못 찾으면 폴백으로 UCamera 사용
+					if (!bFoundPlayerCamera)
+					{
+						CameraConstants = CurrentCamera->GetFViewProjConstants();
+					}
+				}
+			}
+		}
+		else
+		{
+			// Editor 모드: UCamera 사용
+			CameraConstants = CurrentCamera->GetFViewProjConstants();
+		}
+
+        FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferViewProj, CameraConstants);
         Pipeline->SetConstantBuffer(1, EShaderType::VS, ConstantBufferViewProj);
         {
             TIME_PROFILE(RenderLevel)
@@ -880,7 +932,7 @@ void URenderer::Update()
         }
 
 		// PIE가 활성화된 뷰포트가 아닌 경우에만 에디터 도구 렌더링
-		bool bIsPIEViewport = GEditor->IsPIESessionActive() &&
+		bIsPIEViewport = GEditor->IsPIESessionActive() &&
 			ViewportIndex == UViewportManager::GetInstance().GetPIEActiveViewportIndex();
 		if (!bIsPIEViewport)
 		{

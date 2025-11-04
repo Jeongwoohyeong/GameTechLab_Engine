@@ -18,6 +18,10 @@
 #include "GamePlay/Public/PlayerController.h"
 #include "GamePlay/Public/PlayerInput.h"
 #include "Manager/UI/Public/GameUIManager.h"
+#include "Player/Public/PlayerCharacter.h"
+#include "Component/Camera/Public/CameraComponent.h"
+#include "Manager/Camera/Public/PlayerCameraManager.h"
+#include "Manager/Camera/Public/CameraModifier_CameraShake.h"
 
 IMPLEMENT_CLASS(UEditorEngine, UObject)
 UEditorEngine* GEditor = nullptr;
@@ -146,6 +150,59 @@ void UEditorEngine::StartPIE()
 
         // 게임 UI 매니저 초기화 (PlayerController 생성 이후)
         UGameUIManager::GetInstance().Initialize();
+
+        // ========== Setup PlayerCameraManager ==========
+        APlayerCameraManager& CamMgr = APlayerCameraManager::GetInstance();
+
+        // Camera Shake Modifier 생성 및 추가
+        UCameraModifier_CameraShake* ShakeMod = new UCameraModifier_CameraShake();
+        CamMgr.AddCameraModifier(ShakeMod);
+
+        UE_LOG("[EditorEngine] PlayerCameraManager initialized with CameraShake modifier");
+
+        // ========== Setup PIE Camera ==========
+        // Find PlayerCharacter in PIE world
+        ULevel* PIELevel = PIEWorld->GetLevel();
+        if (PIELevel)
+        {
+            TArray<AActor*> Actors = PIELevel->GetLevelActors();
+            for (AActor* Actor : Actors)
+            {
+                APlayerCharacter* PlayerChar = dynamic_cast<APlayerCharacter*>(Actor);
+                if (PlayerChar)
+                {
+                    UCameraComponent* CameraComp = PlayerChar->GetCameraComponent();
+                    if (CameraComp)
+                    {
+                        // Initialize PlayerCameraManager with CameraComponent (PIE mode)
+                        CamMgr.Initialize(CameraComp);
+                        CamMgr.SetViewTarget(PlayerChar);
+                        UE_LOG("[EditorEngine] PlayerCameraManager initialized with CameraComponent");
+
+                        // Get camera offset from component
+                        FVector CameraOffset = CameraComp->GetRelativeLocation();
+
+                        // Set PIE viewport camera to follow player with camera offset
+                        int32 PIEViewportIdx = ViewportMgr.GetPIEActiveViewportIndex();
+                        if (PIEViewportIdx >= 0 && PIEViewportIdx < ViewportMgr.GetViewports().size())
+                        {
+                            FViewport* PIEViewport = ViewportMgr.GetViewports()[PIEViewportIdx];
+                            if (PIEViewport && PIEViewport->GetViewportClient())
+                            {
+                                UCamera* Camera = PIEViewport->GetViewportClient()->GetCamera();
+                                if (Camera)
+                                {
+                                    Camera->SetFollowTarget(PlayerChar, CameraOffset);
+                                    UE_LOG("[EditorEngine] PIE Camera set to follow PlayerCharacter with offset (%.1f, %.1f, %.1f)",
+                                        CameraOffset.X, CameraOffset.Y, CameraOffset.Z);
+                                }
+                            }
+                        }
+                    }
+                    break;  // Found player, exit loop
+                }
+            }
+        }
     }
 }
 
@@ -165,6 +222,10 @@ void UEditorEngine::EndPIE()
 
     // 게임 UI 매니저 정리 (마우스 잠금 해제 포함)
     UGameUIManager::GetInstance().Shutdown();
+
+    // PlayerCameraManager 정리
+    APlayerCameraManager::GetInstance().ClearAllModifiers();
+    UE_LOG("[EditorEngine] PlayerCameraManager cleaned up");
 
     bPIEMouseUnlocked = false;  // 상태 리셋
 
