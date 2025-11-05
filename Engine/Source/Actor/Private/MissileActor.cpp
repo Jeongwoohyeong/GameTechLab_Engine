@@ -9,6 +9,8 @@
 #include "Actor/Public/ExplosionActor.h"
 #include "Level/Public/Level.h"
 #include "Level/Public/World.h"
+#include "Manager/Time/Public/TimeManager.h"
+#include "Core/Public/AudioEngine.h"
 
 IMPLEMENT_CLASS(AMissileActor, AActor)
 
@@ -98,6 +100,12 @@ void AMissileActor::OnMissileHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		// C++에서 직접 TakeDamage 호출
 		float MissileDamage = 100.0f;
 		EnemyChar->TakeDamage(MissileDamage);
+
+		// Hit Stop 발동 (0.5초)
+		//UTimeManager::GetInstance().StartHitStop(0.1f);
+
+		// 폭발음 재생
+		FAudioEngine::GetInstance().PlaySFX("Data/Audio/Explosion.wav", 1.0f);
 
 		// 폭발 이펙트 생성
 		if (GWorld && GWorld->GetLevel())
