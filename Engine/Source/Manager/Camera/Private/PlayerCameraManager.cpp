@@ -288,6 +288,12 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 	// Get target location
 	FVector TargetLocation = ViewTarget.Target->GetActorLocation();
 
+	// Skip if target is at origin (not properly initialized yet)
+	if (TargetLocation.Length() < 0.01f)
+	{
+		return;
+	}
+
 	// Calculate desired camera location
 	FVector DesiredLocation = CalculateCameraLocationForView(CurrentViewType);
 
@@ -312,8 +318,6 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 	// Spring Arm Collision Test
 	if (bEnableCollisionTest)
 	{
-		UE_LOG("[SpringArm] Collision test enabled - checking...");
-
 		// Get World and Level
 		UWorld* World = GWorld;
 		if (World && World->GetLevel())
@@ -323,11 +327,6 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 			FVector LineEnd = DesiredLocation;
 			FVector TraceDirection = LineEnd - LineStart;
 			float DesiredDistance = TraceDirection.Length();
-
-			UE_LOG("[SpringArm] LineTrace: Start(%.1f,%.1f,%.1f) -> End(%.1f,%.1f,%.1f) Dist=%.1f",
-				LineStart.X, LineStart.Y, LineStart.Z,
-				LineEnd.X, LineEnd.Y, LineEnd.Z,
-				DesiredDistance);
 
 			if (DesiredDistance < 0.01f)
 			{
@@ -343,7 +342,6 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 
 			float MinHitDistance = DesiredDistance;
 			bool bHitDetected = false;
-			int TotalComponentsChecked = 0;
 
 			// Test collision with ShapeComponents only (AABB-based)
 			const TArray<UShapeComponent*>& ShapeComponents = World->GetLevel()->GetShapeComponents();
@@ -356,12 +354,11 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 				}
 
 				// Skip if this is the target's own collision component
-				if (ShapeComp->GetOwner() == ViewTarget.Target)
+				AActor* CompOwner = ShapeComp->GetOwner();
+				if (CompOwner == ViewTarget.Target)
 				{
 					continue;
 				}
-
-				TotalComponentsChecked++;
 
 				// Get component's World AABB
 				FVector BoxMin, BoxMax;
@@ -434,9 +431,6 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 				}
 			}
 
-			UE_LOG("[SpringArm] Checked %d components, Hit detected: %s, MinHitDistance: %.1f",
-				TotalComponentsChecked, bHitDetected ? "YES" : "NO", MinHitDistance);
-
 			// If collision detected, pull camera closer
 			if (bHitDetected)
 			{
@@ -444,21 +438,10 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 				float SafeDistance = max(MinHitDistance - 10.0f, 0.0f);  // 10 units padding from collision
 				FVector SafeLocation = LineStart + TraceDirection * SafeDistance;
 
-				UE_LOG("[SpringArm] COLLISION! Pulling camera to SafeDist=%.1f, SafeLoc(%.1f,%.1f,%.1f)",
-					SafeDistance, SafeLocation.X, SafeLocation.Y, SafeLocation.Z);
-
 				// Blend to safe location
 				NewLocation = Lerp(CurrentLocation, SafeLocation, SpringArmInterpSpeed * DeltaTime * 2.0f);  // Faster pull on collision
 			}
 		}
-		else
-		{
-			UE_LOG("[SpringArm] ERROR: No World or Level!");
-		}
-	}
-	else
-	{
-		UE_LOG("[SpringArm] Collision test DISABLED");
 	}
 
 	// Set camera location (Editor or PIE mode)
