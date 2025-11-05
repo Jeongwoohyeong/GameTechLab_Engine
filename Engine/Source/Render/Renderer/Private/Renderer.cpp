@@ -905,14 +905,6 @@ void URenderer::Update()
 								// GetCameraConstants() already includes shake offset from PlayerCameraManager
 								CameraConstants = CameraComp->GetCameraConstants();
 
-								// Debug: Check shake offset
-								FVector ShakeOffset = CameraComp->GetCameraShakeOffset();
-								if (ShakeOffset.Length() > 0.01f)
-								{
-									UE_LOG("[Renderer] CameraComponent %p has shake offset: (%.2f, %.2f, %.2f)",
-										CameraComp, ShakeOffset.X, ShakeOffset.Y, ShakeOffset.Z);
-								}
-
 								bFoundPlayerCamera = true;
 								break;
 							}

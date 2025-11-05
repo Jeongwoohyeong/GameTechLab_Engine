@@ -7,7 +7,6 @@
 #include "Player/Public/PlayerCharacter.h"
 #include "Player/Public/EnemyCharacter.h"
 #include "Manager/Camera/Public/PlayerCameraManager.h"
-#include "Manager/Camera/Public/CameraModifier_CameraShake.h"
 #include "Level/Public/World.h"
 
 IMPLEMENT_CLASS(AGameMode, AGameModeBase)
@@ -73,12 +72,10 @@ void AGameMode::InitGame()
 
         if (CamMgr)
         {
-            // Add Camera Shake Modifier
-            UCameraModifier_CameraShake* ShakeMod = new UCameraModifier_CameraShake();
-            CamMgr->AddCameraModifier(ShakeMod);
-
             // Set to PlayerController
             PC->SetPlayerCameraManager(CamMgr);
+
+            // Note: Default modifiers are added in APlayerCameraManager::BeginPlay()
 
             UE_LOG("[GameMode] PlayerCameraManager created and assigned to PlayerController");
         }

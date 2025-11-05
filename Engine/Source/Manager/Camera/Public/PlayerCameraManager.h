@@ -174,6 +174,12 @@ public:
 	// ========== Camera Modifier System ==========
 
 	/**
+	 * @brief Get all camera modifiers
+	 * @return Reference to modifier list
+	 */
+	const TArray<UCameraModifier*>& GetModifierList() const { return ModifierList; }
+
+	/**
 	 * @brief Add a camera modifier
 	 * @param Modifier The modifier to add
 	 */
@@ -217,10 +223,36 @@ public:
 	 */
 	void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
 
+	// ========== Default Camera Shake Settings ==========
+
+	/**
+	 * @brief Default Bezier curve control points for shake decay
+	 * Editor에서 설정한 값이 PIE/Game 모드로 전달됨
+	 */
+	float DefaultShakeBezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };  // easeOutQuad
+
+	/**
+	 * @brief Use Bezier curve for shake decay by default
+	 */
+	bool bDefaultUseBezierDecay = true;
+
+	/**
+	 * @brief Static storage for Editor→PIE value transfer
+	 * 에디터에서 수정한 값을 PIE로 전달하기 위한 static 저장소
+	 */
+	static float StaticShakeBezierCP[4];
+	static bool StaticUseBezierDecay;
+	static bool bStaticValuesInitialized;
+
 	// ========== Lifecycle ==========
 
 	APlayerCameraManager();
 	virtual ~APlayerCameraManager();
+
+	/**
+	 * @brief Initialize default modifiers
+	 */
+	virtual void BeginPlay() override;
 
 private:
 	/**

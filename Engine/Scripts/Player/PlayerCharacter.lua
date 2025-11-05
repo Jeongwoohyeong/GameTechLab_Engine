@@ -212,7 +212,7 @@ return function()
                     if playerController then
                         local camMgr = playerController:GetPlayerCameraManager()
                         if camMgr then
-                            camMgr:StartCameraShake(10.0, 1.0)
+                            camMgr:StartCameraShake(100.0, 10.0)
                         end
                     end
                 end

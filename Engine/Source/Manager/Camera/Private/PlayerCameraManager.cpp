@@ -16,6 +16,11 @@
 
 IMPLEMENT_CLASS(APlayerCameraManager, AActor)
 
+// Static 변수 정의
+float APlayerCameraManager::StaticShakeBezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };
+bool APlayerCameraManager::StaticUseBezierDecay = true;
+bool APlayerCameraManager::bStaticValuesInitialized = false;
+
 APlayerCameraManager::APlayerCameraManager()
 	: Camera(nullptr)
 	, FadeColorLinear(0, 0, 0, 1)
@@ -41,6 +46,8 @@ APlayerCameraManager::APlayerCameraManager()
 	, ViewTransitionTimeRemaining(0.0f)
 	, bIsTransitioning(false)
 {
+	// ✅ Tick 활성화 - 카메라 modifier 업데이트를 위해 필수!
+	bCanEverTick = true;
 }
 
 APlayerCameraManager::~APlayerCameraManager()
@@ -56,6 +63,46 @@ APlayerCameraManager::~APlayerCameraManager()
 	ModifierList.clear();
 }
 
+void APlayerCameraManager::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Static 값이 초기화되어 있으면 그걸 사용 (에디터→PIE 전달)
+	if (bStaticValuesInitialized)
+	{
+		DefaultShakeBezierCP[0] = StaticShakeBezierCP[0];
+		DefaultShakeBezierCP[1] = StaticShakeBezierCP[1];
+		DefaultShakeBezierCP[2] = StaticShakeBezierCP[2];
+		DefaultShakeBezierCP[3] = StaticShakeBezierCP[3];
+		bDefaultUseBezierDecay = StaticUseBezierDecay;
+	}
+	else
+	{
+		// 처음 실행 시 현재 값을 static에 저장
+		StaticShakeBezierCP[0] = DefaultShakeBezierCP[0];
+		StaticShakeBezierCP[1] = DefaultShakeBezierCP[1];
+		StaticShakeBezierCP[2] = DefaultShakeBezierCP[2];
+		StaticShakeBezierCP[3] = DefaultShakeBezierCP[3];
+		StaticUseBezierDecay = bDefaultUseBezierDecay;
+		bStaticValuesInitialized = true;
+	}
+
+	// Add default modifiers if none exist
+	if (ModifierList.empty())
+	{
+		UCameraModifier_CameraShake* ShakeMod = new UCameraModifier_CameraShake();
+
+		// Apply default Bezier settings from this manager
+		ShakeMod->BezierCP[0] = DefaultShakeBezierCP[0];
+		ShakeMod->BezierCP[1] = DefaultShakeBezierCP[1];
+		ShakeMod->BezierCP[2] = DefaultShakeBezierCP[2];
+		ShakeMod->BezierCP[3] = DefaultShakeBezierCP[3];
+		ShakeMod->bUseBezierDecay = bDefaultUseBezierDecay;
+
+		AddCameraModifier(ShakeMod);
+	}
+}
+
 void APlayerCameraManager::Initialize(UCamera* InCamera)
 {
 	Camera = InCamera;
@@ -66,7 +113,6 @@ void APlayerCameraManager::Initialize(UCameraComponent* InCameraComponent)
 {
 	CameraComponent = InCameraComponent;
 	Camera = nullptr;
-	UE_LOG("[PlayerCameraManager] Initialized with CameraComponent: %p", InCameraComponent);
 }
 
 void APlayerCameraManager::Tick(float DeltaTime)
@@ -97,13 +143,6 @@ void APlayerCameraManager::Tick(float DeltaTime)
 
 		// Apply the offset to CameraComponent
 		CameraComponent->SetCameraShakeOffset(ShakeOffset);
-
-		// Debug log (only when offset exists)
-		if (ShakeOffset.Length() > 0.01f)
-		{
-			UE_LOG("[PlayerCameraManager] Applying modifier offset: (%.2f, %.2f, %.2f) to CameraComponent: %p",
-				ShakeOffset.X, ShakeOffset.Y, ShakeOffset.Z, CameraComponent);
-		}
 	}
 	// Editor mode: Apply to UCamera
 	else if (Camera)
@@ -561,8 +600,9 @@ void APlayerCameraManager::ClearAllModifiers()
 void APlayerCameraManager::ApplyCameraModifiers(float DeltaTime, FVector& CameraLocation, FRotator& CameraRotation)
 {
 	// Apply all camera modifiers (shake, etc.)
-	for (UCameraModifier* Modifier : ModifierList)
+	for (size_t i = 0; i < ModifierList.size(); i++)
 	{
+		UCameraModifier* Modifier = ModifierList[i];
 		if (Modifier && !Modifier->IsDisabled())
 		{
 			Modifier->UpdateModifier(DeltaTime);
@@ -580,10 +620,5 @@ void APlayerCameraManager::StartCameraShake(float Intensity, float Duration)
 	if (ShakeMod)
 	{
 		ShakeMod->StartShake(Intensity, Duration);
-		UE_LOG("[PlayerCameraManager] StartCameraShake called: Intensity=%.2f, Duration=%.2f (using Modifier)", Intensity, Duration);
-	}
-	else
-	{
-		UE_LOG_ERROR("[PlayerCameraManager] UCameraModifier_CameraShake not found!");
 	}
 }

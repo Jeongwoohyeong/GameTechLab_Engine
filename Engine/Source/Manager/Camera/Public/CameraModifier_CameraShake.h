@@ -29,6 +29,15 @@ public:
     virtual bool ModifyCamera(float DeltaTime, FVector& CameraLocation, FRotator& CameraRotation) override;
     virtual void UpdateModifier(float DeltaTime) override;
 
+public:
+    // ========== Bezier Decay Curve Settings ==========
+
+    /** Bezier curve control points for decay curve (default: easeOutQuad) */
+    float BezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };
+
+    /** Use Bezier curve for decay instead of linear */
+    bool bUseBezierDecay = true;
+
 private:
     /** 현재 흔들림 강도 */
     float ShakeIntensity = 0.0f;

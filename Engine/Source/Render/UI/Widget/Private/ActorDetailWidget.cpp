@@ -11,6 +11,9 @@
 #include "Manager/Input/Public/InputManager.h"
 #include "Manager/Path/Public/PathManager.h"
 #include "Texture/Public/Texture.h"
+#include "Manager/Camera/Public/PlayerCameraManager.h"
+#include "Manager/Camera/Public/CameraModifier.h"
+#include "Manager/Camera/Public/CameraModifier_CameraShake.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -41,6 +44,158 @@ namespace
             }
         }
         return Result;
+    }
+
+    // ========== ImGui Bezier Widget (from https://github.com/ocornut/imgui/issues/786) ==========
+
+    template<int steps>
+    void bezier_table(ImVec2 P[4], ImVec2 results[steps + 1])
+    {
+        static float C[(steps + 1) * 4], * K = 0;
+        if (!K)
+        {
+            K = C;
+            for (unsigned step = 0; step <= steps; ++step)
+            {
+                float t = (float)step / (float)steps;
+                C[step * 4 + 0] = (1 - t) * (1 - t) * (1 - t);   // * P0
+                C[step * 4 + 1] = 3 * (1 - t) * (1 - t) * t;     // * P1
+                C[step * 4 + 2] = 3 * (1 - t) * t * t;           // * P2
+                C[step * 4 + 3] = t * t * t;                     // * P3
+            }
+        }
+        for (unsigned step = 0; step <= steps; ++step)
+        {
+            ImVec2 point = {
+                K[step * 4 + 0] * P[0].x + K[step * 4 + 1] * P[1].x + K[step * 4 + 2] * P[2].x + K[step * 4 + 3] * P[3].x,
+                K[step * 4 + 0] * P[0].y + K[step * 4 + 1] * P[1].y + K[step * 4 + 2] * P[2].y + K[step * 4 + 3] * P[3].y
+            };
+            results[step] = point;
+        }
+    }
+
+    float BezierValue(float dt01, float P[4])
+    {
+        enum { STEPS = 256 };
+        ImVec2 Q[4] = { { 0, 0 }, { P[0], P[1] }, { P[2], P[3] }, { 1, 1 } };
+        ImVec2 results[STEPS + 1];
+        bezier_table<STEPS>(Q, results);
+        return results[(int)((dt01 < 0 ? 0 : dt01 > 1 ? 1 : dt01) * STEPS)].y;
+    }
+
+    int Bezier(const char* label, float P[4])
+    {
+        int changed = 0;
+        ImVec2 B[4];
+        B[0] = ImVec2(0, 0);
+        B[1] = ImVec2(P[0], P[1]);
+        B[2] = ImVec2(P[2], P[3]);
+        B[3] = ImVec2(1, 1);
+
+        ImGui::Text("%s", label);
+
+        ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
+        ImVec2 canvas_size(200, 200);
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+        draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y), IM_COL32(50, 50, 50, 255));
+        draw_list->AddRect(canvas_pos, ImVec2(canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y), IM_COL32(255, 255, 255, 255));
+
+        // Draw grid
+        for (int i = 0; i <= 4; ++i)
+        {
+            float x = canvas_pos.x + (canvas_size.x / 4) * i;
+            float y = canvas_pos.y + (canvas_size.y / 4) * i;
+            draw_list->AddLine(ImVec2(x, canvas_pos.y), ImVec2(x, canvas_pos.y + canvas_size.y), IM_COL32(100, 100, 100, 100));
+            draw_list->AddLine(ImVec2(canvas_pos.x, y), ImVec2(canvas_pos.x + canvas_size.x, y), IM_COL32(100, 100, 100, 100));
+        }
+
+        // Draw Bezier curve
+        enum { SMOOTHNESS = 64 };
+        ImVec2 Q[4] = { B[0], B[1], B[2], B[3] };
+        ImVec2 results[SMOOTHNESS + 1];
+        bezier_table<SMOOTHNESS>(Q, results);
+
+        for (int i = 0; i < SMOOTHNESS; ++i)
+        {
+            ImVec2 p0 = ImVec2(canvas_pos.x + results[i].x * canvas_size.x, canvas_pos.y + canvas_size.y - results[i].y * canvas_size.y);
+            ImVec2 p1 = ImVec2(canvas_pos.x + results[i + 1].x * canvas_size.x, canvas_pos.y + canvas_size.y - results[i + 1].y * canvas_size.y);
+            draw_list->AddLine(p0, p1, IM_COL32(255, 255, 0, 255), 2.0f);
+        }
+
+        // Draw control lines
+        ImVec2 p0 = ImVec2(canvas_pos.x + B[0].x * canvas_size.x, canvas_pos.y + canvas_size.y - B[0].y * canvas_size.y);
+        ImVec2 p1 = ImVec2(canvas_pos.x + B[1].x * canvas_size.x, canvas_pos.y + canvas_size.y - B[1].y * canvas_size.y);
+        ImVec2 p2 = ImVec2(canvas_pos.x + B[2].x * canvas_size.x, canvas_pos.y + canvas_size.y - B[2].y * canvas_size.y);
+        ImVec2 p3 = ImVec2(canvas_pos.x + B[3].x * canvas_size.x, canvas_pos.y + canvas_size.y - B[3].y * canvas_size.y);
+
+        draw_list->AddLine(p0, p1, IM_COL32(200, 200, 200, 100), 1.0f);
+        draw_list->AddLine(p2, p3, IM_COL32(200, 200, 200, 100), 1.0f);
+
+        // Draw control points
+        float radius = 6.0f;
+        draw_list->AddCircleFilled(p0, radius, IM_COL32(255, 0, 0, 255));
+        draw_list->AddCircleFilled(p1, radius, IM_COL32(255, 128, 0, 255));
+        draw_list->AddCircleFilled(p2, radius, IM_COL32(0, 255, 128, 255));
+        draw_list->AddCircleFilled(p3, radius, IM_COL32(0, 128, 255, 255));
+
+        // Handle dragging with static state (uses public API only)
+        static int dragging_point = -1;  // -1 = none, 1 = P1, 2 = P2
+
+        ImGui::InvisibleButton("canvas", canvas_size);
+        ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+        bool is_hovered = ImGui::IsItemHovered();
+        bool is_item_active = ImGui::IsItemActive();
+
+        if (is_hovered && ImGui::IsMouseClicked(0))
+        {
+            // Check if clicking on control point
+            for (int i = 1; i <= 2; ++i) // Only P1 and P2 are draggable
+            {
+                ImVec2 cp = ImVec2(canvas_pos.x + B[i].x * canvas_size.x, canvas_pos.y + canvas_size.y - B[i].y * canvas_size.y);
+                float dist = sqrtf((mouse_pos.x - cp.x) * (mouse_pos.x - cp.x) + (mouse_pos.y - cp.y) * (mouse_pos.y - cp.y));
+                if (dist < radius * 2)
+                {
+                    dragging_point = i;
+                    break;
+                }
+            }
+        }
+
+        if (ImGui::IsMouseReleased(0))
+        {
+            dragging_point = -1;
+        }
+
+        if (dragging_point != -1 && ImGui::IsMouseDragging(0))
+        {
+            int i = dragging_point;
+            ImVec2 delta = ImGui::GetIO().MouseDelta;
+            B[i].x += delta.x / canvas_size.x;
+            B[i].y -= delta.y / canvas_size.y;
+
+            // Clamp to [0, 1]
+            B[i].x = B[i].x < 0 ? 0 : B[i].x > 1 ? 1 : B[i].x;
+            B[i].y = B[i].y < 0 ? 0 : B[i].y > 1 ? 1 : B[i].y;
+
+            P[0] = B[1].x;
+            P[1] = B[1].y;
+            P[2] = B[2].x;
+            P[3] = B[2].y;
+            changed = 1;
+        }
+
+        // Sliders for precise control
+        char id[64];
+        snprintf(id, sizeof(id), "##%sP1", label);
+        if (ImGui::SliderFloat2(id, &P[0], 0, 1, "P1: %.3f"))
+            changed = 1;
+
+        snprintf(id, sizeof(id), "##%sP2", label);
+        if (ImGui::SliderFloat2(id, &P[2], 0, 1, "P2: %.3f"))
+            changed = 1;
+
+        return changed;
     }
 }
 
@@ -620,6 +775,12 @@ void UActorDetailWidget::RenderComponents(AActor* InSelectedActor)
 		RenderActorComponent(Component);
 	}
 	if (bHasActorComponents) { ImGui::Separator(); }
+
+	// Special handling for APlayerCameraManager: Render Camera Modifiers
+	if (APlayerCameraManager* CameraManager = Cast<APlayerCameraManager>(InSelectedActor))
+	{
+		RenderCameraModifiers(CameraManager);
+	}
 }
 
 void UActorDetailWidget::RenderSceneComponents(USceneComponent* InSceneComponent)
@@ -1745,4 +1906,105 @@ UTexture* UActorDetailWidget::GetIconForActor(AActor* InActor)
 	}
 
 	return nullptr;
+}
+
+/**
+ * @brief Render Camera Modifiers for APlayerCameraManager
+ * @param CameraManager The camera manager to render modifiers for
+ */
+void UActorDetailWidget::RenderCameraModifiers(APlayerCameraManager* CameraManager)
+{
+	if (!CameraManager) { return; }
+
+	const TArray<UCameraModifier*>& Modifiers = CameraManager->GetModifierList();
+
+	ImGui::Separator();
+	ImGui::Text("Camera Modifiers (%d)", static_cast<int>(Modifiers.size()));
+	ImGui::Separator();
+
+	if (Modifiers.empty())
+	{
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No modifiers");
+		return;
+	}
+
+	for (size_t i = 0; i < Modifiers.size(); i++)
+	{
+		UCameraModifier* Modifier = Modifiers[i];
+		if (!Modifier) continue;
+
+		FString ModifierName = Modifier->GetClass()->GetName().ToString();
+
+		ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+		bool bNodeOpen = ImGui::TreeNodeEx((void*)Modifier, Flags, "%s", ModifierName.c_str());
+
+		if (bNodeOpen)
+		{
+			// Display modifier properties
+			ImGui::Indent();
+
+			// Basic modifier info
+			ImGui::Text("Disabled: %s", Modifier->IsDisabled() ? "true" : "false");
+			ImGui::Text("Priority: %d", Modifier->GetPriority());
+
+			// Special handling for UCameraModifier_CameraShake
+			if (UCameraModifier_CameraShake* ShakeMod = Cast<UCameraModifier_CameraShake>(Modifier))
+			{
+				ImGui::Separator();
+				ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Camera Shake Settings:");
+
+				// Bezier Decay Curve
+				bool bCheckboxChanged = ImGui::Checkbox("Use Bezier Decay Curve", &ShakeMod->bUseBezierDecay);
+				if (bCheckboxChanged)
+				{
+					// Sync to manager default
+					CameraManager->bDefaultUseBezierDecay = ShakeMod->bUseBezierDecay;
+
+					// Static에도 저장
+					APlayerCameraManager::StaticUseBezierDecay = ShakeMod->bUseBezierDecay;
+					APlayerCameraManager::bStaticValuesInitialized = true;
+				}
+
+				if (ShakeMod->bUseBezierDecay)
+				{
+					ImGui::Spacing();
+					ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Shake decay curve (0=start, 1=end):");
+
+					// Draw Bezier widget
+					if (Bezier("Modifier Decay Curve", ShakeMod->BezierCP))
+					{
+						// Sync modifier changes to manager default
+						CameraManager->DefaultShakeBezierCP[0] = ShakeMod->BezierCP[0];
+						CameraManager->DefaultShakeBezierCP[1] = ShakeMod->BezierCP[1];
+						CameraManager->DefaultShakeBezierCP[2] = ShakeMod->BezierCP[2];
+						CameraManager->DefaultShakeBezierCP[3] = ShakeMod->BezierCP[3];
+
+						// Static에도 저장
+						APlayerCameraManager::StaticShakeBezierCP[0] = ShakeMod->BezierCP[0];
+						APlayerCameraManager::StaticShakeBezierCP[1] = ShakeMod->BezierCP[1];
+						APlayerCameraManager::StaticShakeBezierCP[2] = ShakeMod->BezierCP[2];
+						APlayerCameraManager::StaticShakeBezierCP[3] = ShakeMod->BezierCP[3];
+						APlayerCameraManager::bStaticValuesInitialized = true;
+					}
+
+					ImGui::Spacing();
+					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+						"Tip: Drag control points or use sliders");
+					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+						"Current: P1(%.3f, %.3f) P2(%.3f, %.3f)",
+						ShakeMod->BezierCP[0], ShakeMod->BezierCP[1],
+						ShakeMod->BezierCP[2], ShakeMod->BezierCP[3]);
+					ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+						"(Changes will apply to PIE mode)");
+				}
+				else
+				{
+					ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Using linear decay");
+				}
+			}
+
+			ImGui::Unindent();
+			ImGui::TreePop();
+		}
+	}
 }
