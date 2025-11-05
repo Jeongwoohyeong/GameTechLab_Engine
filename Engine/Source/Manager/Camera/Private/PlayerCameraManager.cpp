@@ -8,6 +8,7 @@
 #include "Level/Public/World.h"
 #include "Level/Public/Level.h"
 #include "Component/Collision/Public/ShapeComponent.h"
+#include "Global/Quaternion.h"
 
 IMPLEMENT_CLASS(APlayerCameraManager, AActor)
 
@@ -121,6 +122,7 @@ void APlayerCameraManager::Tick(float DeltaTime)
 	UpdateFade(DeltaTime);
 	UpdateLetterBox(DeltaTime);
 	UpdateViewTransition(DeltaTime);
+	UpdateCameraTransition(DeltaTime);  // New camera transition system
 	UpdateSpringArm(DeltaTime);
 
 	// PIE mode: Apply camera modifiers to CameraComponent
@@ -667,5 +669,207 @@ void APlayerCameraManager::StartCameraShake(float Intensity, float Duration)
 	if (ShakeMod)
 	{
 		ShakeMod->StartShake(Intensity, Duration);
+	}
+}
+
+// ========== Camera Transition System ==========
+
+void APlayerCameraManager::StartTransitionToLocation(
+	const FVector& TargetLocation,
+	const FRotator& TargetRotation,
+	float Duration,
+	ECameraEaseType EaseType,
+	float TargetFOV)
+{
+	if (Duration <= 0.0f)
+	{
+		// Instant transition
+		if (Camera)
+		{
+			Camera->SetLocation(TargetLocation);
+			Camera->SetRotation(TargetRotation);
+			if (TargetFOV > 0.0f)
+			{
+				Camera->SetFovY(TargetFOV);
+			}
+		}
+		else if (CameraComponent)
+		{
+			CameraComponent->SetWorldLocation(TargetLocation);
+			// CameraComponent->SetWorldRotation(TargetRotation);  // TODO: Add rotation support
+			if (TargetFOV > 0.0f)
+			{
+				CameraComponent->SetFieldOfView(TargetFOV);
+			}
+		}
+		return;
+	}
+
+	// Store current state as start
+	if (Camera)
+	{
+		TransitionStartView.Location = Camera->GetLocation();
+		TransitionStartView.Rotation = Camera->GetRotationRotator();
+		TransitionStartView.FOV = Camera->GetFovY();
+		TransitionStartView.Target = nullptr;
+	}
+	else if (CameraComponent)
+	{
+		TransitionStartView.Location = CameraComponent->GetWorldLocation();
+		TransitionStartView.Rotation = FRotator(0, 0, 0);  // TODO: Get actual rotation
+		TransitionStartView.FOV = CameraComponent->GetFieldOfView();
+		TransitionStartView.Target = nullptr;
+	}
+
+	// Store target state
+	TransitionTargetView.Location = TargetLocation;
+	TransitionTargetView.Rotation = TargetRotation;
+	TransitionTargetView.FOV = (TargetFOV > 0.0f) ? TargetFOV : TransitionStartView.FOV;
+	TransitionTargetView.Target = nullptr;
+
+	// Initialize transition state
+	CameraTransitionDuration = Duration;
+	CameraTransitionTimeRemaining = Duration;
+	TransitionEaseType = EaseType;
+	bIsCameraTransitioning = true;
+}
+
+void APlayerCameraManager::StartTransitionToActor(
+	AActor* TargetActor,
+	float Duration,
+	ECameraEaseType EaseType,
+	const FVector& Offset)
+{
+	if (!TargetActor)
+	{
+		return;
+	}
+
+	if (Duration <= 0.0f)
+	{
+		// Instant transition
+		FVector TargetLocation = TargetActor->GetActorLocation() + Offset;
+		FVector Direction = (TargetLocation - TargetActor->GetActorLocation()).GetNormalized();
+		FRotator TargetRotation = FRotator(0, 0, 0);  // TODO: Calculate proper rotation
+
+		if (Camera)
+		{
+			Camera->SetLocation(TargetLocation);
+			Camera->SetRotation(TargetRotation);
+		}
+		else if (CameraComponent)
+		{
+			CameraComponent->SetWorldLocation(TargetLocation);
+		}
+		return;
+	}
+
+	// Store current state as start
+	if (Camera)
+	{
+		TransitionStartView.Location = Camera->GetLocation();
+		TransitionStartView.Rotation = Camera->GetRotationRotator();
+		TransitionStartView.FOV = Camera->GetFovY();
+		TransitionStartView.Target = nullptr;
+	}
+	else if (CameraComponent)
+	{
+		TransitionStartView.Location = CameraComponent->GetWorldLocation();
+		TransitionStartView.Rotation = FRotator(0, 0, 0);
+		TransitionStartView.FOV = CameraComponent->GetFieldOfView();
+		TransitionStartView.Target = nullptr;
+	}
+
+	// Store target state (will be updated dynamically if following actor)
+	TransitionTargetView.Location = TargetActor->GetActorLocation() + Offset;
+	TransitionTargetView.Rotation = FRotator(0, 0, 0);  // Will calculate in update
+	TransitionTargetView.FOV = TransitionStartView.FOV;
+	TransitionTargetView.Target = TargetActor;
+
+	// Initialize transition state
+	TransitionActorOffset = Offset;
+	CameraTransitionDuration = Duration;
+	CameraTransitionTimeRemaining = Duration;
+	TransitionEaseType = EaseType;
+	bIsCameraTransitioning = true;
+}
+
+void APlayerCameraManager::StopCameraTransition()
+{
+	bIsCameraTransitioning = false;
+	CameraTransitionTimeRemaining = 0.0f;
+}
+
+float APlayerCameraManager::GetTransitionProgress() const
+{
+	if (!bIsCameraTransitioning || CameraTransitionDuration <= 0.0f)
+	{
+		return 1.0f;
+	}
+
+	float Alpha = 1.0f - (CameraTransitionTimeRemaining / CameraTransitionDuration);
+	return Clamp(Alpha, 0.0f, 1.0f);
+}
+
+void APlayerCameraManager::UpdateCameraTransition(float DeltaTime)
+{
+	if (!bIsCameraTransitioning)
+	{
+		return;
+	}
+
+	CameraTransitionTimeRemaining -= DeltaTime;
+
+	// Calculate alpha (0 to 1)
+	float RawAlpha = 1.0f - (CameraTransitionTimeRemaining / CameraTransitionDuration);
+	RawAlpha = Clamp(RawAlpha, 0.0f, 1.0f);
+
+	// Apply easing function
+	float Alpha = ApplyEasing(RawAlpha, TransitionEaseType);
+
+	// Update target if following an actor
+	if (TransitionTargetView.Target != nullptr)
+	{
+		TransitionTargetView.Location = TransitionTargetView.Target->GetActorLocation() + TransitionActorOffset;
+
+		// Calculate look-at rotation
+		FVector Direction = (TransitionTargetView.Target->GetActorLocation() - TransitionTargetView.Location).GetNormalized();
+		float Yaw = atan2f(Direction.Y, Direction.X) * (180.0f / 3.14159265359f);
+		float Pitch = asinf(-Direction.Z) * (180.0f / 3.14159265359f);
+		TransitionTargetView.Rotation = FRotator(Pitch, Yaw, 0.0f);
+	}
+
+	// Interpolate location
+	FVector NewLocation = Lerp(TransitionStartView.Location, TransitionTargetView.Location, Alpha);
+
+	// Interpolate rotation using SLERP for smooth rotation
+	FQuaternion StartQuat = TransitionStartView.Rotation.Quaternion();
+	FQuaternion TargetQuat = TransitionTargetView.Rotation.Quaternion();
+	FQuaternion NewQuat = FQuaternion::Slerp(StartQuat, TargetQuat, Alpha);
+	FVector EulerAngles = NewQuat.ToEuler();
+	FRotator NewRotation = FRotator(EulerAngles.Y, EulerAngles.Z, EulerAngles.X);
+
+	// Interpolate FOV
+	float NewFOV = Lerp(TransitionStartView.FOV, TransitionTargetView.FOV, Alpha);
+
+	// Apply to camera
+	if (Camera)
+	{
+		Camera->SetLocation(NewLocation);
+		Camera->SetRotation(NewRotation);
+		Camera->SetFovY(NewFOV);
+	}
+	else if (CameraComponent)
+	{
+		CameraComponent->SetWorldLocation(NewLocation);
+		// CameraComponent->SetWorldRotation(NewRotation);  // TODO: Add rotation support
+		CameraComponent->SetFieldOfView(NewFOV);
+	}
+
+	// Check if transition is complete
+	if (CameraTransitionTimeRemaining <= 0.0f)
+	{
+		bIsCameraTransitioning = false;
+		CameraTransitionTimeRemaining = 0.0f;
 	}
 }

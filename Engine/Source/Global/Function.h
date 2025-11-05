@@ -8,6 +8,20 @@ using std::wstring;
 // ============================================================================
 
 /**
+ * @brief 값을 min과 max 사이로 제한
+ * @tparam T 제한할 타입
+ * @param Value 제한할 값
+ * @param Min 최소값
+ * @param Max 최대값
+ * @return 제한된 값
+ */
+template <typename T>
+T Clamp(const T& Value, const T& Min, const T& Max)
+{
+	return (Value < Min) ? Min : (Value > Max) ? Max : Value;
+}
+
+/**
  * @brief 선형 보간 (Linear Interpolation)
  * @tparam T 보간할 타입 (float, FVector, FQuaternion 등)
  * @param A 시작 값
@@ -22,17 +36,59 @@ T Lerp(const T& A, const T& B, float Alpha)
 }
 
 /**
- * @brief 값을 min과 max 사이로 제한
- * @tparam T 제한할 타입
- * @param Value 제한할 값
- * @param Min 최소값
- * @param Max 최대값
- * @return 제한된 값
+ * @brief 카메라 트랜지션에 사용되는 Easing 타입
  */
-template <typename T>
-T Clamp(const T& Value, const T& Min, const T& Max)
+enum class ECameraEaseType : uint8
 {
-	return (Value < Min) ? Min : (Value > Max) ? Max : Value;
+	Linear,       // 선형 보간
+	EaseIn,       // 천천히 시작
+	EaseOut,      // 천천히 끝
+	EaseInOut,    // 천천히 시작하고 끝
+	SmoothStep,   // 부드러운 시작과 끝
+	SmootherStep  // 더 부드러운 시작과 끝
+};
+
+/**
+ * @brief Easing 함수 적용
+ * @param Alpha 원본 알파 값 [0, 1]
+ * @param EaseType Easing 타입
+ * @return Easing이 적용된 알파 값
+ */
+inline float ApplyEasing(float Alpha, ECameraEaseType EaseType)
+{
+	Alpha = Clamp(Alpha, 0.0f, 1.0f);
+
+	switch (EaseType)
+	{
+	case ECameraEaseType::Linear:
+		return Alpha;
+
+	case ECameraEaseType::EaseIn:
+		// Quadratic ease in
+		return Alpha * Alpha;
+
+	case ECameraEaseType::EaseOut:
+		// Quadratic ease out
+		return Alpha * (2.0f - Alpha);
+
+	case ECameraEaseType::EaseInOut:
+		// Quadratic ease in-out
+		if (Alpha < 0.5f)
+			return 2.0f * Alpha * Alpha;
+		else
+			return 1.0f - pow(-2.0f * Alpha + 2.0f, 2.0f) / 2.0f;
+
+	case ECameraEaseType::SmoothStep:
+		// Cubic smooth step
+		return Alpha * Alpha * (3.0f - 2.0f * Alpha);
+
+	case ECameraEaseType::SmootherStep:
+		// Quintic smooth step
+		return Alpha * Alpha * Alpha * (Alpha * (Alpha * 6.0f - 15.0f) + 10.0f);
+
+	default:
+		return Alpha;
+	}
 }
 
 // ============================================================================

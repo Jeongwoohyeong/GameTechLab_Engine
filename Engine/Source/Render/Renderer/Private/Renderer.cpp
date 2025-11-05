@@ -1274,13 +1274,13 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 			else if (PointLightComponent)
 			{
 				FVector WorldPos = PointLightComponent->GetWorldLocation();
-				UE_LOG("[Renderer] Found PointLight: %s, Visible=%d, Enabled=%d, Intensity=%.2f, WorldPos=(%.2f, %.2f, %.2f), Range=%.2f",
+				/*UE_LOG("[Renderer] Found PointLight: %s, Visible=%d, Enabled=%d, Intensity=%.2f, WorldPos=(%.2f, %.2f, %.2f), Range=%.2f",
 					PointLightComponent->GetName().ToString().c_str(),
 					PointLightComponent->GetVisible(),
 					PointLightComponent->GetLightEnabled(),
 					PointLightComponent->GetIntensity(),
 					WorldPos.X, WorldPos.Y, WorldPos.Z,
-					PointLightComponent->GetAttenuationRadius());
+					PointLightComponent->GetAttenuationRadius());*/
 
 				if (PointLightComponent->GetVisible() &&
 					PointLightComponent->GetLightEnabled())

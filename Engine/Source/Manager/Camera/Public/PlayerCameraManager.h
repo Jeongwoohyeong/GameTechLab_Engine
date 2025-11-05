@@ -171,6 +171,59 @@ public:
 	 */
 	ECameraViewType GetCurrentViewType() const { return CurrentViewType; }
 
+	// ========== Camera Transition System ==========
+
+	/**
+	 * @brief Start a smooth transition to a specific location and rotation
+	 * @param TargetLocation Target camera location
+	 * @param TargetRotation Target camera rotation
+	 * @param Duration Transition duration in seconds
+	 * @param EaseType Easing function type
+	 * @param TargetFOV Target field of view (optional, -1 to keep current)
+	 */
+	void StartTransitionToLocation(
+		const FVector& TargetLocation,
+		const FRotator& TargetRotation,
+		float Duration = 1.0f,
+		ECameraEaseType EaseType = ECameraEaseType::EaseInOut,
+		float TargetFOV = -1.0f
+	);
+
+	/**
+	 * @brief Start a smooth transition to follow an actor
+	 * @param TargetActor Actor to follow
+	 * @param Duration Transition duration in seconds
+	 * @param EaseType Easing function type
+	 * @param Offset Offset from actor (optional)
+	 */
+	void StartTransitionToActor(
+		AActor* TargetActor,
+		float Duration = 1.0f,
+		ECameraEaseType EaseType = ECameraEaseType::EaseInOut,
+		const FVector& Offset = FVector::Zero()
+	);
+
+	/**
+	 * @brief Stop the current camera transition
+	 */
+	void StopCameraTransition();
+
+	/**
+	 * @brief Check if camera is currently transitioning
+	 */
+	bool IsCameraTransitioning() const { return bIsCameraTransitioning; }
+
+	/**
+	 * @brief Get the progress of current transition (0 to 1)
+	 */
+	float GetTransitionProgress() const;
+
+	/**
+	 * @brief Set the easing type for current transition
+	 * @param EaseType New easing type
+	 */
+	void SetTransitionEaseType(ECameraEaseType EaseType) { TransitionEaseType = EaseType; }
+
 	// ========== Camera Modifier System ==========
 
 	/**
@@ -339,6 +392,22 @@ private:
 	float ViewTransitionDuration = 1.0f;
 	float ViewTransitionTimeRemaining = 0.0f;
 	bool bIsTransitioning = false;
+
+	// ========== Camera Transition System ==========
+	bool bIsCameraTransitioning = false;
+	float CameraTransitionDuration = 1.0f;
+	float CameraTransitionTimeRemaining = 0.0f;
+	ECameraEaseType TransitionEaseType = ECameraEaseType::EaseInOut;
+
+	FViewTarget TransitionStartView;  // Starting camera state
+	FViewTarget TransitionTargetView; // Target camera state
+	FVector TransitionActorOffset = FVector::Zero(); // Offset when following actor
+
+	/**
+	 * @brief Update camera transition (manual transitions)
+	 * @param DeltaTime Time since last frame
+	 */
+	void UpdateCameraTransition(float DeltaTime);
 
 	// ========== Camera Modifiers ==========
 	TArray<UCameraModifier*> ModifierList;
