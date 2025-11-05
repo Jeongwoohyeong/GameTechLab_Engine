@@ -7,6 +7,8 @@
 #include "Component/Mesh/Public/StaticMeshComponent.h"
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Component/Camera/Public/CameraComponent.h"
+#include "Component/Public/PointLightComponent.h"
+
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
 APlayerCharacter::APlayerCharacter()
@@ -18,6 +20,7 @@ APlayerCharacter::APlayerCharacter()
 	bCanEverTick = true;
 	MovementSpeed = 100.0f;
 	this->AddTag("Player");
+
 	// StaticMesh 추가
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>();
 	if (!StaticMeshComponent)
@@ -53,11 +56,6 @@ APlayerCharacter::APlayerCharacter()
 		UE_LOG("[PlayerCharacter] SphereCollision created");
 	}
 
-	// CollisionComp를 APawn에서 생성 후 RootComp로 지정
-	// Create RootComponent first (required for Actor Transform)
-	// USceneComponent* RootComp = CreateDefaultSubobject<USceneComponent>();
-	// SetRootComponent(RootComp);
-
 	// ✅ Create Camera Component
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>();
 	if (!CameraComponent)
@@ -79,6 +77,36 @@ APlayerCharacter::APlayerCharacter()
 		CameraComponent->SetFarClipPlane(10000.0f);
 
 		UE_LOG("[PlayerCharacter] CameraComponent created and configured");
+	}
+
+	// ✅ Create PointLight1 (attach to StaticMeshComponent, scale down by 10)
+	PointLight1 = CreateDefaultSubobject<UPointLightComponent>();
+	if (PointLight1)
+	{
+		PointLight1->AttachToComponent(StaticMeshComponent);
+		PointLight1->SetRelativeLocation(FVector(-6.0f , -0.8f , 1.5f ));
+		PointLight1->SetIntensity(20.0f);
+		PointLight1->SetAttenuationRadius(200.8f);
+		PointLight1->SetDistanceFalloffExponent(16.0f);
+		PointLight1->SetLightColor(FVector(1.0f, 0.2549f, 0.0f));  // RGB (255, 65, 0)
+		PointLight1->SetVisible(true);
+		PointLight1->SetLightEnabled(false);
+		UE_LOG("[PlayerCharacter] PointLight1 created in Constructor");
+	}
+
+	// ✅ Create PointLight2 (attach to StaticMeshComponent, scale down by 10)
+	PointLight2 = CreateDefaultSubobject<UPointLightComponent>();
+	if (PointLight2)
+	{
+		PointLight2->AttachToComponent(StaticMeshComponent);
+		PointLight2->SetRelativeLocation(FVector(-6.0f, 0.8f , 1.5f));
+		PointLight2->SetIntensity(20.0f);
+		PointLight2->SetAttenuationRadius(200.8f);
+		PointLight2->SetDistanceFalloffExponent(16.0f);
+		PointLight2->SetLightColor(FVector(1.0f, 0.2549f, 0.0f));  // RGB (255, 65, 0)
+		PointLight2->SetVisible(true);
+		PointLight2->SetLightEnabled(false);
+		UE_LOG("[PlayerCharacter] PointLight2 created in Constructor");
 	}
 
 	// ✅ Lua 스크립트 활성화 (BeginPlay에서 PlayerWeapon 로드)
@@ -127,6 +155,21 @@ void APlayerCharacter::BeginPlay()
 		UE_LOG("[PlayerCharacter] CollisionComponent registered to Level");
 	}
 
+	// 포인트 라이트 컴포넌트를 Level에 등록
+	// InitializeComponents에서 생성되므로 여기서 등록
+	if (PointLight1)
+	{
+		RegisterComponent(PointLight1);
+		UE_LOG("[PlayerCharacter] PointLight1 registered to Level (Intensity=%.2f, Enabled=%d)",
+			PointLight1->GetIntensity(), PointLight1->GetLightEnabled());
+	}
+	if (PointLight2)
+	{
+		RegisterComponent(PointLight2);
+		UE_LOG("[PlayerCharacter] PointLight2 registered to Level (Intensity=%.2f, Enabled=%d)",
+			PointLight2->GetIntensity(), PointLight2->GetLightEnabled());
+	}
+
 	UE_LOG("[PlayerCharacter] BeginPlay: %s at (%.1f, %.1f, %.1f)",
 		GetName().ToString().c_str(),
 		GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z);
@@ -140,6 +183,19 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Tick 끝에서 이동 상태에 따라 라이트 업데이트
+	if (PointLight1)
+	{
+		PointLight1->SetLightEnabled(bIsMovingForward);
+	}
+	if (PointLight2)
+	{
+		PointLight2->SetLightEnabled(bIsMovingForward);
+	}
+
+	// 다음 프레임을 위해 리셋 (입력이 없으면 false로 유지됨)
+	bIsMovingForward = false;
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -148,6 +204,9 @@ void APlayerCharacter::MoveForward(float Value)
 	{
 		return;
 	}
+
+	// W키를 누르면 이동 상태 ON (Tick에서 라이트를 켬)
+	bIsMovingForward = true;
 
 	// Actor의 Forward 방향 계산 (로컬 좌표계)
 	FQuaternion Rotation = GetActorRotation();

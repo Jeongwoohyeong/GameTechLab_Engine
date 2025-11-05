@@ -1264,18 +1264,30 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 		if (auto PointLightComponent = Cast<UPointLightComponent>(LightComponent))
 		{
 			auto SpotLightComponent = Cast<USpotLightComponent>(LightComponent);
-			
+
 			if (SpotLightComponent &&
 				SpotLightComponent->GetVisible() &&
 				SpotLightComponent->GetLightEnabled())
 			{
 				RenderingContext.SpotLights.push_back(SpotLightComponent);
 			}
-			else if (PointLightComponent &&
-				PointLightComponent->GetVisible() &&
-				PointLightComponent->GetLightEnabled())
+			else if (PointLightComponent)
 			{
-				RenderingContext.PointLights.push_back(PointLightComponent);
+				FVector WorldPos = PointLightComponent->GetWorldLocation();
+				UE_LOG("[Renderer] Found PointLight: %s, Visible=%d, Enabled=%d, Intensity=%.2f, WorldPos=(%.2f, %.2f, %.2f), Range=%.2f",
+					PointLightComponent->GetName().ToString().c_str(),
+					PointLightComponent->GetVisible(),
+					PointLightComponent->GetLightEnabled(),
+					PointLightComponent->GetIntensity(),
+					WorldPos.X, WorldPos.Y, WorldPos.Z,
+					PointLightComponent->GetAttenuationRadius());
+
+				if (PointLightComponent->GetVisible() &&
+					PointLightComponent->GetLightEnabled())
+				{
+					RenderingContext.PointLights.push_back(PointLightComponent);
+					UE_LOG("[Renderer] PointLight ADDED to RenderingContext!");
+				}
 			}
 		}
 

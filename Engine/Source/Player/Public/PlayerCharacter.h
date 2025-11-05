@@ -3,6 +3,7 @@
 
 class USphereComponent;
 class UCameraComponent;
+class UPointLightComponent;
 struct FHitResult;
 
 
@@ -19,6 +20,9 @@ class APlayerCharacter : public APawn
 public:
     APlayerCharacter();
     virtual ~APlayerCharacter();
+
+    // UObject interface
+
 
     // Lifecycle
     virtual void BeginPlay() override;
@@ -53,7 +57,12 @@ protected:
     // Mouse sensitivity for pitch/yaw rotation
     float MouseSensitivity = 10.0f;
 
+    // Track forward movement for engine lights
+    bool bIsMovingForward = false;
+
     USphereComponent* CollisionComponent = nullptr;
     UStaticMeshComponent* StaticMeshComponent = nullptr;
     UCameraComponent* CameraComponent = nullptr;
+    UPointLightComponent* PointLight1 = nullptr;
+    UPointLightComponent* PointLight2 = nullptr;
 };
