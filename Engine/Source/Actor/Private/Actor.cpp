@@ -125,6 +125,12 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
         		{
         			LightComponent->RefreshVisualizationIconBinding();
         		}
+
+        		// Assign LuaScriptComponent pointer if found during load
+        		if (ULuaScriptComponent* LoadedLuaComp = Cast<ULuaScriptComponent>(Component))
+        		{
+        			LuaScriptComponent = LoadedLuaComp;
+        		}
         	}
 
         	if (RootComponent)
@@ -155,6 +161,13 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			float CustomTimeDilationValue;
 			FJsonSerializer::ReadFloat(InOutHandle, "CustomTimeDilation", CustomTimeDilationValue, 1.0f);
 			CustomTimeDilation = CustomTimeDilationValue;
+
+			// Initialize LuaScriptComponent if bUseScript is true
+			// Component's ScriptName will be loaded via Component->Serialize() above
+			if (bUseScript && !LuaScriptComponent)
+			{
+				InitLuaScriptComponent();
+			}
         }
     }
     // 저장 (Save)
