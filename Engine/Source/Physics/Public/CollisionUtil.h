@@ -2,6 +2,7 @@
 #include "Component/Collision/Public/SphereComponent.h"
 #include "Component/Collision/Public/BoxComponent.h"
 #include "Component/Collision/Public/CapsuleComponent.h"
+#include "Physics/Public/OBB.h"
 
 /**
  * @file CollisionUtil.h

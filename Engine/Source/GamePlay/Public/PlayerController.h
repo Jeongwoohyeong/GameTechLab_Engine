@@ -5,6 +5,7 @@ class APlayerCharacter;
 class APawn;
 class UPlayerInput;
 class AActor;
+class APlayerCameraManager;
 
 class APlayerController : public AActor
 {
@@ -29,6 +30,20 @@ public:
     // Getter for PlayerInput (Shift + F1)
     UPlayerInput* GetPlayerInput() const { return PlayerInput; }
 
+    // ========== Camera Manager ==========
+
+    /**
+     * @brief Set the player camera manager
+     * @param InCameraManager The camera manager to use
+     */
+    void SetPlayerCameraManager(APlayerCameraManager* InCameraManager);
+
+    /**
+     * @brief Get the player camera manager
+     * @return The player camera manager
+     */
+    APlayerCameraManager* GetPlayerCameraManager() const { return PlayerCameraManager; }
+
 private:
     // Value값의 부호를 바꾸면 반대방향 이동
     void MoveForward(float Value);
@@ -39,6 +54,7 @@ private:
 private:
     TWeakObjectPtr<AActor> ControlledActor;
     UPlayerInput* PlayerInput = nullptr;
+    APlayerCameraManager* PlayerCameraManager = nullptr;
 
     float MoveSpeed = 1.0f;
 };

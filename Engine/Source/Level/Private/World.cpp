@@ -5,6 +5,7 @@
 #include "Component/Public/ULuaScriptComponent.h"
 #include "GameMode/Public/GameMode.h"
 #include "GameMode/Public/GameModeBase.h"
+#include "GamePlay/Public/PlayerController.h"
 #include "Utility/Public/JsonSerializer.h"
 #include "Manager/Config/Public/ConfigManager.h"
 #include "Manager/Path/Public/PathManager.h"
@@ -123,7 +124,20 @@ void UWorld::Tick(float DeltaTimes)
 		// PIE 모드일 때 PlayerCameraManager 업데이트
 		if (WorldType == EWorldType::PIE)
 		{
-			APlayerCameraManager::GetInstance().Tick(DeltaTimes);
+			// Get PlayerCameraManager from PlayerController
+			AGameMode* GameMode = Cast<AGameMode>(GetGameMode());
+			if (GameMode)
+			{
+				APlayerController* PC = GameMode->GetPlayerController();
+				if (PC)
+				{
+					APlayerCameraManager* CamMgr = PC->GetPlayerCameraManager();
+					if (CamMgr)
+					{
+						CamMgr->Tick(DeltaTimes);
+					}
+				}
+			}
 		}
 
 		// Make a copy of the actor list to avoid iterator invalidation

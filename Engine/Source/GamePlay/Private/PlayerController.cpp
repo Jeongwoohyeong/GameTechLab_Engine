@@ -62,6 +62,11 @@ APawn* APlayerController::GetControlledPawn() const
     return Cast<APawn>(GetControlledActor());
 }
 
+void APlayerController::SetPlayerCameraManager(APlayerCameraManager* InCameraManager)
+{
+    PlayerCameraManager = InCameraManager;
+}
+
 void APlayerController::MoveForward(float Value)
 {
     if (!ControlledActor.IsValid())

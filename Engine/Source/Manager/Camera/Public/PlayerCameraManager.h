@@ -36,10 +36,10 @@ struct FViewTarget
  */
 class APlayerCameraManager : public AActor
 {
+	GENERATED_BODY()
+	DECLARE_CLASS(APlayerCameraManager, AActor)
 
 public:
-    // Singleton access
-    static APlayerCameraManager& GetInstance();
 
     /**
 	 * @brief Initialize the camera manager (Editor mode)
@@ -146,6 +146,17 @@ public:
 	 */
 	bool IsSpringArmEnabled() const { return bSpringArmEnabled; }
 
+	/**
+	 * @brief Enable/disable spring arm collision test
+	 * @param bEnabled true to enable collision test, false to disable
+	 */
+	void SetSpringArmCollisionEnabled(bool bEnabled) { bEnableCollisionTest = bEnabled; }
+
+	/**
+	 * @brief Get spring arm collision test enabled state
+	 */
+	bool IsSpringArmCollisionEnabled() const { return bEnableCollisionTest; }
+
 	// ========== Camera View Type ==========
 
 	/**
@@ -161,6 +172,12 @@ public:
 	ECameraViewType GetCurrentViewType() const { return CurrentViewType; }
 
 	// ========== Camera Modifier System ==========
+
+	/**
+	 * @brief Get all camera modifiers
+	 * @return Reference to modifier list
+	 */
+	const TArray<UCameraModifier*>& GetModifierList() const { return ModifierList; }
 
 	/**
 	 * @brief Add a camera modifier
@@ -206,16 +223,36 @@ public:
 	 */
 	void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
 
-private:
-    // Private constructor for Singleton
-    APlayerCameraManager();
-    ~APlayerCameraManager();
+	// ========== Default Camera Shake Settings ==========
 
-    // Delete copy/move constructors and assignments
-    APlayerCameraManager(const APlayerCameraManager&) = delete;
-    APlayerCameraManager& operator=(const APlayerCameraManager&) = delete;
-    APlayerCameraManager(APlayerCameraManager&&) = delete;
-    APlayerCameraManager& operator=(APlayerCameraManager&&) = delete;
+	/**
+	 * @brief Default Bezier curve control points for shake decay
+	 * Editor에서 설정한 값이 PIE/Game 모드로 전달됨
+	 */
+	float DefaultShakeBezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };  // easeOutQuad
+
+	/**
+	 * @brief Use Bezier curve for shake decay by default
+	 */
+	bool bDefaultUseBezierDecay = true;
+
+	/**
+	 * @brief Static storage for Editor→PIE value transfer
+	 * 에디터에서 수정한 값을 PIE로 전달하기 위한 static 저장소
+	 */
+	static float StaticShakeBezierCP[4];
+	static bool StaticUseBezierDecay;
+	static bool bStaticValuesInitialized;
+
+	// ========== Lifecycle ==========
+
+	APlayerCameraManager();
+	virtual ~APlayerCameraManager();
+
+	/**
+	 * @brief Initialize default modifiers
+	 */
+	virtual void BeginPlay() override;
 
 private:
 	/**
@@ -241,12 +278,6 @@ private:
 	 * @param DeltaTime Time since last frame
 	 */
 	void UpdateViewTransition(float DeltaTime);
-
-	/**
-	 * @brief Update camera shake
-	 * @param DeltaTime Time since last frame
-	 */
-	void UpdateCameraShake(float DeltaTime);
 
 	/**
 	 * @brief Apply all camera modifiers
@@ -311,11 +342,4 @@ private:
 
 	// ========== Camera Modifiers ==========
 	TArray<UCameraModifier*> ModifierList;
-
-	// ========== Camera Shake ==========
-	bool bIsCameraShaking = false;
-	float CameraShakeTimer = 0.0f;
-	float CameraShakeDuration = 0.5f;
-	float CameraShakeIntensity = 1.0f;
-	FVector ShakeOffset = FVector::Zero();
 };

@@ -108,9 +108,9 @@ void APlayerCharacter::BeginPlay()
 
 	if (LuaComp)
 	{
-		UE_LOG("[PlayerCharacter] Setting script name to PlayerWeapon...");
-		LuaComp->SetScriptName(FString("PlayerWeapon"));
-		UE_LOG("[PlayerCharacter] PlayerWeapon script name set!");
+		UE_LOG("[PlayerCharacter] Setting script name to PlayerCharacter.lua...");
+		LuaComp->SetScriptName(FString("Scripts/Player/PlayerCharacter.lua"));
+		UE_LOG("[PlayerCharacter] PlayerCharacter.lua script name set!");
 	}
 	else
 	{

@@ -181,7 +181,11 @@ public:
 	 * @brief Set camera shake offset (applied by PlayerCameraManager)
 	 * @param InOffset Shake offset vector
 	 */
-	void SetCameraShakeOffset(const FVector& InOffset) { CameraShakeOffset = InOffset; }
+	void SetCameraShakeOffset(const FVector& InOffset)
+	{
+		CameraShakeOffset = InOffset;
+		bViewMatrixDirty = true;  // Force view matrix recalculation
+	}
 
 	/**
 	 * @brief Get current camera shake offset
