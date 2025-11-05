@@ -18,7 +18,7 @@ class FViewport;
 class FViewportClient;
 class UCamera;
 class UPipeline;
-
+class FLetterboxPass;
 // URenderer 내부에서 셰이더들은 용도에 따라 분류될 수 있음.
 // 용도별로 Create Shader 메소드가 존재함. (e.g. CreateStaticmeshShader)
 enum class ShaderUsage
@@ -28,6 +28,7 @@ enum class ShaderUsage
 	DECAL,
 	FOG,
 	FXAA,
+	LETTERBOX,
 	STATICMESH,
 	GIZMO,
 	CLUSTERED_RENDERING_GRID,
@@ -58,6 +59,7 @@ public:
 	void CreateFogShader();
 	void CreateConstantBuffers();
 	void CreateFXAAShader();
+	void CreateLetterboxShader();
 	void CreateStaticMeshShader();
 	void CreateGizmoShader();
 	void CreateClusteredRenderingGrid();
@@ -107,6 +109,9 @@ public:
 	UPipeline* GetPipeline() const { return Pipeline; }
 	bool GetIsResizing() const { return bIsResizing; }
 	bool GetFXAA() const { return bFXAAEnabled; }
+	bool GetLetterbox() const { return bLetterboxEnabled; }
+	float GetLetterboxAspectRatio() const { return LetterboxAspectRatio; }
+	void SetLetterboxAspectRatio(float AspectRatio) { LetterboxAspectRatio = AspectRatio; }
 
 	ID3D11DepthStencilState* GetDefaultDepthStencilState() const { return DefaultDepthStencilState; }
 	ID3D11DepthStencilState* GetDisabledDepthStencilState() const { return DisabledDepthStencilState; }
@@ -159,6 +164,12 @@ private:
 	ID3D11PixelShader* FXAAPixelShader = nullptr;
 	ID3D11InputLayout* FXAAInputLayout = nullptr;
 	ID3D11SamplerState* FXAASamplerState = nullptr;
+
+	// Letterbox Shaders
+	ID3D11VertexShader* LetterboxVertexShader = nullptr;
+	ID3D11PixelShader* LetterboxPixelShader = nullptr;
+	ID3D11InputLayout* LetterboxInputLayout = nullptr;
+	ID3D11SamplerState* LetterboxSamplerState = nullptr;
 
 	// StaticMesh Shaders
 	ID3D11VertexShader* UberLitVertexShader = nullptr;
@@ -220,12 +231,15 @@ private:
 	
 	bool bIsResizing = false;
 	bool bFXAAEnabled = true;
+	bool bLetterboxEnabled = false;
+	float LetterboxAspectRatio = 21.0f / 9.0f; // 기본값: 21:9 시네마틱
 
 	FRenderingContext RenderingContext{};
 
 	TArray<class FRenderPass*> RenderPasses;
 
 	FFXAAPass* FXAAPass = nullptr;
+	FLetterboxPass* LetterboxPass = nullptr;
 	FLightPass* LightPass = nullptr;
 	FClusteredRenderingGridPass* ClusteredRenderingGridPass = nullptr;
 	FShadowMapPass* ShadowMapPass = nullptr;

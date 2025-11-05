@@ -11,6 +11,14 @@ struct alignas(16) FFXAAConstants
     float FXAAReduceMul = 1.0f / 16.0f;
     float FXAAReduceMin = 1.0f / 256.0f;
     float Padding = 0.0f;
+    float Padding2 = 0.0f;
+    float Padding3 = 0.0f;
+
+    // SceneColor 텍스처 UV 매핑 정보
+    float ViewportUVOffsetX = 0.0f;
+    float ViewportUVOffsetY = 0.0f;
+    float ViewportUVScaleX = 1.0f;
+    float ViewportUVScaleY = 1.0f;
 };
 
 class FFXAAPass : public FRenderPass
@@ -53,6 +61,13 @@ public:
 	void SetInputLayout(ID3D11InputLayout* InLayout) { InputLayout = InLayout; }
 	void SetSamplerState(ID3D11SamplerState* InSampler) { SamplerState = InSampler; }
 
+	/**
+	 * @brief 출력 렌더 타겟을 설정합니다.
+	 * nullptr을 전달하면 백버퍼로 렌더링합니다.
+	 * @param InOutputRTV 출력 렌더 타겟 뷰 (nullptr = 백버퍼)
+	 */
+	void SetOutputRenderTarget(ID3D11RenderTargetView* InOutputRTV) { OutputRTV = InOutputRTV; }
+
 private:
 	/**
 	 * @brief 전체 화면 사각형을 초기화합니다.
@@ -84,4 +99,7 @@ private:
 
     ID3D11Buffer* FXAAConstantBuffer = nullptr;
     FFXAAConstants FXAAParams{};
+
+    // 출력 렌더 타겟 (nullptr이면 백버퍼 사용)
+    ID3D11RenderTargetView* OutputRTV = nullptr;
 };

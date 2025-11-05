@@ -508,6 +508,69 @@ void UMainBarWidget::RenderShowFlagsMenu()
 			CurrentLevel->SetShowFlags(ShowFlags);
 		}
 
+		// Letterbox 표시 옵션
+		bool bEnableLetterbox = (ShowFlags & EEngineShowFlags::SF_Letterbox) != 0;
+		if (ImGui::MenuItem("Letterbox 적용", nullptr, bEnableLetterbox))
+		{
+			if (bEnableLetterbox)
+			{
+				ShowFlags &= ~static_cast<uint64>(EEngineShowFlags::SF_Letterbox);
+				UE_LOG("MainBarWidget: Letterbox 비활성화");
+			}
+			else
+			{
+				ShowFlags |= static_cast<uint64>(EEngineShowFlags::SF_Letterbox);
+				UE_LOG("MainBarWidget: Letterbox 활성화");
+			}
+			CurrentLevel->SetShowFlags(ShowFlags);
+		}
+
+		// Letterbox가 활성화된 경우 종횡비 설정
+		if (bEnableLetterbox)
+		{
+			ImGui::Indent();
+
+			// 현재 렌더러에서 종횡비 값 가져오기
+			URenderer& Renderer = URenderer::GetInstance();
+			float CurrentAspectRatio = Renderer.GetLetterboxAspectRatio();
+
+			// 종횡비 슬라이더
+			if (ImGui::SliderFloat("종횡비", &CurrentAspectRatio, 1.0f, 3.0f, "%.2f"))
+			{
+				Renderer.SetLetterboxAspectRatio(CurrentAspectRatio);
+				UE_LOG("MainBarWidget: Letterbox 종횡비 변경: %.2f", CurrentAspectRatio);
+			}
+
+			// 프리셋 버튼들
+			ImGui::Text("프리셋:");
+			ImGui::SameLine();
+
+			// 16:9 프리셋
+			if (ImGui::SmallButton("16:9"))
+			{
+				Renderer.SetLetterboxAspectRatio(16.0f / 9.0f);
+				UE_LOG("MainBarWidget: Letterbox 종횡비를 16:9로 설정");
+			}
+			ImGui::SameLine();
+
+			// 21:9 프리셋 (울트라와이드)
+			if (ImGui::SmallButton("21:9"))
+			{
+				Renderer.SetLetterboxAspectRatio(21.0f / 9.0f);
+				UE_LOG("MainBarWidget: Letterbox 종횡비를 21:9로 설정");
+			}
+			ImGui::SameLine();
+
+			// 2.39:1 프리셋 (시네마스코프)
+			if (ImGui::SmallButton("2.39:1"))
+			{
+				Renderer.SetLetterboxAspectRatio(2.39f);
+				UE_LOG("MainBarWidget: Letterbox 종횡비를 2.39:1로 설정");
+			}
+
+			ImGui::Unindent();
+		}
+
 		ImGui::EndMenu();
 	}
 }
