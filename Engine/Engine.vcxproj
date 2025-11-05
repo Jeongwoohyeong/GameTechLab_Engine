@@ -411,6 +411,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     <ClInclude Include="Source\Component\Public\SceneComponent.h" />
     <ClInclude Include="Source\Component\Mesh\Public\VertexDatas.h" />
     <ClInclude Include="Source\Core\Public\Archive.h" />
+    <ClInclude Include="Source\Core\Public\AudioEngine.h" />
     <ClInclude Include="Source\Core\Public\NewObject.h" />
     <ClInclude Include="Source\Core\Public\ObjectIterator.h" />
     <ClInclude Include="Source\Core\Public\WindowsBinReader.h" />
@@ -736,6 +737,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     <ClCompile Include="Source\Component\Private\SceneComponent.cpp" />
     <ClCompile Include="Source\Component\Mesh\Private\VertexDatas.cpp" />
     <ClCompile Include="Source\Core\Private\Archive.cpp" />
+    <ClCompile Include="Source\Core\Private\AudioEngine.cpp" />
     <ClCompile Include="Source\Core\Private\ObjectIterator.cpp" />
     <ClCompile Include="Source\Core\Private\WindowsBinWriter.cpp" />
     <ClCompile Include="Source\Core\Public\WindowsBinReader.cpp" />
