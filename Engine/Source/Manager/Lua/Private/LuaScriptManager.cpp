@@ -1072,7 +1072,6 @@ void FLuaScriptManager::BindTypes()
         "StopCameraTransition", &APlayerCameraManager::StopCameraTransition,
         "IsCameraTransitioning", &APlayerCameraManager::IsCameraTransitioning,
         "GetTransitionProgress", &APlayerCameraManager::GetTransitionProgress,
-        "SetTransitionEaseType", &APlayerCameraManager::SetTransitionEaseType,
         "SetTransitionBezierControlPoints", [](APlayerCameraManager* Mgr,
                                                 float P1x, float P1y, float P2x, float P2y) {
             if (Mgr) {

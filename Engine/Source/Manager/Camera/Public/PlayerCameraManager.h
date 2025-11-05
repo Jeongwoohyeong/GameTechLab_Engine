@@ -3,6 +3,7 @@
 #include "Actor/Public/Actor.h"
 
 class UCameraModifier;
+class UCameraModifier_CameraTransition;
 class UCamera;
 class UCameraComponent;
 class APawn;
@@ -22,6 +23,8 @@ enum class ECameraViewType : uint8
 /**
  * @brief View target struct for camera interpolation
  */
+#ifndef FVIEWTARGET_DEFINED
+#define FVIEWTARGET_DEFINED
 struct FViewTarget
 {
 	AActor* Target = nullptr;
@@ -29,6 +32,7 @@ struct FViewTarget
 	FRotator Rotation = FRotator(0.0f, 0.0f, 0.0f);
 	float FOV = 90.0f;
 };
+#endif
 
 /**
  * @brief APlayerCameraManager - Manages the player's camera
@@ -71,9 +75,14 @@ public:
 	AActor* GetViewTarget() const { return ViewTarget.Target; }
 
 	/**
-	 * @brief Get the managed camera
+	 * @brief Get the managed camera (Editor mode)
 	 */
 	UCamera* GetCamera() const { return Camera; }
+
+	/**
+	 * @brief Get the managed camera component (PIE/Game mode)
+	 */
+	UCameraComponent* GetCameraComponent() const { return CameraComponent; }
 
 	// ========== Fade System ==========
 
@@ -171,7 +180,7 @@ public:
 	 */
 	ECameraViewType GetCurrentViewType() const { return CurrentViewType; }
 
-	// ========== Camera Transition System ==========
+	// ========== Camera Transition System (Modifier-Based) ==========
 
 	/**
 	 * @brief Start a smooth transition to a specific location and rotation
@@ -215,7 +224,7 @@ public:
 	/**
 	 * @brief Check if camera is currently transitioning
 	 */
-	bool IsCameraTransitioning() const { return bIsCameraTransitioning; }
+	bool IsCameraTransitioning() const;
 
 	/**
 	 * @brief Get the progress of current transition (0 to 1)
@@ -223,27 +232,15 @@ public:
 	float GetTransitionProgress() const;
 
 	/**
-	 * @brief Set the easing type for current transition
-	 * @param EaseType New easing type
-	 */
-	void SetTransitionEaseType(ECameraEaseType EaseType) { TransitionEaseType = EaseType; }
-
-	/**
 	 * @brief Set custom Bezier control points for transitions
 	 * @param CP Control points [4]: P1.x, P1.y, P2.x, P2.y
 	 */
-	void SetTransitionBezierControlPoints(const float CP[4])
-	{
-		TransitionBezierCP[0] = CP[0];
-		TransitionBezierCP[1] = CP[1];
-		TransitionBezierCP[2] = CP[2];
-		TransitionBezierCP[3] = CP[3];
-	}
+	void SetTransitionBezierControlPoints(const float CP[4]);
 
 	/**
 	 * @brief Get current Bezier control points
 	 */
-	const float* GetTransitionBezierControlPoints() const { return TransitionBezierCP; }
+	const float* GetTransitionBezierControlPoints() const;
 
 	// ========== Camera Modifier System ==========
 
@@ -413,23 +410,6 @@ private:
 	float ViewTransitionDuration = 1.0f;
 	float ViewTransitionTimeRemaining = 0.0f;
 	bool bIsTransitioning = false;
-
-	// ========== Camera Transition System ==========
-	bool bIsCameraTransitioning = false;
-	float CameraTransitionDuration = 1.0f;
-	float CameraTransitionTimeRemaining = 0.0f;
-	ECameraEaseType TransitionEaseType = ECameraEaseType::EaseInOut;
-	float TransitionBezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };  // Default: easeOutQuad
-
-	FViewTarget TransitionStartView;  // Starting camera state
-	FViewTarget TransitionTargetView; // Target camera state
-	FVector TransitionActorOffset = FVector::Zero(); // Offset when following actor
-
-	/**
-	 * @brief Update camera transition (manual transitions)
-	 * @param DeltaTime Time since last frame
-	 */
-	void UpdateCameraTransition(float DeltaTime);
 
 	// ========== Camera Modifiers ==========
 	TArray<UCameraModifier*> ModifierList;

@@ -2,6 +2,7 @@
 #include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Manager/Camera/Public/CameraModifier.h"
 #include "Manager/Camera/Public/CameraModifier_CameraShake.h"
+#include "Manager/Camera/Public/CameraModifier_CameraTransition.h"
 #include "Editor/Public/Camera.h"
 #include "Component/Camera/Public/CameraComponent.h"
 #include "Pawn/Public/Pawn.h"
@@ -86,6 +87,7 @@ void APlayerCameraManager::BeginPlay()
 	// Add default modifiers if none exist
 	if (ModifierList.empty())
 	{
+		// Camera Shake Modifier
 		UCameraModifier_CameraShake* ShakeMod = new UCameraModifier_CameraShake();
 
 		// Apply default Bezier settings from this manager
@@ -96,6 +98,10 @@ void APlayerCameraManager::BeginPlay()
 		ShakeMod->bUseBezierDecay = bDefaultUseBezierDecay;
 
 		AddCameraModifier(ShakeMod);
+
+		// Camera Transition Modifier (미리 생성해서 UI에서 베지어 곡선 표시 가능)
+		UCameraModifier_CameraTransition* TransitionMod = new UCameraModifier_CameraTransition();
+		AddCameraModifier(TransitionMod);
 	}
 }
 
@@ -122,7 +128,6 @@ void APlayerCameraManager::Tick(float DeltaTime)
 	UpdateFade(DeltaTime);
 	UpdateLetterBox(DeltaTime);
 	UpdateViewTransition(DeltaTime);
-	UpdateCameraTransition(DeltaTime);  // New camera transition system
 	UpdateSpringArm(DeltaTime);
 
 	// PIE mode: Apply camera modifiers to CameraComponent
@@ -282,6 +287,12 @@ void APlayerCameraManager::SetSpringArmParams(FVector Offset, float ArmLength, f
 
 void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 {
+	// Skip SpringArm updates if camera transition is active (transition controls camera)
+	if (IsCameraTransitioning())
+	{
+		return;
+	}
+
 	if (!bSpringArmEnabled || (!Camera && !CameraComponent) || !ViewTarget.Target)
 	{
 		return;
@@ -682,69 +693,17 @@ void APlayerCameraManager::StartTransitionToLocation(
 	float TargetFOV,
 	const float* BezierCP)
 {
-	if (Duration <= 0.0f)
+	// Get or create transition modifier
+	UCameraModifier_CameraTransition* TransitionModifier = FindModifier<UCameraModifier_CameraTransition>();
+	if (!TransitionModifier)
 	{
-		// Instant transition
-		if (Camera)
-		{
-			Camera->SetLocation(TargetLocation);
-			Camera->SetRotation(TargetRotation);
-			if (TargetFOV > 0.0f)
-			{
-				Camera->SetFovY(TargetFOV);
-			}
-		}
-		else if (CameraComponent)
-		{
-			CameraComponent->SetWorldLocation(TargetLocation);
-			CameraComponent->SetWorldRotation(TargetRotation.Quaternion());
-			if (TargetFOV > 0.0f)
-			{
-				CameraComponent->SetFieldOfView(TargetFOV);
-			}
-		}
-		return;
+		TransitionModifier = NewObject<UCameraModifier_CameraTransition>();
+		TransitionModifier->Initialize(this);
+		AddCameraModifier(TransitionModifier);
 	}
 
-	// Store current state as start
-	if (Camera)
-	{
-		TransitionStartView.Location = Camera->GetLocation();
-		TransitionStartView.Rotation = Camera->GetRotationRotator();
-		TransitionStartView.FOV = Camera->GetFovY();
-		TransitionStartView.Target = nullptr;
-	}
-	else if (CameraComponent)
-	{
-		TransitionStartView.Location = CameraComponent->GetWorldLocation();
-		// Get current rotation from component
-		FVector EulerRot = CameraComponent->GetWorldRotation();
-		TransitionStartView.Rotation = FRotator(EulerRot.X, EulerRot.Y, EulerRot.Z);
-		TransitionStartView.FOV = CameraComponent->GetFieldOfView();
-		TransitionStartView.Target = nullptr;
-	}
-
-	// Store target state
-	TransitionTargetView.Location = TargetLocation;
-	TransitionTargetView.Rotation = TargetRotation;
-	TransitionTargetView.FOV = (TargetFOV > 0.0f) ? TargetFOV : TransitionStartView.FOV;
-	TransitionTargetView.Target = nullptr;
-
-	// Initialize transition state
-	CameraTransitionDuration = Duration;
-	CameraTransitionTimeRemaining = Duration;
-	TransitionEaseType = EaseType;
-
-	// Store Bezier control points if provided
-	if (BezierCP != nullptr)
-	{
-		TransitionBezierCP[0] = BezierCP[0];
-		TransitionBezierCP[1] = BezierCP[1];
-		TransitionBezierCP[2] = BezierCP[2];
-		TransitionBezierCP[3] = BezierCP[3];
-	}
-
-	bIsCameraTransitioning = true;
+	// Start transition through modifier
+	TransitionModifier->StartTransitionToLocation(TargetLocation, TargetRotation, Duration, EaseType, TargetFOV, BezierCP);
 }
 
 void APlayerCameraManager::StartTransitionToActor(
@@ -754,150 +713,66 @@ void APlayerCameraManager::StartTransitionToActor(
 	const FVector& Offset,
 	const float* BezierCP)
 {
-	if (!TargetActor)
+	// Get or create transition modifier
+	UCameraModifier_CameraTransition* TransitionModifier = FindModifier<UCameraModifier_CameraTransition>();
+	if (!TransitionModifier)
 	{
-		return;
+		TransitionModifier = NewObject<UCameraModifier_CameraTransition>();
+		TransitionModifier->Initialize(this);
+		AddCameraModifier(TransitionModifier);
 	}
 
-	if (Duration <= 0.0f)
-	{
-		// Instant transition
-		FVector TargetLocation = TargetActor->GetActorLocation() + Offset;
-		FVector Direction = (TargetLocation - TargetActor->GetActorLocation()).GetNormalized();
-		FRotator TargetRotation = FRotator(0, 0, 0);  // TODO: Calculate proper rotation
-
-		if (Camera)
-		{
-			Camera->SetLocation(TargetLocation);
-			Camera->SetRotation(TargetRotation);
-		}
-		else if (CameraComponent)
-		{
-			CameraComponent->SetWorldLocation(TargetLocation);
-			CameraComponent->SetWorldRotation(TargetRotation.Quaternion());
-		}
-		return;
-	}
-
-	// Store current state as start
-	if (Camera)
-	{
-		TransitionStartView.Location = Camera->GetLocation();
-		TransitionStartView.Rotation = Camera->GetRotationRotator();
-		TransitionStartView.FOV = Camera->GetFovY();
-		TransitionStartView.Target = nullptr;
-	}
-	else if (CameraComponent)
-	{
-		TransitionStartView.Location = CameraComponent->GetWorldLocation();
-		// Get current rotation from component
-		FVector EulerRot = CameraComponent->GetWorldRotation();
-		TransitionStartView.Rotation = FRotator(EulerRot.X, EulerRot.Y, EulerRot.Z);
-		TransitionStartView.FOV = CameraComponent->GetFieldOfView();
-		TransitionStartView.Target = nullptr;
-	}
-
-	// Store target state (will be updated dynamically if following actor)
-	TransitionTargetView.Location = TargetActor->GetActorLocation() + Offset;
-	TransitionTargetView.Rotation = FRotator(0, 0, 0);  // Will calculate in update
-	TransitionTargetView.FOV = TransitionStartView.FOV;
-	TransitionTargetView.Target = TargetActor;
-
-	// Initialize transition state
-	TransitionActorOffset = Offset;
-	CameraTransitionDuration = Duration;
-	CameraTransitionTimeRemaining = Duration;
-	TransitionEaseType = EaseType;
-
-	// Store Bezier control points if provided
-	if (BezierCP != nullptr)
-	{
-		TransitionBezierCP[0] = BezierCP[0];
-		TransitionBezierCP[1] = BezierCP[1];
-		TransitionBezierCP[2] = BezierCP[2];
-		TransitionBezierCP[3] = BezierCP[3];
-	}
-
-	bIsCameraTransitioning = true;
+	// Start transition through modifier
+	TransitionModifier->StartTransitionToActor(TargetActor, Duration, EaseType, Offset, BezierCP);
 }
 
 void APlayerCameraManager::StopCameraTransition()
 {
-	bIsCameraTransitioning = false;
-	CameraTransitionTimeRemaining = 0.0f;
+	UCameraModifier_CameraTransition* TransitionModifier = FindModifier<UCameraModifier_CameraTransition>();
+	if (TransitionModifier)
+	{
+		TransitionModifier->StopTransition();
+	}
+}
+
+bool APlayerCameraManager::IsCameraTransitioning() const
+{
+	UCameraModifier_CameraTransition* TransitionModifier = const_cast<APlayerCameraManager*>(this)->FindModifier<UCameraModifier_CameraTransition>();
+	if (TransitionModifier)
+	{
+		return TransitionModifier->IsCameraTransitioning();
+	}
+	return false;
 }
 
 float APlayerCameraManager::GetTransitionProgress() const
 {
-	if (!bIsCameraTransitioning || CameraTransitionDuration <= 0.0f)
+	UCameraModifier_CameraTransition* TransitionModifier = const_cast<APlayerCameraManager*>(this)->FindModifier<UCameraModifier_CameraTransition>();
+	if (TransitionModifier)
 	{
-		return 1.0f;
+		return TransitionModifier->GetTransitionProgress();
 	}
-
-	float Alpha = 1.0f - (CameraTransitionTimeRemaining / CameraTransitionDuration);
-	return Clamp(Alpha, 0.0f, 1.0f);
+	return 0.0f;
 }
 
-void APlayerCameraManager::UpdateCameraTransition(float DeltaTime)
+void APlayerCameraManager::SetTransitionBezierControlPoints(const float CP[4])
 {
-	if (!bIsCameraTransitioning)
+	UCameraModifier_CameraTransition* TransitionModifier = FindModifier<UCameraModifier_CameraTransition>();
+	if (TransitionModifier)
 	{
-		return;
+		TransitionModifier->SetBezierControlPoints(CP);
+	}
+}
+
+const float* APlayerCameraManager::GetTransitionBezierControlPoints() const
+{
+	UCameraModifier_CameraTransition* TransitionModifier = const_cast<APlayerCameraManager*>(this)->FindModifier<UCameraModifier_CameraTransition>();
+	if (TransitionModifier)
+	{
+		return TransitionModifier->GetBezierControlPoints();
 	}
 
-	CameraTransitionTimeRemaining -= DeltaTime;
-
-	// Calculate alpha (0 to 1)
-	float RawAlpha = 1.0f - (CameraTransitionTimeRemaining / CameraTransitionDuration);
-	RawAlpha = Clamp(RawAlpha, 0.0f, 1.0f);
-
-	// Apply easing function (with Bezier control points if using Bezier easing)
-	float Alpha = ApplyEasing(RawAlpha, TransitionEaseType, TransitionBezierCP);
-
-	// Update target if following an actor
-	if (TransitionTargetView.Target != nullptr)
-	{
-		TransitionTargetView.Location = TransitionTargetView.Target->GetActorLocation() + TransitionActorOffset;
-
-		// Calculate look-at rotation
-		FVector Direction = (TransitionTargetView.Target->GetActorLocation() - TransitionTargetView.Location).GetNormalized();
-		float Yaw = atan2f(Direction.Y, Direction.X) * (180.0f / 3.14159265359f);
-		float Pitch = asinf(-Direction.Z) * (180.0f / 3.14159265359f);
-		TransitionTargetView.Rotation = FRotator(Pitch, Yaw, 0.0f);
-	}
-
-	// Interpolate location
-	FVector NewLocation = Lerp(TransitionStartView.Location, TransitionTargetView.Location, Alpha);
-
-	// Interpolate rotation using SLERP for smooth rotation
-	FQuaternion StartQuat = TransitionStartView.Rotation.Quaternion();
-	FQuaternion TargetQuat = TransitionTargetView.Rotation.Quaternion();
-	FQuaternion NewQuat = FQuaternion::Slerp(StartQuat, TargetQuat, Alpha);
-	FVector EulerAngles = NewQuat.ToEuler();
-	FRotator NewRotation = FRotator(EulerAngles.Y, EulerAngles.Z, EulerAngles.X);
-
-	// Interpolate FOV
-	float NewFOV = Lerp(TransitionStartView.FOV, TransitionTargetView.FOV, Alpha);
-
-	// Apply to camera
-	if (Camera)
-	{
-		Camera->SetLocation(NewLocation);
-		Camera->SetRotation(NewRotation);
-		Camera->SetFovY(NewFOV);
-	}
-	else if (CameraComponent)
-	{
-		CameraComponent->SetWorldLocation(NewLocation);
-		// Apply rotation using quaternion for smooth interpolation
-		CameraComponent->SetWorldRotation(NewQuat);
-		CameraComponent->SetFieldOfView(NewFOV);
-	}
-
-	// Check if transition is complete
-	if (CameraTransitionTimeRemaining <= 0.0f)
-	{
-		bIsCameraTransitioning = false;
-		CameraTransitionTimeRemaining = 0.0f;
-	}
+	// Return default if no modifier exists yet
+	static const float DefaultBezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };
+	return DefaultBezierCP;
 }
