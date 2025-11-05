@@ -31,42 +31,48 @@ return function()
     function ReturnTable:Tick(DeltaTime)
         if not Actor then return end
 
+        -- Check if Actor has RootComponent (required for movement)
+        if not Actor:GetRootComponent() then
+            Print("[ActorTimeDilation] ERROR: Actor has no RootComponent! Cannot move.")
+            return
+        end
+
         local InputManager = GetInputManager()
 
         -- Key Q: Increase speed
-        if InputManager:IsKeyPressed("Key_Q") then
+        if InputManager:IsKeyPressed("Q") then
             local NewSpeed = Actor:GetCustomTimeDilation() + 0.1
             Actor:SetCustomTimeDilation(NewSpeed)
             Print(string.format("[ActorTimeDilation] Speed increased to %.2fx", Actor:GetCustomTimeDilation()))
         end
 
         -- Key E: Decrease speed
-        if InputManager:IsKeyPressed("Key_E") then
+        if InputManager:IsKeyPressed("E") then
             local NewSpeed = Actor:GetCustomTimeDilation() - 0.1
             Actor:SetCustomTimeDilation(NewSpeed)
             Print(string.format("[ActorTimeDilation] Speed decreased to %.2fx", Actor:GetCustomTimeDilation()))
         end
 
         -- Key R: Reset to normal speed
-        if InputManager:IsKeyPressed("Key_R") then
+        if InputManager:IsKeyPressed("R") then
             Actor:SetCustomTimeDilation(1.0)
             Print(string.format("[ActorTimeDilation] Speed reset to 1.0x"))
         end
 
         -- Key F: Set to very slow
-        if InputManager:IsKeyPressed("Key_F") then
+        if InputManager:IsKeyPressed("F") then
             Actor:SetCustomTimeDilation(0.2)
             Print(string.format("[ActorTimeDilation] Speed set to 0.2x (very slow)"))
         end
 
         -- Key G: Set to very fast
-        if InputManager:IsKeyPressed("Key_G") then
+        if InputManager:IsKeyPressed("G") then
             Actor:SetCustomTimeDilation(3.0)
             Print(string.format("[ActorTimeDilation] Speed set to 3.0x (very fast)"))
         end
 
         -- Key C: Display current state
-        if InputManager:IsKeyPressed("Key_C") then
+        if InputManager:IsKeyPressed("C") then
             local CurrentSpeed = Actor:GetCustomTimeDilation()
             local TimeManager = GetTimeManager()
             local GlobalDilation = TimeManager:GetGlobalTimeDilation()
@@ -78,21 +84,26 @@ return function()
             Print(string.format("  Effective Speed: %.2fx", EffectiveSpeed))
         end
 
-        -- Move actor in a circular pattern to demonstrate time effect
+        -- Move actor forward to demonstrate time effect
         -- The movement speed is affected by CustomTimeDilation
-        local CurrentLocation = Actor.ActorLocation
-        local MoveSpeed = 100.0  -- Units per second
-        local CircleRadius = 200.0
-        local AngularSpeed = 0.5  -- Radians per second
 
-        -- Calculate circular motion
-        local GameTime = GetTimeManager():GetGameTime()
-        local Angle = GameTime * AngularSpeed
-        local TargetX = CurrentLocation.x + MoveSpeed * DeltaTime
-        local TargetY = CurrentLocation.y + math.sin(Angle) * CircleRadius * DeltaTime
-        local TargetZ = CurrentLocation.z
+        -- Use GetActorLocation() method instead of property
+        local CurrentLocation = Actor:GetActorLocation()
 
-        Actor.ActorLocation = FVector(TargetX, TargetY, TargetZ)
+        -- Debug: Check if location is valid
+        if not CurrentLocation then
+            Print("[ActorTimeDilation] ERROR: GetActorLocation() returned nil!")
+            return
+        end
+
+        local MoveSpeed = 200.0  -- Units per second (increased for visibility)
+
+        -- Simple forward movement (affected by CustomTimeDilation)
+        local NewX = CurrentLocation.X + MoveSpeed * DeltaTime
+        local NewY = CurrentLocation.Y
+        local NewZ = CurrentLocation.Z
+
+        Actor:SetActorLocation(FVector(NewX, NewY, NewZ))
 
         -- Note: The actual DeltaTime passed to this function is already multiplied by:
         -- 1. Global Time Dilation (from TimeManager)

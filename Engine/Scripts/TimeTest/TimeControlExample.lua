@@ -31,43 +31,43 @@ return function()
         local InputManager = GetInputManager()
 
         -- Key 1: Trigger Hit Stop
-        if InputManager:IsKeyPressed("Key_1") then
+        if InputManager:IsKeyPressed("Num1") then
             Print("[TimeControl] Starting Hit Stop (0.2s)")
             TimeManager:StartHitStop(0.2)
         end
 
         -- Key 2: Trigger Slow Motion
-        if InputManager:IsKeyPressed("Key_2") then
+        if InputManager:IsKeyPressed("Num2") then
             Print("[TimeControl] Starting Slow Motion (0.3x speed for 3s)")
             TimeManager:StartSlowMotion(0.3, 3.0)
         end
 
         -- Key 3: Stop Slow Motion immediately
-        if InputManager:IsKeyPressed("Key_3") then
+        if InputManager:IsKeyPressed("Num3") then
             Print("[TimeControl] Stopping Slow Motion")
             TimeManager:StopSlowMotion()
         end
 
         -- Key 4: Reset Time Dilation to normal
-        if InputManager:IsKeyPressed("Key_4") then
+        if InputManager:IsKeyPressed("Num4") then
             Print("[TimeControl] Resetting Time Dilation to 1.0")
             TimeManager:ResetTimeDilation()
         end
 
         -- Key 5: Set Time Scale to 0.5x (slow)
-        if InputManager:IsKeyPressed("Key_5") then
+        if InputManager:IsKeyPressed("Num5") then
             Print("[TimeControl] Setting Global Time Dilation to 0.5x")
             TimeManager:SetGlobalTimeDilation(0.5)
         end
 
         -- Key 6: Set Time Scale to 2.0x (fast)
-        if InputManager:IsKeyPressed("Key_6") then
+        if InputManager:IsKeyPressed("Num6") then
             Print("[TimeControl] Setting Global Time Dilation to 2.0x")
             TimeManager:SetGlobalTimeDilation(2.0)
         end
 
         -- Display current time state
-        if InputManager:IsKeyPressed("Key_T") then
+        if InputManager:IsKeyPressed("T") then
             local CurrentDilation = TimeManager:GetGlobalTimeDilation()
             local IsHitStopActive = TimeManager:IsHitStopActive()
             local IsSlowMotionActive = TimeManager:IsSlowMotionActive()
