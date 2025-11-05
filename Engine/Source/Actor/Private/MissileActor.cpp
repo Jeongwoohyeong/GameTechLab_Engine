@@ -6,6 +6,9 @@
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Player/Public/EnemyCharacter.h"
 #include "Player/Public/PlayerCharacter.h"
+#include "Actor/Public/ExplosionActor.h"
+#include "Level/Public/Level.h"
+#include "Level/Public/World.h"
 
 IMPLEMENT_CLASS(AMissileActor, AActor)
 
@@ -89,9 +92,25 @@ void AMissileActor::OnMissileHit(UPrimitiveComponent* HitComponent, AActor* Othe
 		// 중복 히트 방지
 		bHasHitEnemy = true;
 
+		// 폭발 위치 저장 (적 캐릭터 위치)
+		FVector ExplosionLocation = EnemyChar->GetActorLocation();
+
 		// C++에서 직접 TakeDamage 호출
 		float MissileDamage = 100.0f;
 		EnemyChar->TakeDamage(MissileDamage);
+
+		// 폭발 이펙트 생성
+		if (GWorld && GWorld->GetLevel())
+		{
+			AExplosionActor* Explosion = NewObject<AExplosionActor>();
+			if (Explosion)
+			{
+				Explosion->SetActorLocation(ExplosionLocation);
+				Explosion->SetExplosionScale(300.0f); // 폭발 크기 설정
+				GWorld->GetLevel()->AddActorToLevel(Explosion);
+				Explosion->BeginPlay();
+			}
+		}
 
 		// 미사일을 화면 밖으로 이동 (Lua에서 비활성화 처리)
 		SetActorLocation(FVector(0, 0, -10000));
