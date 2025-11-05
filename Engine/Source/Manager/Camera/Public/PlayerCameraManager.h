@@ -331,7 +331,7 @@ private:
 	FVector SpringArmOffset = FVector(-300.0f, 0.0f, 100.0f);
 	float SpringArmLength = 300.0f;
 	float SpringArmInterpSpeed = 10.0f;
-	bool bEnableCollisionTest = false;  // TODO: Implement collision test
+	bool bEnableCollisionTest = true;
 
 	// ========== Camera View Type ==========
 	ECameraViewType CurrentViewType = ECameraViewType::ThirdPerson;

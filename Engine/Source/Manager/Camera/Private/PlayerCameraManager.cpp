@@ -8,11 +8,6 @@
 #include "Level/Public/World.h"
 #include "Level/Public/Level.h"
 #include "Component/Collision/Public/ShapeComponent.h"
-#include "Component/Collision/Public/BoxComponent.h"
-#include "Component/Collision/Public/SphereComponent.h"
-#include "Component/Collision/Public/CapsuleComponent.h"
-#include "Physics/Public/OBB.h"
-#include "Physics/Public/CollisionUtil.h"
 
 IMPLEMENT_CLASS(APlayerCameraManager, AActor)
 
@@ -39,7 +34,7 @@ APlayerCameraManager::APlayerCameraManager()
 	, SpringArmOffset(-300.0f, 0.0f, 100.0f)
 	, SpringArmLength(300.0f)
 	, SpringArmInterpSpeed(10.0f)
-	, bEnableCollisionTest(false)
+	, bEnableCollisionTest(true)
 	, CurrentViewType(ECameraViewType::ThirdPerson)
 	, PreviousViewType(ECameraViewType::ThirdPerson)
 	, ViewTransitionDuration(1.0f)
@@ -285,7 +280,7 @@ void APlayerCameraManager::SetSpringArmParams(FVector Offset, float ArmLength, f
 
 void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 {
-	if (!bSpringArmEnabled || !Camera || !ViewTarget.Target)
+	if (!bSpringArmEnabled || (!Camera && !CameraComponent) || !ViewTarget.Target)
 	{
 		return;
 	}
@@ -296,37 +291,64 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 	// Calculate desired camera location
 	FVector DesiredLocation = CalculateCameraLocationForView(CurrentViewType);
 
+	// Get current camera location (Editor or PIE mode)
+	FVector CurrentLocation;
+	if (Camera)
+	{
+		CurrentLocation = Camera->GetLocation();
+	}
+	else if (CameraComponent)
+	{
+		CurrentLocation = CameraComponent->GetWorldLocation();
+	}
+	else
+	{
+		return;
+	}
+
 	// Lerp camera toward desired location
-	FVector CurrentLocation = Camera->GetLocation();
 	FVector NewLocation = Lerp(CurrentLocation, DesiredLocation, SpringArmInterpSpeed * DeltaTime);
 
 	// Spring Arm Collision Test
 	if (bEnableCollisionTest)
 	{
+		UE_LOG("[SpringArm] Collision test enabled - checking...");
+
 		// Get World and Level
 		UWorld* World = GWorld;
 		if (World && World->GetLevel())
 		{
-			const TArray<UShapeComponent*>& ShapeComponents = World->GetLevel()->GetShapeComponents();
-
 			// LineTrace from Target to Desired Camera Location
 			FVector LineStart = TargetLocation;
 			FVector LineEnd = DesiredLocation;
 			FVector TraceDirection = LineEnd - LineStart;
 			float DesiredDistance = TraceDirection.Length();
 
+			UE_LOG("[SpringArm] LineTrace: Start(%.1f,%.1f,%.1f) -> End(%.1f,%.1f,%.1f) Dist=%.1f",
+				LineStart.X, LineStart.Y, LineStart.Z,
+				LineEnd.X, LineEnd.Y, LineEnd.Z,
+				DesiredDistance);
+
 			if (DesiredDistance < 0.01f)
 			{
 				// Camera too close to target, skip collision test
-				Camera->SetLocation(NewLocation);
+				if (Camera)
+					Camera->SetLocation(NewLocation);
+				else if (CameraComponent)
+					CameraComponent->SetWorldLocation(NewLocation);
 				return;
 			}
 
+			TraceDirection.Normalize();
+
 			float MinHitDistance = DesiredDistance;
 			bool bHitDetected = false;
+			int TotalComponentsChecked = 0;
 
-			// Test collision with all shape components
-			for (const UShapeComponent* ShapeComp : ShapeComponents)
+			// Test collision with ShapeComponents only (AABB-based)
+			const TArray<UShapeComponent*>& ShapeComponents = World->GetLevel()->GetShapeComponents();
+
+			for (UShapeComponent* ShapeComp : ShapeComponents)
 			{
 				if (!ShapeComp)
 				{
@@ -339,84 +361,126 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 					continue;
 				}
 
-				float Distance = FLT_MAX;
+				TotalComponentsChecked++;
 
-				// Box collision
-				if (const UBoxComponent* BoxComp = Cast<UBoxComponent>(const_cast<UShapeComponent*>(ShapeComp)))
+				// Get component's World AABB
+				FVector BoxMin, BoxMax;
+				ShapeComp->GetWorldAABB(BoxMin, BoxMax);
+
+				// Line-AABB intersection test (Slab method)
+				float tMin = 0.0f;
+				float tMax = DesiredDistance;
+				bool bIntersects = true;
+
+				// Test X axis
+				if (fabsf(TraceDirection.X) < 0.0001f)
 				{
-					FOBB OBB(BoxComp->GetWorldLocation(), BoxComp->GetBoxExtent(), BoxComp->GetWorldTransformMatrix());
-					Distance = CollisionUtil::DistanceSegmentToOBB(LineStart, LineEnd, OBB);
+					if (LineStart.X < BoxMin.X || LineStart.X > BoxMax.X)
+						bIntersects = false;
 				}
-				// Sphere collision
-				else if (const USphereComponent* SphereComp = Cast<USphereComponent>(const_cast<UShapeComponent*>(ShapeComp)))
+				else
 				{
-					FVector SphereCenter = SphereComp->GetWorldLocation();
-					float SphereRadius = SphereComp->GetSphereRadius();
-					FVector Scale = SphereComp->GetWorldScale3D();
-					float MaxScale = max(max(Scale.X, Scale.Y), Scale.Z);
-					SphereRadius *= MaxScale;
-
-					// Distance from line segment to sphere
-					FVector ClosestPointOnLine;
-					FVector ToStart = SphereCenter - LineStart;
-					float T = Clamp(ToStart.Dot(TraceDirection) / (DesiredDistance * DesiredDistance), 0.0f, 1.0f);
-					ClosestPointOnLine = LineStart + T * TraceDirection;
-					Distance = FVector::Dist(ClosestPointOnLine, SphereCenter) - SphereRadius;
-				}
-				// Capsule collision (simplified as two spheres + cylinder)
-				else if (const UCapsuleComponent* CapsuleComp = Cast<UCapsuleComponent>(const_cast<UShapeComponent*>(ShapeComp)))
-				{
-					FVector CapsuleCenter = CapsuleComp->GetWorldLocation();
-					float CapsuleRadius = CapsuleComp->GetCapsuleRadius();
-					float CapsuleHalfHeight = CapsuleComp->GetCapsuleHalfHeight();
-					FVector Scale = CapsuleComp->GetWorldScale3D();
-					float RadiusScale = max(Scale.X, Scale.Y);
-					CapsuleRadius *= RadiusScale;
-					CapsuleHalfHeight *= Scale.Z;
-
-					FVector CapsuleUp = CapsuleComp->GetUpVector();
-					FVector CapsuleStart = CapsuleCenter - CapsuleUp * CapsuleHalfHeight;
-					FVector CapsuleEnd = CapsuleCenter + CapsuleUp * CapsuleHalfHeight;
-
-					FVector ClosestOnCamera, ClosestOnCapsule;
-					CollisionUtil::ClosestPointsBetweenSegments(
-						LineStart, LineEnd,
-						CapsuleStart, CapsuleEnd,
-						ClosestOnCamera, ClosestOnCapsule
-					);
-					Distance = FVector::Dist(ClosestOnCamera, ClosestOnCapsule) - CapsuleRadius;
+					float t1 = (BoxMin.X - LineStart.X) / TraceDirection.X;
+					float t2 = (BoxMax.X - LineStart.X) / TraceDirection.X;
+					if (t1 > t2) { float temp = t1; t1 = t2; t2 = temp; }
+					tMin = max(tMin, t1);
+					tMax = min(tMax, t2);
+					if (tMin > tMax) bIntersects = false;
 				}
 
-				// Check if this is the closest hit
-				if (Distance < 1.0f && Distance < MinHitDistance)  // 1.0f threshold for collision
+				// Test Y axis
+				if (bIntersects)
 				{
-					MinHitDistance = Distance;
+					if (fabsf(TraceDirection.Y) < 0.0001f)
+					{
+						if (LineStart.Y < BoxMin.Y || LineStart.Y > BoxMax.Y)
+							bIntersects = false;
+					}
+					else
+					{
+						float t1 = (BoxMin.Y - LineStart.Y) / TraceDirection.Y;
+						float t2 = (BoxMax.Y - LineStart.Y) / TraceDirection.Y;
+						if (t1 > t2) { float temp = t1; t1 = t2; t2 = temp; }
+						tMin = max(tMin, t1);
+						tMax = min(tMax, t2);
+						if (tMin > tMax) bIntersects = false;
+					}
+				}
+
+				// Test Z axis
+				if (bIntersects)
+				{
+					if (fabsf(TraceDirection.Z) < 0.0001f)
+					{
+						if (LineStart.Z < BoxMin.Z || LineStart.Z > BoxMax.Z)
+							bIntersects = false;
+					}
+					else
+					{
+						float t1 = (BoxMin.Z - LineStart.Z) / TraceDirection.Z;
+						float t2 = (BoxMax.Z - LineStart.Z) / TraceDirection.Z;
+						if (t1 > t2) { float temp = t1; t1 = t2; t2 = temp; }
+						tMin = max(tMin, t1);
+						tMax = min(tMax, t2);
+						if (tMin > tMax) bIntersects = false;
+					}
+				}
+
+				// Check if intersection exists
+				if (bIntersects && tMin <= tMax && tMax >= 0.0f && tMin < MinHitDistance)
+				{
+					MinHitDistance = max(tMin, 0.0f);
 					bHitDetected = true;
 				}
 			}
+
+			UE_LOG("[SpringArm] Checked %d components, Hit detected: %s, MinHitDistance: %.1f",
+				TotalComponentsChecked, bHitDetected ? "YES" : "NO", MinHitDistance);
 
 			// If collision detected, pull camera closer
 			if (bHitDetected)
 			{
 				// Calculate safe camera position
-				float SafeDistance = max(MinHitDistance, 10.0f);  // Minimum 10 units from collision
-				float T = Clamp(SafeDistance / DesiredDistance, 0.0f, 1.0f);
-				FVector SafeLocation = LineStart + TraceDirection * T;
+				float SafeDistance = max(MinHitDistance - 10.0f, 0.0f);  // 10 units padding from collision
+				FVector SafeLocation = LineStart + TraceDirection * SafeDistance;
+
+				UE_LOG("[SpringArm] COLLISION! Pulling camera to SafeDist=%.1f, SafeLoc(%.1f,%.1f,%.1f)",
+					SafeDistance, SafeLocation.X, SafeLocation.Y, SafeLocation.Z);
 
 				// Blend to safe location
 				NewLocation = Lerp(CurrentLocation, SafeLocation, SpringArmInterpSpeed * DeltaTime * 2.0f);  // Faster pull on collision
 			}
 		}
+		else
+		{
+			UE_LOG("[SpringArm] ERROR: No World or Level!");
+		}
+	}
+	else
+	{
+		UE_LOG("[SpringArm] Collision test DISABLED");
 	}
 
-	Camera->SetLocation(NewLocation);
+	// Set camera location (Editor or PIE mode)
+	if (Camera)
+	{
+		Camera->SetLocation(NewLocation);
 
-	// Calculate camera rotation (look at target)
-	FRotator DesiredRotation = CalculateCameraRotationForView(CurrentViewType);
-	FRotator CurrentRotation = Camera->GetRotationRotator();
-	FRotator NewRotation = Lerp(CurrentRotation, DesiredRotation, SpringArmInterpSpeed * DeltaTime);
+		// Calculate camera rotation (look at target)
+		FRotator DesiredRotation = CalculateCameraRotationForView(CurrentViewType);
+		FRotator CurrentRotation = Camera->GetRotationRotator();
+		FRotator NewRotation = Lerp(CurrentRotation, DesiredRotation, SpringArmInterpSpeed * DeltaTime);
 
-	Camera->SetRotation(NewRotation);
+		Camera->SetRotation(NewRotation);
+	}
+	else if (CameraComponent)
+	{
+		// PIE mode: Directly set CameraComponent world location
+		// This overrides the default spring arm behavior for collision handling
+		CameraComponent->SetWorldLocation(NewLocation);
+
+		// Rotation is handled by CameraComponent's default behavior in PIE mode
+	}
 }
 
 FVector APlayerCameraManager::CalculateCameraLocationForView(ECameraViewType ViewType)
