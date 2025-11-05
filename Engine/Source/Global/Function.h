@@ -45,16 +45,90 @@ enum class ECameraEaseType : uint8
 	EaseOut,      // 천천히 끝
 	EaseInOut,    // 천천히 시작하고 끝
 	SmoothStep,   // 부드러운 시작과 끝
-	SmootherStep  // 더 부드러운 시작과 끝
+	SmootherStep, // 더 부드러운 시작과 끝
+	Bezier        // 베지어 곡선 (커스텀 컨트롤 포인트 사용)
 };
+
+namespace CameraEasing
+{
+	/**
+	 * @brief Cubic Bezier curve X coordinate at parameter t
+	 */
+	inline float BezierX(float t, const float P[4])
+	{
+		float oneMinusT = 1.0f - t;
+		float oneMinusT2 = oneMinusT * oneMinusT;
+		float t2 = t * t;
+		// X(t) = 3(1-t)²t * P1.x + 3(1-t)t² * P2.x + t³
+		return 3.0f * oneMinusT2 * t * P[0] +
+			   3.0f * oneMinusT * t2 * P[2] +
+			   t2 * t;
+	}
+
+	/**
+	 * @brief Cubic Bezier curve Y coordinate at parameter t
+	 */
+	inline float BezierY(float t, const float P[4])
+	{
+		float oneMinusT = 1.0f - t;
+		float oneMinusT2 = oneMinusT * oneMinusT;
+		float t2 = t * t;
+		// Y(t) = 3(1-t)²t * P1.y + 3(1-t)t² * P2.y + t³
+		return 3.0f * oneMinusT2 * t * P[1] +
+			   3.0f * oneMinusT * t2 * P[3] +
+			   t2 * t;
+	}
+
+	/**
+	 * @brief Evaluate cubic Bezier curve at time x (X coordinate)
+	 * @param x Time value [0, 1] (X coordinate)
+	 * @param P Control points [4]: P1.x, P1.y, P2.x, P2.y (P0=(0,0), P3=(1,1) are fixed)
+	 * @return Y value at time x
+	 */
+	inline float EvaluateBezier(float x, const float P[4])
+	{
+		x = Clamp(x, 0.0f, 1.0f);
+		if (x <= 0.0f) return 0.0f;
+		if (x >= 1.0f) return 1.0f;
+
+		// Newton-Raphson method to find t such that BezierX(t) = x
+		float t = x;
+		const int maxIterations = 8;
+		const float epsilon = 0.001f;
+
+		for (int i = 0; i < maxIterations; i++)
+		{
+			float currentX = BezierX(t, P);
+			float diff = currentX - x;
+
+			if (fabsf(diff) < epsilon)
+				break;
+
+			// Derivative of X(t)
+			float oneMinusT = 1.0f - t;
+			float dxdt = 3.0f * oneMinusT * oneMinusT * P[0] +
+						 6.0f * oneMinusT * t * (P[2] - P[0]) +
+						 3.0f * t * t * (1.0f - P[2]);
+
+			if (fabsf(dxdt) < 0.000001f)
+				break;
+
+			t = t - diff / dxdt;
+			t = Clamp(t, 0.0f, 1.0f);
+		}
+
+		return BezierY(t, P);
+	}
+} // namespace CameraEasing
 
 /**
  * @brief Easing 함수 적용
  * @param Alpha 원본 알파 값 [0, 1]
  * @param EaseType Easing 타입
+ * @param BezierControlPoints 베지어 컨트롤 포인트 [4] (Bezier 타입일 때만 사용)
  * @return Easing이 적용된 알파 값
  */
-inline float ApplyEasing(float Alpha, ECameraEaseType EaseType)
+inline float ApplyEasing(float Alpha, ECameraEaseType EaseType, const float* BezierControlPoints = nullptr)
 {
 	Alpha = Clamp(Alpha, 0.0f, 1.0f);
 
@@ -85,6 +159,19 @@ inline float ApplyEasing(float Alpha, ECameraEaseType EaseType)
 	case ECameraEaseType::SmootherStep:
 		// Quintic smooth step
 		return Alpha * Alpha * Alpha * (Alpha * (Alpha * 6.0f - 15.0f) + 10.0f);
+
+	case ECameraEaseType::Bezier:
+		// Cubic Bezier curve with custom control points
+		if (BezierControlPoints != nullptr)
+		{
+			return CameraEasing::EvaluateBezier(Alpha, BezierControlPoints);
+		}
+		else
+		{
+			// Fallback to default easeOutQuad if no control points provided
+			static const float DefaultBezier[4] = { 0.250f, 0.460f, 0.450f, 0.940f };
+			return CameraEasing::EvaluateBezier(Alpha, DefaultBezier);
+		}
 
 	default:
 		return Alpha;

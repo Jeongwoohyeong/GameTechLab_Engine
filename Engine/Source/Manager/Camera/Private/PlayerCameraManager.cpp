@@ -679,7 +679,8 @@ void APlayerCameraManager::StartTransitionToLocation(
 	const FRotator& TargetRotation,
 	float Duration,
 	ECameraEaseType EaseType,
-	float TargetFOV)
+	float TargetFOV,
+	const float* BezierCP)
 {
 	if (Duration <= 0.0f)
 	{
@@ -696,7 +697,7 @@ void APlayerCameraManager::StartTransitionToLocation(
 		else if (CameraComponent)
 		{
 			CameraComponent->SetWorldLocation(TargetLocation);
-			// CameraComponent->SetWorldRotation(TargetRotation);  // TODO: Add rotation support
+			CameraComponent->SetWorldRotation(TargetRotation.Quaternion());
 			if (TargetFOV > 0.0f)
 			{
 				CameraComponent->SetFieldOfView(TargetFOV);
@@ -716,7 +717,9 @@ void APlayerCameraManager::StartTransitionToLocation(
 	else if (CameraComponent)
 	{
 		TransitionStartView.Location = CameraComponent->GetWorldLocation();
-		TransitionStartView.Rotation = FRotator(0, 0, 0);  // TODO: Get actual rotation
+		// Get current rotation from component
+		FVector EulerRot = CameraComponent->GetWorldRotation();
+		TransitionStartView.Rotation = FRotator(EulerRot.X, EulerRot.Y, EulerRot.Z);
 		TransitionStartView.FOV = CameraComponent->GetFieldOfView();
 		TransitionStartView.Target = nullptr;
 	}
@@ -731,6 +734,16 @@ void APlayerCameraManager::StartTransitionToLocation(
 	CameraTransitionDuration = Duration;
 	CameraTransitionTimeRemaining = Duration;
 	TransitionEaseType = EaseType;
+
+	// Store Bezier control points if provided
+	if (BezierCP != nullptr)
+	{
+		TransitionBezierCP[0] = BezierCP[0];
+		TransitionBezierCP[1] = BezierCP[1];
+		TransitionBezierCP[2] = BezierCP[2];
+		TransitionBezierCP[3] = BezierCP[3];
+	}
+
 	bIsCameraTransitioning = true;
 }
 
@@ -738,7 +751,8 @@ void APlayerCameraManager::StartTransitionToActor(
 	AActor* TargetActor,
 	float Duration,
 	ECameraEaseType EaseType,
-	const FVector& Offset)
+	const FVector& Offset,
+	const float* BezierCP)
 {
 	if (!TargetActor)
 	{
@@ -760,6 +774,7 @@ void APlayerCameraManager::StartTransitionToActor(
 		else if (CameraComponent)
 		{
 			CameraComponent->SetWorldLocation(TargetLocation);
+			CameraComponent->SetWorldRotation(TargetRotation.Quaternion());
 		}
 		return;
 	}
@@ -775,7 +790,9 @@ void APlayerCameraManager::StartTransitionToActor(
 	else if (CameraComponent)
 	{
 		TransitionStartView.Location = CameraComponent->GetWorldLocation();
-		TransitionStartView.Rotation = FRotator(0, 0, 0);
+		// Get current rotation from component
+		FVector EulerRot = CameraComponent->GetWorldRotation();
+		TransitionStartView.Rotation = FRotator(EulerRot.X, EulerRot.Y, EulerRot.Z);
 		TransitionStartView.FOV = CameraComponent->GetFieldOfView();
 		TransitionStartView.Target = nullptr;
 	}
@@ -791,6 +808,16 @@ void APlayerCameraManager::StartTransitionToActor(
 	CameraTransitionDuration = Duration;
 	CameraTransitionTimeRemaining = Duration;
 	TransitionEaseType = EaseType;
+
+	// Store Bezier control points if provided
+	if (BezierCP != nullptr)
+	{
+		TransitionBezierCP[0] = BezierCP[0];
+		TransitionBezierCP[1] = BezierCP[1];
+		TransitionBezierCP[2] = BezierCP[2];
+		TransitionBezierCP[3] = BezierCP[3];
+	}
+
 	bIsCameraTransitioning = true;
 }
 
@@ -824,8 +851,8 @@ void APlayerCameraManager::UpdateCameraTransition(float DeltaTime)
 	float RawAlpha = 1.0f - (CameraTransitionTimeRemaining / CameraTransitionDuration);
 	RawAlpha = Clamp(RawAlpha, 0.0f, 1.0f);
 
-	// Apply easing function
-	float Alpha = ApplyEasing(RawAlpha, TransitionEaseType);
+	// Apply easing function (with Bezier control points if using Bezier easing)
+	float Alpha = ApplyEasing(RawAlpha, TransitionEaseType, TransitionBezierCP);
 
 	// Update target if following an actor
 	if (TransitionTargetView.Target != nullptr)
@@ -862,7 +889,8 @@ void APlayerCameraManager::UpdateCameraTransition(float DeltaTime)
 	else if (CameraComponent)
 	{
 		CameraComponent->SetWorldLocation(NewLocation);
-		// CameraComponent->SetWorldRotation(NewRotation);  // TODO: Add rotation support
+		// Apply rotation using quaternion for smooth interpolation
+		CameraComponent->SetWorldRotation(NewQuat);
 		CameraComponent->SetFieldOfView(NewFOV);
 	}
 

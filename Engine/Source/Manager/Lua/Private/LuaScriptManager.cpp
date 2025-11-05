@@ -1037,7 +1037,8 @@ void FLuaScriptManager::BindTypes()
             {"EaseOut", ECameraEaseType::EaseOut},
             {"EaseInOut", ECameraEaseType::EaseInOut},
             {"SmoothStep", ECameraEaseType::SmoothStep},
-            {"SmootherStep", ECameraEaseType::SmootherStep}
+            {"SmootherStep", ECameraEaseType::SmootherStep},
+            {"Bezier", ECameraEaseType::Bezier}
         }
     );
 
@@ -1071,7 +1072,14 @@ void FLuaScriptManager::BindTypes()
         "StopCameraTransition", &APlayerCameraManager::StopCameraTransition,
         "IsCameraTransitioning", &APlayerCameraManager::IsCameraTransitioning,
         "GetTransitionProgress", &APlayerCameraManager::GetTransitionProgress,
-        "SetTransitionEaseType", &APlayerCameraManager::SetTransitionEaseType
+        "SetTransitionEaseType", &APlayerCameraManager::SetTransitionEaseType,
+        "SetTransitionBezierControlPoints", [](APlayerCameraManager* Mgr,
+                                                float P1x, float P1y, float P2x, float P2y) {
+            if (Mgr) {
+                float CP[4] = { P1x, P1y, P2x, P2y };
+                Mgr->SetTransitionBezierControlPoints(CP);
+            }
+        }
     );
 
     // --- UGameHUDWidget Binding ---

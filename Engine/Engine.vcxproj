@@ -1026,6 +1026,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ObjViewerDebug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="Scripts\CameraTransitionTest.lua" />
     <None Include="Scripts\Missile\Missile.lua">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Develop|Win32'">true</ExcludedFromBuild>

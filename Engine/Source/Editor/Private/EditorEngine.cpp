@@ -90,37 +90,6 @@ void UEditorEngine::Tick(float DeltaSeconds)
                 {
                     World->Tick(DeltaSeconds);
                     //FAudioEngine::GetInstance().Tick(DeltaSeconds, EditorModule->GetCamera());
-
-                    // Camera Transition Test (T key)
-                    UInputManager* Input = UInputManager::Get();
-                    if (Input && bUseEditorCameraInPIE)
-                    {
-                        APlayerCameraManager* CamMgr = World->GetPlayerCameraManager();
-                        if (CamMgr)
-                        {
-                            if (Input->IsKeyPressed(EKeyInput::T))
-                            {
-                                FVector targetLoc(500.0f, 0.0f, 200.0f);
-                                FRotator targetRot(-20.0f, 180.0f, 0.0f);
-                                CamMgr->StartTransitionToLocation(targetLoc, targetRot, 2.0f, ECameraEaseType::EaseInOut);
-                                UE_LOG("[EditorEngine] Camera transition test: T key pressed");
-                            }
-                            else if (Input->IsKeyPressed(EKeyInput::Y))
-                            {
-                                FVector targetLoc(0.0f, 0.0f, 800.0f);
-                                FRotator targetRot(-80.0f, 0.0f, 0.0f);
-                                CamMgr->StartTransitionToLocation(targetLoc, targetRot, 2.0f, ECameraEaseType::SmoothStep);
-                                UE_LOG("[EditorEngine] Camera transition test: Y key pressed (top view)");
-                            }
-                            else if (Input->IsKeyPressed(EKeyInput::U))
-                            {
-                                FVector targetLoc(0.0f, 600.0f, 100.0f);
-                                FRotator targetRot(0.0f, -90.0f, 0.0f);
-                                CamMgr->StartTransitionToLocation(targetLoc, targetRot, 2.0f, ECameraEaseType::EaseOut);
-                                UE_LOG("[EditorEngine] Camera transition test: U key pressed (side view)");
-                            }
-                        }
-                    }
                 }
             }
         }

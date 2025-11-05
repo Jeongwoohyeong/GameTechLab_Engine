@@ -180,13 +180,15 @@ public:
 	 * @param Duration Transition duration in seconds
 	 * @param EaseType Easing function type
 	 * @param TargetFOV Target field of view (optional, -1 to keep current)
+	 * @param BezierCP Bezier control points [4] (only used if EaseType is Bezier)
 	 */
 	void StartTransitionToLocation(
 		const FVector& TargetLocation,
 		const FRotator& TargetRotation,
 		float Duration = 1.0f,
 		ECameraEaseType EaseType = ECameraEaseType::EaseInOut,
-		float TargetFOV = -1.0f
+		float TargetFOV = -1.0f,
+		const float* BezierCP = nullptr
 	);
 
 	/**
@@ -195,12 +197,14 @@ public:
 	 * @param Duration Transition duration in seconds
 	 * @param EaseType Easing function type
 	 * @param Offset Offset from actor (optional)
+	 * @param BezierCP Bezier control points [4] (only used if EaseType is Bezier)
 	 */
 	void StartTransitionToActor(
 		AActor* TargetActor,
 		float Duration = 1.0f,
 		ECameraEaseType EaseType = ECameraEaseType::EaseInOut,
-		const FVector& Offset = FVector::Zero()
+		const FVector& Offset = FVector::Zero(),
+		const float* BezierCP = nullptr
 	);
 
 	/**
@@ -223,6 +227,23 @@ public:
 	 * @param EaseType New easing type
 	 */
 	void SetTransitionEaseType(ECameraEaseType EaseType) { TransitionEaseType = EaseType; }
+
+	/**
+	 * @brief Set custom Bezier control points for transitions
+	 * @param CP Control points [4]: P1.x, P1.y, P2.x, P2.y
+	 */
+	void SetTransitionBezierControlPoints(const float CP[4])
+	{
+		TransitionBezierCP[0] = CP[0];
+		TransitionBezierCP[1] = CP[1];
+		TransitionBezierCP[2] = CP[2];
+		TransitionBezierCP[3] = CP[3];
+	}
+
+	/**
+	 * @brief Get current Bezier control points
+	 */
+	const float* GetTransitionBezierControlPoints() const { return TransitionBezierCP; }
 
 	// ========== Camera Modifier System ==========
 
@@ -398,6 +419,7 @@ private:
 	float CameraTransitionDuration = 1.0f;
 	float CameraTransitionTimeRemaining = 0.0f;
 	ECameraEaseType TransitionEaseType = ECameraEaseType::EaseInOut;
+	float TransitionBezierCP[4] = { 0.250f, 0.460f, 0.450f, 0.940f };  // Default: easeOutQuad
 
 	FViewTarget TransitionStartView;  // Starting camera state
 	FViewTarget TransitionTargetView; // Target camera state
