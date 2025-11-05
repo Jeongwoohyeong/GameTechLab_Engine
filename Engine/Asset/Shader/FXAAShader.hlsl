@@ -10,6 +10,15 @@ cbuffer FXAAParams : register(b0)
     float FXAASpanMax;      // Max search span
     float FXAAReduceMul;    // reduce multiplier (ex: 1/8)
     float FXAAReduceMin;    // minimum reduce value (ex: 1/128)
+    float Padding;
+    float Padding2;
+    float Padding3;
+
+    // SceneColor 텍스처 UV 매핑 정보
+    float ViewportUVOffsetX;
+    float ViewportUVOffsetY;
+    float ViewportUVScaleX;
+    float ViewportUVScaleY;
 }
 
 Texture2D SceneColor : register(t0);
@@ -36,14 +45,27 @@ VSOutput mainVS(VSInput input)
 }
 
 //------------------------------------------------------------------------------
+// Utility: UV remapping for SceneColor texture
+//------------------------------------------------------------------------------
+float2 RemapUV(float2 uv)
+{
+    // SceneColor 텍스처는 백버퍼 전체 크기이지만, 실제 렌더링은 ActiveViewportRect에만 됨
+    // uv는 ActiveViewportRect 기준 (0~1)이므로, 백버퍼 텍스처의 올바른 영역으로 매핑
+    return float2(
+        ViewportUVOffsetX + uv.x * ViewportUVScaleX,
+        ViewportUVOffsetY + uv.y * ViewportUVScaleY
+    );
+}
+
+//------------------------------------------------------------------------------
 // Utility: luminance calculation
 //------------------------------------------------------------------------------
 float Luma(float3 color)
 {
     /*
      *RGB 각각을 똑같이 보정하면(예: 평균) 색상 변화(채도/색상 회전)에 너무 민감하게 반응해 엣지 감지가 불안정
-     *FXAA는 밝기 대비(luminance, 정확히는 감마 공간에서의 Y′ 근사)를 기준으로 “엣지인가?”를 판단하니, 밝기만 대표값으로 뽑아 쓰는 게 좋음
-     *중요한 건 “G가 제일 크고, R 다음, B가 제일 작다”는 상대적 비율이 유지되는 것. 사람 눈의 민감도와 일치
+     *FXAA는 밝기 대비(luminance, 정확히는 감마 공간에서의 Y′ 근사)를 기준으로 "엣지인가?"를 판단하니, 밝기만 대표값으로 뽑아 쓰는 게 좋음
+     *중요한 건 "G가 제일 크고, R 다음, B가 제일 작다"는 상대적 비율이 유지되는 것. 사람 눈의 민감도와 일치
      *정리: RGB → 스칼라(Y′)로 압축해 엣지 강도를 안정적으로 본다. 수학적 완벽함보다 속도/안정성이 우선이라 저 상수들이 널리 쓰임
      */
     return dot(color, float3(0.299f, 0.587f, 0.114f));
@@ -58,12 +80,12 @@ float4 mainPS(VSOutput input) : SV_Target
     float2 inv = InvResolution;
 
     // Fetch 5 samples (center + 4 diagonals)
-    // FXAA는 지그재그/사선 엣지에 강하려고 대각 방향의 그라디언트를 
-    float3 rgbNW = SceneColor.Sample(SceneSampler, tex + float2(-inv.x, -inv.y)).rgb;
-    float3 rgbNE = SceneColor.Sample(SceneSampler, tex + float2( inv.x, -inv.y)).rgb;
-    float3 rgbSW = SceneColor.Sample(SceneSampler, tex + float2(-inv.x,  inv.y)).rgb;
-    float3 rgbSE = SceneColor.Sample(SceneSampler, tex + float2( inv.x,  inv.y)).rgb;
-    float3 rgbM  = SceneColor.Sample(SceneSampler, tex).rgb;
+    // FXAA는 지그재그/사선 엣지에 강하려고 대각 방향의 그라디언트를
+    float3 rgbNW = SceneColor.Sample(SceneSampler, RemapUV(tex + float2(-inv.x, -inv.y))).rgb;
+    float3 rgbNE = SceneColor.Sample(SceneSampler, RemapUV(tex + float2( inv.x, -inv.y))).rgb;
+    float3 rgbSW = SceneColor.Sample(SceneSampler, RemapUV(tex + float2(-inv.x,  inv.y))).rgb;
+    float3 rgbSE = SceneColor.Sample(SceneSampler, RemapUV(tex + float2( inv.x,  inv.y))).rgb;
+    float3 rgbM  = SceneColor.Sample(SceneSampler, RemapUV(tex)).rgb;
 
     // Convert to luminance
     float lumaNW = Luma(rgbNW);
@@ -126,13 +148,13 @@ float4 mainPS(VSOutput input) : SV_Target
     
     // Sample along the corrected edge direction
     float3 rgbA = 0.5f * (
-        SceneColor.Sample(SceneSampler, tex + dir * (1.0 / 3.0 - 0.5)).rgb +
-        SceneColor.Sample(SceneSampler, tex + dir * (2.0 / 3.0 - 0.5)).rgb
+        SceneColor.Sample(SceneSampler, RemapUV(tex + dir * (1.0 / 3.0 - 0.5))).rgb +
+        SceneColor.Sample(SceneSampler, RemapUV(tex + dir * (2.0 / 3.0 - 0.5))).rgb
     );
 
     float3 rgbB = rgbA * 0.5f + 0.25f * (
-        SceneColor.Sample(SceneSampler, tex + dir * -0.5).rgb +
-        SceneColor.Sample(SceneSampler, tex + dir * 0.5).rgb
+        SceneColor.Sample(SceneSampler, RemapUV(tex + dir * -0.5)).rgb +
+        SceneColor.Sample(SceneSampler, RemapUV(tex + dir * 0.5)).rgb
     );
 
     // Compute luminance of blended sample

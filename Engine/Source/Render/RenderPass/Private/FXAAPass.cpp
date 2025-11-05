@@ -3,6 +3,7 @@
 #include "Render/Renderer/Public/Pipeline.h"
 #include "Render/Renderer/Public/RenderResourceFactory.h"
 #include "Render/Renderer/Public/DeviceResources.h"
+#include "Manager/UI/Public/ViewportManager.h"
 
 struct FFullscreenVertex
 {
@@ -108,22 +109,46 @@ void FFXAAPass::InitializeFullscreenQuad()
 
 void FFXAAPass::UpdateConstants()
 {
-    const D3D11_VIEWPORT& VP = DeviceResources->GetViewportInfo();
-    FXAAParams.InvResolution = FVector2(1.0f / VP.Width, 1.0f / VP.Height);
+    // ActiveViewportRect 크기를 기반으로 FXAA 해상도 계산
+    FRect ActiveRect = UViewportManager::GetInstance().GetActiveViewportRect();
+    FXAAParams.InvResolution = FVector2(1.0f / static_cast<float>(ActiveRect.Width),
+                                         1.0f / static_cast<float>(ActiveRect.Height));
 
-    // FXAA 품질 설정값을 명시적으로 업데이트                                           
-    FXAAParams.FXAASpanMax = 8.0f;                                        
-    FXAAParams.FXAAReduceMul = 1.0f / 8.0f;                               
+    // FXAA 품질 설정값을 명시적으로 업데이트
+    FXAAParams.FXAASpanMax = 8.0f;
+    FXAAParams.FXAAReduceMul = 1.0f / 8.0f;
     FXAAParams.FXAAReduceMin = 1.0f / 128.0f;
-    
+
+    // SceneColor 텍스처 UV 매핑 계산
+    const float BackbufferWidth = static_cast<float>(DeviceResources->GetWidth());
+    const float BackbufferHeight = static_cast<float>(DeviceResources->GetHeight());
+
+    FXAAParams.ViewportUVOffsetX = static_cast<float>(ActiveRect.Left) / BackbufferWidth;
+    FXAAParams.ViewportUVOffsetY = static_cast<float>(ActiveRect.Top) / BackbufferHeight;
+    FXAAParams.ViewportUVScaleX = static_cast<float>(ActiveRect.Width) / BackbufferWidth;
+    FXAAParams.ViewportUVScaleY = static_cast<float>(ActiveRect.Height) / BackbufferHeight;
+
     FRenderResourceFactory::UpdateConstantBufferData(FXAAConstantBuffer, FXAAParams);
 }
 
 void FFXAAPass::SetRenderTargets()
 {
-    ID3D11RenderTargetView* RTV = DeviceResources->GetRenderTargetView(); // 스왑체인 RTV
+    // OutputRTV가 설정되어 있으면 사용, 없으면 백버퍼 사용
+    ID3D11RenderTargetView* RTV = OutputRTV
+        ? OutputRTV
+        : DeviceResources->GetRenderTargetView(); // 스왑체인 백버퍼
+
     DeviceResources->GetDeviceContext()->OMSetRenderTargets(1, &RTV, nullptr);
 
-    const D3D11_VIEWPORT& VP = DeviceResources->GetViewportInfo();
-    DeviceResources->GetDeviceContext()->RSSetViewports(1, &VP);
+    // 뷰포트 설정: ActiveViewportRect 기반 (위젯 제외 영역에만 출력)
+    FRect ActiveRect = UViewportManager::GetInstance().GetActiveViewportRect();
+    D3D11_VIEWPORT Viewport = {};
+    Viewport.TopLeftX = static_cast<float>(ActiveRect.Left);
+    Viewport.TopLeftY = static_cast<float>(ActiveRect.Top);
+    Viewport.Width = static_cast<float>(ActiveRect.Width);
+    Viewport.Height = static_cast<float>(ActiveRect.Height);
+    Viewport.MinDepth = 0.0f;
+    Viewport.MaxDepth = 1.0f;
+
+    DeviceResources->GetDeviceContext()->RSSetViewports(1, &Viewport);
 }
