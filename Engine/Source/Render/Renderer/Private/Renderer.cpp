@@ -16,19 +16,17 @@
 #include "Editor/Public/Editor.h"
 #include "Player/Public/PlayerCharacter.h"
 #include "Global/Octree.h"
-#include "Global/Octree.h"
 #include "Level/Public/Level.h"
 #include "Manager/Time/Public/TimeManager.h"
 #include "Manager/UI/Public/UIManager.h"
-#include "Manager/UI/Public/ViewportManager.h"
 #include "Manager/UI/Public/ViewportManager.h"
 #include "Optimization/Public/OcclusionCuller.h"
 #include "Render/RenderPass/Public/BillboardPass.h"
 #include "Render/RenderPass/Public/EditorIconPass.h"
 #include "Render/RenderPass/Public/ClusteredRenderingGridPass.h"
-#include "Render/RenderPass/Public/ClusteredRenderingGridPass.h"
 #include "Render/RenderPass/Public/DecalPass.h"
 #include "Render/RenderPass/Public/FXAAPass.h"
+#include "Render/RenderPass/Public/LetterboxPass.h"
 #include "Render/RenderPass/Public/FogPass.h"
 #include "Render/RenderPass/Public/HitProxyPass.h"
 #include "Render/RenderPass/Public/LightPass.h"
@@ -70,6 +68,7 @@ void URenderer::Init(HWND InWindowHandle)
 	CreateFogShader();
 	CreateConstantBuffers();
 	CreateFXAAShader();
+	CreateLetterboxShader();
 	CreateStaticMeshShader();
 	CreateGizmoShader();
 	CreateClusteredRenderingGrid();
@@ -126,6 +125,9 @@ void URenderer::Init(HWND InWindowHandle)
 	// ID3D11PixelShader* InPS, ID3D11InputLayout* InLayout, ID3D11SamplerState* InSampler
 	FXAAPass = new FFXAAPass(Pipeline, DeviceResources, FXAAVertexShader, FXAAPixelShader, FXAAInputLayout, FXAASamplerState);
 	//RenderPasses.push_back(FXAAPass);
+
+	// Letterbox Pass 생성 (FXAA와 동일한 구조)
+	LetterboxPass = new FLetterboxPass(Pipeline, DeviceResources, LetterboxVertexShader, LetterboxPixelShader, LetterboxInputLayout, LetterboxSamplerState);
 
 	HitProxyPass = new FHitProxyPass(Pipeline, ConstantBufferViewProj, ConstantBufferModels,
 		HitProxyVS, HitProxyPS, HitProxyInputLayout, DefaultDepthStencilState);
@@ -385,6 +387,41 @@ void URenderer::CreateFXAAShader()
 	FXAASamplerState = FRenderResourceFactory::CreateFXAASamplerState();
 
 	RegisterShaderReloadCache(ShaderPath, ShaderUsage::FXAA);
+}
+
+/**
+ * @brief 레터박스 셰이더를 생성하고 초기화합니다
+ *
+ * 레터박스 포스트 프로세싱에 필요한 Vertex Shader, Pixel Shader, Input Layout, Sampler State를 생성합니다.
+ * FXAA 셰이더와 동일한 구조 (풀스크린 쿼드)를 사용합니다.
+ */
+void URenderer::CreateLetterboxShader()
+{
+	const std::wstring ShaderFilePathString = L"Asset/Shader/LetterboxShader.hlsl";
+	const std::filesystem::path ShaderPath(ShaderFilePathString);
+
+	// 입력 레이아웃: Position (float2) + TexCoord (float2)
+	// FXAA와 동일한 구조 사용 (풀스크린 쿼드 렌더링용)
+	TArray<D3D11_INPUT_ELEMENT_DESC> LetterboxLayout =
+	{
+		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+
+	// Vertex Shader와 Input Layout 생성
+	FRenderResourceFactory::CreateVertexShaderAndInputLayout(ShaderFilePathString, LetterboxLayout, &LetterboxVertexShader, &LetterboxInputLayout);
+
+	// Pixel Shader 생성
+	FRenderResourceFactory::CreatePixelShader(ShaderFilePathString, &LetterboxPixelShader);
+
+	// Sampler State 생성 (Linear 필터링, Clamp 모드)
+	// FXAA와 동일한 샘플러 사용 가능
+	LetterboxSamplerState = FRenderResourceFactory::CreateFXAASamplerState();
+
+	// 핫 리로드를 위한 셰이더 등록
+	RegisterShaderReloadCache(ShaderPath, ShaderUsage::LETTERBOX);
+
+	UE_LOG("Renderer: Letterbox 셰이더 생성 완료");
 }
 
 void URenderer::CreateStaticMeshShader()
@@ -832,14 +869,16 @@ void URenderer::ReleaseSamplerState()
 
 void URenderer::Update()
 {
-	// 토글에 따라서 FXAA bool값 세팅
+	// 토글에 따라서 FXAA/Letterbox bool값 세팅
     if (const ULevel* CurrentLevel = GWorld->GetLevel())
     {
         bFXAAEnabled = (CurrentLevel->GetShowFlags() & EEngineShowFlags::SF_FXAA) != 0;
+        bLetterboxEnabled = (CurrentLevel->GetShowFlags() & EEngineShowFlags::SF_Letterbox) != 0;
     }
     else
     {
         bFXAAEnabled = true;
+        bLetterboxEnabled = false;
     }
 
     RenderBegin();
@@ -864,10 +903,38 @@ void URenderer::Update()
 			continue;
 		}
 
-    	FRect SingleWindowRect = Viewport->GetRect();
-    	const int32 ViewportToolBarHeight = 32;
-    	D3D11_VIEWPORT LocalViewport = { (float)SingleWindowRect.Left,(float)SingleWindowRect.Top + ViewportToolBarHeight, (float)SingleWindowRect.Width, (float)SingleWindowRect.Height - ViewportToolBarHeight, 0.0f, 1.0f };
-    	GetDeviceContext()->RSSetViewports(1, &LocalViewport);
+		// 3D 씬은 ActiveViewportRect 영역(위젯 제외)에만 렌더링
+		// 레터박스가 활성화되면 뷰포트를 레터박스 비율에 맞춰 조정
+		FRect SingleWindowRect = Viewport->GetRect();
+		// ViewportMenuBar 높이를 빼서 3D 물체가 메뉴바와 겹치지 않도록 함
+		const int32 ViewportToolBarHeight = 32;
+
+		// 기본 뷰포트 (ViewportMenuBar 제외)
+		float ViewportLeft = (float)SingleWindowRect.Left;
+		float ViewportTop = (float)SingleWindowRect.Top + ViewportToolBarHeight;
+		float ViewportWidth = (float)SingleWindowRect.Width;
+		float ViewportHeight = (float)SingleWindowRect.Height - ViewportToolBarHeight;
+
+		// 레터박스가 활성화되면 실제 렌더링 영역을 레터박스 비율에 맞춰 조정
+		if (bLetterboxEnabled)
+		{
+			float CurrentAspect = ViewportWidth / ViewportHeight;
+			float TargetAspect = LetterboxAspectRatio;
+
+			if (TargetAspect > CurrentAspect)
+			{
+				// 목표 종횡비가 더 넓음 → 상하단에 검은 바 (높이 줄이기)
+				float BarHeight = (1.0f - (CurrentAspect / TargetAspect)) * 0.5f;
+				float PixelBarHeight = ViewportHeight * BarHeight;
+				ViewportTop += PixelBarHeight;
+				ViewportHeight -= PixelBarHeight * 2.0f;
+			}
+			// 참고: TargetAspect < CurrentAspect인 경우 (좌우 검은 바)는
+			// 일반적으로 사용하지 않으므로 구현하지 않음
+		}
+
+		D3D11_VIEWPORT LocalViewport = { ViewportLeft, ViewportTop, ViewportWidth, ViewportHeight, 0.0f, 1.0f };
+		GetDeviceContext()->RSSetViewports(1, &LocalViewport);
 		Viewport->SetRenderRect(LocalViewport);
         UCamera* CurrentCamera = Viewport->GetViewportClient()->GetCamera();
 
@@ -942,17 +1009,88 @@ void URenderer::Update()
 		}
     }
 
-    // FXAA는 SceneColor → 백버퍼로 복사
-    if (bFXAAEnabled)
-    {
-        ID3D11RenderTargetView* nullRTV[] = { nullptr };
-        GetDeviceContext()->OMSetRenderTargets(1, nullRTV, nullptr);
+    // ========================================
+    // 포스트 프로세싱 체인 (인덱스 기반 핑퐁 렌더링)
+    // ========================================
+    // 파이프라인: SceneColor → [FXAA] → [Letterbox] → 백버퍼
+    // 각 패스는 PingPongA(0) ↔ PingPongB(1)를 번갈아 사용
+    // 마지막 패스는 항상 백버퍼(nullptr)로 출력
 
-        FRenderingContext RenderingContext;
-        FXAAPass->Execute(RenderingContext);
+    ID3D11RenderTargetView* NullRTV[] = { nullptr };
+    GetDeviceContext()->OMSetRenderTargets(1, NullRTV, nullptr);
+
+    FRenderingContext RenderingContext;
+
+    // 활성화된 포스트 프로세싱 패스 개수 계산
+    int32 PassCount = 0;
+    if (bFXAAEnabled) PassCount++;
+    if (bLetterboxEnabled) PassCount++;
+
+    // 현재 종횡비 계산 (복사 패스용)
+    FRect ActiveRect = UViewportManager::GetInstance().GetActiveViewportRect();
+    float CurrentAspect = static_cast<float>(ActiveRect.Width) / static_cast<float>(ActiveRect.Height);
+
+    // 패스가 하나도 없으면 SceneColor를 백버퍼로 복사
+    if (PassCount == 0)
+    {
+        // 복사 패스: SceneColor → 백버퍼
+        // 현재 종횡비로 설정하면 BarHeight = 0이 되어 검은 바 없이 전체 출력
+        LetterboxPass->SetTargetAspectRatio(CurrentAspect);
+        LetterboxPass->SetInputTexture(DeviceResources->GetSceneColorShaderResourceView());
+        LetterboxPass->SetOutputRenderTarget(nullptr); // 백버퍼
+
+        UE_LOG("PostProcessing: 복사 패스 실행 (PassCount = 0, AspectRatio = %.3f)", CurrentAspect);
+
+        LetterboxPass->Execute(RenderingContext);
+    }
+    else
+    {
+        // 핑퐁 인덱스: 각 패스의 입출력 타겟을 인덱스로 계산
+        int32 CurrentPassIndex = 0;
+
+        // FXAA 패스 실행 (활성화된 경우)
+        if (bFXAAEnabled)
+        {
+            const bool bIsLastPass = (CurrentPassIndex == PassCount - 1);
+
+            // 입력: 첫 패스는 항상 SceneColor
+            // 출력: 마지막 패스면 백버퍼, 아니면 PingPong[CurrentPassIndex % 2]
+            ID3D11RenderTargetView* OutputRTV = bIsLastPass
+                ? nullptr
+                : DeviceResources->GetPingPongRenderTargetView(CurrentPassIndex % 2);
+
+            FXAAPass->SetOutputRenderTarget(OutputRTV);
+            FXAAPass->Execute(RenderingContext);
+
+            CurrentPassIndex++;
+        }
+
+        // Letterbox 패스 실행 (활성화된 경우)
+        if (bLetterboxEnabled)
+        {
+            const bool bIsLastPass = (CurrentPassIndex == PassCount - 1);
+            const bool bIsFirstPass = (CurrentPassIndex == 0);
+
+            // 입력: 첫 패스면 SceneColor, 아니면 이전 패스의 출력 (PingPong[(CurrentPassIndex - 1) % 2])
+            ID3D11ShaderResourceView* InputSRV = bIsFirstPass
+                ? DeviceResources->GetSceneColorShaderResourceView()
+                : DeviceResources->GetPingPongShaderResourceView((CurrentPassIndex - 1) % 2);
+
+            // 출력: 마지막 패스면 백버퍼, 아니면 PingPong[CurrentPassIndex % 2]
+            ID3D11RenderTargetView* OutputRTV = bIsLastPass
+                ? nullptr
+                : DeviceResources->GetPingPongRenderTargetView(CurrentPassIndex % 2);
+
+            LetterboxPass->SetTargetAspectRatio(LetterboxAspectRatio);
+            LetterboxPass->SetInputTexture(InputSRV);
+            LetterboxPass->SetOutputRenderTarget(OutputRTV);
+            LetterboxPass->Execute(RenderingContext);
+
+            CurrentPassIndex++;
+        }
     }
 
-    // D2D 오버레이는 FXAA 후 각 뷰포트마다 독립적으로 렌더링
+    // D2D 오버레이는 포스트 프로세싱 후 각 뷰포트마다 독립적으로 렌더링
     for (int32 ViewportIndex = StartIndex; ViewportIndex < EndIndex; ++ViewportIndex)
     {
         FViewport* Viewport = Viewports[ViewportIndex];
@@ -990,39 +1128,26 @@ void URenderer::Update()
 
 void URenderer::RenderBegin() const
 {
-	auto* RenderTargetView = DeviceResources->GetRenderTargetView();
-	GetDeviceContext()->ClearRenderTargetView(RenderTargetView, ClearColor);
-
-	// @TODO: The clear color for the normal buffer should be a specific value (e.g., {0.5, 0.5, 1.0, 1.0})
-	auto* NormalRenderTargetView = DeviceResources->GetNormalRenderTargetView();
-	GetDeviceContext()->ClearRenderTargetView(NormalRenderTargetView, ClearColor);
-
 	auto* DepthStencilView = DeviceResources->GetDepthStencilView();
 	GetDeviceContext()->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	// FXAA bool값 변수에 따라서 RTV세팅
-    if (bFXAAEnabled)
-    {
-        auto* SceneColorRenderTargetView = DeviceResources->GetSceneColorRenderTargetView();
-        auto* NormalRenderTargetView = DeviceResources->GetNormalRenderTargetView();
-        GetDeviceContext()->ClearRenderTargetView(SceneColorRenderTargetView, ClearColor);
-        GetDeviceContext()->ClearRenderTargetView(NormalRenderTargetView, ClearColor);
-        GetDeviceContext()->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-        ID3D11RenderTargetView* rtvs[] = { SceneColorRenderTargetView, NormalRenderTargetView };
-        GetDeviceContext()->OMSetRenderTargets(2, rtvs, DepthStencilView);
-    }
-    else
-    {
-        auto* RenderTargetView = DeviceResources->GetRenderTargetView();
-        auto* NormalRenderTargetView = DeviceResources->GetNormalRenderTargetView();
-        GetDeviceContext()->ClearRenderTargetView(RenderTargetView, ClearColor);
-        GetDeviceContext()->ClearRenderTargetView(NormalRenderTargetView, ClearColor);
-        GetDeviceContext()->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-        ID3D11RenderTargetView* rtvs[] = { RenderTargetView, NormalRenderTargetView };
-        GetDeviceContext()->OMSetRenderTargets(2, rtvs, DepthStencilView);
-    }
+	// 백버퍼를 검은색으로 클리어 (메뉴바/상태바 영역을 검은색으로 만들기 위함)
+	auto* BackBufferRTV = DeviceResources->GetRenderTargetView();
+	static const FLOAT BlackColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	GetDeviceContext()->ClearRenderTargetView(BackBufferRTV, BlackColor);
 
-    DeviceResources->UpdateViewport();
+	// 포스트 프로세싱 체인 일관성을 위해 항상 오프스크린 버퍼(SceneColor)에 렌더링
+	// 포스트 프로세싱이 최종적으로 백버퍼로 복사함
+	auto* SceneColorRenderTargetView = DeviceResources->GetSceneColorRenderTargetView();
+	auto* NormalRenderTargetView = DeviceResources->GetNormalRenderTargetView();
+	GetDeviceContext()->ClearRenderTargetView(SceneColorRenderTargetView, ClearColor);
+	// @TODO: The clear color for the normal buffer should be a specific value (e.g., {0.5, 0.5, 1.0, 1.0})
+	GetDeviceContext()->ClearRenderTargetView(NormalRenderTargetView, ClearColor);
+	ID3D11RenderTargetView* rtvs[] = { SceneColorRenderTargetView, NormalRenderTargetView };
+	GetDeviceContext()->OMSetRenderTargets(2, rtvs, DepthStencilView);
+
+	// SceneColor는 전체 백버퍼 크기로 렌더링 (Letterbox가 나중에 축소)
+	DeviceResources->UpdateViewport();
 }
 
 void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
@@ -1244,6 +1369,7 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight) const
     if (!DeviceResources || !GetDeviceContext() || !GetSwapChain()) return;
 
     DeviceResources->ReleaseFactories();
+    DeviceResources->ReleasePingPongTargets();
     DeviceResources->ReleaseSceneColorTarget();
 	DeviceResources->ReleaseFrameBuffer();
 	DeviceResources->ReleaseDepthBuffer();
@@ -1261,6 +1387,7 @@ void URenderer::OnResize(uint32 InWidth, uint32 InHeight) const
 	DeviceResources->CreateFrameBuffer();
 	DeviceResources->CreateDepthBuffer();
 	DeviceResources->CreateNormalBuffer();
+    DeviceResources->CreatePingPongTargets();
     DeviceResources->CreateFactories();
 
     ID3D11RenderTargetView* targetView = bFXAAEnabled

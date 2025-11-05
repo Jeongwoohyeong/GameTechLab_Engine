@@ -513,6 +513,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     <ClInclude Include="Source\Render\RenderPass\Public\PointLightPass.h" />
     <ClInclude Include="Source\Render\RenderPass\Public\FogPass.h" />
     <ClInclude Include="Source\Render\RenderPass\Public\FXAAPass.h" />
+    <ClInclude Include="Source\Render\RenderPass\Public\LetterboxPass.h" />
     <ClInclude Include="Source\Render\RenderPass\Public\RenderingContext.h" />
     <ClInclude Include="Source\Render\RenderPass\Public\RenderPass.h" />
     <ClInclude Include="Source\Render\RenderPass\Public\SceneDepthPass.h" />
@@ -824,6 +825,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     <ClCompile Include="Source\Render\RenderPass\Private\LightPass.cpp" />
     <ClCompile Include="Source\Render\RenderPass\Private\PointLightPass.cpp" />
     <ClCompile Include="Source\Render\RenderPass\Private\FXAAPass.cpp" />
+    <ClCompile Include="Source\Render\RenderPass\Private\LetterboxPass.cpp" />
     <ClCompile Include="Source\Render\RenderPass\Private\FogPass.cpp" />
     <ClCompile Include="Source\Render\RenderPass\Private\RenderPass.cpp" />
     <ClCompile Include="Source\Render\RenderPass\Private\SceneDepthPass.cpp" />
