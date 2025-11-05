@@ -906,8 +906,8 @@ void URenderer::Update()
 		// 3D 씬은 ActiveViewportRect 영역(위젯 제외)에만 렌더링
 		// 포스트 프로세싱도 동일한 영역 기준으로 처리
 		FRect SingleWindowRect = Viewport->GetRect();
-		// Quad layout일 때만 툴바 높이 적용 (Single layout은 툴바 없음)
-		const int32 ViewportToolBarHeight = (CurrentLayout == EViewportLayout::Quad) ? 32 : 0;
+		// ViewportMenuBar 높이를 빼서 3D 물체가 메뉴바와 겹치지 않도록 함
+		const int32 ViewportToolBarHeight = 32;
 		D3D11_VIEWPORT LocalViewport = { (float)SingleWindowRect.Left,(float)SingleWindowRect.Top + ViewportToolBarHeight, (float)SingleWindowRect.Width, (float)SingleWindowRect.Height - ViewportToolBarHeight, 0.0f, 1.0f };
 		GetDeviceContext()->RSSetViewports(1, &LocalViewport);
 		Viewport->SetRenderRect(LocalViewport);

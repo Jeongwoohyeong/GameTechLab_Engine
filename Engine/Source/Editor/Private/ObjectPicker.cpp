@@ -695,23 +695,18 @@ FHitProxyId UObjectPicker::ReadHitProxyAtLocation(int32 X, int32 Y, const D3D11_
 
 void UObjectPicker::CreateStagingTextureIfNeeded()
 {
+	if (HitProxyStagingTexture)
+	{
+		return;
+	}
+
 	URenderer& Renderer = URenderer::GetInstance();
 	ID3D11Device* Device = Renderer.GetDevice();
 	UDeviceResources* DeviceResources = Renderer.GetDeviceResources();
+
 	uint32 Width = DeviceResources->GetWidth();
 	uint32 Height = DeviceResources->GetHeight();
-	// 기존 Staging Texture가 있고 크기가 같으면 재사용
-	if (HitProxyStagingTexture)
-	{
-		D3D11_TEXTURE2D_DESC ExistingDesc;
-		HitProxyStagingTexture->GetDesc(&ExistingDesc);
-		if (ExistingDesc.Width == Width && ExistingDesc.Height == Height)
-		{
-			return;
-		}
-		// 크기가 다르면 해제 후 재생성
-		SafeRelease(HitProxyStagingTexture);
-	}
+
 	D3D11_TEXTURE2D_DESC StagingDesc = {};
 	StagingDesc.Width = Width;
 	StagingDesc.Height = Height;
@@ -724,13 +719,10 @@ void UObjectPicker::CreateStagingTextureIfNeeded()
 	StagingDesc.BindFlags = 0;
 	StagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	StagingDesc.MiscFlags = 0;
+
 	HRESULT hr = Device->CreateTexture2D(&StagingDesc, nullptr, &HitProxyStagingTexture);
 	if (FAILED(hr))
 	{
 		UE_LOG_ERROR("ObjectPicker: HitProxy Staging Texture 생성 실패");
-	}
-	else
-	{
-		UE_LOG_DEBUG("ObjectPicker: HitProxy Staging Texture 생성 %ux%u", Width, Height);
 	}
 }
