@@ -60,6 +60,18 @@ protected:
     // Track forward movement for engine lights
     bool bIsMovingForward = false;
 
+    // Acceleration-based movement system
+    FVector CurrentVelocity = FVector::ZeroVector();     // 현재 속도
+    float InputValue = 0.0f;                             // 입력값 (W키 누른 정도)
+    float Acceleration = 300.0f;                         // 가속도
+    float MaxSpeed = 500.0f;                             // 최대 속도
+    float Deceleration = 150.0f;                         // 감속도
+
+    // Jet sound cooldown system
+    float JetSoundCooldown = 0.0f;                       // 현재 쿨타임 타이머
+    float JetSoundCooldownTime = 5.0f;                   // 쿨타임 (5초)
+    bool bWasMovingForward = false;                      // 이전 프레임에 W키를 눌렀는지
+
     USphereComponent* CollisionComponent = nullptr;
     UStaticMeshComponent* StaticMeshComponent = nullptr;
     UCameraComponent* CameraComponent = nullptr;

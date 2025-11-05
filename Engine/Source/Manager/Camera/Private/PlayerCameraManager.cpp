@@ -9,6 +9,7 @@
 #include "Level/Public/World.h"
 #include "Level/Public/Level.h"
 #include "Component/Collision/Public/ShapeComponent.h"
+#include "Player/Public/EnemyCharacter.h"
 #include "Global/Quaternion.h"
 
 IMPLEMENT_CLASS(APlayerCameraManager, AActor)
@@ -369,6 +370,12 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 				// Skip if this is the target's own collision component
 				AActor* CompOwner = ShapeComp->GetOwner();
 				if (CompOwner == ViewTarget.Target)
+				{
+					continue;
+				}
+
+				// Skip enemy collision components
+				if (Cast<AEnemyCharacter>(CompOwner))
 				{
 					continue;
 				}

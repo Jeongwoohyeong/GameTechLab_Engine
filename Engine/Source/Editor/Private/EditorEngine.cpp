@@ -151,7 +151,7 @@ void UEditorEngine::StartPIE()
         GWorld = PIEWorld;
         PIEWorld->BeginPlay();
 
-        FAudioEngine::GetInstance().PlayBGM("Data/Audio/Sample.wav");
+        FAudioEngine::GetInstance().PlayBGM("Data/Audio/TopGunSound.wav");
 
         // 게임 UI 매니저 초기화 (PlayerController 생성 이후)
         UGameUIManager::GetInstance().Initialize();

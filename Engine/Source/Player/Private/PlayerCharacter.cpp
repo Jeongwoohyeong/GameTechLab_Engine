@@ -8,6 +8,7 @@
 #include "Component/Public/ULuaScriptComponent.h"
 #include "Component/Camera/Public/CameraComponent.h"
 #include "Component/Public/PointLightComponent.h"
+#include "Core/Public/AudioEngine.h"
 
 IMPLEMENT_CLASS(APlayerCharacter, APawn)
 
@@ -184,6 +185,87 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Jet sound 쿨타임 감소
+	if (JetSoundCooldown > 0.0f)
+	{
+		JetSoundCooldown -= DeltaTime;
+	}
+
+	// 이전 프레임 입력값 저장
+	float PreviousInputValue = InputValue;
+
+	// 현재 프레임 입력값 리셋 (MoveForward에서 업데이트됨)
+	InputValue = 0.0f;
+
+	// 가속도 기반 이동 처리 (이전 프레임 입력값 사용)
+	if (PreviousInputValue != 0.0f)
+	{
+		// Actor의 Forward 방향 계산
+		FQuaternion Rotation = GetActorRotation();
+		FMatrix RotMatrix = Rotation.ToRotationMatrix();
+		FVector Forward(RotMatrix.Data[0][0], RotMatrix.Data[0][1], RotMatrix.Data[0][2]);
+		Forward.Normalize();
+
+		// 목표 속도 = 입력값 * 최대 속도
+		float TargetSpeed = PreviousInputValue * MaxSpeed;
+
+		// 현재 전진 방향 속도
+		float CurrentSpeed = CurrentVelocity.Dot(Forward);
+
+		// 가속 처리
+		if (CurrentSpeed < TargetSpeed)
+		{
+			CurrentSpeed += Acceleration * DeltaTime;
+			if (CurrentSpeed > TargetSpeed)
+			{
+				CurrentSpeed = TargetSpeed;
+			}
+		}
+		else if (CurrentSpeed > TargetSpeed)
+		{
+			CurrentSpeed -= Deceleration * DeltaTime;
+			if (CurrentSpeed < TargetSpeed)
+			{
+				CurrentSpeed = TargetSpeed;
+			}
+		}
+
+		// 속도 벡터 업데이트
+		CurrentVelocity = Forward * CurrentSpeed;
+	}
+	else
+	{
+		// 입력이 없으면 감속
+		float CurrentSpeed = CurrentVelocity.Length();
+		if (CurrentSpeed > 0.0f)
+		{
+			CurrentSpeed -= Deceleration * DeltaTime;
+			if (CurrentSpeed < 0.0f)
+			{
+				CurrentSpeed = 0.0f;
+			}
+
+			if (CurrentSpeed > 0.0f)
+			{
+				CurrentVelocity = CurrentVelocity.GetNormalized() * CurrentSpeed;
+			}
+			else
+			{
+				CurrentVelocity = FVector::ZeroVector();
+			}
+		}
+	}
+
+	// 위치 업데이트
+	if (CurrentVelocity.Length() > 0.0f)
+	{
+		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime);
+		SetActorLocation(NewLocation);
+
+		// 디버깅용 로그
+		UE_LOG("Velocity: %.2f, Input: %.4f", CurrentVelocity.Length(), PreviousInputValue);
+	}
+
 	// Tick 끝에서 이동 상태에 따라 라이트 업데이트
 	if (PointLight1)
 	{
@@ -194,28 +276,55 @@ void APlayerCharacter::Tick(float DeltaTime)
 		PointLight2->SetLightEnabled(bIsMovingForward);
 	}
 
-	// 다음 프레임을 위해 리셋 (입력이 없으면 false로 유지됨)
+	// 다음 프레임을 위해 리셋
 	bIsMovingForward = false;
+
+	// bWasMovingForward 업데이트: 이전 프레임에 W키가 눌렸는지 확인
+	// PreviousInputValue가 0이면 W키를 떼었다는 뜻
+	if (PreviousInputValue <= 0.0f)
+	{
+		bWasMovingForward = false;
+	}
+	else
+	{
+		bWasMovingForward = true;
+	}
+	// InputValue는 리셋하지 않음 - MoveForward에서만 업데이트
 }
 
 void APlayerCharacter::MoveForward(float Value)
 {
-	if (Value == 0.0f)
-	{
-		return;
-	}
+	// 입력값 저장 (가속도 계산은 Tick에서 처리)
+	InputValue = Value;
 
 	// W키를 누르면 이동 상태 ON (Tick에서 라이트를 켬)
-	bIsMovingForward = true;
+	if (Value > 0.0f)
+	{
+		bIsMovingForward = true;
 
-	// Actor의 Forward 방향 계산 (로컬 좌표계)
-	FQuaternion Rotation = GetActorRotation();
-	FMatrix RotMatrix = Rotation.ToRotationMatrix();
-	FVector Forward(RotMatrix.Data[0][0], RotMatrix.Data[0][1], RotMatrix.Data[0][2]);
-	Forward.Normalize();
+		// W키를 처음 눌렀을 때만 소리 재생 (쿨타임이 끝났을 때만)
+		if (!bWasMovingForward)
+		{
+			UE_LOG("[PlayerCharacter] W pressed! Cooldown: %.2f", JetSoundCooldown);
 
-	FVector NewLocation = GetActorLocation() + (Forward * Value * MovementSpeed * 10);
-	SetActorLocation(NewLocation);
+			if (JetSoundCooldown <= 0.0f)
+			{
+				UE_LOG("[PlayerCharacter] Playing JetSound!");
+				FAudioEngine::GetInstance().PlaySFX("Data/Audio/JetSound.wav", 1.0f);
+				JetSoundCooldown = JetSoundCooldownTime;  // 쿨타임 리셋
+			}
+			else
+			{
+				UE_LOG("[PlayerCharacter] Cooldown still active, not playing sound");
+			}
+		}
+
+		bWasMovingForward = true;
+	}
+	else
+	{
+		bWasMovingForward = false;
+	}
 }
 
 void APlayerCharacter::MoveRight(float Value)

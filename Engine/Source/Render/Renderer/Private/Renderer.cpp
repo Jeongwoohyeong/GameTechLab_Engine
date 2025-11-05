@@ -1039,7 +1039,7 @@ void URenderer::Update()
         LetterboxPass->SetInputTexture(DeviceResources->GetSceneColorShaderResourceView());
         LetterboxPass->SetOutputRenderTarget(nullptr); // 백버퍼
 
-        UE_LOG("PostProcessing: 복사 패스 실행 (PassCount = 0, AspectRatio = %.3f)", CurrentAspect);
+        //UE_LOG("PostProcessing: 복사 패스 실행 (PassCount = 0, AspectRatio = %.3f)", CurrentAspect);
 
         LetterboxPass->Execute(RenderingContext);
     }
@@ -1274,13 +1274,7 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 			else if (PointLightComponent)
 			{
 				FVector WorldPos = PointLightComponent->GetWorldLocation();
-				/*UE_LOG("[Renderer] Found PointLight: %s, Visible=%d, Enabled=%d, Intensity=%.2f, WorldPos=(%.2f, %.2f, %.2f), Range=%.2f",
-					PointLightComponent->GetName().ToString().c_str(),
-					PointLightComponent->GetVisible(),
-					PointLightComponent->GetLightEnabled(),
-					PointLightComponent->GetIntensity(),
-					WorldPos.X, WorldPos.Y, WorldPos.Z,
-					PointLightComponent->GetAttenuationRadius());*/
+				
 
 				if (PointLightComponent->GetVisible() &&
 					PointLightComponent->GetLightEnabled())
