@@ -138,13 +138,38 @@ public:
 	void AddTag(const FName& Tag);
 	void RemoveTag(const FName& Tag);
 	bool HasTag(const FName& Tag) const;
+
+	// ========== Time Dilation System ==========
+
+	/**
+	 * @brief Get the custom time dilation for this actor (1.0 = normal, 0.5 = half speed, 2.0 = double speed)
+	 * @return The custom time dilation value
+	 */
+	float GetCustomTimeDilation() const { return CustomTimeDilation; }
+
+	/**
+	 * @brief Set the custom time dilation for this actor
+	 * @param InTimeDilation The new time dilation value (clamped between 0.0 and 10.0)
+	 */
+	void SetCustomTimeDilation(float InTimeDilation);
+
+	/**
+	 * @brief Get the effective delta time for this actor (BaseDeltaTime * CustomTimeDilation)
+	 * @param BaseDeltaTime The base delta time from the world
+	 * @return The effective delta time for this actor
+	 */
+	float GetActorDeltaTime(float BaseDeltaTime) const;
+
 protected:
 	bool bCanEverTick = false;
 	bool bTickInEditor = false;
 	bool bBegunPlay = false;
-	/** @brief True if the actor is marked for destruction. */  
+	/** @brief True if the actor is marked for destruction. */
 	bool bIsPendingDestroy = false;
 	bool bUseScript = false;
+
+	/** @brief Custom time dilation for this actor (1.0 = normal speed, 0.5 = half speed, 2.0 = double speed) */
+	float CustomTimeDilation = 1.0f;
 
 private:
 	USceneComponent* RootComponent = nullptr;

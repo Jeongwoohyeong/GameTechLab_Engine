@@ -137,6 +137,62 @@ void UFPSWidget::RenderWidget()
 	{
 		ClusteredRenderingGridPass->SetClusteredRenderginGridRender(bClusteredRenderingGriddRender);
 	}
+
+	// ========== Time Control Section ==========
+	ImGui::Separator();
+	ImGui::TextColored(ImVec4(0.2f, 0.8f, 1.0f, 1.0f), "Time Control");
+
+	auto& TimeManager = UTimeManager::GetInstance();
+
+	// Global Time Dilation Control
+	ImGui::Text("Global Time Dilation");
+	UIGlobalTimeDilation = TimeManager.GetGlobalTimeDilation();
+	if (ImGui::SliderFloat("##GlobalDilation", &UIGlobalTimeDilation, 0.0f, 2.0f, "%.2fx"))
+	{
+		TimeManager.SetGlobalTimeDilation(UIGlobalTimeDilation);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset##Dilation"))
+	{
+		TimeManager.ResetTimeDilation();
+	}
+
+	// Hit Stop Section
+	ImGui::Separator();
+	ImGui::Text("Hit Stop");
+	ImGui::SliderFloat("Duration##HitStop", &UIHitStopDuration, 0.05f, 0.5f, "%.2f s");
+	if (ImGui::Button("Start Hit Stop"))
+	{
+		TimeManager.StartHitStop(UIHitStopDuration);
+	}
+	ImGui::SameLine();
+	if (TimeManager.IsHitStopActive())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "[ACTIVE]");
+	}
+
+	// Slow Motion Section
+	ImGui::Separator();
+	ImGui::Text("Slow Motion");
+	ImGui::SliderFloat("Speed##Slomo", &UISlowMotionSpeed, 0.1f, 1.0f, "%.2fx");
+	ImGui::SliderFloat("Duration##Slomo", &UISlowMotionDuration, 0.5f, 5.0f, "%.1f s");
+
+	if (ImGui::Button("Start Slow Motion"))
+	{
+		TimeManager.StartSlowMotion(UISlowMotionSpeed, UISlowMotionDuration);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Stop Slow Motion"))
+	{
+		TimeManager.StopSlowMotion();
+	}
+
+	if (TimeManager.IsSlowMotionActive())
+	{
+		ImGui::SameLine();
+		ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "[ACTIVE]");
+	}
+
 	ImGui::Separator();
 }
 

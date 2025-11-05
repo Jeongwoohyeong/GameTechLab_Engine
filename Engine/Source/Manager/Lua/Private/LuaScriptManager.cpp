@@ -155,6 +155,19 @@ namespace
         };
 
         std::vector<fs::path> candidates;
+
+#ifdef _DEVELOP
+        // In development mode, prioritize Engine source folder for hot reload
+        fs::path search = base;
+        for (int depth = 0; depth < 5 && search.has_parent_path(); ++depth)
+        {
+            search = search.parent_path();
+            addCandidate(search, candidates);
+        }
+        // Add base path last (Build/Debug) so Engine/Scripts is checked first
+        addCandidate(base, candidates);
+#else
+        // In release mode, use Build folder first
         addCandidate(base, candidates);
 
         fs::path search = base;
@@ -163,6 +176,7 @@ namespace
             search = search.parent_path();
             addCandidate(search, candidates);
         }
+#endif
 
         for (const fs::path& candidate : candidates)
         {
@@ -628,6 +642,11 @@ void FLuaScriptManager::BindTypes()
         "ActorScale3D", sol::property(&AActor::GetActorScale3D, &AActor::SetActorScale3D),
         "SetActorScale3D", &AActor::SetActorScale3D,
         "GetActorScale3D", &AActor::GetActorScale3D,
+        // Time Dilation
+        "CustomTimeDilation", sol::property(&AActor::GetCustomTimeDilation, &AActor::SetCustomTimeDilation),
+        "SetCustomTimeDilation", &AActor::SetCustomTimeDilation,
+        "GetCustomTimeDilation", &AActor::GetCustomTimeDilation,
+        "GetActorDeltaTime", &AActor::GetActorDeltaTime,
         // Components
         "GetOwnedComponents", &AActor::GetOwnedComponents,
         "GetRootComponent", &AActor::GetRootComponent,
@@ -901,9 +920,31 @@ void FLuaScriptManager::BindTypes()
     LuaState->new_usertype<UTimeManager>("UTimeManager",
         sol::no_constructor,
         sol::base_classes, sol::bases<UObject>(),
+        // Basic Time Functions
         "GetGameTime", &UTimeManager::GetGameTime,
         "GetDeltaTime", &UTimeManager::GetDeltaTime,
-        "GetFPS", &UTimeManager::GetFPS
+        "GetRawDeltaTime", &UTimeManager::GetRawDeltaTime,
+        "GetFPS", &UTimeManager::GetFPS,
+        "IsPaused", &UTimeManager::IsPaused,
+        "PauseGame", &UTimeManager::PauseGame,
+        "ResumeGame", &UTimeManager::ResumeGame,
+
+        // Time Dilation System
+        "SetGlobalTimeDilation", &UTimeManager::SetGlobalTimeDilation,
+        "GetGlobalTimeDilation", &UTimeManager::GetGlobalTimeDilation,
+        "ResetTimeDilation", &UTimeManager::ResetTimeDilation,
+
+        // Hit Stop System - Support both with and without parameter
+        "StartHitStop", sol::overload(
+            [](UTimeManager& Manager) { Manager.StartHitStop(); },
+            [](UTimeManager& Manager, float Duration) { Manager.StartHitStop(Duration); }
+        ),
+        "IsHitStopActive", &UTimeManager::IsHitStopActive,
+
+        // Slow Motion System
+        "StartSlowMotion", &UTimeManager::StartSlowMotion,
+        "StopSlowMotion", &UTimeManager::StopSlowMotion,
+        "IsSlowMotionActive", &UTimeManager::IsSlowMotionActive
     );
 
     LuaState->set_function("GetTimeManager", []() {

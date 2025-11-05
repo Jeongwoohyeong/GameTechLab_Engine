@@ -20,6 +20,7 @@
 #include "Manager/UI/Public/GameUIManager.h"
 #include "Player/Public/PlayerCharacter.h"
 #include "Component/Camera/Public/CameraComponent.h"
+#include "Core/Public/AudioEngine.h"
 #include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Manager/Camera/Public/CameraModifier_CameraShake.h"
 
@@ -87,7 +88,8 @@ void UEditorEngine::Tick(float DeltaSeconds)
                 // PIE 상태가 Playing일 때만 틱을 실행
                 if (PIEState == EPIEState::Playing)
                 {
-                    World->Tick(DeltaSeconds);
+                    World->Tick(DeltaSeconds);                    
+                    //FAudioEngine::GetInstance().Tick(DeltaSeconds, EditorModule->GetCamera());
                 }
             }
         }
@@ -97,6 +99,7 @@ void UEditorEngine::Tick(float DeltaSeconds)
     {
         EditorModule->Update();
     }
+    
 }
 
 /**
@@ -147,6 +150,8 @@ void UEditorEngine::StartPIE()
 
         GWorld = PIEWorld;
         PIEWorld->BeginPlay();
+
+        FAudioEngine::GetInstance().PlayBGM("Data/Audio/Sample.wav");
 
         // 게임 UI 매니저 초기화 (PlayerController 생성 이후)
         UGameUIManager::GetInstance().Initialize();
@@ -255,6 +260,8 @@ void UEditorEngine::EndPIE()
 
     // GWorld를 다시 Editor World로 복원
     GWorld = GetEditorWorldContext().World();
+
+    FAudioEngine::GetInstance().StopBGM();
 }
 
 /**
