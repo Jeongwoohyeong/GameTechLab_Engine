@@ -32,6 +32,10 @@
 #include <sstream>
 #include <xmmintrin.h>
 
+// Audio Library
+#include <xaudio2.h>
+#include <x3daudio.h>
+
 // Global Included
 #include "Source/Global/Types.h"
 #include "Source/Global/Memory.h"
@@ -99,3 +103,5 @@ using filesystem::create_directories;
 #pragma comment(lib, "dwrite")
 #pragma comment(lib, "dwmapi")
 #pragma comment(lib, DIRECTX_TOOL_KIT)
+#pragma comment(lib, "xaudio2.lib")
+

@@ -18,6 +18,7 @@
 #include "Render/UI/Overlay/Public/StatOverlay.h"
 #include "Utility/Public/ScopeCycleCounter.h"
 #include "Manager/UI/Public/ViewportManager.h"
+#include "Core/Public/AudioEngine.h"
 
 #ifdef IS_OBJ_VIEWER
 #include "Utility/Public/FileDialog.h"
@@ -109,6 +110,9 @@ int FClientApp::InitializeSystem() const
 	auto& UIManager = UUIManager::GetInstance();
 	UIManager.Initialize(Window->GetWindowHandle());
 	UUIWindowFactory::CreateDefaultUILayout();
+
+	auto& AudioEngine = FAudioEngine::GetInstance();
+	AudioEngine.Initialize();
 	
 	return S_OK;
 }
@@ -123,6 +127,7 @@ void FClientApp::UpdateSystem() const
 	auto& UIManager = UUIManager::GetInstance();
 	auto& Renderer = URenderer::GetInstance();
 	auto& LuaManager = FLuaScriptManager::GetInstance(); // LuaManager 인스턴스 가져오기
+	auto& AudioEngine = FAudioEngine::GetInstance();
 	{
 		TIME_PROFILE(TimeManager)
 		TimeManager.Update();
@@ -216,4 +221,5 @@ void FClientApp::ShutdownSystem() const
 	UAssetManager::GetInstance().Release();
 	FObjManager::Release();
 	URenderer::GetInstance().Release();
+	FAudioEngine::GetInstance().Shutdown();
 }
