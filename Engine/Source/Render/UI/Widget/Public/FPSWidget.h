@@ -40,4 +40,10 @@ private:
 	float PrintFPS;
 	float PrintDeltaTime;
 	bool bShowGraph;
+
+	// Time Control UI state variables
+	float UIGlobalTimeDilation = 1.0f;
+	float UIHitStopDuration = 0.1f;
+	float UISlowMotionSpeed = 0.3f;
+	float UISlowMotionDuration = 2.0f;
 };
