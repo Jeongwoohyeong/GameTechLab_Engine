@@ -79,7 +79,7 @@ return function()
 
     -- 플레이어와 충돌 시작 (적이 플레이어에게 데미지를 줌)
     function ReturnTable:OnBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult)
-        --Print("[Lua/Enemy] OnBeginOverlap")
+        Print("[Lua/Enemy] OnBeginOverlap")
 
         -- ✅ 죽은 상태면 데미지 주지 않음
         if bIsDead then
@@ -96,27 +96,7 @@ return function()
             local playerChar = Cast_APlayerCharacter(OtherActor)
 
             if playerChar then
-                --Print("[Lua/Enemy] Overlap with PlayerCharacter!")
-
-                -- GameUIManager를 통해 HUD 가져오기
-                local uiManager = GetGameUIManager()
-                if uiManager then
-                    local hudWidget = uiManager:GetHUDWidget()
-                    if hudWidget then
-                        -- HUD의 TakeDamage 함수 호출 (10 데미지)
-                        hudWidget:TakeDamage(10)
-                        --Print("[Lua/Enemy] Dealt 10 damage to player. Current health: " .. hudWidget:GetHealth())
-
-                        -- 카메라 쉐이크 효과 (강도: 2.0, 지속시간: 0.5초)
-                        local camMgr = GetPlayerCameraManager()
-                        if camMgr then
-                            camMgr:StartCameraShake(2.0, 0.5)
-                        end
-
-                        -- 데미지 시간 갱신
-                        self:UpdateDamageTime()
-                    end
-                end
+                --Print("[Lua/Enemy] Overlap with PlayerCharacter!")   
             end
         end
     end
@@ -144,27 +124,7 @@ return function()
             local playerChar = Cast_APlayerCharacter(OtherActor)
 
             if playerChar then
-                --Print("[Lua/Enemy] Hit PlayerCharacter!")
-
-                -- GameUIManager를 통해 HUD 가져오기
-                local uiManager = GetGameUIManager()
-                if uiManager then
-                    local hudWidget = uiManager:GetHUDWidget()
-                    if hudWidget then
-                        -- HUD의 TakeDamage 함수 호출 (10 데미지)
-                        hudWidget:TakeDamage(10)
-                        --Print("[Lua/Enemy] Dealt 10 damage to player. Current health: " .. hudWidget:GetHealth())
-
-                        -- 카메라 쉐이크 효과 (강도: 2.0, 지속시간: 0.5초)
-                        local camMgr = GetPlayerCameraManager()
-                        if camMgr then
-                            camMgr:StartCameraShake(2.0, 0.5)
-                        end
-
-                        -- 데미지 시간 갱신
-                        self:UpdateDamageTime()
-                    end
-                end
+                Print("[Lua/Enemy/OnHit] Hit PlayerCharacter!")           
             end
         end
     end

@@ -188,8 +188,8 @@ FCameraConstants UCameraComponent::GetCameraConstants() const
 
 void UCameraComponent::UpdateViewMatrix() const
 {
-	// Get camera world transform
-	FVector CameraPos = GetWorldLocation();
+	// Get camera world transform (with camera shake offset applied)
+	FVector CameraPos = GetWorldLocation() + CameraShakeOffset;
 	FVector Forward = GetForwardVector();
 	FVector Up = GetUpVector();
 	FVector Right = GetRightVector();

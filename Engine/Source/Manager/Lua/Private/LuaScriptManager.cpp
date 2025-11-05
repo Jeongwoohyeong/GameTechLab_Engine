@@ -833,7 +833,8 @@ void FLuaScriptManager::BindTypes()
         "Possess", &APlayerController::Possess,
         "UnPossess", &APlayerController::UnPossess,
         "GetControlledActor", &APlayerController::GetControlledActor,
-        "GetControlledPawn", &APlayerController::GetControlledPawn
+        "GetControlledPawn", &APlayerController::GetControlledPawn,
+        "GetPlayerCameraManager", &APlayerController::GetPlayerCameraManager
     );
 
     // --- AGameModeBase Binding (inherits from AActor) ---
@@ -917,10 +918,6 @@ void FLuaScriptManager::BindTypes()
         "GetFadeAmount", &APlayerCameraManager::GetFadeAmount,
         "GetLetterBoxAlpha", &APlayerCameraManager::GetLetterBoxAlpha
     );
-
-    LuaState->set_function("GetPlayerCameraManager", []() {
-        return &APlayerCameraManager::GetInstance();
-    });
 
     // --- UGameHUDWidget Binding ---
     LuaState->new_usertype<UGameHUDWidget>("UGameHUDWidget",

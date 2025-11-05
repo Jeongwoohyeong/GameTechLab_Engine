@@ -151,16 +151,18 @@ void UEditorEngine::StartPIE()
         // 게임 UI 매니저 초기화 (PlayerController 생성 이후)
         UGameUIManager::GetInstance().Initialize();
 
-        // ========== Setup PlayerCameraManager ==========
-        APlayerCameraManager& CamMgr = APlayerCameraManager::GetInstance();
-
-        // Camera Shake Modifier 생성 및 추가
-        UCameraModifier_CameraShake* ShakeMod = new UCameraModifier_CameraShake();
-        CamMgr.AddCameraModifier(ShakeMod);
-
-        UE_LOG("[EditorEngine] PlayerCameraManager initialized with CameraShake modifier");
-
         // ========== Setup PIE Camera ==========
+        // Get PlayerCameraManager from PlayerController
+        AGameMode* GameMode = Cast<AGameMode>(PIEWorld->GetGameMode());
+        APlayerController* PC = GameMode ? GameMode->GetPlayerController() : nullptr;
+        APlayerCameraManager* CamMgr = PC ? PC->GetPlayerCameraManager() : nullptr;
+
+        if (!CamMgr)
+        {
+            UE_LOG_ERROR("[EditorEngine] PlayerCameraManager not found in PlayerController!");
+            return;
+        }
+
         // Find PlayerCharacter in PIE world
         ULevel* PIELevel = PIEWorld->GetLevel();
         if (PIELevel)
@@ -175,8 +177,8 @@ void UEditorEngine::StartPIE()
                     if (CameraComp)
                     {
                         // Initialize PlayerCameraManager with CameraComponent (PIE mode)
-                        CamMgr.Initialize(CameraComp);
-                        CamMgr.SetViewTarget(PlayerChar);
+                        CamMgr->Initialize(CameraComp);
+                        CamMgr->SetViewTarget(PlayerChar);
                         UE_LOG("[EditorEngine] PlayerCameraManager initialized with CameraComponent");
 
                         // Get camera offset from component
@@ -223,9 +225,8 @@ void UEditorEngine::EndPIE()
     // 게임 UI 매니저 정리 (마우스 잠금 해제 포함)
     UGameUIManager::GetInstance().Shutdown();
 
-    // PlayerCameraManager 정리
-    APlayerCameraManager::GetInstance().ClearAllModifiers();
-    UE_LOG("[EditorEngine] PlayerCameraManager cleaned up");
+    // PlayerCameraManager는 PIE World의 Actor이므로 World 종료 시 자동 정리됨
+    UE_LOG("[EditorEngine] PlayerCameraManager will be cleaned up with PIE World");
 
     bPIEMouseUnlocked = false;  // 상태 리셋
 

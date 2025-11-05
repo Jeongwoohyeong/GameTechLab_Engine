@@ -36,10 +36,10 @@ struct FViewTarget
  */
 class APlayerCameraManager : public AActor
 {
+	GENERATED_BODY()
+	DECLARE_CLASS(APlayerCameraManager, AActor)
 
 public:
-    // Singleton access
-    static APlayerCameraManager& GetInstance();
 
     /**
 	 * @brief Initialize the camera manager (Editor mode)
@@ -146,6 +146,17 @@ public:
 	 */
 	bool IsSpringArmEnabled() const { return bSpringArmEnabled; }
 
+	/**
+	 * @brief Enable/disable spring arm collision test
+	 * @param bEnabled true to enable collision test, false to disable
+	 */
+	void SetSpringArmCollisionEnabled(bool bEnabled) { bEnableCollisionTest = bEnabled; }
+
+	/**
+	 * @brief Get spring arm collision test enabled state
+	 */
+	bool IsSpringArmCollisionEnabled() const { return bEnableCollisionTest; }
+
 	// ========== Camera View Type ==========
 
 	/**
@@ -206,16 +217,10 @@ public:
 	 */
 	void StartCameraShake(float Intensity = 1.0f, float Duration = 0.5f);
 
-private:
-    // Private constructor for Singleton
-    APlayerCameraManager();
-    ~APlayerCameraManager();
+	// ========== Lifecycle ==========
 
-    // Delete copy/move constructors and assignments
-    APlayerCameraManager(const APlayerCameraManager&) = delete;
-    APlayerCameraManager& operator=(const APlayerCameraManager&) = delete;
-    APlayerCameraManager(APlayerCameraManager&&) = delete;
-    APlayerCameraManager& operator=(APlayerCameraManager&&) = delete;
+	APlayerCameraManager();
+	virtual ~APlayerCameraManager();
 
 private:
 	/**
@@ -241,12 +246,6 @@ private:
 	 * @param DeltaTime Time since last frame
 	 */
 	void UpdateViewTransition(float DeltaTime);
-
-	/**
-	 * @brief Update camera shake
-	 * @param DeltaTime Time since last frame
-	 */
-	void UpdateCameraShake(float DeltaTime);
 
 	/**
 	 * @brief Apply all camera modifiers
@@ -311,11 +310,4 @@ private:
 
 	// ========== Camera Modifiers ==========
 	TArray<UCameraModifier*> ModifierList;
-
-	// ========== Camera Shake ==========
-	bool bIsCameraShaking = false;
-	float CameraShakeTimer = 0.0f;
-	float CameraShakeDuration = 0.5f;
-	float CameraShakeIntensity = 1.0f;
-	FVector ShakeOffset = FVector::Zero();
 };

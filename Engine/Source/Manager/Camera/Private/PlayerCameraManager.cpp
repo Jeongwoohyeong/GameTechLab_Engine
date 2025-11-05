@@ -1,16 +1,20 @@
 #include "pch.h"
 #include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Manager/Camera/Public/CameraModifier.h"
+#include "Manager/Camera/Public/CameraModifier_CameraShake.h"
 #include "Editor/Public/Camera.h"
 #include "Component/Camera/Public/CameraComponent.h"
 #include "Pawn/Public/Pawn.h"
+#include "Level/Public/World.h"
+#include "Level/Public/Level.h"
+#include "Component/Collision/Public/ShapeComponent.h"
+#include "Component/Collision/Public/BoxComponent.h"
+#include "Component/Collision/Public/SphereComponent.h"
+#include "Component/Collision/Public/CapsuleComponent.h"
+#include "Physics/Public/OBB.h"
+#include "Physics/Public/CollisionUtil.h"
 
-// Singleton instance
-APlayerCameraManager& APlayerCameraManager::GetInstance()
-{
-	static APlayerCameraManager Instance;
-	return Instance;
-}
+IMPLEMENT_CLASS(APlayerCameraManager, AActor)
 
 APlayerCameraManager::APlayerCameraManager()
 	: Camera(nullptr)
@@ -62,6 +66,7 @@ void APlayerCameraManager::Initialize(UCameraComponent* InCameraComponent)
 {
 	CameraComponent = InCameraComponent;
 	Camera = nullptr;
+	UE_LOG("[PlayerCameraManager] Initialized with CameraComponent: %p", InCameraComponent);
 }
 
 void APlayerCameraManager::Tick(float DeltaTime)
@@ -75,14 +80,30 @@ void APlayerCameraManager::Tick(float DeltaTime)
 	UpdateFade(DeltaTime);
 	UpdateLetterBox(DeltaTime);
 	UpdateViewTransition(DeltaTime);
-	UpdateCameraShake(DeltaTime);
 	UpdateSpringArm(DeltaTime);
 
-	// PIE mode: Apply shake offset directly to CameraComponent
+	// PIE mode: Apply camera modifiers to CameraComponent
 	if (CameraComponent)
 	{
-		// Apply camera shake offset
+		// Get initial camera transform
+		FVector CameraLocation = CameraComponent->GetWorldLocation();
+		FRotator CameraRotation = FRotator(0, 0, 0);  // TODO: Get actual rotation if needed
+
+		// Apply all camera modifiers (including shake)
+		ApplyCameraModifiers(DeltaTime, CameraLocation, CameraRotation);
+
+		// Calculate offset from original location
+		FVector ShakeOffset = CameraLocation - CameraComponent->GetWorldLocation();
+
+		// Apply the offset to CameraComponent
 		CameraComponent->SetCameraShakeOffset(ShakeOffset);
+
+		// Debug log (only when offset exists)
+		if (ShakeOffset.Length() > 0.01f)
+		{
+			UE_LOG("[PlayerCameraManager] Applying modifier offset: (%.2f, %.2f, %.2f) to CameraComponent: %p",
+				ShakeOffset.X, ShakeOffset.Y, ShakeOffset.Z, CameraComponent);
+		}
 	}
 	// Editor mode: Apply to UCamera
 	else if (Camera)
@@ -240,7 +261,114 @@ void APlayerCameraManager::UpdateSpringArm(float DeltaTime)
 	FVector CurrentLocation = Camera->GetLocation();
 	FVector NewLocation = Lerp(CurrentLocation, DesiredLocation, SpringArmInterpSpeed * DeltaTime);
 
-	// TODO: Add collision test here if bEnableCollisionTest is true
+	// Spring Arm Collision Test
+	if (bEnableCollisionTest)
+	{
+		// Get World and Level
+		UWorld* World = GWorld;
+		if (World && World->GetLevel())
+		{
+			const TArray<UShapeComponent*>& ShapeComponents = World->GetLevel()->GetShapeComponents();
+
+			// LineTrace from Target to Desired Camera Location
+			FVector LineStart = TargetLocation;
+			FVector LineEnd = DesiredLocation;
+			FVector TraceDirection = LineEnd - LineStart;
+			float DesiredDistance = TraceDirection.Length();
+
+			if (DesiredDistance < 0.01f)
+			{
+				// Camera too close to target, skip collision test
+				Camera->SetLocation(NewLocation);
+				return;
+			}
+
+			float MinHitDistance = DesiredDistance;
+			bool bHitDetected = false;
+
+			// Test collision with all shape components
+			for (const UShapeComponent* ShapeComp : ShapeComponents)
+			{
+				if (!ShapeComp)
+				{
+					continue;
+				}
+
+				// Skip if this is the target's own collision component
+				if (ShapeComp->GetOwner() == ViewTarget.Target)
+				{
+					continue;
+				}
+
+				float Distance = FLT_MAX;
+
+				// Box collision
+				if (const UBoxComponent* BoxComp = Cast<UBoxComponent>(const_cast<UShapeComponent*>(ShapeComp)))
+				{
+					FOBB OBB(BoxComp->GetWorldLocation(), BoxComp->GetBoxExtent(), BoxComp->GetWorldTransformMatrix());
+					Distance = CollisionUtil::DistanceSegmentToOBB(LineStart, LineEnd, OBB);
+				}
+				// Sphere collision
+				else if (const USphereComponent* SphereComp = Cast<USphereComponent>(const_cast<UShapeComponent*>(ShapeComp)))
+				{
+					FVector SphereCenter = SphereComp->GetWorldLocation();
+					float SphereRadius = SphereComp->GetSphereRadius();
+					FVector Scale = SphereComp->GetWorldScale3D();
+					float MaxScale = max(max(Scale.X, Scale.Y), Scale.Z);
+					SphereRadius *= MaxScale;
+
+					// Distance from line segment to sphere
+					FVector ClosestPointOnLine;
+					FVector ToStart = SphereCenter - LineStart;
+					float T = Clamp(ToStart.Dot(TraceDirection) / (DesiredDistance * DesiredDistance), 0.0f, 1.0f);
+					ClosestPointOnLine = LineStart + T * TraceDirection;
+					Distance = FVector::Dist(ClosestPointOnLine, SphereCenter) - SphereRadius;
+				}
+				// Capsule collision (simplified as two spheres + cylinder)
+				else if (const UCapsuleComponent* CapsuleComp = Cast<UCapsuleComponent>(const_cast<UShapeComponent*>(ShapeComp)))
+				{
+					FVector CapsuleCenter = CapsuleComp->GetWorldLocation();
+					float CapsuleRadius = CapsuleComp->GetCapsuleRadius();
+					float CapsuleHalfHeight = CapsuleComp->GetCapsuleHalfHeight();
+					FVector Scale = CapsuleComp->GetWorldScale3D();
+					float RadiusScale = max(Scale.X, Scale.Y);
+					CapsuleRadius *= RadiusScale;
+					CapsuleHalfHeight *= Scale.Z;
+
+					FVector CapsuleUp = CapsuleComp->GetUpVector();
+					FVector CapsuleStart = CapsuleCenter - CapsuleUp * CapsuleHalfHeight;
+					FVector CapsuleEnd = CapsuleCenter + CapsuleUp * CapsuleHalfHeight;
+
+					FVector ClosestOnCamera, ClosestOnCapsule;
+					CollisionUtil::ClosestPointsBetweenSegments(
+						LineStart, LineEnd,
+						CapsuleStart, CapsuleEnd,
+						ClosestOnCamera, ClosestOnCapsule
+					);
+					Distance = FVector::Dist(ClosestOnCamera, ClosestOnCapsule) - CapsuleRadius;
+				}
+
+				// Check if this is the closest hit
+				if (Distance < 1.0f && Distance < MinHitDistance)  // 1.0f threshold for collision
+				{
+					MinHitDistance = Distance;
+					bHitDetected = true;
+				}
+			}
+
+			// If collision detected, pull camera closer
+			if (bHitDetected)
+			{
+				// Calculate safe camera position
+				float SafeDistance = max(MinHitDistance, 10.0f);  // Minimum 10 units from collision
+				float T = Clamp(SafeDistance / DesiredDistance, 0.0f, 1.0f);
+				FVector SafeLocation = LineStart + TraceDirection * T;
+
+				// Blend to safe location
+				NewLocation = Lerp(CurrentLocation, SafeLocation, SpringArmInterpSpeed * DeltaTime * 2.0f);  // Faster pull on collision
+			}
+		}
+	}
 
 	Camera->SetLocation(NewLocation);
 
@@ -432,13 +560,7 @@ void APlayerCameraManager::ClearAllModifiers()
 
 void APlayerCameraManager::ApplyCameraModifiers(float DeltaTime, FVector& CameraLocation, FRotator& CameraRotation)
 {
-	// Apply camera shake
-	if (bIsCameraShaking)
-	{
-		CameraLocation += ShakeOffset;
-	}
-
-	// Apply camera modifiers
+	// Apply all camera modifiers (shake, etc.)
 	for (UCameraModifier* Modifier : ModifierList)
 	{
 		if (Modifier && !Modifier->IsDisabled())
@@ -453,37 +575,15 @@ void APlayerCameraManager::ApplyCameraModifiers(float DeltaTime, FVector& Camera
 
 void APlayerCameraManager::StartCameraShake(float Intensity, float Duration)
 {
-	bIsCameraShaking = true;
-	CameraShakeTimer = 0.0f;
-	CameraShakeDuration = Duration;
-	CameraShakeIntensity = Intensity;
-}
-
-void APlayerCameraManager::UpdateCameraShake(float DeltaTime)
-{
-	if (!bIsCameraShaking)
+	// Find the Camera Shake Modifier
+	UCameraModifier_CameraShake* ShakeMod = FindModifier<UCameraModifier_CameraShake>();
+	if (ShakeMod)
 	{
-		ShakeOffset = FVector::Zero();
-		return;
+		ShakeMod->StartShake(Intensity, Duration);
+		UE_LOG("[PlayerCameraManager] StartCameraShake called: Intensity=%.2f, Duration=%.2f (using Modifier)", Intensity, Duration);
 	}
-
-	CameraShakeTimer += DeltaTime;
-
-	if (CameraShakeTimer >= CameraShakeDuration)
+	else
 	{
-		// Shake finished
-		bIsCameraShaking = false;
-		CameraShakeTimer = 0.0f;
-		ShakeOffset = FVector::Zero();
-		return;
+		UE_LOG_ERROR("[PlayerCameraManager] UCameraModifier_CameraShake not found!");
 	}
-
-	// Calculate shake intensity with decay (gets weaker over time)
-	float ShakeAlpha = 1.0f - (CameraShakeTimer / CameraShakeDuration);
-	float CurrentIntensity = CameraShakeIntensity * ShakeAlpha;
-
-	// Generate random offset
-	ShakeOffset.X = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * CurrentIntensity;
-	ShakeOffset.Y = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * CurrentIntensity;
-	ShakeOffset.Z = ((float)rand() / RAND_MAX - 0.5f) * 2.0f * CurrentIntensity;
 }
