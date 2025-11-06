@@ -40,6 +40,8 @@
 #include "Render/HitProxy/Public/HitProxy.h"
 #include "Render/Renderer/Public/RenderResourceFactory.h"
 #include "Render/Renderer/Public/Renderer.h"
+
+#include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Render/UI/Overlay/Public/D2DOverlayManager.h"
 #include "Render/UI/Overlay/Public/StatOverlay.h"
 #include "Render/UI/Viewport/Public/Viewport.h"
@@ -1010,85 +1012,36 @@ void URenderer::Update()
     }
 
     // ========================================
-    // 포스트 프로세싱 체인 (인덱스 기반 핑퐁 렌더링)
+    // 포스트 프로세싱 체인 (LetterboxPass가 최종 합성)
     // ========================================
-    // 파이프라인: SceneColor → [FXAA] → [Letterbox] → 백버퍼
-    // 각 패스는 PingPongA(0) ↔ PingPongB(1)를 번갈아 사용
-    // 마지막 패스는 항상 백버퍼(nullptr)로 출력
-
     ID3D11RenderTargetView* NullRTV[] = { nullptr };
     GetDeviceContext()->OMSetRenderTargets(1, NullRTV, nullptr);
 
     FRenderingContext RenderingContext;
 
-    // 활성화된 포스트 프로세싱 패스 개수 계산
-    int32 PassCount = 0;
-    if (bFXAAEnabled) PassCount++;
-    if (bLetterboxEnabled) PassCount++;
-
-    // 현재 종횡비 계산 (복사 패스용)
     FRect ActiveRect = UViewportManager::GetInstance().GetActiveViewportRect();
     float CurrentAspect = static_cast<float>(ActiveRect.Width) / static_cast<float>(ActiveRect.Height);
 
-    // 패스가 하나도 없으면 SceneColor를 백버퍼로 복사
-    if (PassCount == 0)
+    const bool bRunFXAA = bFXAAEnabled;
+
+    ID3D11ShaderResourceView* CurrentInputSRV = DeviceResources->GetSceneColorShaderResourceView();
+
+    if (bRunFXAA)
     {
-        // 복사 패스: SceneColor → 백버퍼
-        // 현재 종횡비로 설정하면 BarHeight = 0이 되어 검은 바 없이 전체 출력
-        LetterboxPass->SetTargetAspectRatio(CurrentAspect);
-        LetterboxPass->SetInputTexture(DeviceResources->GetSceneColorShaderResourceView());
-        LetterboxPass->SetOutputRenderTarget(nullptr); // 백버퍼
+        ID3D11RenderTargetView* FXAAOutput = DeviceResources->GetPingPongRenderTargetView(0);
+        FXAAPass->SetOutputRenderTarget(FXAAOutput);
+        FXAAPass->Execute(RenderingContext);
 
-        //UE_LOG("PostProcessing: 복사 패스 실행 (PassCount = 0, AspectRatio = %.3f)", CurrentAspect);
-
-        LetterboxPass->Execute(RenderingContext);
+        CurrentInputSRV = DeviceResources->GetPingPongShaderResourceView(0);
     }
-    else
-    {
-        // 핑퐁 인덱스: 각 패스의 입출력 타겟을 인덱스로 계산
-        int32 CurrentPassIndex = 0;
 
-        // FXAA 패스 실행 (활성화된 경우)
-        if (bFXAAEnabled)
-        {
-            const bool bIsLastPass = (CurrentPassIndex == PassCount - 1);
+    float TargetAspectRatio = bLetterboxEnabled ? LetterboxAspectRatio : CurrentAspect;
 
-            // 입력: 첫 패스는 항상 SceneColor
-            // 출력: 마지막 패스면 백버퍼, 아니면 PingPong[CurrentPassIndex % 2]
-            ID3D11RenderTargetView* OutputRTV = bIsLastPass
-                ? nullptr
-                : DeviceResources->GetPingPongRenderTargetView(CurrentPassIndex % 2);
-
-            FXAAPass->SetOutputRenderTarget(OutputRTV);
-            FXAAPass->Execute(RenderingContext);
-
-            CurrentPassIndex++;
-        }
-
-        // Letterbox 패스 실행 (활성화된 경우)
-        if (bLetterboxEnabled)
-        {
-            const bool bIsLastPass = (CurrentPassIndex == PassCount - 1);
-            const bool bIsFirstPass = (CurrentPassIndex == 0);
-
-            // 입력: 첫 패스면 SceneColor, 아니면 이전 패스의 출력 (PingPong[(CurrentPassIndex - 1) % 2])
-            ID3D11ShaderResourceView* InputSRV = bIsFirstPass
-                ? DeviceResources->GetSceneColorShaderResourceView()
-                : DeviceResources->GetPingPongShaderResourceView((CurrentPassIndex - 1) % 2);
-
-            // 출력: 마지막 패스면 백버퍼, 아니면 PingPong[CurrentPassIndex % 2]
-            ID3D11RenderTargetView* OutputRTV = bIsLastPass
-                ? nullptr
-                : DeviceResources->GetPingPongRenderTargetView(CurrentPassIndex % 2);
-
-            LetterboxPass->SetTargetAspectRatio(LetterboxAspectRatio);
-            LetterboxPass->SetInputTexture(InputSRV);
-            LetterboxPass->SetOutputRenderTarget(OutputRTV);
-            LetterboxPass->Execute(RenderingContext);
-
-            CurrentPassIndex++;
-        }
-    }
+    LetterboxPass->SetFadeParameters(ActiveFadeColor, ActiveFadeAmount);
+    LetterboxPass->SetTargetAspectRatio(TargetAspectRatio);
+    LetterboxPass->SetInputTexture(CurrentInputSRV);
+    LetterboxPass->SetOutputRenderTarget(nullptr);
+    LetterboxPass->Execute(RenderingContext);
 
     // D2D 오버레이는 포스트 프로세싱 후 각 뷰포트마다 독립적으로 렌더링
     for (int32 ViewportIndex = StartIndex; ViewportIndex < EndIndex; ++ViewportIndex)
@@ -1313,6 +1266,20 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 			{
 				RenderingContext.Fogs.push_back(Fog);
 			}
+		}
+	}
+
+	if (ViewportIndex == UViewportManager::GetInstance().GetActiveIndex())
+	{
+		if (APlayerCameraManager* CameraManager = WorldToRender->GetPlayerCameraManager())
+		{
+			ActiveFadeColor = CameraManager->GetFadeColor();
+			ActiveFadeAmount = CameraManager->GetFadeAmount();
+		}
+		else
+		{
+			ActiveFadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+			ActiveFadeAmount = 0.0f;
 		}
 	}
 
@@ -1564,3 +1531,4 @@ void URenderer::RenderHitProxyPass(UCamera* InCamera, const D3D11_VIEWPORT& InVi
 		Editor->RenderGizmoForHitProxy(InCamera, InViewport);
 	}
 }
+

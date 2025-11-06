@@ -1,4 +1,5 @@
 #pragma once
+#include "Global/Vector.h"
 #include "Render/RenderPass/Public/RenderPass.h"
 
 class UDeviceResources;
@@ -10,16 +11,21 @@ class UDeviceResources;
  */
 struct alignas(16) FLetterboxConstants
 {
+	// Fade Properties
+	FVector4 FadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	float FadeAmount = 0.0f;
+
 	float TargetAspectRatio = 16.0f / 9.0f; // 목표 종횡비 (기본값: 16:9)
 	float RenderTargetWidth = 1920.0f;      // Active Viewport 너비
 	float RenderTargetHeight = 1080.0f;     // Active Viewport 높이
-	float Padding = 0.0f;                   // 16바이트 정렬을 위한 패딩
+	float Padding = 0.0f;
 
 	// SceneColor 텍스처 UV 매핑을 위한 정보
 	float ViewportUVOffsetX = 0.0f;         // UV 오프셋 X (ActiveRect.Left / BackbufferWidth)
 	float ViewportUVOffsetY = 0.0f;         // UV 오프셋 Y (ActiveRect.Top / BackbufferHeight)
 	float ViewportUVScaleX = 1.0f;          // UV 스케일 X (ActiveRect.Width / BackbufferWidth)
 	float ViewportUVScaleY = 1.0f;          // UV 스케일 Y (ActiveRect.Height / BackbufferHeight)
+	float Padding2[3] = { 0.0f, 0.0f, 0.0f};
 };
 
 /**
@@ -92,6 +98,9 @@ public:
 	void SetInputLayout(ID3D11InputLayout* InLayout) { InputLayout = InLayout; }
 	void SetSamplerState(ID3D11SamplerState* InSampler) { SamplerState = InSampler; }
 
+	void SetFadeParameters(const FVector4& InColor, float InAmount);
+	
+
 private:
 	/**
 	 * @brief 풀스크린 쿼드(사각형)를 초기화합니다.
@@ -134,4 +143,8 @@ private:
 	// 입력/출력 텍스처
 	ID3D11ShaderResourceView* InputSRV = nullptr;   // 입력 텍스처 (이전 패스의 출력)
 	ID3D11RenderTargetView* OutputRTV = nullptr;    // 출력 렌더 타겟 (다음 패스의 입력 또는 백버퍼)
+
+	FVector4 PendingFadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	float PendingFadeAmount = 0.0f;
 };
+

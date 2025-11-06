@@ -100,6 +100,14 @@ public:
 	 */
 	void StopCameraFade();
 
+	void StartFadeInOut(
+		float FadeOutDuration,
+		float FadeInDuration,
+		const FVector4& FadeColor,
+		float HoldDuration);
+
+	void StopFadeInOut(bool bImmediate = false);
+
 	/**
 	 * @brief Get the current fade amount (0 = no fade, 1 = full fade)
 	 */
