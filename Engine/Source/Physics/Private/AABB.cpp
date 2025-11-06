@@ -114,3 +114,56 @@ float FAABB::GetDistanceSquaredToPoint(const FVector& Point) const
 
     return SquaredDistance;
 }
+
+bool FAABB::IntersectRay(const FVector& RayOrigin, const FVector& RayDirection, float MaxDistance, float& OutHitDistance) const
+{
+    // Slab Method for ray-AABB intersection with distance calculation
+    float TMin = -FLT_MAX;
+    float TMax = FLT_MAX;
+
+    for (int Axis = 0; Axis < 3; ++Axis)
+    {
+        float Origin = (Axis == 0) ? RayOrigin.X : (Axis == 1) ? RayOrigin.Y : RayOrigin.Z;
+        float Dir = (Axis == 0) ? RayDirection.X : (Axis == 1) ? RayDirection.Y : RayDirection.Z;
+        float BMin = (Axis == 0) ? Min.X : (Axis == 1) ? Min.Y : Min.Z;
+        float BMax = (Axis == 0) ? Max.X : (Axis == 1) ? Max.Y : Max.Z;
+
+        // If the ray is parallel to the slab
+        if (fabs(Dir) < MATH_EPSILON)
+        {
+            if (Origin < BMin || Origin > BMax)
+            {
+                return false; // Ray is parallel and outside the slab
+            }
+            continue;
+        }
+
+        float T1 = (BMin - Origin) / Dir;
+        float T2 = (BMax - Origin) / Dir;
+        if (T1 > T2) std::swap(T1, T2);
+
+        TMin = std::max(TMin, T1);
+        TMax = std::min(TMax, T2);
+
+        if (TMax < TMin)
+        {
+            return false; // No intersection
+        }
+    }
+
+    // Box is behind the ray
+    if (TMax < 0.0f)
+    {
+        return false;
+    }
+
+    // Check if intersection is within max distance
+    float HitDistance = (TMin > 0.0f) ? TMin : TMax;
+    if (HitDistance > MaxDistance)
+    {
+        return false;
+    }
+
+    OutHitDistance = HitDistance;
+    return true;
+}

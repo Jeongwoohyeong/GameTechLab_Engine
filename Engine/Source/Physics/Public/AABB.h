@@ -25,6 +25,16 @@ struct FAABB : public IBoundingVolume
 	float GetDistanceSquaredToPoint(const FVector& Point) const;
 
 	EBoundingVolumeType GetType() const override { return EBoundingVolumeType::AABB; }
+
+	/**
+	 * @brief Check if a ray intersects this AABB
+	 * @param RayOrigin Starting point of the ray
+	 * @param RayDirection Direction of the ray (should be normalized)
+	 * @param MaxDistance Maximum distance to check
+	 * @param OutHitDistance Distance along ray where hit occurs (if hit)
+	 * @return True if ray hits the AABB within MaxDistance
+	 */
+	bool IntersectRay(const FVector& RayOrigin, const FVector& RayDirection, float MaxDistance, float& OutHitDistance) const;
 };
 
 bool CheckIntersectionRayBox(const FRay& Ray, const FAABB& Box);

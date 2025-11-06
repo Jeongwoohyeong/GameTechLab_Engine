@@ -365,6 +365,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     <ClInclude Include="Source\Actor\Public\DecalActor.h" />
     <ClInclude Include="Source\Actor\Public\DecalSpotLightActor.h" />
     <ClInclude Include="Source\Actor\Public\DirectionalLight.h" />
+    <ClInclude Include="Source\Actor\Public\EnemyBaseActor.h" />
     <ClInclude Include="Source\Actor\Public\ExplosionActor.h" />
     <ClInclude Include="Source\Actor\Public\HeightFogActor.h" />
     <ClInclude Include="Source\Actor\Public\Light.h" />
@@ -692,6 +693,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     <ClCompile Include="Source\Actor\Private\DecalActor.cpp" />
     <ClCompile Include="Source\Actor\Private\DecalSpotLightActor.cpp" />
     <ClCompile Include="Source\Actor\Private\DirectionalLight.cpp" />
+    <ClCompile Include="Source\Actor\Private\EnemyBaseActor.cpp" />
     <ClCompile Include="Source\Actor\Private\ExplosionActor.cpp" />
     <ClCompile Include="Source\Actor\Private\HeightFogActor.cpp" />
     <ClCompile Include="Source\Actor\Private\Light.cpp" />
