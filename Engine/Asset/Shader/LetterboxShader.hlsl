@@ -7,6 +7,9 @@
 // 레터박스 상수 버퍼
 cbuffer LetterboxParams : register(b0)
 {
+    float4 FadeColor;
+    float FadeAmount;
+    
     float TargetAspectRatio;   // 목표 종횡비 (예: 21/9 = 2.333, 16/9 = 1.777)
     float RenderTargetWidth;   // Active Viewport 너비
     float RenderTargetHeight;  // Active Viewport 높이
@@ -17,6 +20,7 @@ cbuffer LetterboxParams : register(b0)
     float ViewportUVOffsetY;   // UV 오프셋 Y
     float ViewportUVScaleX;    // UV 스케일 X
     float ViewportUVScaleY;    // UV 스케일 Y
+    float3 Padding2;
 }
 
 // 입력 텍스처 (이전 포스트 프로세스 패스의 출력, 예: FXAA 결과)
@@ -86,6 +90,9 @@ float4 mainPS(VSOutput input) : SV_Target
 
     // 리매핑된 UV로 SceneColor 샘플링
     float4 SceneColor = InputTexture.Sample(InputSampler, SceneColorUV);
+    float FadeAlpha = saturate(FadeAmount);
+    SceneColor = lerp(SceneColor, FadeColor, FadeAlpha);
 
     return SceneColor;
 }
+

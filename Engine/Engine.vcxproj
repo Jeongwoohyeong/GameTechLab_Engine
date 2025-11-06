@@ -440,6 +440,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </ClInclude>
     <ClInclude Include="Source\Manager\Asset\Public\TextureManager.h" />
     <ClInclude Include="Source\Manager\Camera\Public\CameraModifier.h" />
+    <ClInclude Include="Source\Manager\Camera\Public\CameraModifier_CameraFadeInOut.h" />
     <ClInclude Include="Source\Manager\Camera\Public\CameraModifier_CameraShake.h" />
     <ClInclude Include="Source\Manager\Camera\Public\CameraModifier_CameraTransition.h" />
     <ClInclude Include="Source\Manager\Camera\Public\PlayerCameraManager.h" />
@@ -770,6 +771,7 @@ xcopy "$(ProjectDir)ThirdParty\Lua\bin\*.dll" "$(OutDir)" /E /I /Y</Command>
     </ClCompile>
     <ClCompile Include="Source\Manager\Asset\Private\TextureManager.cpp" />
     <ClCompile Include="Source\Manager\Camera\Private\CameraModifier.cpp" />
+    <ClCompile Include="Source\Manager\Camera\Private\CameraModifier_CameraFadeInOut.cpp" />
     <ClCompile Include="Source\Manager\Camera\Private\CameraModifier_CameraShake.cpp" />
     <ClCompile Include="Source\Manager\Camera\Private\CameraModifier_CameraTransition.cpp" />
     <ClCompile Include="Source\Manager\Camera\Private\PlayerCameraManager.cpp" />

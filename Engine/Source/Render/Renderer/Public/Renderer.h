@@ -1,5 +1,6 @@
 #pragma once
 #include "Global/Types.h"
+#include "Global/Vector.h"
 #include <filesystem>
 #include "DeviceResources.h"
 #include "Core/Public/Object.h"
@@ -233,6 +234,8 @@ private:
 	bool bFXAAEnabled = true;
 	bool bLetterboxEnabled = false;
 	float LetterboxAspectRatio = 21.0f / 9.0f; // 기본값: 21:9 시네마틱
+	FVector4 ActiveFadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	float ActiveFadeAmount = 0.0f;
 
 	FRenderingContext RenderingContext{};
 
@@ -249,3 +252,4 @@ private:
 	TMap<std::wstring, TSet<ShaderUsage>> ShaderFileUsageMap;
 	TMap<std::wstring, std::filesystem::file_time_type> ShaderFileLastWriteTimeMap;
 };
+
