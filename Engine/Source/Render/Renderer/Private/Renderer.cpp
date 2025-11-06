@@ -15,6 +15,10 @@
 #include "Editor/Public/Camera.h"
 #include "Editor/Public/Editor.h"
 #include "Player/Public/PlayerCharacter.h"
+#include "GamePlay/Public/PlayerController.h"
+#include "Manager/Camera/Public/PlayerCameraManager.h"
+#include "GameMode/Public/GameModeBase.h"
+#include "GameMode/Public/GameMode.h"
 #include "Global/Octree.h"
 #include "Level/Public/Level.h"
 #include "Manager/Time/Public/TimeManager.h"
@@ -59,7 +63,7 @@ void URenderer::Init(HWND InWindowHandle)
 	DeviceResources = new UDeviceResources(InWindowHandle);
 	Pipeline = new UPipeline(GetDeviceContext());
 	ViewportClient = new FViewport();
-	
+
 	// 렌더링 상태 및 리소스 생성
 	CreateDepthStencilState();
 	CreateBlendState();
@@ -100,7 +104,7 @@ void URenderer::Init(HWND InWindowHandle)
 	FDecalPass* DecalPass = new FDecalPass(Pipeline, ConstantBufferViewProj,
 		DecalVertexShader, DecalPixelShader, DecalInputLayout, DecalDepthStencilState, AlphaBlendState);
 	RenderPasses.push_back(DecalPass);
-	
+
 	FBillboardPass* BillboardPass = new FBillboardPass(Pipeline, ConstantBufferViewProj, ConstantBufferModels,
 		TextureVertexShader, TexturePixelShader, TextureInputLayout, DefaultDepthStencilState, AlphaBlendState);
 	RenderPasses.push_back(BillboardPass);
@@ -190,29 +194,29 @@ void URenderer::CreateDepthStencilState()
 
 void URenderer::CreateBlendState()
 {
-    // Alpha Blending
-    D3D11_BLEND_DESC BlendDesc = {};
-    BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-    BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-    BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-    BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    GetDevice()->CreateBlendState(&BlendDesc, &AlphaBlendState);
+	// Alpha Blending
+	D3D11_BLEND_DESC BlendDesc = {};
+	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	GetDevice()->CreateBlendState(&BlendDesc, &AlphaBlendState);
 
-    // Additive Blending
-    D3D11_BLEND_DESC AdditiveBlendDesc = {};
-    AdditiveBlendDesc.RenderTarget[0].BlendEnable = TRUE;
-    AdditiveBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-    AdditiveBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-    AdditiveBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    AdditiveBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    AdditiveBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-    AdditiveBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    AdditiveBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    GetDevice()->CreateBlendState(&AdditiveBlendDesc, &AdditiveBlendState);
+	// Additive Blending
+	D3D11_BLEND_DESC AdditiveBlendDesc = {};
+	AdditiveBlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	AdditiveBlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	AdditiveBlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	AdditiveBlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	AdditiveBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	AdditiveBlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	AdditiveBlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	AdditiveBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	GetDevice()->CreateBlendState(&AdditiveBlendDesc, &AdditiveBlendState);
 }
 
 void URenderer::CreateSamplerState()
@@ -381,11 +385,11 @@ void URenderer::CreateFXAAShader()
 	TArray<D3D11_INPUT_ELEMENT_DESC> FXAALayout =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
 	FRenderResourceFactory::CreateVertexShaderAndInputLayout(ShaderFilePathString, FXAALayout, &FXAAVertexShader, &FXAAInputLayout);
 	FRenderResourceFactory::CreatePixelShader(ShaderFilePathString, &FXAAPixelShader);
-	
+
 	FXAASamplerState = FRenderResourceFactory::CreateFXAASamplerState();
 
 	RegisterShaderReloadCache(ShaderPath, ShaderUsage::FXAA);
@@ -407,8 +411,8 @@ void URenderer::CreateLetterboxShader()
 	TArray<D3D11_INPUT_ELEMENT_DESC> LetterboxLayout =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
 
 	// Vertex Shader와 Input Layout 생성
 	FRenderResourceFactory::CreateVertexShaderAndInputLayout(ShaderFilePathString, LetterboxLayout, &LetterboxVertexShader, &LetterboxInputLayout);
@@ -439,7 +443,7 @@ void URenderer::CreateStaticMeshShader()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(FNormalVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0	},
 		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(FNormalVertex, Tangent),  D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-	
+
 	// Compile Lambert variant (default)
 	TArray<D3D_SHADER_MACRO> LambertMacros = {
 		{ "LIGHTING_MODEL_LAMBERT", "1" },
@@ -447,7 +451,7 @@ void URenderer::CreateStaticMeshShader()
 	};
 	FRenderResourceFactory::CreateVertexShaderAndInputLayout(ShaderFilePathString, ShaderMeshLayout, &UberLitVertexShader, &UberLitInputLayout, "Uber_VS", LambertMacros.data());
 	FRenderResourceFactory::CreatePixelShader(ShaderFilePathString, &UberLitPixelShader, "Uber_PS", LambertMacros.data());
-	
+
 	// Compile Gouraud variant
 	TArray<D3D_SHADER_MACRO> GouraudMacros = {
 		{ "LIGHTING_MODEL_GOURAUD", "1" },
@@ -457,7 +461,7 @@ void URenderer::CreateStaticMeshShader()
 	FRenderResourceFactory::CreateVertexShaderAndInputLayout(ShaderFilePathString, ShaderMeshLayout, &UberLitVertexShaderGouraud, &GouraudInputLayout, "Uber_VS", GouraudMacros.data());
 	SafeRelease(GouraudInputLayout);
 	FRenderResourceFactory::CreatePixelShader(ShaderFilePathString, &UberLitPixelShaderGouraud, "Uber_PS", GouraudMacros.data());
-	
+
 	// Compile Phong (Blinn-Phong) variant
 	TArray<D3D_SHADER_MACRO> PhongMacros = {
 		{ "LIGHTING_MODEL_BLINNPHONG", "1" },
@@ -635,7 +639,7 @@ TSet<ShaderUsage> URenderer::GatherHotReloadTargets()
 		{
 			continue;
 		}
-		
+
 		// 두 시간 비교해서 다르면 핫 리로드 대상에 추가
 		if (CurrentLastWriteTime != CachedLastWriteTime)
 		{
@@ -801,23 +805,23 @@ void URenderer::ReleaseDefaultShader()
 	SafeRelease(UberLitPixelShaderWorldNormal);
 	SafeRelease(UberLitVertexShader);
 	SafeRelease(UberLitVertexShaderGouraud);
-	
+
 	SafeRelease(DefaultInputLayout);
 	SafeRelease(DefaultPixelShader);
 	SafeRelease(DefaultVertexShader);
-	
+
 	SafeRelease(TextureInputLayout);
 	SafeRelease(TexturePixelShader);
 	SafeRelease(TextureVertexShader);
-	
+
 	SafeRelease(DecalVertexShader);
 	SafeRelease(DecalPixelShader);
 	SafeRelease(DecalInputLayout);
-	
+
 	SafeRelease(FogVertexShader);
 	SafeRelease(FogPixelShader);
 	SafeRelease(FogInputLayout);
-	
+
 	SafeRelease(FXAAVertexShader);
 	SafeRelease(FXAAPixelShader);
 	SafeRelease(FXAAInputLayout);
@@ -856,7 +860,7 @@ void URenderer::ReleaseDepthStencilState()
 
 void URenderer::ReleaseBlendState()
 {
-    SafeRelease(AlphaBlendState);
+	SafeRelease(AlphaBlendState);
 	SafeRelease(AdditiveBlendState);
 }
 
@@ -872,33 +876,33 @@ void URenderer::ReleaseSamplerState()
 void URenderer::Update()
 {
 	// 토글에 따라서 FXAA/Letterbox bool값 세팅
-    if (const ULevel* CurrentLevel = GWorld->GetLevel())
-    {
-        bFXAAEnabled = (CurrentLevel->GetShowFlags() & EEngineShowFlags::SF_FXAA) != 0;
-        bLetterboxEnabled = (CurrentLevel->GetShowFlags() & EEngineShowFlags::SF_Letterbox) != 0;
-    }
-    else
-    {
-        bFXAAEnabled = true;
-        bLetterboxEnabled = false;
-    }
+	if (const ULevel* CurrentLevel = GWorld->GetLevel())
+	{
+		bFXAAEnabled = (CurrentLevel->GetShowFlags() & EEngineShowFlags::SF_FXAA) != 0;
+		bLetterboxEnabled = (CurrentLevel->GetShowFlags() & EEngineShowFlags::SF_Letterbox) != 0;
+	}
+	else
+	{
+		bFXAAEnabled = true;
+		bLetterboxEnabled = false;
+	}
 
-    RenderBegin();
+	RenderBegin();
 
-    TArray<FViewport*>& Viewports = UViewportManager::GetInstance().GetViewports();
-    UViewportManager& ViewportMgr = UViewportManager::GetInstance();
-    EViewportLayout CurrentLayout = ViewportMgr.GetViewportLayout();
+	TArray<FViewport*>& Viewports = UViewportManager::GetInstance().GetViewports();
+	UViewportManager& ViewportMgr = UViewportManager::GetInstance();
+	EViewportLayout CurrentLayout = ViewportMgr.GetViewportLayout();
 
-    // Single layout이면 ActiveIndex만, Quad layout이면 전체 렌더링
-    int32 StartIndex = (CurrentLayout == EViewportLayout::Single) ? ViewportMgr.GetActiveIndex() : 0;
-    int32 EndIndex = (CurrentLayout == EViewportLayout::Single) ? (StartIndex + 1) : static_cast<int32>(Viewports.size());
+	// Single layout이면 ActiveIndex만, Quad layout이면 전체 렌더링
+	int32 StartIndex = (CurrentLayout == EViewportLayout::Single) ? ViewportMgr.GetActiveIndex() : 0;
+	int32 EndIndex = (CurrentLayout == EViewportLayout::Single) ? (StartIndex + 1) : static_cast<int32>(Viewports.size());
 
-    for (int32 ViewportIndex = StartIndex; ViewportIndex < EndIndex; ++ViewportIndex)
-    {
-        FViewport* Viewport = Viewports[ViewportIndex];
+	for (int32 ViewportIndex = StartIndex; ViewportIndex < EndIndex; ++ViewportIndex)
+	{
+		FViewport* Viewport = Viewports[ViewportIndex];
 
-    	// TODO(KHJ): 해당 해결책은 근본적인 해결법이 아니며 실제 Viewport 세팅의 문제를 확인할 필요가 있음
-    	// 너무 작은 뷰포트는 건너뛰기 (애니메이션 중 artefact 방지)
+		// TODO(KHJ): 해당 해결책은 근본적인 해결법이 아니며 실제 Viewport 세팅의 문제를 확인할 필요가 있음
+		// 너무 작은 뷰포트는 건너뛰기 (애니메이션 중 artefact 방지)
 		// 50픽셀 미만의 뷰포트는 렌더링하지 않음
 		if (Viewport->GetRect().Width < 50 || Viewport->GetRect().Height < 50)
 		{
@@ -938,10 +942,10 @@ void URenderer::Update()
 		D3D11_VIEWPORT LocalViewport = { ViewportLeft, ViewportTop, ViewportWidth, ViewportHeight, 0.0f, 1.0f };
 		GetDeviceContext()->RSSetViewports(1, &LocalViewport);
 		Viewport->SetRenderRect(LocalViewport);
-        UCamera* CurrentCamera = Viewport->GetViewportClient()->GetCamera();
+		UCamera* CurrentCamera = Viewport->GetViewportClient()->GetCamera();
 
-        float DeltaTime = UTimeManager::GetInstance().GetDeltaTime();
-        CurrentCamera->Update(LocalViewport, DeltaTime);
+		float DeltaTime = UTimeManager::GetInstance().GetDeltaTime();
+		CurrentCamera->Update(LocalViewport, DeltaTime);
 
 		// PIE 모드일 때는 PlayerCharacter의 CameraComponent 사용
 		bool bIsPIEViewport = GEditor->IsPIESessionActive() &&
@@ -993,12 +997,12 @@ void URenderer::Update()
 			CameraConstants = CurrentCamera->GetFViewProjConstants();
 		}
 
-        FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferViewProj, CameraConstants);
-        Pipeline->SetConstantBuffer(1, EShaderType::VS, ConstantBufferViewProj);
-        {
-            TIME_PROFILE(RenderLevel)
-            RenderLevel(Viewport, ViewportIndex);
-        }
+		FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferViewProj, CameraConstants);
+		Pipeline->SetConstantBuffer(1, EShaderType::VS, ConstantBufferViewProj);
+		{
+			TIME_PROFILE(RenderLevel)
+				RenderLevel(Viewport, ViewportIndex);
+		}
 
 		// PIE가 활성화된 뷰포트가 아닌 경우에만 에디터 도구 렌더링
 		bIsPIEViewport = GEditor->IsPIESessionActive() &&
@@ -1009,74 +1013,142 @@ void URenderer::Update()
 			GEditor->GetEditorModule()->RenderEditorGeometry();
 			GEditor->GetEditorModule()->RenderGizmo(CurrentCamera, LocalViewport);
 		}
-    }
+	}
 
-    // ========================================
-    // 포스트 프로세싱 체인 (LetterboxPass가 최종 합성)
-    // ========================================
-    ID3D11RenderTargetView* NullRTV[] = { nullptr };
-    GetDeviceContext()->OMSetRenderTargets(1, NullRTV, nullptr);
+	// ========================================
+	// 포스트 프로세싱 체인 (인덱스 기반 핑퐁 렌더링)
+	// ========================================
+	// 파이프라인: SceneColor → [FXAA] → [Letterbox] → 백버퍼
+	// 각 패스는 PingPongA(0) ↔ PingPongB(1)를 번갈아 사용
+	// 마지막 패스는 항상 백버퍼(nullptr)로 출력
 
-    FRenderingContext RenderingContext;
+	// PIE 모드일 때 PlayerCameraManager를 LetterboxPass에 설정
+	if (GEditor->IsPIESessionActive())
+	{
+		FWorldContext* Context = GEditor->GetPIEWorldContext();
+		if (Context && Context->World())
+		{
+			AGameMode* GameMode = Context->World()->GetGameMode();
+			if (GameMode)
+			{
+				APlayerController* PlayerController = GameMode->GetPlayerController();
+				if (PlayerController)
+				{
+					APlayerCameraManager* CameraManager = PlayerController->GetPlayerCameraManager();
+					LetterboxPass->SetPlayerCameraManager(CameraManager);
+				}
+			}
+		}
+	}
 
-    FRect ActiveRect = UViewportManager::GetInstance().GetActiveViewportRect();
-    float CurrentAspect = static_cast<float>(ActiveRect.Width) / static_cast<float>(ActiveRect.Height);
+	ID3D11RenderTargetView* NullRTV[] = { nullptr };
+	GetDeviceContext()->OMSetRenderTargets(1, NullRTV, nullptr);
 
-    const bool bRunFXAA = bFXAAEnabled;
+	FRenderingContext RenderingContext;
 
-    ID3D11ShaderResourceView* CurrentInputSRV = DeviceResources->GetSceneColorShaderResourceView();
+	// 활성화된 포스트 프로세싱 패스 개수 계산
+	int32 PassCount = 0;
+	if (bFXAAEnabled) PassCount++;
+	if (bLetterboxEnabled) PassCount++;
 
-    if (bRunFXAA)
-    {
-        ID3D11RenderTargetView* FXAAOutput = DeviceResources->GetPingPongRenderTargetView(0);
-        FXAAPass->SetOutputRenderTarget(FXAAOutput);
-        FXAAPass->Execute(RenderingContext);
+	// 현재 종횡비 계산 (복사 패스용)
+	FRect ActiveRect = UViewportManager::GetInstance().GetActiveViewportRect();
+	float CurrentAspect = static_cast<float>(ActiveRect.Width) / static_cast<float>(ActiveRect.Height);
 
-        CurrentInputSRV = DeviceResources->GetPingPongShaderResourceView(0);
-    }
+	// 패스가 하나도 없으면 SceneColor를 백버퍼로 복사
+	if (PassCount == 0)
+	{
+		// 복사 패스: SceneColor → 백버퍼
+		// 현재 종횡비로 설정하면 BarHeight = 0이 되어 검은 바 없이 전체 출력
+		LetterboxPass->SetTargetAspectRatio(CurrentAspect);
+		LetterboxPass->SetInputTexture(DeviceResources->GetSceneColorShaderResourceView());
+		LetterboxPass->SetOutputRenderTarget(nullptr); // 백버퍼
 
-    float TargetAspectRatio = bLetterboxEnabled ? LetterboxAspectRatio : CurrentAspect;
+		//UE_LOG("PostProcessing: 복사 패스 실행 (PassCount = 0, AspectRatio = %.3f)", CurrentAspect);
 
-    LetterboxPass->SetFadeParameters(ActiveFadeColor, ActiveFadeAmount);
-    LetterboxPass->SetTargetAspectRatio(TargetAspectRatio);
-    LetterboxPass->SetInputTexture(CurrentInputSRV);
-    LetterboxPass->SetOutputRenderTarget(nullptr);
-    LetterboxPass->Execute(RenderingContext);
+		LetterboxPass->Execute(RenderingContext);
+	}
+	else
+	{
+		// 핑퐁 인덱스: 각 패스의 입출력 타겟을 인덱스로 계산
+		int32 CurrentPassIndex = 0;
 
-    // D2D 오버레이는 포스트 프로세싱 후 각 뷰포트마다 독립적으로 렌더링
-    for (int32 ViewportIndex = StartIndex; ViewportIndex < EndIndex; ++ViewportIndex)
-    {
-        FViewport* Viewport = Viewports[ViewportIndex];
-        if (!Viewport)
-        {
-            continue;
-        }
+		// FXAA 패스 실행 (활성화된 경우)
+		if (bFXAAEnabled)
+		{
+			const bool bIsLastPass = (CurrentPassIndex == PassCount - 1);
 
-        if (Viewport->GetRect().Width < 50 || Viewport->GetRect().Height < 50)
-        {
-            continue;
-        }
+			// 입력: 첫 패스는 항상 SceneColor
+			// 출력: 마지막 패스면 백버퍼, 아니면 PingPong[CurrentPassIndex % 2]
+			ID3D11RenderTargetView* OutputRTV = bIsLastPass
+				? nullptr
+				: DeviceResources->GetPingPongRenderTargetView(CurrentPassIndex % 2);
 
-        bool bIsPIEViewport = GEditor->IsPIESessionActive() &&
-                               ViewportIndex == UViewportManager::GetInstance().GetPIEActiveViewportIndex();
-        if (!bIsPIEViewport)
-        {
-            FRect SingleWindowRect = Viewport->GetRect();
-            const int32 ViewportToolBarHeight = 32;
-            D3D11_VIEWPORT LocalViewport = { static_cast<float>(SingleWindowRect.Left),static_cast<float>(SingleWindowRect.Top) + ViewportToolBarHeight, static_cast<float>(SingleWindowRect.Width), static_cast<float>(SingleWindowRect.Height) - ViewportToolBarHeight, 0.0f, 1.0f };
-            UCamera* CurrentCamera = Viewport->GetViewportClient()->GetCamera();
+			FXAAPass->SetOutputRenderTarget(OutputRTV);
+			FXAAPass->Execute(RenderingContext);
 
-            GEditor->GetEditorModule()->Collect2DRender(CurrentCamera, LocalViewport);
-            TIME_PROFILE(FlushAndRender)
-            FD2DOverlayManager::GetInstance().FlushAndRender();
-        }
-    }
-    {
-        TIME_PROFILE(UUIManager)
-        UUIManager::GetInstance().Render();
-    }
+			CurrentPassIndex++;
+		}
 
-    RenderEnd();
+		// Letterbox 패스 실행 (활성화된 경우)
+		if (bLetterboxEnabled)
+		{
+			const bool bIsLastPass = (CurrentPassIndex == PassCount - 1);
+			const bool bIsFirstPass = (CurrentPassIndex == 0);
+
+			// 입력: 첫 패스면 SceneColor, 아니면 이전 패스의 출력 (PingPong[(CurrentPassIndex - 1) % 2])
+			ID3D11ShaderResourceView* InputSRV = bIsFirstPass
+				? DeviceResources->GetSceneColorShaderResourceView()
+				: DeviceResources->GetPingPongShaderResourceView((CurrentPassIndex - 1) % 2);
+
+			// 출력: 마지막 패스면 백버퍼, 아니면 PingPong[CurrentPassIndex % 2]
+			ID3D11RenderTargetView* OutputRTV = bIsLastPass
+				? nullptr
+				: DeviceResources->GetPingPongRenderTargetView(CurrentPassIndex % 2);
+
+			LetterboxPass->SetTargetAspectRatio(LetterboxAspectRatio);
+			LetterboxPass->SetInputTexture(InputSRV);
+			LetterboxPass->SetOutputRenderTarget(OutputRTV);
+			LetterboxPass->Execute(RenderingContext);
+
+			CurrentPassIndex++;
+		}
+	}
+
+	// D2D 오버레이는 포스트 프로세싱 후 각 뷰포트마다 독립적으로 렌더링
+	for (int32 ViewportIndex = StartIndex; ViewportIndex < EndIndex; ++ViewportIndex)
+	{
+		FViewport* Viewport = Viewports[ViewportIndex];
+		if (!Viewport)
+		{
+			continue;
+		}
+
+		if (Viewport->GetRect().Width < 50 || Viewport->GetRect().Height < 50)
+		{
+			continue;
+		}
+
+		bool bIsPIEViewport = GEditor->IsPIESessionActive() &&
+			ViewportIndex == UViewportManager::GetInstance().GetPIEActiveViewportIndex();
+		if (!bIsPIEViewport)
+		{
+			FRect SingleWindowRect = Viewport->GetRect();
+			const int32 ViewportToolBarHeight = 32;
+			D3D11_VIEWPORT LocalViewport = { static_cast<float>(SingleWindowRect.Left),static_cast<float>(SingleWindowRect.Top) + ViewportToolBarHeight, static_cast<float>(SingleWindowRect.Width), static_cast<float>(SingleWindowRect.Height) - ViewportToolBarHeight, 0.0f, 1.0f };
+			UCamera* CurrentCamera = Viewport->GetViewportClient()->GetCamera();
+
+			GEditor->GetEditorModule()->Collect2DRender(CurrentCamera, LocalViewport);
+			TIME_PROFILE(FlushAndRender)
+				FD2DOverlayManager::GetInstance().FlushAndRender();
+		}
+	}
+	{
+		TIME_PROFILE(UUIManager)
+			UUIManager::GetInstance().Render();
+	}
+
+	RenderEnd();
 }
 
 void URenderer::RenderBegin() const
@@ -1163,8 +1235,8 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 		InViewport->GetViewportClient()->GetViewMode(),
 		CurrentLevel->GetShowFlags(),
 		InViewport->GetRenderRect(),
-		{DeviceResources->GetViewportInfo().Width, DeviceResources->GetViewportInfo().Height}
-		);
+		{ DeviceResources->GetViewportInfo().Width, DeviceResources->GetViewportInfo().Height }
+	);
 
 	// 1. Sort visible primitive components
 	RenderingContext.AllPrimitives = FinalVisiblePrims;
@@ -1211,7 +1283,7 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 			RenderingContext.Decals.push_back(Decal);
 		}
 	}
-	
+
 	for (const auto& LightComponent : CurrentLevel->GetLightComponents())
 	{
 		if (auto PointLightComponent = Cast<UPointLightComponent>(LightComponent))
@@ -1227,7 +1299,7 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 			else if (PointLightComponent)
 			{
 				FVector WorldPos = PointLightComponent->GetWorldLocation();
-				
+
 
 				if (PointLightComponent->GetVisible() &&
 					PointLightComponent->GetLightEnabled())
@@ -1291,83 +1363,83 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 
 void URenderer::RenderEditorPrimitive(const FEditorPrimitive& InPrimitive, const FRenderState& InRenderState, uint32 InStride, uint32 InIndexBufferStride)
 {
-    // Use the global stride if InStride is 0
-    const uint32 FinalStride = (InStride == 0) ? Stride : InStride;
+	// Use the global stride if InStride is 0
+	const uint32 FinalStride = (InStride == 0) ? Stride : InStride;
 
-    // Allow for custom shaders, fallback to default
-    FPipelineInfo PipelineInfo = {
-        InPrimitive.InputLayout ? InPrimitive.InputLayout : DefaultInputLayout,
-        InPrimitive.VertexShader ? InPrimitive.VertexShader : DefaultVertexShader,
+	// Allow for custom shaders, fallback to default
+	FPipelineInfo PipelineInfo = {
+		InPrimitive.InputLayout ? InPrimitive.InputLayout : DefaultInputLayout,
+		InPrimitive.VertexShader ? InPrimitive.VertexShader : DefaultVertexShader,
 		FRenderResourceFactory::GetRasterizerState(InRenderState),
-        InPrimitive.bShouldAlwaysVisible ? DisabledDepthStencilState : DefaultDepthStencilState,
-        InPrimitive.PixelShader ? InPrimitive.PixelShader : DefaultPixelShader,
-        nullptr,
-        InPrimitive.Topology
-    };
-    Pipeline->UpdatePipeline(PipelineInfo);
+		InPrimitive.bShouldAlwaysVisible ? DisabledDepthStencilState : DefaultDepthStencilState,
+		InPrimitive.PixelShader ? InPrimitive.PixelShader : DefaultPixelShader,
+		nullptr,
+		InPrimitive.Topology
+	};
+	Pipeline->UpdatePipeline(PipelineInfo);
 
-    // Update constant buffers
+	// Update constant buffers
 	FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferModels,
 		FMatrix::GetModelMatrix(InPrimitive.Location, InPrimitive.Rotation, InPrimitive.Scale));
 	Pipeline->SetConstantBuffer(0, EShaderType::VS, ConstantBufferModels);
 	Pipeline->SetConstantBuffer(1, EShaderType::VS, ConstantBufferViewProj);
-	
+
 	FRenderResourceFactory::UpdateConstantBufferData(ConstantBufferColor, InPrimitive.Color);
 	Pipeline->SetConstantBuffer(2, EShaderType::PS, ConstantBufferColor);
 	Pipeline->SetConstantBuffer(2, EShaderType::VS, ConstantBufferColor);
-	
-    Pipeline->SetVertexBuffer(InPrimitive.VertexBuffer, FinalStride);
 
-    // The core logic: check for an index buffer
-    if (InPrimitive.IndexBuffer && InPrimitive.NumIndices > 0)
-    {
-        Pipeline->SetIndexBuffer(InPrimitive.IndexBuffer, InIndexBufferStride);
-        Pipeline->DrawIndexed(InPrimitive.NumIndices, 0, 0);
-    }
-    else
-    {
-        Pipeline->Draw(InPrimitive.NumVertices, 0);
-    }
+	Pipeline->SetVertexBuffer(InPrimitive.VertexBuffer, FinalStride);
+
+	// The core logic: check for an index buffer
+	if (InPrimitive.IndexBuffer && InPrimitive.NumIndices > 0)
+	{
+		Pipeline->SetIndexBuffer(InPrimitive.IndexBuffer, InIndexBufferStride);
+		Pipeline->DrawIndexed(InPrimitive.NumIndices, 0, 0);
+	}
+	else
+	{
+		Pipeline->Draw(InPrimitive.NumVertices, 0);
+	}
 }
 
 void URenderer::RenderEnd() const
 {
 	TIME_PROFILE(DrawCall)
-	GetSwapChain()->Present(0, 0);
+		GetSwapChain()->Present(0, 0);
 	TIME_PROFILE_END(DrawCall)
 }
 
 void URenderer::OnResize(uint32 InWidth, uint32 InHeight) const
 {
-    if (!DeviceResources || !GetDeviceContext() || !GetSwapChain()) return;
+	if (!DeviceResources || !GetDeviceContext() || !GetSwapChain()) return;
 
-    DeviceResources->ReleaseFactories();
-    DeviceResources->ReleasePingPongTargets();
-    DeviceResources->ReleaseSceneColorTarget();
+	DeviceResources->ReleaseFactories();
+	DeviceResources->ReleasePingPongTargets();
+	DeviceResources->ReleaseSceneColorTarget();
 	DeviceResources->ReleaseFrameBuffer();
 	DeviceResources->ReleaseDepthBuffer();
 	DeviceResources->ReleaseNormalBuffer();
 	GetDeviceContext()->OMSetRenderTargets(0, nullptr, nullptr);
 
-    if (FAILED(GetSwapChain()->ResizeBuffers(2, InWidth, InHeight, DXGI_FORMAT_UNKNOWN, 0)))
-    {
-        UE_LOG("OnResize Failed");
-        return;
-    }
+	if (FAILED(GetSwapChain()->ResizeBuffers(2, InWidth, InHeight, DXGI_FORMAT_UNKNOWN, 0)))
+	{
+		UE_LOG("OnResize Failed");
+		return;
+	}
 
 	DeviceResources->UpdateViewport();
-    DeviceResources->CreateSceneColorTarget();
+	DeviceResources->CreateSceneColorTarget();
 	DeviceResources->CreateFrameBuffer();
 	DeviceResources->CreateDepthBuffer();
 	DeviceResources->CreateNormalBuffer();
-    DeviceResources->CreatePingPongTargets();
-    DeviceResources->CreateFactories();
+	DeviceResources->CreatePingPongTargets();
+	DeviceResources->CreateFactories();
 
-    ID3D11RenderTargetView* targetView = bFXAAEnabled
-        ? DeviceResources->GetSceneColorRenderTargetView()
-        : DeviceResources->GetRenderTargetView();
-    ID3D11RenderTargetView* targetViews[] = { targetView };
-    GetDeviceContext()->OMSetRenderTargets(1, targetViews, DeviceResources->GetDepthStencilView());
+	ID3D11RenderTargetView* targetView = bFXAAEnabled
+		? DeviceResources->GetSceneColorRenderTargetView()
+		: DeviceResources->GetRenderTargetView();
+	ID3D11RenderTargetView* targetViews[] = { targetView };
+	GetDeviceContext()->OMSetRenderTargets(1, targetViews, DeviceResources->GetDepthStencilView());
 }
 
 ID3D11VertexShader* URenderer::GetVertexShader(EViewModeIndex ViewModeIndex) const

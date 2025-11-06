@@ -38,7 +38,7 @@ return function()
             Print("[GameMode] Player controller already exists, skipping spawn")
         end
 
-        -- 게임 시작은 Start Game 버튼을 눌러야만!
+        -- PIE 모드 시작 시에는 래터박스를 켜지 않음
         Print("[GameMode] Press 'Start Game' to begin playing")
     end
 
@@ -49,6 +49,20 @@ return function()
 
         Print("[GameMode] START GAME!")
 
+        -- 게임 시작 시 레터박스 활성화 후 3초 뒤에 페이드아웃
+        local PlayerController = self.GameMode:GetPlayerController()
+        if PlayerController then
+            local camMgr = PlayerController:GetPlayerCameraManager()
+            if camMgr then
+                -- 즉시 레터박스 켜기 (높이 10%, 블렌드 시간 0.5초)
+                camMgr:StartLetterBox(0.1, 0.5)
+                Print("[GameMode] Letter box activated on game start")
+            end
+        end
+
+        -- 3초 후 레터박스 페이드아웃 시작 (코루틴 사용)
+        StartCoroutine(self, "LetterboxFadeOut")
+
         -- 적 풀 초기화 (Start Game 버튼 누를 때만 생성)
         if not self.GameStarted then
             Print("[GameMode] Initializing enemy pool...")
@@ -56,12 +70,11 @@ return function()
             Print("[GameMode] Enemy pool initialized")
             self.GameStarted = true
         end
-    
+
         StartCoroutine(self, "WaveSpawner")
 --         StartCoroutine(self, "BroadCastPlayerPosition")
 
         -- 플레이어 무기 활성화
-        local PlayerController = self.GameMode:GetPlayerController()
         if PlayerController then
             local PlayerPawn = PlayerController:GetControlledPawn()
             if PlayerPawn then
@@ -70,6 +83,22 @@ return function()
                     LuaComp:ActivateFunction("EnableWeapon")
                     Print("[GameMode] Player weapon enabled")
                 end
+            end
+        end
+    end
+
+    -- 레터박스 페이드아웃 코루틴
+    function ReturnTable:LetterboxFadeOut()
+        -- 5초 대기
+        wait(5.0)
+
+        local PlayerController = self.GameMode:GetPlayerController()
+        if PlayerController then
+            local camMgr = PlayerController:GetPlayerCameraManager()
+            if camMgr then
+                -- 2초에 걸쳐 레터박스 사라지게
+                camMgr:StopLetterBox(2.0)
+                Print("[GameMode] Letter box fading out after 5 seconds")
             end
         end
     end

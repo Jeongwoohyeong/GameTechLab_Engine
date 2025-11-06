@@ -6,8 +6,10 @@
 #include "GamePlay/Public/PlayerController.h"
 #include "Player/Public/PlayerCharacter.h"
 #include "Player/Public/EnemyCharacter.h"
+#include "Actor/Public/EnemyBaseActor.h"
 #include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Level/Public/World.h"
+#include "Component/Mesh/Public/StaticMeshComponent.h"
 
 IMPLEMENT_CLASS(AGameMode, AGameModeBase)
 
@@ -90,6 +92,38 @@ void AGameMode::StartPlay()
 void AGameMode::BeginPlay()
 {
     AGameModeBase::BeginPlay();
+
+    // Spawn EnemyBaseActor for cinematic effects
+    if (OwningWorld)
+    {
+        AEnemyBaseActor* CinematicEnemy = Cast<AEnemyBaseActor>(
+            OwningWorld->SpawnActor(AEnemyBaseActor::StaticClass())
+        );
+        if (CinematicEnemy)
+        {
+            // Set in front of player spawn (player usually spawns around origin)
+            // Place it in a straight line ahead so missiles can easily hit it
+            CinematicEnemy->SetActorLocation(FVector(700.0f, 500.0f, 200.0f));
+
+            // Set scale (adjust to your needs)
+            CinematicEnemy->SetActorScale3D(FVector(10.0f, 10.0f, 10.0f));
+
+            // Set mesh (optional - replace with your desired mesh path)
+            if (UStaticMeshComponent* MeshComp = CinematicEnemy->GetMeshComponent())
+            {
+                MeshComp->SetStaticMesh("Data/Airdrop.obj");  // Change to your mesh
+            }
+
+            // Adjust collision radius if needed (default is 50.0)
+            // if (USphereComponent* CollComp = CinematicEnemy->GetCollisionComponent())
+            // {
+            //     CollComp->SetSphereRadius(100.0f);
+            // }
+
+            UE_LOG("[GameMode] EnemyBaseActor spawned at (300, 0, 0)");
+        }
+    }
+
     StartPlay();
     if (GetLuaScriptComponent())
     {
