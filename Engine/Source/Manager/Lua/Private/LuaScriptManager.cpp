@@ -1047,6 +1047,28 @@ void FLuaScriptManager::BindTypes()
         sol::no_constructor,
         sol::base_classes, sol::bases<AActor>(),
         "StartCameraShake", &APlayerCameraManager::StartCameraShake,
+        "StartFadeInOut", [](APlayerCameraManager* Manager,
+            float FadeOutDuration,
+            float FadeInDuration,
+            float ColorR,
+            float ColorG,
+            float ColorB,
+            float ColorA,
+            float HoldDuration)
+        {
+            if (Manager)
+            {
+                Manager->StartFadeInOut(FadeOutDuration, FadeInDuration,
+                    FVector4(ColorR, ColorG, ColorB, ColorA), HoldDuration);
+            }
+        },
+        "StopFadeInOut", [](APlayerCameraManager* Manager, bool bImmediate)
+        {
+            if (Manager)
+            {
+                Manager->StopFadeInOut(bImmediate);
+            }
+        },
         "GetFadeAmount", &APlayerCameraManager::GetFadeAmount,
         "GetLetterBoxAlpha", &APlayerCameraManager::GetLetterBoxAlpha,
 

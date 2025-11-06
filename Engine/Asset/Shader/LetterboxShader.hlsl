@@ -7,6 +7,9 @@
 // 레터박스 상수 버퍼
 cbuffer LetterboxParams : register(b0)
 {
+	float4 FadeColor;
+    float FadeAmount;
+    
     float TargetAspectRatio; // 목표 종횡비 (예: 21/9 = 2.333, 16/9 = 1.777)
     float RenderTargetWidth; // Active Viewport 너비
     float RenderTargetHeight; // Active Viewport 높이
@@ -89,6 +92,8 @@ float4 mainPS(VSOutput input) : SV_Target
 
     // 리매핑된 UV로 SceneColor 샘플링
     float4 SceneColor = InputTexture.Sample(InputSampler, SceneColorUV);
+    float FadeAlpha = saturate(FadeAmount);
+    SceneColor = lerp(SceneColor, FadeColor, FadeAlpha);
 
     // UV 좌표가 바 영역 안에 있는지 확인
     // UV.y가 [0, AnimatedBarHeight] 또는 [1-AnimatedBarHeight, 1] 범위에 있으면 검은 바 영역
@@ -104,3 +109,4 @@ float4 mainPS(VSOutput input) : SV_Target
 
     return SceneColor;
 }
+

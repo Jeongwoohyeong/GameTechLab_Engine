@@ -3,6 +3,7 @@
 #include "Manager/Camera/Public/CameraModifier.h"
 #include "Manager/Camera/Public/CameraModifier_CameraShake.h"
 #include "Manager/Camera/Public/CameraModifier_CameraTransition.h"
+#include "Manager/Camera/Public/CameraModifier_CameraFadeInOut.h"
 #include "Editor/Public/Camera.h"
 #include "Component/Camera/Public/CameraComponent.h"
 #include "Pawn/Public/Pawn.h"
@@ -89,7 +90,7 @@ void APlayerCameraManager::BeginPlay()
 	if (ModifierList.empty())
 	{
 		// Camera Shake Modifier
-		UCameraModifier_CameraShake* ShakeMod = new UCameraModifier_CameraShake();
+		UCameraModifier_CameraShake* ShakeMod = NewObject<UCameraModifier_CameraShake>();
 
 		// Apply default Bezier settings from this manager
 		ShakeMod->BezierCP[0] = DefaultShakeBezierCP[0];
@@ -101,8 +102,12 @@ void APlayerCameraManager::BeginPlay()
 		AddCameraModifier(ShakeMod);
 
 		// Camera Transition Modifier (미리 생성해서 UI에서 베지어 곡선 표시 가능)
-		UCameraModifier_CameraTransition* TransitionMod = new UCameraModifier_CameraTransition();
+		UCameraModifier_CameraTransition* TransitionMod = NewObject<UCameraModifier_CameraTransition>();
 		AddCameraModifier(TransitionMod);
+
+		UCameraModifier_CameraFadeInOut* FadeMod = NewObject<UCameraModifier_CameraFadeInOut>();
+
+		AddCameraModifier(FadeMod);
 	}
 }
 
@@ -195,6 +200,30 @@ void APlayerCameraManager::StopCameraFade()
 	FadeTimeRemaining = 0.0f;
 	FadeAmount = 0.0f;
 	bHoldFade = false;
+}
+
+void APlayerCameraManager::StartFadeInOut(float FadeOutDuration,
+	float FadeInDuration,
+	const FVector4& FadeColor,
+	float HoldDuration)
+{
+	UCameraModifier_CameraFadeInOut* FadeModifier = FindModifier<UCameraModifier_CameraFadeInOut>();
+	if (!FadeModifier)
+	{
+		FadeModifier = NewObject<UCameraModifier_CameraFadeInOut>();
+		FadeModifier->Initialize(this);
+		AddCameraModifier(FadeModifier);
+	}
+
+	FadeModifier->StartFade(FadeOutDuration, FadeInDuration, FadeColor, HoldDuration);
+}
+
+void APlayerCameraManager::StopFadeInOut(bool bImmediate)
+{
+	if (UCameraModifier_CameraFadeInOut* FadeModifier = FindModifier<UCameraModifier_CameraFadeInOut>())
+	{
+		FadeModifier->StopFade(bImmediate);
+	}
 }
 
 void APlayerCameraManager::UpdateFade(float DeltaTime)

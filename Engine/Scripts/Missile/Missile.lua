@@ -62,6 +62,10 @@ return function()
             self.Direction = Rotation:RotateVector(FVector(1, 0, 0))
             self.Direction:Normalize()
 
+            -- C++ 멤버 변수에 방향과 속도 설정 (EnemyBaseActor가 사용)
+            MissileActor.MissileDirection = self.Direction
+            MissileActor.MissileSpeed = self.Speed
+
             self.LastLocation = CurrentLocation
             Print("[Missile] Reactivated from pool: " .. MissileActor:GetName())
         end
@@ -84,6 +88,10 @@ return function()
             self.bIsActive = false
             return
         end
+
+        -- C++ 멤버 변수 업데이트 (매 프레임 - EnemyBaseActor가 실시간으로 사용)
+        MissileActor.MissileDirection = self.Direction
+        MissileActor.MissileSpeed = self.Speed
 
         -- 앞으로 이동
         local Movement = self.Direction * self.Speed * DeltaTime

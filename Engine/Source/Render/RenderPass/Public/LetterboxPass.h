@@ -1,4 +1,5 @@
 #pragma once
+#include "Global/Vector.h"
 #include "Render/RenderPass/Public/RenderPass.h"
 
 class UDeviceResources;
@@ -10,6 +11,10 @@ class UDeviceResources;
  */
 struct alignas(16) FLetterboxConstants
 {
+	// Fade Properties
+	FVector4 FadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	float FadeAmount = 0.0f;
+
 	float TargetAspectRatio = 16.0f / 9.0f; // 목표 종횡비 (기본값: 16:9)
 	float RenderTargetWidth = 1920.0f;      // Active Viewport 너비
 	float RenderTargetHeight = 1080.0f;     // Active Viewport 높이
@@ -99,6 +104,9 @@ public:
 	void SetSamplerState(ID3D11SamplerState* InSampler) { SamplerState = InSampler; }
 	void SetPlayerCameraManager(class APlayerCameraManager* InCameraManager) { PlayerCameraManager = InCameraManager; }
 
+	void SetFadeParameters(const FVector4& InColor, float InAmount);
+	
+
 private:
 	/**
 	 * @brief 풀스크린 쿼드(사각형)를 초기화합니다.
@@ -142,6 +150,9 @@ private:
 	ID3D11ShaderResourceView* InputSRV = nullptr;   // 입력 텍스처 (이전 패스의 출력)
 	ID3D11RenderTargetView* OutputRTV = nullptr;    // 출력 렌더 타겟 (다음 패스의 입력 또는 백버퍼)
 
+	FVector4 PendingFadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+	float PendingFadeAmount = 0.0f;
 	// PlayerCameraManager 참조 (레터박스 알파값을 가져오기 위함)
 	class APlayerCameraManager* PlayerCameraManager = nullptr;
 };
+

@@ -19,6 +19,8 @@
 setmetatable(_ENV, { __index = EngineTypes })
 
 local FVector = EngineTypes.FVector
+local FVector4 = EngineTypes.FVector4
+local IsFadeKeyPressed = false
 
 -- MissilePool 로드
 local MissilePoolModule = require("Scripts/MissilePool")
@@ -173,6 +175,19 @@ return function()
             self:TestCameraTransitionReturn()
             Print("[CameraTest] R - Returning to follow camera!")
         end
+    
+        if InputMgr:IsKeyDown("F") and not isFadeKeyPressed then
+            isFadeKeyPressed = true
+            self:TriggerCameraFade(1.5, 2.7, FVector4(1.0, 0.0, 0.0, 1.0), 0.4)
+            Print("[CameraTest] F - Fade-to-black triggered!")
+        elseif not InputMgr:IsKeyDown("F") and isFadeKeyPressed then
+            isFadeKeyPressed = false
+        end 
+           
+        if InputMgr:IsKeyDown("G") then
+            self:StopCameraFade(true)
+            Print("[CameraTest] G - Fade cancelled.")
+        end
 
         -- ==========================================
         -- 무기 시스템 (WeaponEnabled일 때만)
@@ -258,6 +273,44 @@ return function()
                 end
             end
         end
+    end
+
+    function ReturnTable:TriggerCameraFade(FadeOutDuration, FadeInDuration, Color, HoldDuration)
+        local GameMode = GetGameMode()
+        if not GameMode then
+            return
+        end        
+        local PlayerController = GameMode:GetPlayerController()
+        if not PlayerController then
+            return
+        end        
+        local CamMgr = PlayerController:GetPlayerCameraManager()
+        if not CamMgr then
+            return
+        end    
+        local FadeColor = color or FVector4(0.0, 0.0, 0.0, 1.0)
+        CamMgr:StartFadeInOut(
+        FadeOutDuration or 0.4,
+        FadeInDuration or 0.6,
+        FadeColor.X, FadeColor.Y, FadeColor.Z, FadeColor.W,
+        HoldDuration or 0.0
+        )    
+    end
+
+    function ReturnTable:StopCameraFade(Immediate)
+        local GameMode = GetGameMode()
+        if not GameMode then
+            return
+        end        
+        local PlayerController = GameMode:GetPlayerController()
+        if not PlayerController then
+            return
+        end
+        local CamMgr = PlayerController:GetPlayerCameraManager()
+        if not CamMgr then
+            return
+        end
+        CamMgr:StopFadeInOut(Immediate == true)
     end
 
     -- 특정 액터를 따라가도록 카메라 전환

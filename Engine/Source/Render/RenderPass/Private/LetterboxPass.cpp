@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Render/RenderPass/Public/LetterboxPass.h"
+#include "Global/Function.h"
 #include "Render/Renderer/Public/Pipeline.h"
 #include "Render/Renderer/Public/RenderResourceFactory.h"
 #include "Render/Renderer/Public/DeviceResources.h"
@@ -144,6 +145,12 @@ void FLetterboxPass::SetOutputRenderTarget(ID3D11RenderTargetView* InOutputRTV)
 	OutputRTV = InOutputRTV;
 }
 
+void FLetterboxPass::SetFadeParameters(const FVector4& InColor, float InAmount)
+{
+	PendingFadeColor = InColor;
+	PendingFadeAmount = Clamp(InAmount, 0.0f, 1.0f);
+}
+
 /**
  * @brief 풀스크린 쿼드를 초기화합니다
  *
@@ -246,6 +253,9 @@ void FLetterboxPass::UpdateConstants()
 	LetterboxParams.ViewportUVScaleX = static_cast<float>(ActiveRect.Width) / BackbufferWidth;
 	LetterboxParams.ViewportUVScaleY = static_cast<float>(ActiveRect.Height) / BackbufferHeight;
 
+	LetterboxParams.FadeColor = PendingFadeColor;
+	LetterboxParams.FadeAmount = PendingFadeAmount;
+
 	// 상수 버퍼 업데이트 (GPU 메모리로 전송)
 	FRenderResourceFactory::UpdateConstantBufferData(LetterboxConstantBuffer, LetterboxParams);
 }
@@ -280,3 +290,4 @@ void FLetterboxPass::SetRenderTargets()
 
 	DeviceResources->GetDeviceContext()->RSSetViewports(1, &Viewport);
 }
+

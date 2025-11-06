@@ -44,6 +44,8 @@
 #include "Render/HitProxy/Public/HitProxy.h"
 #include "Render/Renderer/Public/RenderResourceFactory.h"
 #include "Render/Renderer/Public/Renderer.h"
+
+#include "Manager/Camera/Public/PlayerCameraManager.h"
 #include "Render/UI/Overlay/Public/D2DOverlayManager.h"
 #include "Render/UI/Overlay/Public/StatOverlay.h"
 #include "Render/UI/Viewport/Public/Viewport.h"
@@ -1339,7 +1341,21 @@ void URenderer::RenderLevel(FViewport* InViewport, int32 ViewportIndex)
 		}
 	}
 
-	for (auto RenderPass : RenderPasses)
+	if (ViewportIndex == UViewportManager::GetInstance().GetActiveIndex())
+	{
+		if (APlayerCameraManager* CameraManager = WorldToRender->GetPlayerCameraManager())
+		{
+			ActiveFadeColor = CameraManager->GetFadeColor();
+			ActiveFadeAmount = CameraManager->GetFadeAmount();
+		}
+		else
+		{
+			ActiveFadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
+			ActiveFadeAmount = 0.0f;
+		}
+	}
+
+	for (auto RenderPass: RenderPasses)
 	{
 		RenderPass->Execute(RenderingContext);
 	}
@@ -1587,3 +1603,4 @@ void URenderer::RenderHitProxyPass(UCamera* InCamera, const D3D11_VIEWPORT& InVi
 		Editor->RenderGizmoForHitProxy(InCamera, InViewport);
 	}
 }
+
