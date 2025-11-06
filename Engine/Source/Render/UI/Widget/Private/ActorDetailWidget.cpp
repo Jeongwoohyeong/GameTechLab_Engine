@@ -1989,6 +1989,53 @@ void UActorDetailWidget::RenderCameraModifiers(APlayerCameraManager* CameraManag
 					}
 
 					ImGui::Spacing();
+
+					// Preset buttons for Shake decay
+					ImGui::Text("Presets:");
+
+					struct BezierPreset
+					{
+						const char* Name;
+						float CP[4];
+					};
+
+					static const BezierPreset ShakePresets[] = {
+						{ "EaseOutQuad", {0.25f, 0.46f, 0.45f, 0.94f} },
+						{ "EaseInQuad", {0.55f, 0.085f, 0.68f, 0.53f} },
+						{ "EaseInOutQuad", {0.455f, 0.03f, 0.515f, 0.955f} },
+						{ "EaseOutCubic", {0.215f, 0.61f, 0.355f, 1.0f} },
+						{ "EaseInCubic", {0.55f, 0.055f, 0.675f, 0.19f} },
+						{ "EaseInOutCubic", {0.645f, 0.045f, 0.355f, 1.0f} },
+						{ "Elastic", {0.68f, -0.55f, 0.265f, 1.55f} }
+					};
+
+					for (int i = 0; i < 7; ++i)
+					{
+						if (i > 0 && i % 2 == 1) ImGui::SameLine();
+
+						if (ImGui::Button(ShakePresets[i].Name, ImVec2(95, 0)))
+						{
+							ShakeMod->BezierCP[0] = ShakePresets[i].CP[0];
+							ShakeMod->BezierCP[1] = ShakePresets[i].CP[1];
+							ShakeMod->BezierCP[2] = ShakePresets[i].CP[2];
+							ShakeMod->BezierCP[3] = ShakePresets[i].CP[3];
+
+							// Sync to manager default
+							CameraManager->DefaultShakeBezierCP[0] = ShakeMod->BezierCP[0];
+							CameraManager->DefaultShakeBezierCP[1] = ShakeMod->BezierCP[1];
+							CameraManager->DefaultShakeBezierCP[2] = ShakeMod->BezierCP[2];
+							CameraManager->DefaultShakeBezierCP[3] = ShakeMod->BezierCP[3];
+
+							// Static에도 저장
+							APlayerCameraManager::StaticShakeBezierCP[0] = ShakeMod->BezierCP[0];
+							APlayerCameraManager::StaticShakeBezierCP[1] = ShakeMod->BezierCP[1];
+							APlayerCameraManager::StaticShakeBezierCP[2] = ShakeMod->BezierCP[2];
+							APlayerCameraManager::StaticShakeBezierCP[3] = ShakeMod->BezierCP[3];
+							APlayerCameraManager::bStaticValuesInitialized = true;
+						}
+					}
+
+					ImGui::Spacing();
 					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
 						"Tip: Drag control points or use sliders");
 					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
