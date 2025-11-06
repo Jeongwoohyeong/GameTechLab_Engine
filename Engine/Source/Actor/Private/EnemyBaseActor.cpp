@@ -248,7 +248,7 @@ void AEnemyBaseActor::EndCinematic()
         return;
     }
 
-    UE_LOG("[EnemyBaseActor] ENDING CINEMATIC - Destroying EnemyBaseActor");
+    UE_LOG("[EnemyBaseActor] ENDING CINEMATIC");
 
     bIsTargeted = false;
     CinematicTimer = 0.0f;
@@ -257,10 +257,5 @@ void AEnemyBaseActor::EndCinematic()
     UTimeManager& TimeManager = UTimeManager::GetInstance();
     TimeManager.StopSlowMotion();
 
-    // 액터 삭제 (한 대 맞으면 죽음)
-    if (GWorld)
-    {
-        GWorld->DestroyActor(this);
-        UE_LOG("[EnemyBaseActor] Actor destroyed!");
-    }
+    UE_LOG("[EnemyBaseActor] Cinematic ended - Actor remains alive");
 }
