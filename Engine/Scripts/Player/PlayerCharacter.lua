@@ -2,7 +2,8 @@
 -- PlayerCharacter에 붙여서 사용
 --
 -- [카메라 트랜지션 테스트 키]
--- Q키: 플레이어 앞쪽 상단에서 내려다보는 테스트 카메라로 전환
+-- Q키: 플레이어 머리 위에서 내려다보는 카메라로 전환
+-- E키: 플레이어 좌측 측면에서 보는 카메라로 전환
 -- R키: 원래 카메라 위치로 복귀
 --
 -- [카메라 트랜지션 사용 예제]
@@ -35,6 +36,7 @@ return function()
 
     -- 카메라 트랜지션 테스트용 변수
     local isQKeyPressed = false
+    local isEKeyPressed = false
 
     -- ==================================================
     -- 무기 설정
@@ -150,13 +152,22 @@ return function()
         -- ==========================================
         -- 카메라 트랜지션 테스트 (무기 활성화와 무관)
         -- ==========================================
-        -- Q키: 특정 위치로 카메라 이동 (디버그용)
+        -- Q키: 플레이어 머리 위에서 내려다보기
         if InputMgr:IsKeyDown("Q") and not isQKeyPressed then
             isQKeyPressed = true
-            self:TestCameraTransitionToFixedPosition()
-            Print("[CameraTest] Q - Moving to fixed test position!")
+            self:TestCameraTransitionToTopView()
+            Print("[CameraTest] Q - Moving to top view!")
         elseif not InputMgr:IsKeyDown("Q") and isQKeyPressed then
             isQKeyPressed = false
+        end
+
+        -- E키: 플레이어 좌측 측면에서 보기
+        if InputMgr:IsKeyDown("E") and not isEKeyPressed then
+            isEKeyPressed = true
+            self:TestCameraTransitionToSideView()
+            Print("[CameraTest] E - Moving to side view!")
+        elseif not InputMgr:IsKeyDown("E") and isEKeyPressed then
+            isEKeyPressed = false
         end
 
         -- R키: 원래 카메라로 복귀
@@ -326,10 +337,10 @@ return function()
     end
 
     -- ==================================================
-    -- 카메라 트랜지션 테스트 함수 (Q키, R키)
+    -- 카메라 트랜지션 테스트 함수 (Q키, E키, R키)
     -- ==================================================
-    -- Q키: 플레이어 기준 상대 위치로 카메라 이동 (디버그용)
-    function ReturnTable:TestCameraTransitionToFixedPosition()
+    -- Q키: 플레이어 머리 위에서 내려다보기
+    function ReturnTable:TestCameraTransitionToTopView()
         if not PlayerActor then
             return
         end
@@ -353,8 +364,54 @@ return function()
         local playerPos = PlayerActor.ActorLocation
         local playerRot = PlayerActor.ActorRotation
 
-        -- 플레이어 기준 상대 오프셋 (-500, 0, 500)
+        -- 플레이어 머리 위 (앞쪽, 위쪽으로 오프셋)
         local localOffset = FVector(-500.0, 0.0, 500.0)
+        local worldOffset = playerRot:RotateVector(localOffset)
+        local targetPos = playerPos + worldOffset
+
+        -- 플레이어를 바라보는 회전 계산
+        local lookDir = (playerPos - targetPos):GetNormalized()
+        local yaw = math.atan(lookDir.Y, lookDir.X) * (180.0 / 3.14159265359)
+        local pitch = math.asin(-lookDir.Z) * (180.0 / 3.14159265359)
+        local targetRot = FRotator(pitch, yaw, 0.0)
+
+        -- 2초 동안 EaseInOut으로 이동
+        camMgr:StartTransitionToLocation(
+            targetPos,
+            targetRot,
+            2.0,  -- 2초 duration
+            3,    -- EaseInOut
+            -1    -- FOV 유지
+        )
+    end
+
+    -- E키: 플레이어 좌측 측면에서 보기
+    function ReturnTable:TestCameraTransitionToSideView()
+        if not PlayerActor then
+            return
+        end
+
+        local gameMode = GetGameMode()
+        if not gameMode then
+            return
+        end
+
+        local playerController = gameMode:GetPlayerController()
+        if not playerController then
+            return
+        end
+
+        local camMgr = playerController:GetPlayerCameraManager()
+        if not camMgr then
+            return
+        end
+
+        -- 플레이어 위치와 회전
+        local playerPos = PlayerActor.ActorLocation
+        local playerRot = PlayerActor.ActorRotation
+
+        -- 플레이어 좌측 측면 (y축 음수 = 왼쪽, 약간 뒤쪽, 약간 위쪽)
+        local localOffset = FVector(-200.0, -400.0, 100.0)
         local worldOffset = playerRot:RotateVector(localOffset)
         local targetPos = playerPos + worldOffset
 

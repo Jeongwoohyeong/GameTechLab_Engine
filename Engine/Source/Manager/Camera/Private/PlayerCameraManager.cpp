@@ -277,19 +277,54 @@ void APlayerCameraManager::StartLetterBox(float Height, float BlendTime)
 	LetterBoxHeight = Height;
 	LetterBoxTargetAlpha = 1.0f;
 	LetterBoxBlendSpeed = (BlendTime > 0.0f) ? (1.0f / BlendTime) : 2.0f;
+
+	// 애니메이션 초기화 (위에서 아래로 내려오는 효과)
+	LetterBoxAnimationProgress = 0.0f;
+	LetterBoxAnimationElapsed = 0.0f;
+	LetterBoxAnimationDuration = 1.5f; // 1.5초 동안 내려옴
+
+	// 레터박스 ShowFlag 자동 활성화
+	extern UWorld* GWorld;
+	if (GWorld)
+	{
+		ULevel* Level = GWorld->GetLevel();
+		if (Level)
+		{
+			uint64 ShowFlags = Level->GetShowFlags();
+			ShowFlags |= static_cast<uint64>(EEngineShowFlags::SF_Letterbox);
+			Level->SetShowFlags(ShowFlags);
+			UE_LOG("[PlayerCameraManager] Letterbox ShowFlag enabled");
+		}
+	}
 }
 
 void APlayerCameraManager::StopLetterBox(float BlendTime)
 {
 	LetterBoxTargetAlpha = 0.0f;
 	LetterBoxBlendSpeed = (BlendTime > 0.0f) ? (1.0f / BlendTime) : 2.0f;
+
+	// 알파가 0이 되면 UpdateLetterBox에서 ShowFlag를 끌 것임
+	// 여기서는 페이드아웃만 시작
 }
 
 void APlayerCameraManager::UpdateLetterBox(float DeltaTime)
 {
-	if (bIsLetterBoxActive || LetterBoxCurrentAlpha > 0.0f)
+	if (bIsLetterBoxActive || LetterBoxCurrentAlpha > 0.0f || LetterBoxAnimationProgress > 0.0f)
 	{
-		// Lerp toward target
+		// 애니메이션 진행도 업데이트 (위에서 아래로 내려오는 효과)
+		if (bIsLetterBoxActive && LetterBoxAnimationProgress < 1.0f)
+		{
+			LetterBoxAnimationElapsed += DeltaTime;
+			LetterBoxAnimationProgress = Lerp(0.0f, 1.0f, LetterBoxAnimationElapsed / LetterBoxAnimationDuration);
+
+			// 애니메이션 완료 시 1.0으로 고정
+			if (LetterBoxAnimationProgress >= 1.0f)
+			{
+				LetterBoxAnimationProgress = 1.0f;
+			}
+		}
+
+		// 알파 블렌딩 (페이드 인/아웃)
 		LetterBoxCurrentAlpha = Lerp(LetterBoxCurrentAlpha, LetterBoxTargetAlpha, LetterBoxBlendSpeed * DeltaTime);
 
 		// Snap to target if very close
@@ -297,10 +332,25 @@ void APlayerCameraManager::UpdateLetterBox(float DeltaTime)
 		{
 			LetterBoxCurrentAlpha = LetterBoxTargetAlpha;
 
-			// If blended out completely, mark as inactive
+			// If blended out completely, mark as inactive and disable ShowFlag
 			if (LetterBoxCurrentAlpha == 0.0f)
 			{
 				bIsLetterBoxActive = false;
+				LetterBoxAnimationProgress = 0.0f; // 애니메이션도 리셋
+
+				// 레터박스 ShowFlag 비활성화
+				extern UWorld* GWorld;
+				if (GWorld)
+				{
+					ULevel* Level = GWorld->GetLevel();
+					if (Level)
+					{
+						uint64 ShowFlags = Level->GetShowFlags();
+						ShowFlags &= ~static_cast<uint64>(EEngineShowFlags::SF_Letterbox);
+						Level->SetShowFlags(ShowFlags);
+						UE_LOG("[PlayerCameraManager] Letterbox ShowFlag disabled");
+					}
+				}
 			}
 		}
 	}

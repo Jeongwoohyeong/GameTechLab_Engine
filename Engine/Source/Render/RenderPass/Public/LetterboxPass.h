@@ -18,14 +18,19 @@ struct alignas(16) FLetterboxConstants
 	float TargetAspectRatio = 16.0f / 9.0f; // 목표 종횡비 (기본값: 16:9)
 	float RenderTargetWidth = 1920.0f;      // Active Viewport 너비
 	float RenderTargetHeight = 1080.0f;     // Active Viewport 높이
-	float Padding = 0.0f;
+	float LetterBoxAlpha = 0.0f;            // 레터박스 알파 (0.0 = 완전 투명, 1.0 = 완전 불투명)
 
 	// SceneColor 텍스처 UV 매핑을 위한 정보
 	float ViewportUVOffsetX = 0.0f;         // UV 오프셋 X (ActiveRect.Left / BackbufferWidth)
 	float ViewportUVOffsetY = 0.0f;         // UV 오프셋 Y (ActiveRect.Top / BackbufferHeight)
 	float ViewportUVScaleX = 1.0f;          // UV 스케일 X (ActiveRect.Width / BackbufferWidth)
 	float ViewportUVScaleY = 1.0f;          // UV 스케일 Y (ActiveRect.Height / BackbufferHeight)
-	float Padding2[3] = { 0.0f, 0.0f, 0.0f};
+
+	// 래터박스 애니메이션 파라미터
+	float LetterBoxAnimationProgress = 0.0f; // 애니메이션 진행도 (0.0 = 시작, 1.0 = 완료)
+	float Padding1 = 0.0f;                   // 16바이트 정렬을 위한 패딩
+	float Padding2 = 0.0f;                   // 16바이트 정렬을 위한 패딩
+	float Padding3 = 0.0f;                   // 16바이트 정렬을 위한 패딩
 };
 
 /**
@@ -52,11 +57,11 @@ public:
 	 * @param InSampler 샘플러 상태입니다.
 	 */
 	FLetterboxPass(UPipeline* InPipeline,
-	               UDeviceResources* InDeviceResources,
-	               ID3D11VertexShader* InVS,
-	               ID3D11PixelShader* InPS,
-	               ID3D11InputLayout* InLayout,
-	               ID3D11SamplerState* InSampler);
+		UDeviceResources* InDeviceResources,
+		ID3D11VertexShader* InVS,
+		ID3D11PixelShader* InPS,
+		ID3D11InputLayout* InLayout,
+		ID3D11SamplerState* InSampler);
 
 	/**
 	 * @brief LetterboxPass 클래스의 소멸자입니다.
@@ -97,6 +102,7 @@ public:
 	void SetPixelShader(ID3D11PixelShader* InPS) { PixelShader = InPS; }
 	void SetInputLayout(ID3D11InputLayout* InLayout) { InputLayout = InLayout; }
 	void SetSamplerState(ID3D11SamplerState* InSampler) { SamplerState = InSampler; }
+	void SetPlayerCameraManager(class APlayerCameraManager* InCameraManager) { PlayerCameraManager = InCameraManager; }
 
 	void SetFadeParameters(const FVector4& InColor, float InAmount);
 	
@@ -146,5 +152,7 @@ private:
 
 	FVector4 PendingFadeColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f);
 	float PendingFadeAmount = 0.0f;
+	// PlayerCameraManager 참조 (레터박스 알파값을 가져오기 위함)
+	class APlayerCameraManager* PlayerCameraManager = nullptr;
 };
 
