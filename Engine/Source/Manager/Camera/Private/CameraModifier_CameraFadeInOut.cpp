@@ -125,6 +125,26 @@ bool UCameraModifier_CameraFadeInOut::ModifyCamera(float DeltaTime, FVector& Cam
     return false;
 }
 
+void UCameraModifier_CameraFadeInOut::SetFadeOutDuration(float InDuration)
+{
+    FadeOutDuration = InDuration;
+}
+
+void UCameraModifier_CameraFadeInOut::SetFadeInDuration(float InDuration)
+{
+    FadeInDuration = InDuration;
+}
+
+void UCameraModifier_CameraFadeInOut::SetHoldDuration(float InDuration)
+{
+    HoldDuration = InDuration;
+}
+
+void UCameraModifier_CameraFadeInOut::SetFadeColor(const FVector4& InColor)
+{
+    FadeColor = InColor;
+}
+
 void UCameraModifier_CameraFadeInOut::BeginFadeOut()
 {
     StageTimer = 0.0f;

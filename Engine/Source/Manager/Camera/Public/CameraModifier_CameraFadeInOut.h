@@ -40,6 +40,11 @@ public:
     virtual void UpdateModifier(float DeltaTime) override;
     virtual bool ModifyCamera(float DeltaTime, FVector& CameraLocation, FRotator& CameraRotation) override;
 
+    void SetFadeOutDuration(float InDuration);
+    void SetFadeInDuration(float InDuration);
+    void SetHoldDuration(float InDuration);
+    void SetFadeColor(const FVector4& InColor);
+
 private:
     enum class EFadeStage : uint8
     {

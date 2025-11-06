@@ -23,7 +23,7 @@ void UGameOverWidget::RenderWidget()
 
 	// 메뉴 크기
 	const float MenuWidth = 400.0f;
-	const float MenuHeight = 350.0f;
+	const float MenuHeight = 550.0f;
 	const float ButtonWidth = 200.0f;
 	const float ButtonHeight = 50.0f;
 
@@ -74,6 +74,34 @@ void UGameOverWidget::RenderWidget()
 		bQuitButtonClicked = true;
 		UE_LOG("[GameOver] Quit button clicked");
 	}
+
+	// 제작자 이름
+	const char* CreatorText = "Created by";
+	const char* Creator1 = "[정우형]";
+	const char* Creator2 = "[신동민]";
+	const char* Creator3 = "[정찬호]";
+	
+    
+	// 하단 중앙 정렬
+	ImGui::SetCursorPosX((MenuWidth - ImGui::CalcTextSize(CreatorText).x) * 0.5f);
+	ImGui::SetCursorPosY(MenuHeight - 160.0f); // 윈도우 하단에서 40px 위에 배치
+
+	// 텍스트 색상을 옅은 회색으로 설정
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.7f, 0.7f, 0.7f, 1.0f)); 
+	ImGui::Text("%s", CreatorText);
+	ImGui::SetCursorPosX((MenuWidth - ImGui::CalcTextSize(CreatorText).x) * 0.5f);
+	ImGui::SetCursorPosY(MenuHeight - 120.0f); // 윈도우 하단에서 40px 위에 배치
+	ImGui::Text("%s", Creator1);
+	ImGui::SetCursorPosX((MenuWidth - ImGui::CalcTextSize(CreatorText).x) * 0.5f);
+	ImGui::SetCursorPosY(MenuHeight - 80.0f); // 윈도우 하단에서 40px 위에 배치
+	ImGui::Text("%s", Creator2);
+	ImGui::SetCursorPosX((MenuWidth - ImGui::CalcTextSize(CreatorText).x) * 0.5f);
+	ImGui::SetCursorPosY(MenuHeight - 40.0f); // 윈도우 하단에서 40px 위에 배치
+	ImGui::Text("%s", Creator3);
+	ImGui::PopStyleColor();
+
+	// --- 추가된 코드 끝 ---
+	
 
 	ImGui::End();
 }

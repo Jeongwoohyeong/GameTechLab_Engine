@@ -27,6 +27,8 @@
 #include <cctype>
 #include <vector>
 
+#include "Manager/Camera/Public/CameraModifier_CameraFadeInOut.h"
+
 namespace
 {
     FString SanitizeName(const FString& InName)
@@ -2081,6 +2083,69 @@ void UActorDetailWidget::RenderCameraModifiers(APlayerCameraManager* CameraManag
 				{
 					ImGui::Spacing();
 					ImGui::TextDisabled("Status: Not transitioning");
+				}
+			}
+
+			if (UCameraModifier_CameraFadeInOut* FadeMod = Cast<UCameraModifier_CameraFadeInOut>(Modifier))
+			{
+				ImGui::Separator();
+				ImGui::TextColored(ImVec4(0.95f, 0.85f, 0.3f, 1.0f), "Camera Fade In/Out");
+
+				float FadeOut = FadeMod->GetFadeOutDuration();
+				if (ImGui::DragFloat("Fade Out Duration (s)", &FadeOut, 0.05f, 0.01f, 30.0f))
+				{
+					FadeMod->SetFadeOutDuration(FadeOut);
+				}
+
+				float Hold = FadeMod->GetHoldDuration();
+				if (ImGui::DragFloat("Hold Duration (s)", &Hold, 0.05f, 0.0f, 30.0f))
+				{
+					FadeMod->SetHoldDuration(Hold);
+				}
+
+				float FadeIn = FadeMod->GetFadeInDuration();
+				if (ImGui::DragFloat("Fade In Duration (s)", &FadeIn, 0.05f, 0.01f, 30.0f))
+				{
+					FadeMod->SetFadeInDuration(FadeIn);
+				}
+
+				FVector4 FadeColor = FadeMod->GetFadeColor();
+				float Color[4] = { FadeColor.X, FadeColor.Y, FadeColor.Z, FadeColor.W };
+				if (ImGui::ColorEdit4("Fade Color##CameraFade", Color))
+				{
+					FadeMod->SetFadeColor(FVector4(Color[0], Color[1], Color[2], Color[3]));
+				}
+
+				ImGui::Text("Status: %s", FadeMod->IsFading() ? "Running" : "Idle");
+				ImGui::Text("Current Alpha: %.2f", CameraManager->GetFadeAmount());
+
+				if (ImGui::Button("Start Fade Sequence"))
+				{
+					CameraManager->StartFadeInOut(
+						FadeMod->GetFadeOutDuration(),
+						FadeMod->GetFadeInDuration(),
+						FadeMod->GetFadeColor(),
+						FadeMod->GetHoldDuration());
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Stop Fade"))
+				{
+					CameraManager->StopFadeInOut(false);
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Clear Immediately"))
+				{
+					CameraManager->StopFadeInOut(true);
+				}
+
+				
+				if (ImGui::Button("Fade In Only"))
+				{
+					CameraManager->StartCameraFade(
+						FadeMod->GetFadeInDuration(),
+						FadeMod->GetFadeColor(),
+						false,   // bFadeOut = false → 페이드 인
+						false);
 				}
 			}
 
