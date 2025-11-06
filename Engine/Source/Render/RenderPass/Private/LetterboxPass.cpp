@@ -4,6 +4,7 @@
 #include "Render/Renderer/Public/RenderResourceFactory.h"
 #include "Render/Renderer/Public/DeviceResources.h"
 #include "Manager/UI/Public/ViewportManager.h"
+#include "Manager/Camera/Public/PlayerCameraManager.h"
 
 /**
  * @brief 풀스크린 쿼드 렌더링을 위한 정점 구조체
@@ -21,11 +22,11 @@ struct FFullscreenVertex
  * 풀스크린 쿼드와 상수 버퍼를 초기화합니다
  */
 FLetterboxPass::FLetterboxPass(UPipeline* InPipeline,
-                               UDeviceResources* InDeviceResources,
-                               ID3D11VertexShader* InVS,
-                               ID3D11PixelShader* InPS,
-                               ID3D11InputLayout* InLayout,
-                               ID3D11SamplerState* InSampler)
+	UDeviceResources* InDeviceResources,
+	ID3D11VertexShader* InVS,
+	ID3D11PixelShader* InPS,
+	ID3D11InputLayout* InLayout,
+	ID3D11SamplerState* InSampler)
 	: FRenderPass(InPipeline, nullptr, nullptr)
 	, DeviceResources(InDeviceResources)
 	, VertexShader(InVS)
@@ -222,6 +223,18 @@ void FLetterboxPass::UpdateConstants()
 	// 렌더 타겟 크기를 상수 버퍼에 설정
 	LetterboxParams.RenderTargetWidth = static_cast<float>(ActiveRect.Width);
 	LetterboxParams.RenderTargetHeight = static_cast<float>(ActiveRect.Height);
+
+	// PlayerCameraManager로부터 레터박스 알파값과 애니메이션 진행도 가져오기
+	if (PlayerCameraManager)
+	{
+		LetterboxParams.LetterBoxAlpha = PlayerCameraManager->GetLetterBoxAlpha();
+		LetterboxParams.LetterBoxAnimationProgress = PlayerCameraManager->GetLetterBoxAnimationProgress();
+	}
+	else
+	{
+		LetterboxParams.LetterBoxAlpha = 0.0f;
+		LetterboxParams.LetterBoxAnimationProgress = 0.0f;
+	}
 
 	// SceneColor 텍스처 UV 매핑 계산
 	// SceneColor 텍스처는 백버퍼 전체 크기이지만, 실제 렌더링은 ActiveViewportRect에만 됨

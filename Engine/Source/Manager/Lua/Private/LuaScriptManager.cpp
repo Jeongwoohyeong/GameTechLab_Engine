@@ -102,7 +102,7 @@ namespace LuaBindingHelpers
                 return (obj->*method)(enumValue.value());
             }
             return false;
-        };
+            };
     }
 
     // FName을 문자열로 반환하는 GetName 헬퍼
@@ -145,14 +145,14 @@ namespace
         UE_LOG("[ResolveLuaScriptPath] Base path: '%s'", base.string().c_str());
 
         auto addCandidate = [&](const fs::path& root, std::vector<fs::path>& out)
-        {
-            if (root.empty())
             {
-                return;
-            }
-            out.emplace_back(root / inputPath);
-            out.emplace_back(root / "Engine" / inputPath);
-        };
+                if (root.empty())
+                {
+                    return;
+                }
+                out.emplace_back(root / inputPath);
+                out.emplace_back(root / "Engine" / inputPath);
+            };
 
         std::vector<fs::path> candidates;
 
@@ -181,8 +181,8 @@ namespace
         for (const fs::path& candidate : candidates)
         {
             UE_LOG("[ResolveLuaScriptPath] Trying: '%s' - %s",
-                   candidate.string().c_str(),
-                   fs::exists(candidate, ec) ? "EXISTS" : "NOT FOUND");
+                candidate.string().c_str(),
+                fs::exists(candidate, ec) ? "EXISTS" : "NOT FOUND");
 
             if (!candidate.empty() && fs::exists(candidate, ec) && !ec)
             {
@@ -230,7 +230,7 @@ FLuaScriptManager::~FLuaScriptManager()
         ActiveComponents.clear();
         LuaState.reset();
     }
-    
+
     UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager destroyed safely.");
 }
 
@@ -241,9 +241,9 @@ void FLuaScriptManager::StartUp()
 
     // Lua 표준 라이브러리 로드 (io, string, math, coroutine, etc.)
     LuaState->open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::math, sol::lib::table, sol::lib::coroutine);
-    
+
     UE_LOG_SYSTEM("LuaManager started.");
-    
+
     // Bind all C++ types
     BindTypes();
 
@@ -259,7 +259,7 @@ void FLuaScriptManager::ShutDown()
     {
         return; // Already shut down
     }
-    
+
     UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager shutting down...");
 
     // 1. Shutdown coroutine manager first (stops all coroutines)
@@ -275,7 +275,7 @@ void FLuaScriptManager::ShutDown()
 
     // 4. Mark as shut down
     bIsStartedUp = false;
-    
+
     UE_LOG_TERMINAL("[Shutdown] FLuaScriptManager shut down successfully.");
 }
 
@@ -440,7 +440,7 @@ void FLuaScriptManager::HotReloadLuaScript()
     TSet<FString> Changed;
 
     // 캐시 복사
-    auto CopyCache = ScriptCache; 
+    auto CopyCache = ScriptCache;
 
     // 캐시된 모든 스크립트 검사
     for (auto& [Path, Info] : CopyCache)
@@ -692,12 +692,12 @@ void FLuaScriptManager::BindTypes()
     // --- Global Functions ---
     LuaState->set_function("Print", [](const std::string& message) {
         UE_LOG("[LUA] %s", message.c_str());
-    });
+        });
 
     // --- InputManager Binding ---
     LuaState->set_function("GetInputManager", []() -> UInputManager* {
         return &UInputManager::GetInstance();
-    });
+        });
 
     LuaState->new_usertype<UInputManager>("UInputManager",
         sol::no_constructor,
@@ -716,7 +716,7 @@ void FLuaScriptManager::BindTypes()
     // --- UWorld Binding ---
     LuaState->set_function("GetWorld", []() {
         return GWorld;
-    });
+        });
 
     LuaState->new_usertype<UWorld>("UWorld",
         sol::no_constructor,
@@ -797,7 +797,7 @@ void FLuaScriptManager::BindTypes()
         "ImpactPoint", &FHitResult::ImpactPoint,
         "ImpactNormal", &FHitResult::ImpactNormal,
         "Distance", &FHitResult::Distance
-        );
+    );
 
     // --- UMeshComponent Binding (inherits from UPrimitiveComponent) ---
     LuaState->new_usertype<UMeshComponent>("UMeshComponent",
@@ -901,7 +901,7 @@ void FLuaScriptManager::BindTypes()
         "SpawnEnemies", &AGameMode::SpawnEnemies,
         "GetPlayerController", &AGameMode::GetPlayerController,
         "BroadCastPlayerLocation", &AGameMode::BroadCastPlayerLocation
-        );
+    );
 
     // --- UWorld Binding Extension (add GameMode support) ---
     LuaState->set_function("GetGameMode", []() {
@@ -909,18 +909,18 @@ void FLuaScriptManager::BindTypes()
             return GWorld->GetGameMode();
         }
         return (AGameMode*)nullptr;
-    });
+        });
 
     // --- Cast Functions (safe type casting) ---
     LuaState->set_function("Cast_APlayerCharacter", [](AActor* Actor) -> APlayerCharacter* {
         if (!Actor) return nullptr;
         return dynamic_cast<APlayerCharacter*>(Actor);
-    });
+        });
 
     LuaState->set_function("Cast_AEnemyCharacter", [](AActor* Actor) -> AEnemyCharacter* {
         if (!Actor) return nullptr;
         return dynamic_cast<AEnemyCharacter*>(Actor);
-    });
+        });
 
     // --- UWidget Binding (base class for all widgets) ---
     LuaState->new_usertype<UWidget>("UWidget",
@@ -937,7 +937,7 @@ void FLuaScriptManager::BindTypes()
 
     LuaState->set_function("GetGameUIManager", []() {
         return &UGameUIManager::GetInstance();
-    });
+        });
 
     // --- UTimeManager Binding ---
     LuaState->new_usertype<UTimeManager>("UTimeManager",
@@ -972,7 +972,7 @@ void FLuaScriptManager::BindTypes()
 
     LuaState->set_function("GetTimeManager", []() {
         return &UTimeManager::GetInstance();
-    });
+        });
 
     // --- EKeyInput Enum Binding ---
     LuaState->new_enum<EKeyInput>("EKeyInput",
@@ -1050,34 +1050,38 @@ void FLuaScriptManager::BindTypes()
         "GetFadeAmount", &APlayerCameraManager::GetFadeAmount,
         "GetLetterBoxAlpha", &APlayerCameraManager::GetLetterBoxAlpha,
 
+        // Letter Box System
+        "StartLetterBox", &APlayerCameraManager::StartLetterBox,
+        "StopLetterBox", &APlayerCameraManager::StopLetterBox,
+
         // Camera Transition System
         "StartTransitionToLocation", [](APlayerCameraManager* Mgr,
-                                        const FVector& TargetLoc,
-                                        const FRotator& TargetRot,
-                                        float Duration,
-                                        ECameraEaseType EaseType) {
-            if (Mgr) {
-                Mgr->StartTransitionToLocation(TargetLoc, TargetRot, Duration, EaseType, -1.0f);
-            }
+            const FVector& TargetLoc,
+            const FRotator& TargetRot,
+            float Duration,
+            ECameraEaseType EaseType) {
+                if (Mgr) {
+                    Mgr->StartTransitionToLocation(TargetLoc, TargetRot, Duration, EaseType, -1.0f);
+                }
         },
         "StartTransitionToActor", [](APlayerCameraManager* Mgr,
-                                     AActor* TargetActor,
-                                     float Duration,
-                                     ECameraEaseType EaseType,
-                                     const FVector& Offset) {
-            if (Mgr && TargetActor) {
-                Mgr->StartTransitionToActor(TargetActor, Duration, EaseType, Offset);
-            }
+            AActor* TargetActor,
+            float Duration,
+            ECameraEaseType EaseType,
+            const FVector& Offset) {
+                if (Mgr && TargetActor) {
+                    Mgr->StartTransitionToActor(TargetActor, Duration, EaseType, Offset);
+                }
         },
         "StopCameraTransition", &APlayerCameraManager::StopCameraTransition,
         "IsCameraTransitioning", &APlayerCameraManager::IsCameraTransitioning,
         "GetTransitionProgress", &APlayerCameraManager::GetTransitionProgress,
         "SetTransitionBezierControlPoints", [](APlayerCameraManager* Mgr,
-                                                float P1x, float P1y, float P2x, float P2y) {
-            if (Mgr) {
-                float CP[4] = { P1x, P1y, P2x, P2y };
-                Mgr->SetTransitionBezierControlPoints(CP);
-            }
+            float P1x, float P1y, float P2x, float P2y) {
+                if (Mgr) {
+                    float CP[4] = { P1x, P1y, P2x, P2y };
+                    Mgr->SetTransitionBezierControlPoints(CP);
+                }
         }
     );
 
@@ -1113,5 +1117,5 @@ void FLuaScriptManager::BindTypes()
             }
             return Comp->GetLuaSelfTable();
         }
-        );
+    );
 }

@@ -45,7 +45,7 @@ class APlayerCameraManager : public AActor
 
 public:
 
-    /**
+	/**
 	 * @brief Initialize the camera manager (Editor mode)
 	 * @param InCamera The camera to manage
 	 */
@@ -134,6 +134,11 @@ public:
 	 * @brief Get letter box height as fraction of screen
 	 */
 	float GetLetterBoxHeight() const { return LetterBoxHeight; }
+
+	/**
+	 * @brief Get letter box animation progress (0 = start, 1 = fully animated)
+	 */
+	float GetLetterBoxAnimationProgress() const { return LetterBoxAnimationProgress; }
 
 	// ========== Spring Arm System ==========
 
@@ -396,6 +401,9 @@ private:
 	float LetterBoxTargetAlpha = 0.0f;
 	float LetterBoxCurrentAlpha = 0.0f;
 	float LetterBoxBlendSpeed = 2.0f;
+	float LetterBoxAnimationProgress = 0.0f;      // 애니메이션 진행도 (0.0 = 시작, 1.0 = 완료)
+	float LetterBoxAnimationDuration = 1.5f;      // 애니메이션 지속 시간 (초)
+	float LetterBoxAnimationElapsed = 0.0f;       // 경과 시간
 
 	// ========== Spring Arm ==========
 	bool bSpringArmEnabled = true;

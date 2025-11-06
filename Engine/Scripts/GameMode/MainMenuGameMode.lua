@@ -24,6 +24,9 @@ return function()
         if self.this.PrintLocation then
             self.this:PrintLocation()
         end
+
+        -- PIE 모드 시작 시에는 래터박스를 켜지 않음
+        Print("[MainMenuGameMode] Ready - waiting for Start Game button")
     end
 
     function ReturnTable:EndPlay()
