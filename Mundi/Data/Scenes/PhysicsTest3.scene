@@ -60,7 +60,7 @@
             }],
           "ObjectName" : "USkeletalMeshComponent_1",
           "ParentId" : 0,
-          "RelativeLocation" : [2.399922, 0.000000, 1.666355],
+          "RelativeLocation" : [2.399922, 0.000000, 5.584803],
           "RelativeRotationEuler" : [0.000000, -0.000000, 50.800003],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
           "SkeletalMesh" : "Data/Model/SKM_Dodge_Viper_SRT10.fbx",
@@ -206,10 +206,10 @@
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1083" : {
+    "1078" : {
       "ObjectName" : "AParticleEventManager_3",
       "OwnedComponents" : [{
-          "Id" : 1084,
+          "Id" : 1079,
           "ObjectName" : "USceneComponent_4",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -222,17 +222,41 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1084,
+      "RootComponentId" : 1079,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1154" : {
+    "1080" : {
       "ObjectName" : "물리 바닥_0",
       "OwnedComponents" : [{
           "AngularDamping" : 0.050000,
-          "Id" : 1155,
+          "BoxExtent" : [5.000000, 5.000000, 0.050000],
+          "Id" : 1085,
+          "LinearDamping" : 0.010000,
+          "MassInKg" : 0.000000,
+          "ObjectName" : "UBoxComponent_1",
+          "ParentId" : 1084,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [0.100000, 0.100000, 10.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bEnableGravity" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsTrigger" : false,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bSimulatePhysics" : false,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }, {
+          "AngularDamping" : 0.050000,
+          "Id" : 1084,
           "LinearDamping" : 0.010000,
           "MassInKg" : 0.000000,
           "MaterialSlots" : [{
@@ -257,45 +281,43 @@
           "bSimulatePhysics" : false,
           "bTickEnabled" : true,
           "bTickInEditor" : false
-        }, {
-          "AngularDamping" : 0.050000,
-          "BoxExtent" : [5.000000, 5.000000, 0.050000],
-          "Id" : 1156,
-          "LinearDamping" : 0.010000,
-          "MassInKg" : 0.000000,
-          "ObjectName" : "UBoxComponent_1",
-          "ParentId" : 1155,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [0.100000, 0.100000, 10.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bEnableGravity" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsTrigger" : false,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bSimulatePhysics" : false,
-          "bTickEnabled" : true,
-          "bTickInEditor" : false
         }],
-      "RootComponentId" : 1155,
+      "RootComponentId" : 1084,
       "Tag" : "",
       "Type" : "APhysGroundActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
+    },
+    "1093" : {
+      "ObjectName" : "AParticleEventManager_4",
+      "OwnedComponents" : [{
+          "Id" : 1094,
+          "ObjectName" : "USceneComponent_5",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1094,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
     }
   },
-  "NextUUID" : 1179,
+  "NextUUID" : 1096,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [2000.000000],
-    "Location" : [-9.427487, 5.227912, 5.537773],
+    "Location" : [0.632911, 13.765046, 5.537773],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 29.499989, -42.700043]
+    "Rotation" : [0.000000, 23.399965, -75.799812]
   },
   "Version" : 1
 }
