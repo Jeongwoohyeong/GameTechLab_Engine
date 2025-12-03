@@ -77,6 +77,14 @@
           "bSimulatePhysics" : false,
           "bTickEnabled" : true,
           "bTickInEditor" : false
+        }, {
+          "ObjectName" : "ULuaScriptComponent_1",
+          "ScriptFilePath" : "Data/Scripts/VehicleController.lua",
+          "Type" : "ULuaScriptComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
         }],
       "RootComponentId" : 1066,
       "Tag" : "",
@@ -233,11 +241,11 @@
       "OwnedComponents" : [{
           "AngularDamping" : 0.050000,
           "BoxExtent" : [5.000000, 5.000000, 0.050000],
-          "Id" : 1085,
+          "Id" : 1084,
           "LinearDamping" : 0.010000,
           "MassInKg" : 0.000000,
           "ObjectName" : "UBoxComponent_1",
-          "ParentId" : 1084,
+          "ParentId" : 1086,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [0.100000, 0.100000, 10.000000],
@@ -256,7 +264,7 @@
           "bTickInEditor" : false
         }, {
           "AngularDamping" : 0.050000,
-          "Id" : 1084,
+          "Id" : 1086,
           "LinearDamping" : 0.010000,
           "MassInKg" : 0.000000,
           "MaterialSlots" : [{
@@ -282,16 +290,16 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1084,
+      "RootComponentId" : 1086,
       "Tag" : "",
       "Type" : "APhysGroundActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1093" : {
+    "1087" : {
       "ObjectName" : "AParticleEventManager_4",
       "OwnedComponents" : [{
-          "Id" : 1094,
+          "Id" : 1088,
           "ObjectName" : "USceneComponent_5",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -304,20 +312,42 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1094,
+      "RootComponentId" : 1088,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1096" : {
+      "ObjectName" : "AParticleEventManager_5",
+      "OwnedComponents" : [{
+          "Id" : 1097,
+          "ObjectName" : "USceneComponent_6",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1097,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     }
   },
-  "NextUUID" : 1096,
+  "NextUUID" : 1100,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [2000.000000],
     "Location" : [0.632911, 13.765046, 5.537773],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 23.399965, -75.799812]
+    "Rotation" : [0.000000, 23.399961, -75.799820]
   },
   "Version" : 1
 }
