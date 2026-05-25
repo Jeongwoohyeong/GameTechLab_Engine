@@ -5,7 +5,7 @@ Week10에서는 FBX 기반 skeletal mesh를 엔진에 올리고, bone index / we
 ![CPUSkinning](./Docs/Images/cpuskinning.png)
 ![CPUSkinning_parallel](./Docs/Images/cpuskinning_parallel.png)
 
-CPU Skinnig(좌), CPU parallel_for Skinning(우)의 비교 이미지
+CPU Skinnig(상), CPU parallel_for Skinning(하)의 비교 이미지
 
 ## Goal
 
