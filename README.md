@@ -2,7 +2,9 @@
 
 `AngryCoach`는 custom DX11 engine 위에서 제작한 2인 로컬 대전 게임이다. 이 문서는 단순한 공격 기능 구현보다, animation notify, collision delegate, `FHitResult` damage payload, character state, physics-based knockback을 하나의 전투 판정 파이프라인으로 연결한 작업을 정리한다.
 
-![AngryCoach_Main](Docs/Images/AngryCoach_Main.png)
+[![AngryCoach_Main](Docs/Images/AngryCoach_Main.png)](https://youtu.be/hjJC3KCH85E?si=zvYGZlNvb9tcTEwq)
+
+>클릭하면 영상을 보실 수 있습니다.
 
 ## Goal
 
