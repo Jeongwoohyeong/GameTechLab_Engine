@@ -126,7 +126,7 @@ Engine
 | Week13 | UserData event callback refactor, skeletal mesh `PxShape` auto generation, physics asset serialization/deserialization, convex shape work | PhysX, Physics Asset |
 | Week14 | Multi-hit guard, fall death, physics knockback, gamepad vibration, knockback/vibration UI exposure, decal loading path polish | Combat, Knockback, Feedback |
 
-## Branch Links
+<!--Branch Links-->
 
 [week01]: https://github.com/Jeongwoohyeong/GameTechLab_Engine/tree/Week01
 [week02]: https://github.com/Jeongwoohyeong/GameTechLab_Engine/tree/Week02
