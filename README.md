@@ -102,6 +102,7 @@ Engine
 
 | Topic | Summary | Related Branch |
 |-------|---------|----------------|
+| SpotLight Shadow Mapping & Filtering | SpotLight shadow map을 엔진의 shadow pass / atlas 구조에 연결하고, PCF / VSM shader path를 분기해 shadow edge 품질과 filtering trade-off를 비교 | [Week08][week08] |
 | GPU Skinning & Profiling | CPU Linear Blend Skinning을 GPU skinning path로 확장하고, bone matrix `StructuredBuffer`, CPU/GPU profiling, Bone AABB bounds를 통해 연산 비용과 upload bandwidth trade-off를 분석 | [Week10][week10], [Week11][week11] |
 | AngryCoach Collision Event & Hit Response | AnimNotify 기반 attack window, attack shape overlap, `FHitResult` damage payload, guard/damage/death branch, impact point 기반 knockback response를 전투 시스템에 연결 | [Week14][week14] |
 
